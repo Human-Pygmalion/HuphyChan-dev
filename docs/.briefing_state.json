@@ -1888,7 +1888,8 @@
     "docs/experiments/2026-09-09_sim_vs_real_sine_sweep.md"
    ],
    "section": "done",
-   "changed": "2026-09-09 14:17"
+   "changed": "2026-09-09 14:17",
+   "collapsed": true
   },
   "motor-sysid-attempt": {
    "id": "motor-sysid-attempt",
@@ -1902,7 +1903,8 @@
     "docs/experiments/2026-09-09_motor_sysid_attempt.md"
    ],
    "section": "done",
-   "changed": "2026-09-09 16:33"
+   "changed": "2026-09-09 16:33",
+   "collapsed": true
   },
   "can-adapter-firmware-prep": {
    "id": "can-adapter-firmware-prep",
@@ -1994,6 +1996,31 @@
    ],
    "section": "done",
    "changed": "2026-09-09 20:30"
+  },
+  "friction-retest": {
+   "id": "friction-retest",
+   "created": "2026-09-09 21:08",
+   "title": "마찰을 빠른 기계에서 다시 쟀습니다 — 어제 값이 그대로 맞습니다",
+   "finding": "통신이 8배 빠른 기계에서, 어제와 아무것도 공유하지 않는 방법으로 다시 쟀습니다. 토크를 정확히 0으로 놓고 마찰만으로 세우면 남는 식이 '마찰 = 관성 × 감속률' 하나뿐인데, 관성은 오늘 확정했으므로 마찰이 바로 나옵니다. 움직일 때 마찰 0.519(어제 0.523), 점성 0.0275(어제 0.0276)입니다. 통신이 느려서 어제 값이 틀렸을 가능성은 사라졌습니다. 느린 통신이 막고 있던 것은 회전자 관성 하나뿐이었습니다.",
+   "number": "마찰 0.519 대 어제 0.523 (0.8% 차이) · 점성 0.0275 대 0.0276 (0.4%) · 붙어 있는 힘 0.901 대 0.882",
+   "media": [
+    "docs/img/motor_friction_curve.png"
+   ],
+   "section": "done",
+   "changed": "2026-09-09 21:08"
+  },
+  "speed-ceiling": {
+   "id": "speed-ceiling",
+   "created": "2026-09-09 21:08",
+   "title": "★ 모터가 859도/s 위에서는 틀린 속도를 보고합니다",
+   "finding": "최고속도로 데우라는 지시를 따르다 두 가지를 찾았습니다. 첫째, 속도 명령을 담는 칸이 초당 859도까지밖에 못 담아서 그 위로는 시킬 수가 없습니다. 둘째이자 더 위험한 것은, 모터가 돌려주는 속도 값도 같은 자리에서 잘린다는 것입니다. 실제로 초당 1362도로 돌고 있는데 859라고 답합니다. 초당 859도 위에서 이 값을 믿는 안전장치나 기록은 전부 틀린 값을 씁니다. 위치를 이어 붙여 미분하면 진짜 속도가 나오고, 859 아래에서는 두 값이 정확히 일치합니다.",
+   "number": "명령 상한 859도/s · 실제 도달 1362도/s · 그 아래에서는 위치로 구한 값과 0.07% 일치",
+   "needs": "전원 전압을 직접 확인해야 합니다. 자리잡은 속도로 역산하면 48볼트가 아니라 약 57볼트로 나오는데, 맞다면 이 모터의 속도 여유가 우리가 사양으로 쓰던 곡선보다 19% 넓다는 뜻이고, 앞서 '빠른 무릎 동작은 실현 불가'라고 적어 둔 판정을 다시 봐야 합니다.",
+   "media": [
+    "docs/img/motor_speed_ceiling.png"
+   ],
+   "section": "done",
+   "changed": "2026-09-09 21:08"
   }
  },
  "order": [
@@ -2165,7 +2192,9 @@
   "can-bottleneck-is-the-vm",
   "friction-measured-cold-warm",
   "pi-throughput",
-  "rotor-inertia"
+  "rotor-inertia",
+  "friction-retest",
+  "speed-ceiling"
  ],
- "updated": "2026-09-09 20:30"
+ "updated": "2026-09-09 21:08"
 }

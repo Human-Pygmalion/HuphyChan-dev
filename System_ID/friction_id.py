@@ -42,11 +42,16 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import sys
 import time
 
-sys.path.insert(0, "/home/syaro/System_ID")
-from rs_direct import Motor  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+  # 라즈베리파이: 파이썬 기본 기능만 쓰는 구동부. 아무것도 설치할 필요가 없다.
+  from rs_direct_socket import Motor  # noqa: E402
+except ImportError:                    # 로봇 가상머신: python-can 이 이미 깔려 있다
+  from rs_direct import Motor  # noqa: E402
 
 MOVE_DEG = 0.20
 """이만큼 위치가 바뀌면 '움직이기 시작했다'고 본다.

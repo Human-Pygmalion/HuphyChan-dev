@@ -32,12 +32,17 @@ from __future__ import annotations
 import argparse
 import csv
 import math
+import os
 import sys
 import time
 import urllib.request
 
-sys.path.insert(0, "/home/syaro/System_ID")
-from rs_direct import Motor  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+  # 라즈베리파이: 파이썬 기본 기능만 쓰는 구동부. 아무것도 설치할 필요가 없다.
+  from rs_direct_socket import Motor  # noqa: E402
+except ImportError:                    # 로봇 가상머신: python-can 이 이미 깔려 있다
+  from rs_direct import Motor  # noqa: E402
 
 HARM = ((1.0, 1.0), (3.4, 0.6), (7.4, 0.3))
 """사전연구의 다중사인 그대로. 배수가 정수가 아닌 이유는 주기가 겹쳐 성분이 서로 지워지지
