@@ -59,19 +59,31 @@ XML = """
 </mujoco>
 """
 
-BASE = dict(armature=0.0773, frictionloss=0.519, damping=0.0275)
-TODAY = dict(armature=0.016333, frictionloss=0.269456, damping=0.009492)
-
-SWEEP = {
-  # 값 이름 -> [(설명, 값), ...]  나머지 둘은 실측값 고정
-  "armature": [("almost none (1/20)", 0.0773 / 20), ("model today", 0.016333),
-               ("MEASURED", 0.0773), ("4x too big", 0.0773 * 4)],
-  "frictionloss": [("none (0)", 0.0), ("model today", 0.269456),
-                   ("MEASURED", 0.519), ("4x too big", 0.519 * 4)],
-  "damping": [("none (0)", 0.0), ("model today", 0.009492),
-              ("MEASURED", 0.0275), ("4x too big", 0.0275 * 4)],
+FAMILY = {
+  # 모터마다 실측값이 다르므로 쓸어볼 값도 다르다. 2026-09-09 실측.
+  "RS04": dict(measured=dict(armature=0.0773, frictionloss=0.519, damping=0.0275),
+               today=dict(armature=0.016333, frictionloss=0.269456, damping=0.009492)),
+  "RS03": dict(measured=dict(armature=0.0638, frictionloss=0.250, damping=0.0252),
+               today=dict(armature=0.015265, frictionloss=0.285370, damping=0.022342)),
 }
-"""armature 만 0 을 못 쓴다 — 관절에 관성이 하나도 없으면 계산이 발산한다. 1/20 로 대신한다."""
+
+
+def sweep_for(family):
+  """값 하나씩 쓸어볼 목록. 나머지 둘은 실측값에 고정한다.
+
+  ``armature`` 만 0 을 못 쓴다 — 관절에 관성이 하나도 없으면 계산이 발산한다. 1/20 로 대신한다.
+  RS03 은 실측 점성(0.0025)이 지금 모형 값(0.0223)보다 작아서, '4배 과다'가 '지금 모형'보다
+  작아지는 뒤집힘이 생긴다. 값을 그대로 적어 두므로 표에서 바로 보인다."""
+  m, t = FAMILY[family]["measured"], FAMILY[family]["today"]
+  return m, {
+    "armature": [("almost none (1/20)", m["armature"] / 20), ("model today", t["armature"]),
+                 ("MEASURED", m["armature"]), ("4x too big", m["armature"] * 4)],
+    "frictionloss": [("none (0)", 0.0), ("model today", t["frictionloss"]),
+                     ("MEASURED", m["frictionloss"]), ("4x too big", m["frictionloss"] * 4)],
+    "damping": [("none (0)", 0.0), ("model today", t["damping"]),
+                ("MEASURED", m["damping"]), ("4x too big", m["damping"] * 4)],
+  }
+
 
 COLS = ["#8e44ad", "#c0392b", "#16a085", "#e67e22"]
 
@@ -192,6 +204,7 @@ def main(argv=None) -> int:
                                formatter_class=argparse.RawDescriptionHelpFormatter)
   ap.add_argument("--data", default="data")
   ap.add_argument("--motor", default="4")
+  ap.add_argument("--family", default="RS04", choices=list(FAMILY))
   ap.add_argument("--kp", type=float, default=20.0)
   ap.add_argument("--kd", type=float, default=1.0)
   ap.add_argument("--tau-max", type=float, default=8.0)
@@ -199,6 +212,7 @@ def main(argv=None) -> int:
   ap.add_argument("--dt", type=float, default=0.0002)
   ap.add_argument("--out-prefix", default="../docs/img/pd_ablation_rs04")
   a = ap.parse_args(argv)
+  BASE, SWEEP = sweep_for(a.family)
 
   CMDS = [
     ("big step +-8 deg",     "step",     f"pd_step_{a.motor}_kp20_kd1_a8_r*_b.csv"),

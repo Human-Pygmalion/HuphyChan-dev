@@ -76,7 +76,7 @@ VARIANTS = {
     ("model today",          "#c0392b", "--",
      dict(armature=0.015265, frictionloss=0.285370, damping=0.022342)),
     ("measured (all three)", "#16a085", "-",
-     dict(armature=0.0638,   frictionloss=0.400,    damping=0.0025)),
+     dict(armature=0.0638,   frictionloss=0.250,    damping=0.0252)),
     ("measured, friction removed", "#8e44ad", ":",
      dict(armature=0.0638,   frictionloss=0.0,      damping=0.0)),
     ("measured armature, old friction", "#e67e22", "-.",

@@ -113,6 +113,20 @@ def main(argv=None) -> int:
   ap.add_argument("--win-s", type=float, default=0.06)
   ap.add_argument("--skip-s", type=float, default=0.15)
   ap.add_argument("--fit-lo", type=float, default=1.0)
+  ap.add_argument("--fit-hi", type=float, default=1e9,
+                  help="""직선 맞춤에 쓸 속도 상한 [라디안/s]. 기본은 제한 없음.
+
+  ★ 토크를 놓아도 모터의 전류 고리가 곧바로 0 이 되지 않아 **놓은 직후**에는 아직 힘이 남아
+  있다. 그 구간은 감속이 실제보다 느려 마찰이 낮게 계산되고, 속도로 보면 가장 빠른 쪽에
+  몰린다.
+
+  RS04 는 감속이 빨라 그 구간이 짧고, 상한을 걸든 말든 0.51~0.52 · 0.027~0.028 로 같으며
+  삼각파 실측(지연 1.49도)을 1.49~1.52도로 맞춘다 — **상한 불필요**.
+
+  RS03 은 마찰이 작아 6초 가까이 굴러가고, 오염 구간이 속도 축에서 크게 차지한다. 전체로
+  맞추면 마찰 0.385 · 점성 0.0035 (결정계수 0.019, 사실상 평평)이고 삼각파를 1.11도로 과대
+  예측한다. **16 라디안/s 로 자르면** 0.250 · 0.0252 (결정계수 0.81)이고 0.74도로 맞는다.
+  2026-09-10 에 이걸 놓쳐 RS03 값을 한 번 틀리게 냈다.""")
   ap.add_argument("--inertia", type=float, default=J_KGM2,
                   help="이 모터의 회전자 관성. RS04 0.0773 · RS03 0.0638 (2026-09-09 실측)")
   ap.add_argument("--out", default="../docs/img/motor_friction_curve.png")
@@ -126,19 +140,20 @@ def main(argv=None) -> int:
   if len(pts) < 50:
     print(f"점이 부족합니다 ({len(pts)})"); return 1
 
+  v_hi = a.fit_hi
   fig, axs = plt.subplots(1, 2, figsize=(13.5, 5.0))
   for s, col, lab in ((1.0, "#2c3e50", "forward"), (-1.0, "#c0392b", "reverse")):
     d = [(w, f) for w, f, _, sg in pts if sg == s]
     if len(d) < 20:
       continue
     axs[0].scatter([x[0] for x in d], [x[1] for x in d], s=3, c=col, alpha=0.25, label=lab)
-    hi = [x for x in d if x[0] >= a.fit_lo]
+    hi = [x for x in d if a.fit_lo <= x[0] < v_hi]
     if len(hi) > 20:
       m, b, r2, se, _ = linfit([x[0] for x in hi], [x[1] for x in hi])
       print(f"{lab:>8}: 마찰 {b:6.3f} Nm · 점성 {m:7.4f} +- {se:6.4f} · "
             f"결정계수 {r2:.4f} · {len(hi)}점")
 
-  hi = [(w, f) for w, f, _, _ in pts if w >= a.fit_lo]
+  hi = [(w, f) for w, f, _, _ in pts if a.fit_lo <= w < v_hi]
   m, b, r2, se, sd = linfit([x[0] for x in hi], [x[1] for x in hi])
   xs = [0, max(x[0] for x in pts) * 1.02]
   axs[0].plot(xs, [m * x + b for x in xs], "-", color="#16a085", lw=2.4, zorder=5,
