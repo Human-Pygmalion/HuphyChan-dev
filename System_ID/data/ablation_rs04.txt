@@ -6,6 +6,7 @@ fast triangle 240 deg/s    10회 · 8.0초 · 회차 사이 흩어짐(제곱평�
 
 그림: /home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/pd_ablation_rs04_runs.png
 그림: /home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/pd_ablation_rs04_sweep.png
+그림: /home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/pd_ablation_rs04_overlay.png
 
 ============================================================================================================
 

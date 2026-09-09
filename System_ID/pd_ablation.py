@@ -40,6 +40,7 @@ import mujoco  # noqa: E402
 import numpy as np  # noqa: E402
 
 DEG = math.pi / 180.0
+NL = chr(10)   # 그림 글자 안의 줄바꿈
 
 XML = """
 <mujoco model="one_motor">
@@ -245,6 +246,7 @@ def main(argv=None) -> int:
   nrow = len(loaded)
   fig2, axs2 = plt.subplots(nrow, 3, figsize=(15.5, 2.9 * nrow), squeeze=False)
   table = {}
+  traces = {}
   for ci, (pname, options) in enumerate(SWEEP.items()):
     for ri, (name, mode, ts, tgt, tgv, P) in enumerate(loaded):
       ax = axs2[ri][ci]
@@ -256,6 +258,7 @@ def main(argv=None) -> int:
                           a.delay_ms / 1e3, **prm)
         mm = metrics(mode, ts, tgt, tgv, y)
         table[(name, pname, lab)] = mm
+        traces[(name, pname, lab)] = y
         xs.append(val); ys.append(mm[key]); labs.append(lab)
       ax.plot(xs, ys, "o-", color="#34495e", lw=1.5, ms=7, zorder=2)
       for x, y, lab, col in zip(xs, ys, labs, COLS):
@@ -280,6 +283,41 @@ def main(argv=None) -> int:
   fig2.tight_layout(rect=(0, 0.035, 1, 0.97))
   fig2.savefig(f"{a.out_prefix}_sweep.png", dpi=125)
   print(f"그림: {a.out_prefix}_sweep.png")
+
+  # ---------- 그림 3: 실물 위에 시뮬레이터를 직접 겹친다 -----------------
+  # 명령마다 볼 만한 구간이 다르다. 처프는 끝(빠른 쪽), 계단은 모서리 두 개, 삼각파는 한 주기.
+  ZOOM = {"big step +-8 deg": (2.4, 5.2), "small step +-1.5 deg": (2.4, 5.2),
+          "chirp 0.3-10 Hz": (-4.2, -0.2), "slow triangle 20 deg/s": (0.0, 8.2),
+          "fast triangle 240 deg/s": (0.0, 3.0)}
+  fig3, axs3 = plt.subplots(len(loaded), 3, figsize=(16.5, 3.0 * len(loaded)), squeeze=False)
+  for ri, (name, mode, ts, tgt, tgv, P) in enumerate(loaded):
+    lo, hi = ZOOM.get(name, (0.0, min(6.0, ts[-1])))
+    if lo < 0:                                   # 음수면 "끝에서부터"
+      lo, hi = ts[-1] + lo, ts[-1] + hi
+    z = (ts >= lo) & (ts <= hi)
+    mean = P.mean(axis=0)
+    for ci, (pname, options) in enumerate(SWEEP.items()):
+      ax = axs3[ri][ci]
+      ax.plot(ts[z], tgt[z], color="#95a5a6", lw=1.2, label="commanded")
+      for prun in P:
+        ax.plot(ts[z], prun[z], color="#2c3e50", lw=0.6, alpha=0.18)
+      ax.plot(ts[z], mean[z], color="#2c3e50", lw=2.4, label="real (mean of 10)", zorder=5)
+      for (lab, val), col in zip(options, COLS):
+        ax.plot(ts[z], traces[(name, pname, lab)][z], color=col, lw=1.3, alpha=0.95,
+                label="sim " + lab + " = " + format(val, ".4g"))
+      ax.grid(alpha=0.3)
+      if ri == 0:
+        ax.set_title("sweeping " + pname + NL + "(other two held at measured)", fontsize=10)
+      if ci == 0:
+        ax.set_ylabel(name + NL + "angle [deg]", fontsize=8.5)
+      if ri == nrow - 1:
+        ax.set_xlabel("time [s]")
+      ax.legend(fontsize=6.2, loc="best", ncol=2)
+  fig3.suptitle("RobStride motor " + str(a.motor) + ": the simulator drawn straight on top "
+                "of the real motor - one parameter changed at a time", fontsize=12)
+  fig3.tight_layout(rect=(0, 0, 1, 0.965))
+  fig3.savefig(a.out_prefix + "_overlay.png", dpi=125)
+  print("그림: " + a.out_prefix + "_overlay.png")
 
   # ---------- 표 -------------------------------------------------------
   print("\n" + "=" * 108)
