@@ -128,6 +128,10 @@ for n in docs/experiments/2026-*.md; do
   [ -f "$n" ] || continue
   grep -q "SPEC-TABLES:BEGIN" "$n" 2>/dev/null && continue
   grep -q "1b-2" "$n" 2>/dev/null && continue
+  # 학습 런이 아닌 노트(벤치 모터 측정 등)는 스스로 그렇게 밝힌다. §1b-2/3/4 는 학습 설정에서
+  # 나오는 표라, 대응하는 런 디렉터리가 없는 노트에는 채울 근거가 없다 — 억지로 넣으면
+  # 근거 없는 표가 남는다. 2026-09-10 추가.
+  grep -q "SPEC-TABLES: 해당 없음" "$n" 2>/dev/null && continue
   w="$w\n  - $(basename "$n"): §1b-2/§1b-3/§1b-4 설정 명세 표 없음"
 done
 if [ -n "$w" ]; then

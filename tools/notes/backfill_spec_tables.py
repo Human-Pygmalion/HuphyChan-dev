@@ -47,6 +47,18 @@ AGGREGATE = {
     "2026-07-12_bentinit_ab_result.md": "bentinit A/B 2런 비교",
     "2026-08-26_ankleAB_vs_RP_comparison.md": "AB↔RP 계열 비교",
     "2026-08-28_ab_ankle_usage_audit.md": "다수 정책 발목 사용 감사",
+    # 2026-09-09~10 벤치 모터 측정 노트. **학습 런이 아니다** — 실물 모터 한 대를
+    # 라즈베리파이에 직결해 잰 기록이라 대응하는 logs/rsl_rl 런 디렉터리가 없고,
+    # §1b-2(액추에이터 한계)·§1b-3(ROM/행동창)·§1b-4(PYG_* 플래그)는 학습 설정에서
+    # 나오는 표라 여기 붙일 근거가 없다. 대신 각 노트가 자기 실험 조건(모터 번호·이득·
+    # 진폭·온도·경계·표본수)을 머리에 적는다.
+    "2026-09-09_motor_rotor_inertia.md": "벤치 모터 측정(학습 런 아님)",
+    "2026-09-09_motor_friction_retest.md": "벤치 모터 측정(학습 런 아님)",
+    "2026-09-09_motor_report_and_timing.md": "벤치 모터 측정(학습 런 아님)",
+    "2026-09-09_motor_sysid_attempt.md": "벤치 모터 측정(학습 런 아님)",
+    "2026-09-09_sim_vs_real_sine_sweep.md": "벤치 모터 측정(학습 런 아님)",
+    "2026-09-09_pd_step_chirp_sim_vs_real.md": "벤치 모터 측정(학습 런 아님)",
+    "2026-09-09_pd_ablation_five_commands.md": "벤치 모터 측정(학습 런 아님)",
 }
 
 # note stem -> (p1 run dir name, p2 run dir name or None). Only where the automatic
