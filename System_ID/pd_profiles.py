@@ -138,7 +138,7 @@ def run_profile(m: Motor, profile, seconds: float, kp: float, kd: float, p0: flo
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("mode", choices=["gain", "step", "chirp"])
+  ap.add_argument("mode", choices=["gain", "step", "chirp", "triangle"])
   ap.add_argument("--motor-id", type=int, default=4)
   ap.add_argument("--model", default="RS04")
   ap.add_argument("--kp", type=float, default=20.0)
@@ -146,6 +146,8 @@ def main(argv=None) -> int:
   ap.add_argument("--amp", type=float, default=8.0, help="계단·처프 진폭 도")
   ap.add_argument("--period-s", type=float, default=1.5, help="계단 한 쪽에 머무는 시간")
   ap.add_argument("--cycles", type=int, default=6)
+  ap.add_argument("--repeats", type=int, default=1,
+                  help="같은 명령을 몇 번 되풀이해 받을지. 매번 원점 복귀부터 다시 한다")
   ap.add_argument("--f0", type=float, default=0.2)
   ap.add_argument("--f1", type=float, default=10.0)
   ap.add_argument("--chirp-s", type=float, default=40.0)
@@ -195,36 +197,55 @@ def main(argv=None) -> int:
         m.torque(0.0); m.recv(timeout_s=0.002)
       return 0
 
+    A = a.amp
     if a.mode == "step":
-      A, T = a.amp, a.period_s
+      T = a.period_s
       prof = lambda t: (A if int(t / T) % 2 == 0 else -A, 0.0)      # noqa: E731
       secs = T * 2 * a.cycles
-      name = f"pd_step_{a.motor_id}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}{suffix}.csv"
+    elif a.mode == "triangle":
+      # 일정한 속도로 오르내린다. 속도가 일정하므로 **점성**이 드러나고, 방향이 바뀌는
+      # 자리에서 **정지 마찰**이 만드는 평평한 구간이 보인다.
+      T = a.period_s * 2
+      v = 4.0 * A / T
+      def prof(t):                                   # noqa: E306
+        ph = (t % T) / T
+        if ph < 0.25:
+          return 4 * A * ph, v
+        if ph < 0.75:
+          return A - 4 * A * (ph - 0.25), -v
+        return -A + 4 * A * (ph - 0.75), v
+      secs = T * a.cycles
     else:
-      A, f0, f1, D = a.amp, a.f0, a.f1, a.chirp_s
+      f0, f1, D = a.f0, a.f1, a.chirp_s
       k = math.log(f1 / f0) / D                      # 로그 처프: 낮은 쪽에 시간을 더 준다
       def prof(t):                                   # noqa: E306
         ph = 2 * math.pi * f0 * (math.exp(k * t) - 1.0) / k
         f = f0 * math.exp(k * t)
         return A * math.sin(ph), A * 2 * math.pi * f * math.cos(ph)
       secs = D
-      name = f"pd_chirp_{a.motor_id}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}{suffix}.csv"
 
-    print(f"{a.mode} · kp={a.kp} kd={a.kd} 진폭 {a.amp}도 · {secs:.0f}초 · "
-          f"경계 {a.bound_deg:.0f}도")
-    rows, why = run_profile(m, prof, secs, a.kp, a.kd, p0, a.bound_deg, a.temp_stop, a.tau_max)
-    with open(os.path.join(a.out_dir, name), "w", newline="") as f:
-      w = csv.writer(f)
-      w.writerow(["t_s", "target_deg", "target_vel_deg_s", "pos_deg", "vel_deg_s",
-                  "tau_cmd_nm", "tau_rep_nm", "temp_c"])
-      w.writerows(rows)
-    if rows:
-      errs = [abs(r[3] - r[1]) for r in rows]
-      print(f"  {len(rows)}줄 · {rows[-1][0]:.1f}초 · 추종 오차 중앙 "
-            f"{statistics.median(errs):.2f}도 최대 {max(errs):.2f}도 · "
-            f"시킨 토크 최대 {max(abs(r[5]) for r in rows):.2f} 뉴턴미터 · "
-            f"{rows[-1][7]:.0f}도 · {why}")
-    print(f"기록: {name}")
+    print(f"{a.mode} · kp={a.kp} kd={a.kd} 진폭 {A}도 · 한 번에 {secs:.0f}초 · "
+          f"{a.repeats}회 · 경계 {a.bound_deg:.0f}도")
+    for rep in range(a.repeats):
+      if rep:
+        p0 = home(m)                       # 매번 같은 자리에서 다시 시작한다
+      rows, why = run_profile(m, prof, secs, a.kp, a.kd, p0, a.bound_deg, a.temp_stop,
+                              a.tau_max)
+      name = (f"pd_{a.mode}_{a.motor_id}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}"
+              f"_r{rep}{suffix}.csv")
+      with open(os.path.join(a.out_dir, name), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["t_s", "target_deg", "target_vel_deg_s", "pos_deg", "vel_deg_s",
+                    "tau_cmd_nm", "tau_rep_nm", "temp_c"])
+        w.writerows(rows)
+      if rows:
+        errs = [abs(r[3] - r[1]) for r in rows]
+        print(f"  #{rep}: {len(rows):6d}줄 · {rows[-1][0]:5.1f}초 · 추종 오차 중앙 "
+              f"{statistics.median(errs):5.2f}도 · 토크 최대 "
+              f"{max(abs(r[5]) for r in rows):5.2f} Nm · {rows[-1][7]:.0f}도 · {why}")
+      if why != "끝까지":
+        print(f"    -> 중단: {why}")
+        break
     home(m)
   return 0
 
