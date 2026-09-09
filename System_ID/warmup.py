@@ -99,9 +99,10 @@ def main(argv=None) -> int:
            else f"목표 {a.speed:.0f} 도/s")
     print(f"{tgt} · {a.seconds:.0f}초 · {a.temp_stop:.0f}도에서 중단 · "
           f"진짜 속도 상한 {a.v_cap:.0f} 도/s\n")
-    if st.fault:
-      m.clear_fault(); time.sleep(0.05)
-    m.enable(); time.sleep(0.05)
+    # 고장 지우기는 **조건 없이** 보낸다. 2026-09-09: 모터 3 은 고장 표시가 False 인데도
+    # 이걸 먼저 안 보내면 켜기가 안 먹어서, 토크를 줘도 전류가 0 인 채 가만히 있었다.
+    m.clear_fault(); time.sleep(0.1)
+    m.enable(); time.sleep(0.1)
 
     t0 = time.monotonic()
     next_report = a.report_s

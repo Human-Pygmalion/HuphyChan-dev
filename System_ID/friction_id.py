@@ -227,9 +227,10 @@ def main(argv=None) -> int:
       return 1
     print(f"모터 {a.motor_id}({a.model}) · 시작 {st.position_deg:.2f}도 · "
           f"{st.temp_c:.0f}도 · 고장 {st.fault}")
-    if st.fault:
-      m.clear_fault(); time.sleep(0.05)
-    m.enable(); time.sleep(0.05)
+    # 고장 지우기는 **조건 없이** 보낸다. 2026-09-09: 모터 3 은 고장 표시가 False 인데도
+    # 이걸 먼저 안 보내면 켜기가 안 먹어서, 토크를 줘도 전류가 0 인 채 가만히 있었다.
+    m.clear_fault(); time.sleep(0.1)
+    m.enable(); time.sleep(0.1)
     try:
       if a.mode == "breakaway":
         print(f"\n토크를 초당 {a.rate} 뉴턴미터씩 올리며 움직이는 순간을 찾습니다 "

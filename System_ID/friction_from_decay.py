@@ -113,10 +113,13 @@ def main(argv=None) -> int:
   ap.add_argument("--win-s", type=float, default=0.06)
   ap.add_argument("--skip-s", type=float, default=0.15)
   ap.add_argument("--fit-lo", type=float, default=1.0)
+  ap.add_argument("--inertia", type=float, default=J_KGM2,
+                  help="이 모터의 회전자 관성. RS04 0.0773 · RS03 0.0638 (2026-09-09 실측)")
   ap.add_argument("--out", default="../docs/img/motor_friction_curve.png")
   ap.add_argument("--title", default="")
   a = ap.parse_args(argv)
 
+  globals()["J_KGM2"] = a.inertia
   pts = []
   for p in sorted(glob.glob(a.glob)):
     pts += points(p, a.win_s, a.tau_col, a.skip_s)
