@@ -1918,7 +1918,8 @@
     "System_ID/FIRMWARE_RUNBOOK.md"
    ],
    "section": "done",
-   "changed": "2026-09-09 17:21"
+   "changed": "2026-09-09 17:21",
+   "collapsed": true
   },
   "friction-measurable-now": {
    "id": "friction-measurable-now",
@@ -1932,7 +1933,8 @@
     "System_ID/friction_id.py"
    ],
    "section": "done",
-   "changed": "2026-09-09 17:57"
+   "changed": "2026-09-09 17:57",
+   "collapsed": true
   },
   "host-usb-test-ready": {
    "id": "host-usb-test-ready",
@@ -2021,6 +2023,29 @@
    ],
    "section": "done",
    "changed": "2026-09-09 21:08"
+  },
+  "report-vs-truth": {
+   "id": "report-vs-truth",
+   "created": "2026-09-09 21:25",
+   "title": "★ 모터가 말하는 값 중 무엇을 믿을 수 있는지 칸마다 갈랐습니다",
+   "finding": "속도 칸은 초당 859도 아래에서는 완벽하고(비 0.999~1.000) 그 위에서는 최대 37% 낮게 말합니다. 오류 표시도 없이 그냥 859라고 답합니다. 토크 칸은 0.5초 이상 평균 내면 0.06 뉴턴미터 안에서 믿을 수 있지만, 한 번의 응답으로 판단하면 안 됩니다 — 실제 토크가 정확히 0인 상황에서도 말하는 값이 플러스마이너스 0.7 뉴턴미터에 걸쳐 고르게 퍼집니다. 순간 토크로 안전 차단을 걸면 헛발질합니다. 온도는 두 모터를 나란히 두고 하나만 돌려 확인했고 말이 됩니다.",
+   "number": "속도 실제 1367 대 보고 859 (0.63배) · 토크 평균은 한 계단 0.059 뉴턴미터 낮음 · 토크 한 점의 흩어짐 0.62",
+   "media": [
+    "docs/img/motor_report_vs_truth.png"
+   ],
+   "section": "done",
+   "changed": "2026-09-09 21:25"
+  },
+  "timing-and-firmware": {
+   "id": "timing-and-firmware",
+   "created": "2026-09-09 21:25",
+   "title": "명령 주기는 이론 상한이 아니었고, 어댑터는 안 바꿔도 됩니다",
+   "finding": "지금은 하나 보내고 답을 기다리느라 한 번에 501마이크로초, 초당 1994번입니다. 답을 기다리지 않고 겹쳐 보내면 초당 3281번, 손실 0퍼센트가 나옵니다. 통신선 자체의 물리적 천장이 초당 3846~4505번이므로 그 73~85퍼센트까지 온 것입니다. 우리가 필요한 양은 초당 600번이라 5.5배 여유가 있습니다. 그래서 어댑터 펌웨어를 바꿀 이유가 없습니다 — 바꿔서 얻을 수 있는 최대가 17~37퍼센트인데 지금 이 어댑터가 모터로 가는 유일한 길입니다.",
+   "number": "지금 초당 1994번 · 겹쳐 보내면 3281번 · 통신선 천장 3846~4505번 · 필요한 양 600번",
+   "was": "어댑터를 더 빠른 것으로 바꾸거나 펌웨어를 새로 구울지 검토",
+   "now_": "굽지 않습니다. 공짜로 얻는 1.6배를 아직 안 썼고 그것만으로 필요치의 5.5배입니다",
+   "section": "done",
+   "changed": "2026-09-09 21:25"
   }
  },
  "order": [
@@ -2194,7 +2219,9 @@
   "pi-throughput",
   "rotor-inertia",
   "friction-retest",
-  "speed-ceiling"
+  "speed-ceiling",
+  "report-vs-truth",
+  "timing-and-firmware"
  ],
- "updated": "2026-09-09 21:08"
+ "updated": "2026-09-09 21:25"
 }
