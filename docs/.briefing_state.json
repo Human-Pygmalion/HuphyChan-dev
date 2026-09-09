@@ -2027,7 +2027,8 @@
     "docs/img/motor_speed_ceiling.png"
    ],
    "section": "done",
-   "changed": "2026-09-09 21:08"
+   "changed": "2026-09-09 21:08",
+   "collapsed": true
   },
   "report-vs-truth": {
    "id": "report-vs-truth",
@@ -2115,6 +2116,18 @@
    "number": "작은 계단 잔류 오차: 실물 1.398도 · 움직일 때 마찰 0.882도 · 그 4배를 넣으면 1.188도",
    "section": "done",
    "changed": "2026-09-09 23:17"
+  },
+  "sim-overlay": {
+   "id": "sim-overlay",
+   "created": "2026-09-10 00:01",
+   "title": "시뮬레이터 곡선을 실물 위에 직접 겹쳐 그렸습니다",
+   "finding": "지표 표만으로는 감이 안 온다는 지적을 받아, 같은 대조를 곡선 그대로 겹쳤습니다. 굵은 선이 실물 10회 평균, 옅은 선이 개별 10회, 색선이 시뮬레이터입니다. 빠르게 흔드는 구간에서 지금 모형은 시뮬레이터가 명령을 ±7.5도로 끝까지 따라가는데 실물은 ±2.5도밖에 못 움직입니다. 실측값을 넣은 곡선만 실물 위에 겹칩니다. 작은 계단에서는 실물이 거의 평평한데 어떤 설정도 그만큼 갇히지 않습니다. 마찰을 4배로 키우면 큰 계단에서 주저앉아 못 돌아옵니다. 점성은 0에서 4배까지 바꾼 네 곡선이 서로 겹쳐서 구분이 안 됩니다.",
+   "number": "빠른 구간 진폭: 실물 ±2.5도 · 지금 모형 ±7.5도 · 실측값 ±2.5도",
+   "media": [
+    "docs/img/pd_ablation_rs04_overlay.png"
+   ],
+   "section": "done",
+   "changed": "2026-09-10 00:01"
   }
  },
  "order": [
@@ -2296,7 +2309,8 @@
   "friction-ablation",
   "mjlab-apply",
   "pd-ablation",
-  "static-friction-gap"
+  "static-friction-gap",
+  "sim-overlay"
  ],
- "updated": "2026-09-09 23:17"
+ "updated": "2026-09-10 00:01"
 }
