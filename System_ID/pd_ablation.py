@@ -68,6 +68,21 @@ FAMILY = {
 }
 
 
+# 그림 범례에 쓸 쉬운 말. 값 이름 대신 "그 값이 무엇인가"를 보여 준다 (사용자 지시 2026-09-10).
+PLAIN = {
+  "armature": ("ROTOR INERTIA", "how hard it is to speed the shaft up or slow it down"),
+  "frictionloss": ("FRICTION", "constant drag - the same at any speed"),
+  "damping": ("VISCOUS DRAG", "extra drag that grows with speed"),
+}
+ROLE = {
+  "almost none (1/20)": "almost none",
+  "none (0)": "none at all",
+  "model today": "what the simulator uses today",
+  "MEASURED": "MEASURED on the bench",
+  "4x too big": "4x too big",
+}
+
+
 def sweep_for(family):
   """값 하나씩 쓸어볼 목록. 나머지 둘은 실측값에 고정한다.
 
@@ -156,8 +171,11 @@ def metrics(mode, ts, tgt, tgv, pos, f0=0.3, f1=10.0):
     fc, g = np.array(fc), np.array(g)
     # 봉우리는 1.5 Hz 위에서만 찾는다. 한 토막이 0.4초라 그 아래 주파수는 사이클이 반도
     # 안 들어가서 진폭 추정이 못 믿을 값이 된다.
-    hi = fc > 1.5
-    return {"gain at 10 Hz": float(np.interp(9.0, fc, g)),
+    # 봉우리는 시작 주파수의 3배 위에서만 찾는다. 한 토막에 사이클이 반도 안 들어가는
+    # 낮은 쪽은 진폭 추정이 못 믿을 값이 된다.
+    hi = fc > max(1.0, f0 * 3)
+    f_hi = f1 * 0.9
+    return {f"gain at {f_hi:.0f} Hz": float(np.interp(f_hi, fc, g)),
             "peak gain": float(g[hi].max()) if hi.any() else float("nan"),
             "peak freq [Hz]": float(fc[hi][g[hi].argmax()]) if hi.any() else float("nan")}
   if mode.startswith("step"):
@@ -205,6 +223,10 @@ def main(argv=None) -> int:
   ap.add_argument("--data", default="data")
   ap.add_argument("--motor", default="4")
   ap.add_argument("--family", default="RS04", choices=list(FAMILY))
+  ap.add_argument("--tag", default="b", help="자료 파일 꼬리표. b=8도 실험, c=30도 실험")
+  ap.add_argument("--amp", type=float, default=8.0, help="큰 계단·처프·삼각파의 진폭 도")
+  ap.add_argument("--f0", type=float, default=0.3)
+  ap.add_argument("--f1", type=float, default=10.0)
   ap.add_argument("--kp", type=float, default=20.0)
   ap.add_argument("--kd", type=float, default=1.0)
   ap.add_argument("--tau-max", type=float, default=8.0)
@@ -214,12 +236,18 @@ def main(argv=None) -> int:
   a = ap.parse_args(argv)
   BASE, SWEEP = sweep_for(a.family)
 
+  A, T = a.amp, a.tag
   CMDS = [
-    ("big step +-8 deg",     "step",     f"pd_step_{a.motor}_kp20_kd1_a8_r*_b.csv"),
-    ("small step +-1.5 deg", "step",     f"pd_step_{a.motor}_kp20_kd1_a1.5_r*_b.csv"),
-    ("chirp 0.3-10 Hz",      "chirp",    f"pd_chirp_{a.motor}_kp20_kd1_a8_r*_b.csv"),
-    ("slow triangle 20 deg/s",  "triangle", f"pd_triangle_{a.motor}_kp20_kd1_a20_r*_b.csv"),
-    ("fast triangle 240 deg/s", "triangle", f"pd_triangle_{a.motor}_kp20_kd1_a60_r*_bf.csv"),
+    (f"big step +-{A:g} deg",     "step",
+     f"pd_step_{a.motor}_kp20_kd1_a{A:g}_r*_{T}.csv"),
+    ("small step +-1.5 deg",      "step",
+     f"pd_step_{a.motor}_kp20_kd1_a1.5_r*_{T}.csv"),
+    (f"chirp {a.f0:g}-{a.f1:g} Hz", "chirp",
+     f"pd_chirp_{a.motor}_kp20_kd1_a{A:g}_r*_{T}.csv"),
+    ("slow triangle",             "triangle",
+     f"pd_triangle_{a.motor}_kp20_kd1_a{A:g}_r*_{T}.csv"),
+    ("fast triangle",             "triangle",
+     f"pd_triangle_{a.motor}_kp20_kd1_a{A:g}_r*_{T}f.csv"),
   ]
 
   loaded = []
@@ -239,12 +267,14 @@ def main(argv=None) -> int:
     w = min(ts[-1], 6.0)
     s = ts <= w
     for p in P:
-      ax.plot(ts[s], p[s], color="#2c3e50", lw=0.8, alpha=0.22)
-    ax.plot(ts[s], P.mean(axis=0)[s], color="#2c3e50", lw=2.0,
-            label=f"real motor, mean of {len(P)}")
-    ax.plot(ts[s], tgt[s], color="#7f8c8d", lw=1.3, label="commanded")
-    ax.set_title(f"{name}   (faint = each of the {len(P)} runs, bold = their mean)",
-                 fontsize=10)
+      ax.plot(ts[s], p[s], color="#2c3e50", lw=0.8, alpha=0.28)
+    ax.plot(ts[s], P.mean(axis=0)[s], color="#2c3e50", lw=2.4, alpha=0.95,
+            label=f"real motor - average of the {len(P)} runs")
+    ax.plot(ts[s], tgt[s], color="#7f8c8d", lw=1.3, ls=(0, (6, 3)),
+            label="the target we asked for")
+    ax.plot([], [], color="#2c3e50", lw=0.8, alpha=0.35,
+            label=f"real motor - each of the {len(P)} runs (faint)")
+    ax.set_title(name, fontsize=10)
     ax.set_ylabel("angle [deg]"); ax.grid(alpha=0.3); ax.legend(fontsize=8, loc="upper right")
   np.atleast_1d(axs)[-1].set_xlabel("time [s]")
   fig.suptitle(f"RobStride motor {a.motor}: five different commands, "
@@ -254,7 +284,7 @@ def main(argv=None) -> int:
   print(f"\n그림: {a.out_prefix}_runs.png")
 
   # ---------- 그림 2: 값 하나씩 쓸어보기 --------------------------------
-  real_m = {name: metrics(mode, ts, tgt, tgv, P.mean(axis=0))
+  real_m = {name: metrics(mode, ts, tgt, tgv, P.mean(axis=0), a.f0, a.f1)
             for name, mode, ts, tgt, tgv, P in loaded}
   keys = {name: list(real_m[name].keys()) for name in real_m}
   nrow = len(loaded)
@@ -270,7 +300,7 @@ def main(argv=None) -> int:
         prm = dict(BASE); prm[pname] = val
         _st, y = simulate(ts, tgt, tgv, a.kp, a.kd, a.dt, a.tau_max,
                           a.delay_ms / 1e3, **prm)
-        mm = metrics(mode, ts, tgt, tgv, y)
+        mm = metrics(mode, ts, tgt, tgv, y, a.f0, a.f1)
         table[(name, pname, lab)] = mm
         traces[(name, pname, lab)] = y
         xs.append(val); ys.append(mm[key]); labs.append(lab)
@@ -283,53 +313,115 @@ def main(argv=None) -> int:
       ax.set_xscale("symlog", linthresh=max(1e-4, min(v for _l, v in options if v > 0) / 3))
       ax.grid(alpha=0.3)
       if ri == 0:
-        ax.set_title(f"sweeping {pname}\n(other two held at measured)", fontsize=10)
+        ax.set_title("CHANGING " + PLAIN[pname][0] + NL + "(" + PLAIN[pname][1] + ")"
+                     + NL + "the other two stay at the measured values", fontsize=9.5)
       if ci == 0:
         ax.set_ylabel(f"{name}\n{key}", fontsize=8.5)
       if ri == nrow - 1:
-        ax.set_xlabel(f"{pname} value")
-  h = [plt.Line2D([], [], marker="o", ls="", color=c, label=l)
-       for c, l in zip(COLS, [o[0] for o in SWEEP["frictionloss"]])]
-  h.append(plt.Line2D([], [], ls="--", color="#c0392b", label="real motor (mean of 10)"))
+        ax.set_xlabel(PLAIN[pname][0] + " value that was put into the simulator")
+  h = [plt.Line2D([], [], marker="o", ls="", color=c, label=ROLE[o[0]])
+       for c, o in zip(COLS, SWEEP["frictionloss"])]
+  h.append(plt.Line2D([], [], ls="--", color="#c0392b",
+                      label="what the real motor actually did (average of 10 runs)"))
   fig2.legend(handles=h, loc="lower center", ncol=5, fontsize=9)
-  fig2.suptitle(f"RobStride motor {a.motor}: change ONE parameter at a time - "
-                f"none / today / measured / 4x too big", fontsize=12)
+  fig2.suptitle("RobStride motor " + str(a.motor) + ": change ONE thing at a time. "
+                "Dots = what the simulator did. Red dashed line = what the real motor did.",
+                fontsize=12)
   fig2.tight_layout(rect=(0, 0.035, 1, 0.97))
   fig2.savefig(f"{a.out_prefix}_sweep.png", dpi=125)
   print(f"그림: {a.out_prefix}_sweep.png")
 
   # ---------- 그림 3: 실물 위에 시뮬레이터를 직접 겹친다 -----------------
-  # 명령마다 볼 만한 구간이 다르다. 처프는 끝(빠른 쪽), 계단은 모서리 두 개, 삼각파는 한 주기.
-  ZOOM = {"big step +-8 deg": (2.4, 5.2), "small step +-1.5 deg": (2.4, 5.2),
-          "chirp 0.3-10 Hz": (-4.2, -0.2), "slow triangle 20 deg/s": (0.0, 8.2),
-          "fast triangle 240 deg/s": (0.0, 3.0)}
-  fig3, axs3 = plt.subplots(len(loaded), 3, figsize=(16.5, 3.0 * len(loaded)), squeeze=False)
+  # 사용자 지시 2026-09-10: "데이터 선들이 다 겹쳐있어서 제대로 안보여. 알파값 좀 줘서
+  # 겹친것들도 볼수있게 해주고, 첫 턱 상승 위, 하강 아래 바닥 코너 부분 확대그래프 같이
+  # 볼수있겠나? 레전드 좀 수정해. 변인이 뭔지, 뭔 선인지 이해할수있게."
+  #
+  #   * 시뮬레이터 선은 굵기를 다르게 하고 반투명으로 둔다. 완전히 겹쳐도 밑에 것이 비친다.
+  #   * 계단 명령에는 **모서리 두 곳**(올라간 뒤 위쪽 / 내려간 뒤 아래쪽)을 확대해 끼운다.
+  #   * 범례는 값 이름 대신 "그 값이 무엇인가"와 "이 선이 어떤 설정인가"를 적는다.
+  ZOOM = {}
+  for nm, _m, tsx, _t, _v, _P in loaded:
+    if nm.startswith("big step") or nm.startswith("small step"):
+      ZOOM[nm] = (2.4, 5.2)
+    elif nm.startswith("chirp"):
+      ZOOM[nm] = (-0.22 * tsx[-1], -0.02 * tsx[-1])
+    elif nm.startswith("slow"):
+      ZOOM[nm] = (0.0, min(9.0, tsx[-1]))
+    else:
+      ZOOM[nm] = (0.0, min(3.0, tsx[-1]))
+  LW = [2.6, 2.0, 1.5, 1.0]            # 겹쳐도 밑이 보이도록 굵기를 층지게
+  fig3, axs3 = plt.subplots(len(loaded), 3, figsize=(18.5, 4.2 * len(loaded)),
+                            squeeze=False)
   for ri, (name, mode, ts, tgt, tgv, P) in enumerate(loaded):
-    lo, hi = ZOOM.get(name, (0.0, min(6.0, ts[-1])))
-    if lo < 0:                                   # 음수면 "끝에서부터"
+    lo, hi = ZOOM[name]
+    if lo < 0:
       lo, hi = ts[-1] + lo, ts[-1] + hi
     z = (ts >= lo) & (ts <= hi)
     mean = P.mean(axis=0)
     for ci, (pname, options) in enumerate(SWEEP.items()):
       ax = axs3[ri][ci]
-      ax.plot(ts[z], tgt[z], color="#95a5a6", lw=1.2, label="commanded")
-      for prun in P:
-        ax.plot(ts[z], prun[z], color="#2c3e50", lw=0.6, alpha=0.18)
-      ax.plot(ts[z], mean[z], color="#2c3e50", lw=2.4, label="real (mean of 10)", zorder=5)
-      for (lab, val), col in zip(options, COLS):
-        ax.plot(ts[z], traces[(name, pname, lab)][z], color=col, lw=1.3, alpha=0.95,
-                label="sim " + lab + " = " + format(val, ".4g"))
+      ax.plot(ts[z], tgt[z], color="#95a5a6", lw=1.3, ls=(0, (6, 3)),
+              label="the target we asked for")
+      for k, prun in enumerate(P):
+        ax.plot(ts[z], prun[z], color="#2c3e50", lw=0.7, alpha=0.20,
+                label=("real motor - each of the %d runs" % len(P)) if k == 0 else None)
+      ax.plot(ts[z], mean[z], color="#2c3e50", lw=3.0, alpha=0.95, zorder=6,
+              label="real motor - average of the %d" % len(P))
+      for (lab, val), col, lw in zip(options, COLS, LW):
+        ax.plot(ts[z], traces[(name, pname, lab)][z], color=col, lw=lw, alpha=0.80,
+                zorder=5, label="sim, %s = %.4g  (%s)" % (PLAIN[pname][0], val, ROLE[lab]))
       ax.grid(alpha=0.3)
       if ri == 0:
-        ax.set_title("sweeping " + pname + NL + "(other two held at measured)", fontsize=10)
+        ax.set_title("CHANGING " + PLAIN[pname][0] + NL + "(" + PLAIN[pname][1] + ")"
+                     + NL + "the other two stay at the measured values", fontsize=10)
       if ci == 0:
-        ax.set_ylabel(name + NL + "angle [deg]", fontsize=8.5)
+        ax.set_ylabel(name + NL + "angle [deg]", fontsize=9)
       if ri == nrow - 1:
         ax.set_xlabel("time [s]")
-      ax.legend(fontsize=6.2, loc="best", ncol=2)
+      if ri == 0:          # 범례는 맨 윗줄에만 — 아래 줄에서는 자료를 가린다
+        ax.legend(fontsize=6.6, loc="lower left", ncol=1, framealpha=0.9)
+
+      # --- 모서리 확대 두 곳 (계단 명령만) ---------------------------------
+      # 보이는 구간 **안에 있는** 모서리만 고른다. 전체 기록에서 고르면 확대창이 화면 밖을
+      # 가리켜 무엇을 확대한 것인지 알 수 없다(처음에 그렇게 만들어 놓고 헤맸다).
+      if not mode.startswith("step"):
+        continue
+      span = float(tgt.max() - tgt.min())
+      ei = np.where(np.abs(np.diff(tgt)) > 0.4 * span)[0]
+      ups = [ts[e] for e in ei if tgt[e + 1] > tgt[e] and lo <= ts[e] <= hi - 0.4]
+      dns = [ts[e] for e in ei if tgt[e + 1] < tgt[e] and lo <= ts[e] <= hi - 0.4]
+      for rising, te, box in ((True, ups[0] if ups else None, [0.605, 0.60, 0.375, 0.305]),
+                              (False, dns[0] if dns else None, [0.605, 0.09, 0.375, 0.305])):
+        if te is None:
+          continue
+        w = (ts >= te + 0.02) & (ts <= te + 0.70)   # 모서리 **이후**만
+        if w.sum() < 10:
+          continue
+        iax = ax.inset_axes(box)
+        iax.plot(ts[w], tgt[w], color="#95a5a6", lw=1.1, ls=(0, (5, 3)))
+        for prun in P:
+          iax.plot(ts[w], prun[w], color="#2c3e50", lw=0.6, alpha=0.22)
+        iax.plot(ts[w], mean[w], color="#2c3e50", lw=2.6, alpha=0.95, zorder=6)
+        for (lab, _v), col, lw in zip(options, COLS, LW):
+          iax.plot(ts[w], traces[(name, pname, lab)][w], color=col, lw=lw, alpha=0.85)
+        # 세로는 **모서리 값 언저리**로 좁게. 지나쳐 가는 쪽에 여유를 더 준다.
+        corner = float(tgt[w][-1])
+        pad = max(0.25, span * 0.10)
+        iax.set_ylim(corner - pad * (1.6 if not rising else 0.5),
+                     corner + pad * (1.6 if rising else 0.5))
+        iax.set_xlim(te + 0.02, te + 0.70)
+        iax.tick_params(labelsize=5.5, pad=1)
+        iax.set_title("zoom: TOP corner just after the step UP" if rising
+                      else "zoom: BOTTOM corner just after the step DOWN", fontsize=6.0)
+        iax.grid(alpha=0.3)
+        iax.patch.set_alpha(0.93)
+        # 확대한 자리를 네모로만 표시한다. 연결선은 그림을 가로질러 지저분해서 끈다.
+        rect, conn = ax.indicate_inset_zoom(iax, edgecolor="#7f8c8d", alpha=0.55)
+        for c in conn:
+          c.set_visible(False)
   fig3.suptitle("RobStride motor " + str(a.motor) + ": the simulator drawn straight on top "
-                "of the real motor - one parameter changed at a time", fontsize=12)
-  fig3.tight_layout(rect=(0, 0, 1, 0.965))
+                "of the real motor - one thing changed at a time", fontsize=13)
+  fig3.tight_layout(rect=(0, 0, 1, 0.975))
   fig3.savefig(a.out_prefix + "_overlay.png", dpi=125)
   print("그림: " + a.out_prefix + "_overlay.png")
 
