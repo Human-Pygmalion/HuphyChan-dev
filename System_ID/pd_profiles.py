@@ -138,7 +138,7 @@ def run_profile(m: Motor, profile, seconds: float, kp: float, kd: float, p0: flo
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("mode", choices=["gain", "step", "chirp", "triangle"])
+  ap.add_argument("mode", choices=["gain", "step", "chirp", "triangle", "videosync"])
   ap.add_argument("--motor-id", type=int, default=4)
   ap.add_argument("--model", default="RS04")
   ap.add_argument("--kp", type=float, default=20.0)
@@ -202,6 +202,29 @@ def main(argv=None) -> int:
       T = a.period_s
       prof = lambda t: (A if int(t / T) % 2 == 0 else -A, 0.0)      # noqa: E731
       secs = T * 2 * a.cycles
+    elif a.mode == "videosync":
+      # 카메라 영상과 자료의 시각을 맞추기 위한 파형.
+      #   0~1.5초  빠른 흔들기 (초당 2번, ±20도) — 카메라가 확실히 보는 동기 신호
+      #   1.5~4초  정지
+      #   4초~    느린 삼각파 (일정 속도) — 실제로 견줄 파형
+      # 카메라로 회전각을 직접 재려 했으나 화각·볼트 주기 때문에 상관이 0.4 에 그쳤다.
+      # 큰 움직임 한 번이면 프레임 차이만으로 시각을 확실히 맞출 수 있다.
+      AJ, FJ, T0, T1 = 20.0, 2.0, 1.5, 4.0
+      TT = a.period_s * 2
+      v = 4.0 * A / TT
+      def prof(t):                                   # noqa: E306
+        if t < T0:
+          w = 2 * math.pi * FJ
+          return AJ * math.sin(w * t), AJ * w * math.cos(w * t)
+        if t < T1:
+          return 0.0, 0.0
+        ph = ((t - T1) % TT) / TT
+        if ph < 0.25:
+          return 4 * A * ph, v
+        if ph < 0.75:
+          return A - 4 * A * (ph - 0.25), -v
+        return -A + 4 * A * (ph - 0.75), v
+      secs = T1 + TT * a.cycles
     elif a.mode == "triangle":
       # 일정한 속도로 오르내린다. 속도가 일정하므로 **점성**이 드러나고, 방향이 바뀌는
       # 자리에서 **정지 마찰**이 만드는 평평한 구간이 보인다.
