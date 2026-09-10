@@ -175,7 +175,8 @@ def run_profile(m: Motor, profile, seconds: float, kp: float, kd: float, p0: flo
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("mode", choices=["gain", "step", "chirp", "triangle", "videosync"])
+  ap.add_argument("mode", choices=["gain", "step", "pmstep", "chirp", "triangle",
+                                   "videosync"])
   ap.add_argument("--motor-id", type=int, default=4)
   ap.add_argument("--model", default="RS04")
   ap.add_argument("--kp", type=float, default=20.0)
@@ -259,6 +260,24 @@ def main(argv=None) -> int:
       T = a.period_s
       prof = lambda t: (A if int(t / T) % 2 == 0 else -A, 0.0)      # noqa: E731
       secs = T * 2 * a.cycles
+    elif a.mode == "pmstep":
+      # **한쪽씩** 치는 계단:  0 → +A → 0 → −A → 0 → ...
+      #
+      # 2026-09-10 사용자 지시: "Step Input 실험 +10, -10 도로 여러번 해서 비교해 줘."
+      #
+      # 지금까지의 `step` 은 −A 와 +A 사이를 오갔습니다. 그러면 매번 **같은 크기의 뒤집기**라,
+      # "+10 으로 가는 것"과 "−10 으로 가는 것"을 따로 견줄 수가 없습니다. 이 파형은 매번
+      # **0 에서 출발**해 한쪽으로만 갔다가 돌아오므로, 네 가지가 분리됩니다.
+      #
+      #   0 → +A   (플러스로 나감)      +A → 0   (플러스에서 돌아옴)
+      #   0 → −A   (마이너스로 나감)    −A → 0   (마이너스에서 돌아옴)
+      #
+      # 마찰은 방향만 거스르므로 이론상 네 가지가 같아야 합니다. 다르면 그 차이가 곧
+      # **방향에 따른 쏠림**이고, 중력·코깅·베어링 편심 중 하나를 가리킵니다.
+      T = a.period_s
+      levels = (0.0, A, 0.0, -A)
+      prof = lambda t: (levels[int(t / T) % 4], 0.0)      # noqa: E731
+      secs = T * 4 * a.cycles
     elif a.mode == "videosync":
       # 카메라 영상과 자료의 시각을 맞추기 위한 파형.
       #   0~1.5초  빠른 흔들기 (초당 2번, ±20도) — 카메라가 확실히 보는 동기 신호
