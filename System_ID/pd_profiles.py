@@ -155,6 +155,17 @@ def main(argv=None) -> int:
   ap.add_argument("--bound-deg", type=float, default=25.0,
                   help="목표에서 이만큼 벗어나면 즉시 토크 0")
   ap.add_argument("--temp-stop", type=float, default=47.0)
+  ap.add_argument("--home-deg", type=float, default=0.0,
+                  help="★계단을 **어느 자리에서** 칠 것인가. 0 이 아니면 그 각도로 데려간 뒤 "
+                       "거기를 중심으로 오르내린다. 같은 크기의 계단을 축의 서로 다른 자리에서 "
+                       "쳐 보면, 마찰이 자리에 따라 다른지(코깅) 알 수 있다")
+  ap.add_argument("--home-tol", type=float, default=25.0,
+                  help="원점 복귀를 여기 안에 들어오면 끝낸 것으로 본다. 자리를 바꿔 가며 "
+                       "실험할 때는 자리들이 서로 구분되도록 좁혀야 한다")
+  ap.add_argument("--cool-to", type=float, default=None,
+                  help="회차를 시작하기 전에 온도가 이 값 아래로 내려갈 때까지 **힘을 끄고** "
+                       "기다린다. 훑기처럼 회차가 많은 실험에서 중간에 온도 상한에 걸려 "
+                       "자료를 잃는 일을 막는다")
   ap.add_argument("--out-dir", default=os.path.expanduser("~/System_ID/data"))
   ap.add_argument("--tag", default="")
   a = ap.parse_args(argv)
@@ -169,8 +180,9 @@ def main(argv=None) -> int:
     m.clear_fault(); time.sleep(0.1)
     m.enable(); time.sleep(0.1)
 
-    p0 = home(m)
-    print(f"원점 복귀 후 {p0:.2f}도 (되감김 가장자리 ±720 에서 멀어야 안전)\n")
+    p0 = home(m, target_deg=a.home_deg, tol_deg=a.home_tol)
+    print(f"시작 자리로 복귀 후 {p0:.2f}도 (목표 {a.home_deg:+.0f}도, "
+          f"되감김 가장자리 ±720 에서 멀어야 안전)\n")
     if abs(p0) > 300.0:
       print("원점 복귀 실패 — 중단합니다", file=sys.stderr)
       return 1
@@ -251,10 +263,25 @@ def main(argv=None) -> int:
           f"{a.repeats}회 · 경계 {a.bound_deg:.0f}도")
     for rep in range(a.repeats):
       if rep:
-        p0 = home(m)                       # 매번 같은 자리에서 다시 시작한다
+        p0 = home(m, target_deg=a.home_deg, tol_deg=a.home_tol)   # 매번 같은 자리에서
+      if a.cool_to is not None:
+        # 힘을 끈 채로 식힌다. 계단 크기를 훑을 때는 회차가 많아 열이 쌓이는데, 온도 상한에
+        # 걸려 중간에 끊기면 그 크기의 자료를 통째로 잃는다.
+        t_wait = time.monotonic()
+        while True:
+          stc = m.read(tries=8)
+          if stc is None or stc.temp_c <= a.cool_to:
+            break
+          if time.monotonic() - t_wait > 600.0:
+            print(f"    (600초를 기다려도 {a.cool_to:.0f}도 아래로 안 내려감 — 그냥 진행)")
+            break
+          print(f"    식히는 중 {stc.temp_c:.1f}도 → {a.cool_to:.0f}도 "
+                f"({time.monotonic() - t_wait:.0f}초)", flush=True)
+          time.sleep(10.0)
       rows, why = run_profile(m, prof, secs, a.kp, a.kd, p0, a.bound_deg, a.temp_stop,
                               a.tau_max)
-      name = (f"pd_{a.mode}_{a.motor_id}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}"
+      hs = "" if a.home_deg == 0.0 else f"_h{a.home_deg:+g}"
+      name = (f"pd_{a.mode}_{a.motor_id}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}{hs}"
               f"_r{rep}{suffix}.csv")
       with open(os.path.join(a.out_dir, name), "w", newline="") as f:
         w = csv.writer(f)
