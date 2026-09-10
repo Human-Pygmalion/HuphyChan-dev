@@ -46,31 +46,67 @@ from rs_direct_socket import Motor  # noqa: E402
 DEG = math.pi / 180.0
 
 
-def home(m: Motor, target_deg: float = 0.0, tol_deg: float = 25.0, kd: float = 1.5,
-         max_speed: float = 200.0, timeout_s: float = 25.0) -> float:
-  """되감김 가장자리에서 벗어나 원점 근처로 데려온다. **속도 명령만** 쓴다.
+def home(m: Motor, target_deg: float = 0.0, tol_deg: float = 3.0, kp: float = 25.0,
+         kd: float = 1.2, tau_max: float = 4.0, timeout_s: float = 20.0,
+         runaway_deg: float = 200.0) -> float:
+  """정해진 자리로 데려온다. **호스트에서 PD 를 계산해 순수 토크로** 보낸다.
 
-  위치 명령을 쓰면 바로 그 함정에 빠지므로, 여기서는 "지금 위치에서 목표까지의 거리에
-  비례하는 속도"를 시킨다. 속도 명령은 부호화 범위에 갇혀 있어 폭주가 불가능하다."""
+  ★ 2026-09-10 정정 — 앞의 판은 모터에 **속도 명령**(kp=0, kd만)을 보냈는데, 그게 전혀 안
+  들었습니다. 훑기 실험 로그에서 목표가 −60·−30·0 인데 결과가 전부 −25 근처로 나와서
+  알아챘습니다. 모터의 **내부 위치 되먹임이 우리 명령을 안 쓰는 것과 같은 문제**로 보이고,
+  내부 속도 되먹임도 마찬가지입니다(원인 미규명, 별도 조사 필요).
+
+  그래서 이 판은 **하루 종일 정확했던 토크 명령만** 씁니다. 계산은 여기서 합니다.
+
+      토크 = kp x (목표각 − 지금각) + kd x (0 − 지금속도)
+
+  안전
+  ----
+  토크로 몰면 속도 부호화 범위라는 자연스러운 상한이 사라지므로, 대신 **직접** 막습니다.
+  * 토크를 ``tau_max`` (기본 4 뉴턴미터) 로 자릅니다 — 모터 한계 120 의 3% 입니다.
+  * 시작 자리에서 ``runaway_deg`` 이상 벗어나면 즉시 토크를 끄고 나옵니다.
+  * 정해진 시간이 지나면 나옵니다.
+  어느 경우든 나가기 전에 토크를 0 으로 놓습니다.
+
+  마찰 때문에 목표에 정확히는 못 섭니다. 남는 오차는 **마찰 ÷ kp** 로, kp=25 면 약 1.2도
+  입니다. 그래서 기본 허용오차가 3도입니다.
+  """
+  acc, last_raw, start = None, None, None
+  trail = []
   t0 = time.monotonic()
-  last = None
+  tau = 0.0
   while time.monotonic() - t0 < timeout_s:
-    m.send(position_deg=0.0, velocity_deg_s=0.0, kp=0.0, kd=0.0)
+    m.torque(tau)
     st = m.recv(timeout_s=0.01)
     if st is None:
       continue
-    err = target_deg - st.position_deg
-    last = st.position_deg
-    if abs(err) < tol_deg:
+    if last_raw is None:
+      last_raw, acc = st.position_deg, st.position_deg
+      start = acc
+    d = st.position_deg - last_raw
+    while d > 720.0:
+      d -= 1440.0
+    while d < -720.0:
+      d += 1440.0
+    acc += d
+    last_raw = st.position_deg
+    trail.append((time.monotonic() - t0, acc))
+    while len(trail) > 2 and trail[-1][0] - trail[0][0] > 0.02:
+      trail.pop(0)
+    vel = ((trail[-1][1] - trail[0][1]) / (trail[-1][0] - trail[0][0])
+           if len(trail) > 4 and trail[-1][0] > trail[0][0] else st.velocity_deg_s)
+    err = target_deg - acc
+    if abs(err) < tol_deg and abs(vel) < 20.0:
       break
-    v = max(-max_speed, min(max_speed, err * 2.0))
-    m.send(position_deg=0.0, velocity_deg_s=v, kp=0.0, kd=kd)
-    m.recv(timeout_s=0.01)
+    if abs(acc - start) > runaway_deg:
+      print(f"[home] 시작 자리에서 {runaway_deg:.0f}도 넘게 벗어남 — 멈춥니다", flush=True)
+      break
+    tau = max(-tau_max, min(tau_max, kp * err * DEG + kd * (0.0 - vel) * DEG))
   for _ in range(25):
     m.torque(0.0); m.recv(timeout_s=0.002)
   time.sleep(0.4)
   st = m.read(tries=10)
-  return st.position_deg if st else (last if last is not None else float("nan"))
+  return st.position_deg if st else (acc if acc is not None else float("nan"))
 
 
 def run_profile(m: Motor, profile, seconds: float, kp: float, kd: float, p0: float,
@@ -160,7 +196,7 @@ def main(argv=None) -> int:
                   help="★계단을 **어느 자리에서** 칠 것인가. 0 이 아니면 그 각도로 데려간 뒤 "
                        "거기를 중심으로 오르내린다. 같은 크기의 계단을 축의 서로 다른 자리에서 "
                        "쳐 보면, 마찰이 자리에 따라 다른지(코깅) 알 수 있다")
-  ap.add_argument("--home-tol", type=float, default=25.0,
+  ap.add_argument("--home-tol", type=float, default=5.0,
                   help="원점 복귀를 여기 안에 들어오면 끝낸 것으로 본다. 자리를 바꿔 가며 "
                        "실험할 때는 자리들이 서로 구분되도록 좁혀야 한다")
   ap.add_argument("--cool-to", type=float, default=None,
@@ -182,10 +218,18 @@ def main(argv=None) -> int:
     m.enable(); time.sleep(0.1)
 
     p0 = home(m, target_deg=a.home_deg, tol_deg=a.home_tol)
-    print(f"시작 자리로 복귀 후 {p0:.2f}도 (목표 {a.home_deg:+.0f}도, "
+    miss = abs(p0 - a.home_deg)
+    print(f"시작 자리로 복귀 후 {p0:.2f}도 (목표 {a.home_deg:+.0f}도, 차 {miss:.2f}도, "
           f"되감김 가장자리 ±720 에서 멀어야 안전)\n")
     if abs(p0) > 300.0:
-      print("원점 복귀 실패 — 중단합니다", file=sys.stderr)
+      print("되감김 가장자리에 너무 가깝습니다 — 중단합니다", file=sys.stderr)
+      return 1
+    # ★ 2026-09-10: 앞의 판은 복귀가 **전혀 안 되는데도** 조용히 진행했고, 자리별 실험
+    # 30벌이 통째로 못 쓰게 됐습니다(목표 −60·−30·0 이 전부 −25 근처였음). 그래서 이제
+    # 목표를 크게 벗어나면 **여기서 멈춥니다.**
+    if miss > max(3.0 * a.home_tol, 10.0):
+      print(f"복귀가 목표에서 {miss:.1f}도나 벗어났습니다 (허용 {a.home_tol:.0f}도) — "
+            f"중단합니다", file=sys.stderr)
       return 1
 
     if a.mode == "gain":
@@ -265,6 +309,9 @@ def main(argv=None) -> int:
     for rep in range(a.repeats):
       if rep:
         p0 = home(m, target_deg=a.home_deg, tol_deg=a.home_tol)   # 매번 같은 자리에서
+        if abs(p0 - a.home_deg) > max(3.0 * a.home_tol, 10.0):
+          print(f"    복귀 실패 ({p0:.1f}도, 목표 {a.home_deg:+.0f}도) — 중단", file=sys.stderr)
+          break
       if a.cool_to is not None:
         # 힘을 끈 채로 식힌다. 계단 크기를 훑을 때는 회차가 많아 열이 쌓이는데, 온도 상한에
         # 걸려 중간에 끊기면 그 크기의 자료를 통째로 잃는다.

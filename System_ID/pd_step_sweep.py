@@ -169,12 +169,16 @@ def one_case(data, motor, kp, kd, amp, tag, home, dt, tau_max, delay_ms, models)
 
 
 def zoom_window(ts, tgt):
-  """계단 하나가 통째로 보이는 창. 네 번째 모서리를 가운데 놓는다(그때쯤이면 과도현상이
-  가라앉아 매 회차가 같은 모양이다)."""
+  """계단 하나가 통째로 보이는 창.
+
+  **올라가는 모서리만** 고른다. 크기마다 아무 모서리나 고르면 어떤 칸은 올라가고 어떤 칸은
+  내려가서, 여덟 칸을 나란히 놓아도 눈으로 못 견준다. 그리고 첫 모서리는 피한다 — 시작
+  과도현상이 아직 남아 있어 회차마다 모양이 다르다."""
   ed = edges_of(tgt)
-  if len(ed) < 2:
-    return ts[0], ts[-1]
-  k = ed[min(3, len(ed) - 2)]
+  up = [k for k in ed[:-1] if tgt[k + 1] > tgt[k]]
+  if not up:
+    return (ts[0], ts[-1]) if len(ed) < 2 else (ts[ed[0]], ts[-1])
+  k = up[min(1, len(up) - 1)]
   return max(ts[0], ts[k] - 0.18), min(ts[-1], ts[k] + 1.32)
 
 
@@ -273,7 +277,9 @@ def draw_metrics(cases, keys, family, motor, kp, kd, out, xname, logx, extra_lin
       ax.annotate(f"{c_} edges", (x, m_), textcoords="offset points", xytext=(0, 9),
                   ha="center", fontsize=7.5, color="#666")
     if logx:
-      ax.set_xscale("log"); ax.set_xticks(xs); ax.set_xticklabels([f"{k:g}" for k in xs])
+      ax.set_xscale("log")
+      ax.set_xticks(xs); ax.set_xticklabels([f"{k:g}" for k in xs])
+      ax.set_xticks([], minor=True)          # 눈금이 둘뿐일 때 "4 x 10^1" 이 끼어드는 것을 막는다
     lo = min(min(mu) - max(sd), min(p["armature"] for _, p, *_ in MODELS[family]))
     hi = max(max(mu) + max(sd), max(p["armature"] for _, p, *_ in MODELS[family]))
     ax.set_ylim(lo - 0.09 * (hi - lo), hi + 0.16 * (hi - lo))   # 글자 얹을 자리
