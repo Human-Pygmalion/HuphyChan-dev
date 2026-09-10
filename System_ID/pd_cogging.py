@@ -116,9 +116,30 @@ def main(argv=None) -> int:
   _, f_bwd, n_bwd = bin_by_position(runs, lo, hi, a.step, -1)
   ok = (n_fwd > 5) & (n_bwd > 5) & np.isfinite(f_fwd) & np.isfinite(f_bwd)
   cen, f_fwd, f_bwd = cen[ok], f_fwd[ok], f_bwd[ok]
-  cog = 0.5 * (f_fwd + f_bwd)
-  fric = 0.5 * (f_fwd - f_bwd)
+
+  # ★ 방향을 바꾸면 **같은 출력축 각도라도 회전자는 조금 다른 자리**에 있습니다. 감속기의
+  # 헐거움(백래시)·비틀림·자기 이력이 힘의 방향을 따라 반대로 먹기 때문입니다. 안 맞추면
+  # 더하기·빼기가 섞여, 마찰 쪽에도 톱니가 그대로 남습니다(처음에 실제로 그렇게 나왔습니다).
+  # 그래서 두 곡선을 **가장 잘 겹치는 자리**로 밀어 맞춘 뒤 가릅니다. 민 양 자체는 주기의
+  # 배수만큼 모호하므로 절대값으로 쓰지 않습니다 — 겹치기 위한 위상 맞춤일 뿐입니다.
+  a_ = f_fwd - f_fwd.mean()
+  b_ = f_bwd - f_bwd.mean()
+  max_shift = int(round(3.0 / a.step))
+  shifts = np.arange(-max_shift, max_shift + 1)
+  score = [float(np.corrcoef(a_[max_shift:-max_shift],
+                             np.roll(b_, k)[max_shift:-max_shift])[0, 1]) for k in shifts]
+  k_best = int(shifts[int(np.argmax(score))])
+  shift_deg = k_best * a.step
+  b_aligned = np.roll(f_bwd, k_best)
+  cog = 0.5 * (f_fwd + b_aligned)
+  fric = 0.5 * (f_fwd - b_aligned)
   cog0 = cog - cog.mean()          # 일정한 치우침은 따로 뺀다 (그건 코깅이 아니다)
+  # ★ 이 값은 **주기의 배수만큼 모호합니다.** 톱니가 되풀이되는 신호라, 한 주기(약 2도)를
+  # 더 밀어도 똑같이 잘 겹칩니다. 그래서 "얼마나 어긋났나"의 절대값으로 읽으면 안 되고,
+  # **두 방향을 겹쳐 놓기 위한 위상 맞춤**으로만 읽어야 합니다.
+  print(f"  방향 사이 위상 맞춤 {shift_deg:+.2f}도 (겹침 정도 {max(score):.3f}) "
+        f"— 주기의 배수만큼 모호하므로 절대값으로 읽지 말 것")
+  print(f"  코깅 봉우리에서 골까지 {cog0.max() - cog0.min():.4f} 뉴턴미터")
 
   print(f"{a.family} (모터 {a.motor}) · {len(runs)}회 · 자리 {cen[0]:.0f}~{cen[-1]:.0f}도 · "
         f"{len(cen)}칸({a.step}도) · 칸마다 {int(np.median(n_fwd[n_fwd>0]))}/"
@@ -137,8 +158,15 @@ def main(argv=None) -> int:
   # 인덱스 k = 잰 구간(span도)에 톱니 k 개 → 한 바퀴(360도)로 환산
   per_rev = np.arange(len(sp)) * (360.0 / span)
   keep = (per_rev > 2) & (per_rev < 0.5 * 360.0 / a.step)
-  top = np.argsort(sp[keep])[::-1][:6]
-  idxs = np.nonzero(keep)[0][top]
+  # 봉우리가 이웃한 칸으로 번지므로, **가까이 붙은 것은 하나로** 보고 고른다.
+  cand = np.nonzero(keep)[0]
+  order = cand[np.argsort(sp[cand])[::-1]]
+  idxs = []
+  for i in order:
+    if all(abs(i - j) > 4 for j in idxs):
+      idxs.append(int(i))
+    if len(idxs) >= 5:
+      break
   print("  가장 센 주기들:")
   for i in idxs:
     n_out = per_rev[i]
@@ -170,15 +198,16 @@ def main(argv=None) -> int:
 
   ax = axs[2]
   ax.plot(per_rev[keep], sp[keep], color="#111111", lw=1.0)
-  for i in idxs[:4]:
+  for i in idxs[:3]:
     ax.annotate(f"{per_rev[i]:.0f} per turn\n({360.0/per_rev[i]:.2f} deg)\n"
                 f"rotor: {per_rev[i]/GEAR:.1f}",
-                (per_rev[i], sp[i]), textcoords="offset points", xytext=(0, 8),
-                ha="center", fontsize=8)
+                (per_rev[i], sp[i]), textcoords="offset points", xytext=(14, -4),
+                ha="left", fontsize=8.5)
   ax.set_xlabel("bumps per turn of the output shaft"); ax.set_ylabel("size [N m]")
   ax.grid(alpha=0.28)
   ax.set_title("how many bumps per turn - cogging has to land on a whole number "
                f"of bumps per turn of the rotor (output number / {GEAR:g})", fontsize=11)
+  ax.set_ylim(0, float(sp[keep].max()) * 1.22)
   fig.tight_layout()
   os.makedirs(os.path.abspath(a.out_dir), exist_ok=True)
   out = os.path.join(a.out_dir, f"pd_cogging_{a.family.lower()}.png")
