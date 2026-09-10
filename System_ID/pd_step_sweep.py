@@ -70,14 +70,21 @@ HOMES = [-60.0, -30.0, 0.0, 30.0, 60.0]
 
 
 def edges_of(tgt):
-  """계단이 **크게 뛴 곳**만 모서리로 본다.
+  """계단이 **위/아래 두 층 사이를 오간 자리**를 찾는다.
 
-  "값이 달라진 곳"으로 잡으면 안 된다 — 시각 격자에 다시 올릴 때 계단이 한 칸 번져
-  모서리가 수백 개가 되고, 지표가 통째로 망가진다(지나친 양이 195%로 나와서 알아챘다)."""
-  span = float(tgt.max() - tgt.min())
-  if span < 1e-6:
-    return np.array([], dtype=int)
-  return np.where(np.abs(np.diff(tgt)) > 0.4 * span)[0]
+  ★ 2026-09-10 정정 — 앞의 판은 "값이 크게 뛴 곳"을 모서리로 봤습니다. 그런데 자료를 1
+  밀리초 격자에 다시 올릴 때 계단 하나가 **두 칸에 걸쳐 번지면** 두 칸 모두 문턱을 넘어
+  **모서리가 둘로 잡히고**, 계단 높이가 절반으로 계산되어 "지나친 양"이 최대 두 배로
+  부풀려집니다. 번지느냐 마느냐는 모서리가 격자의 어디에 떨어지느냐에 달려 있어 회차마다
+  달라지므로, **있지도 않은 차이**가 생깁니다(자리별 실험에서 53% 대 88% 로 벌어져 알아챘습니다).
+
+  계단 명령은 **층이 둘뿐**이므로, 값이 가운데보다 위냐 아래냐로 나눈 뒤 그 구분이 바뀌는
+  자리를 봅니다. 번짐에 영향을 받지 않습니다."""
+  lo, hi = float(tgt.min()), float(tgt.max())
+  if hi - lo < 1e-6:
+    return np.array([], dtype=int), lo, hi
+  up = tgt > 0.5 * (lo + hi)
+  return np.where(np.diff(up.astype(int)) != 0)[0], lo, hi
 
 
 def step_metrics(ts, tgt, pos):
@@ -86,16 +93,18 @@ def step_metrics(ts, tgt, pos):
   * **남은 오차** — 자리잡은 뒤에도 못 간 만큼. 이론상 **마찰 ÷ 세기**
   * **지나친 양** — 목표를 가는 방향으로 얼마나 넘어갔나. **관성**이 클수록 커진다
   * **90%까지 걸린 시간** — 크게 뛸수록 토크 상한에 걸려 **관성**이 그대로 드러난다
-  """
-  ed = edges_of(tgt)
+
+  높이는 **명령의 두 층**(가장 낮은 값, 가장 높은 값)에서 가져옵니다. 모서리 바로 옆 칸의
+  값을 쓰면 번진 중간값을 집을 수 있습니다."""
+  ed, lo_lv, hi_lv = edges_of(tgt)
+  mid = 0.5 * (lo_lv + hi_lv)
   e = pos - tgt
   ss, ov, rise = [], [], []
   for i, k in enumerate(ed[:-1]):
     te, tn = ts[k], ts[ed[i + 1]]
-    lo, hi = float(tgt[k]), float(tgt[k + 1])
+    going_up = tgt[min(k + 2, len(tgt) - 1)] > mid
+    lo, hi = (lo_lv, hi_lv) if going_up else (hi_lv, lo_lv)
     d = hi - lo
-    if abs(d) < 1e-6:
-      continue
     sgn = 1.0 if d > 0 else -1.0
     s1 = (ts > tn - 0.5) & (ts < tn)
     if s1.sum() > 5:
@@ -121,7 +130,7 @@ def inertia_from_saturation(ts, tgt, pos, tau, tau_max, frictionloss):
   맞춰서 구합니다 — 두 번 미분하면 잡음이 커지기 때문입니다.
 
   이 값은 계단 크기가 클수록 잘 나옵니다. 작은 계단은 상한에 아예 안 붙습니다."""
-  ed = edges_of(tgt)
+  ed, _, _ = edges_of(tgt)
   out = []
   for k in ed[:-1]:
     te = ts[k]
@@ -174,8 +183,9 @@ def zoom_window(ts, tgt):
   **올라가는 모서리만** 고른다. 크기마다 아무 모서리나 고르면 어떤 칸은 올라가고 어떤 칸은
   내려가서, 여덟 칸을 나란히 놓아도 눈으로 못 견준다. 그리고 첫 모서리는 피한다 — 시작
   과도현상이 아직 남아 있어 회차마다 모양이 다르다."""
-  ed = edges_of(tgt)
-  up = [k for k in ed[:-1] if tgt[k + 1] > tgt[k]]
+  ed, lo_lv, hi_lv = edges_of(tgt)
+  mid = 0.5 * (lo_lv + hi_lv)
+  up = [k for k in ed[:-1] if tgt[min(k + 2, len(tgt) - 1)] > mid]
   if not up:
     return (ts[0], ts[-1]) if len(ed) < 2 else (ts[ed[0]], ts[-1])
   k = up[min(1, len(up) - 1)]
