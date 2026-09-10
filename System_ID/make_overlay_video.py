@@ -49,7 +49,7 @@ import numpy as np  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from motor_scene import OverlayScene  # noqa: E402
+from mjlab_scene import MjlabJointScene  # noqa: E402
 
 DEG = math.pi / 180.0
 W, H = 1920, 1080
@@ -205,6 +205,10 @@ def main(argv=None) -> int:
   ap.add_argument("--csv", required=True, help="모터 기록")
   ap.add_argument("--meta", default=None)
   ap.add_argument("--family", default="RS04", choices=list(BEST))
+  ap.add_argument("--xml", default=("../mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/"
+                                    "xmls/SemiFullDoF_prototype-tempmass-motormeasured-armfix"
+                                    "_v30_proxyfix_loop_bench20260910.xml"),
+                  help="**학습에 쓰는 그 로봇 파일**. 여기서 관절과 모터를 그대로 꺼내 그린다")
   ap.add_argument("--motor", default="4")
   # 사진 속 기하 (원본 프레임 좌표계)
   ap.add_argument("--hub", required=True, help="축 중심 x,y (원본 프레임 좌표)")
@@ -251,22 +255,25 @@ def main(argv=None) -> int:
   hub_px = ((hx - cx0) * s - offx, (hy - cy0) * s - offy)
   disc_r_px = a.disc_r * s
 
-  scene = OverlayScene(size=900, ptr_reach=a.ptr_reach, cmd_reach=a.ptr_reach * 1.12)
-  ov_scale = disc_r_px / scene.disc_px            # 시뮬 그림 -> 칸 화소
+  scene = MjlabJointScene(a.xml, a.family, size=900, ptr_reach=a.ptr_reach,
+                          cmd_reach=a.ptr_reach * 1.12)
+  # 크기 맞추기: **모델의 모터 원통 반지름**을 사진 속 **도는 원판 반지름**에 맞춘다.
+  # 모델의 모터는 원통 하나로 단순화돼 있어서 실물과 꼭 같은 부품은 아니므로, "도는 면끼리
+  # 겹친다"를 규칙으로 정하고 그대로 적어 둔다.
+  ov_scale = disc_r_px / scene.motor_px
   ov_size = int(round(scene.size * ov_scale))
-  print(f"겹치기: 사진 원판 {a.disc_r:.0f}화소 → 칸에서 {disc_r_px:.0f}화소 · "
-        f"시뮬 그림을 {ov_scale:.3f}배로")
+  print(f"겹치기: 모델 모터 반지름 {scene.motor_r:.3f} m = {scene.motor_px:.0f}화소 → "
+        f"사진 속 원판 {a.disc_r:.0f}화소(칸에서 {disc_r_px:.0f}) · {ov_scale:.3f}배")
+  print(f"  장면-그림 각도 눈금: 장면 0도 → 그림 {scene.img_of_scene[0]:+.1f}도, "
+        f"부호 {scene.img_of_scene[1]:+.0f}")
 
-  def scene_deg(true_deg):
-    """실제 각도 -> 시뮬레이터 장면 각도.
-
-    ``실제 = k x 사진각 + b`` 를 거꾸로 풀어 사진각을 얻고, 사진 좌표는 아래로 갈수록 y 가
-    커지므로 부호를 뒤집는다."""
-    return -((true_deg - b) / k)
+  def img_deg(true_deg):
+    """실제 각도 -> **사진에서 보일 각도**. ``실제 = k x 사진각 + b`` 를 거꾸로 푼다."""
+    return (true_deg - b) / k
 
   plot_rgb, x_of, spans = make_plots(t, tgt, pos, sim, ang_t, cam_deg, a.family, prm)
-  head = (f"RobStride {a.family} (motor {a.motor})   |   the simulator drawn on top of the "
-          f"real motor, same size, same place   |   rotor inertia {prm['armature']}  ·  "
+  head = (f"RobStride {a.family} (motor {a.motor})   |   mjlab's own 3D render, drawn on top "
+          f"of the real motor at the same size   |   rotor inertia {prm['armature']}  ·  "
           f"friction {prm['frictionloss']} N m  ·  viscous {prm['damping']} N m s")
 
   def compose(tt):
@@ -282,7 +289,7 @@ def main(argv=None) -> int:
     cam = (Image.open(frames[fi]).crop((0, 0, cw, ch)).resize((fw, fh), Image.LANCZOS)
            .crop((offx, offy, offx + LEFT, offy + H_CAM)))
     base = np.asarray(cam, dtype=np.float32)
-    rgb, m_disc, m_ptr = scene.render(scene_deg(ss), scene_deg(rr), scene_deg(c))
+    rgb, m_disc, m_ptr = scene.render(img_deg(ss), img_deg(rr), img_deg(c))
     ov = np.asarray(Image.fromarray(rgb).resize((ov_size, ov_size), Image.LANCZOS),
                     dtype=np.float32)
     md = np.asarray(Image.fromarray(m_disc.astype(np.uint8) * 255).resize(
@@ -313,7 +320,7 @@ def main(argv=None) -> int:
     dc = ImageDraw.Draw(canvas, "RGBA")
     dc.rectangle((0, H_HEAD + H_CAM, LEFT, H), fill=(20, 22, 28))
     f2 = font(15, True)
-    for i, (col, lab) in enumerate((((0, 204, 140), "MuJoCo, using our measured numbers"),
+    for i, (col, lab) in enumerate((((0, 204, 140), "mjlab model, our measured numbers"),
                                     ((235, 235, 240), "the real motor (recorded angle)"),
                                     ((255, 184, 26), "the command"))):
       dc.rectangle((22, y + i * 26 + 4, 52, y + i * 26 + 16), fill=col)
