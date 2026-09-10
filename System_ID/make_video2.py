@@ -1,19 +1,38 @@
 #!/usr/bin/env python3
-"""벤치 **실영상**과 MuJoCo 를 나란히 붙인다. 축에 붙인 나무 막대로 시각까지 맞춘다.
+"""벤치 **실영상**과 **MuJoCo 의 진짜 3D 그림**을 나란히 붙인다.
 
 2026-09-10 · 사용자가 출력축 허브에 나무 막대(인디케이터)를 붙여 주신 뒤에야 가능해졌습니다.
 그 전에는 출력축이 대칭인 민무늬 원판이라 돌아도 화소가 안 바뀌어, 카메라가 회전을 아예
 못 봤습니다.
+
+★ 앞선 판 정정 — 이 판에서 바뀐 것
+-----------------------------------
+이전 판은 오른쪽 그림을 **제가 손으로 그린 시계 눈금**으로 냈고, 그 이유를 "이 컴퓨터에
+오프스크린 OpenGL 이 없다"고 적었습니다. **그 진단이 틀렸습니다.** `MUJOCO_GL=egl` 로
+MuJoCo 자체 렌더러가 정상 동작합니다(OpenGL 4.6, NVIDIA). 실패로 본 것은 **렌더가 끝난 뒤
+소멸자에서 나는 뒷정리 오류**였고, 그림 자체는 잘 나왔습니다. 그래서 이 판은
+`motor_scene.py` 의 **진짜 3차원 렌더**를 씁니다.
 
 무엇을 하는가
 -------------
 1. 영상의 모든 프레임에서 **막대의 각도**를 읽습니다(`track_pointer.py` — 나무의 붉은기를
    쓰고, 반지름 전체를 가로지르는 것만 고릅니다).
 2. 그 각도와 **기록된 실제 각도**가 가장 잘 겹치도록 **프레임률·지연·각도 눈금 셋을 한꺼번에**
-   맞춥니다. 프레임률까지 찾는 이유는, 카메라 스트림이 실제로는 8.5 fps 인데 받아 적는 쪽이
+   맞춥니다. 프레임률까지 찾는 이유는, 카메라 스트림이 실제로는 8.6 fps 인데 받아 적는 쪽이
    15 로 가정해 시간축이 눌려 있었기 때문입니다(이것 때문에 처음에 안 맞았습니다).
-3. 왼쪽 실영상 · 오른쪽 MuJoCo(질량 0 색 막대) · 아래 그래프로 합칩니다. 그래프에는
-   **카메라가 잰 각도**도 같이 그립니다 — 기록이 실제 회전과 맞는다는 독립 확인입니다.
+3. 왼쪽 실영상 · 오른쪽 MuJoCo 3차원 그림 · 아래 그래프를 **빈 곳 없이** 이어 붙입니다.
+   그래프에는 **카메라가 잰 각도**도 같이 그립니다 — 기록이 실제 회전과 맞는다는 독립 확인입니다.
+
+두 그림의 각도를 어떻게 맞췄나
+------------------------------
+카메라 각도 맞추기에서 나온 관계가 ``실제각도 = 1.308 x 그림각도 + 117.7`` 입니다. 여기서
+실제각도 0 일 때 그림각도가 **-90도**, 즉 막대가 **화면에서 위**를 가리킵니다. 그리고 실제
+각도가 커지면 그림에서 **시계 방향**으로 돕니다.
+
+그래서 MuJoCo 카메라를 방위각 90도(가로축 +x 가 화면 오른쪽, +y 가 화면 위)로 두고,
+관절 각도를 ``90도 - 실제각도`` 로 넣습니다. 그러면 실제각도 0 에서 막대가 위를 보고,
+각도가 커지면 시계 방향으로 돌아 **실영상과 같은 방향**이 됩니다. 카메라 높이(내려보는 각)도
+실영상과 비슷하게 46도로 맞췄습니다.
 """
 
 from __future__ import annotations
@@ -28,14 +47,17 @@ import subprocess
 import sys
 import tempfile
 
+os.environ.setdefault("MUJOCO_GL", "egl")
+
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import mujoco  # noqa: E402
 import numpy as np  # noqa: E402
-from PIL import Image  # noqa: E402
+from PIL import Image, ImageDraw, ImageFont  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from motor_scene import MotorScene  # noqa: E402
 from track_pointer import pointer_angle  # noqa: E402
 
 DEG = math.pi / 180.0
@@ -51,7 +73,6 @@ XML = """
       <inertial pos="0 0 0" mass="0.001" diaginertia="1e-9 1e-9 1e-9"/>
       <joint name="j" type="hinge" axis="0 0 1" limited="false"
              armature="{armature}" damping="{damping}" frictionloss="{frictionloss}"/>
-      <!-- 실물에 붙인 나무 막대에 대응하는, 질량 0 인 막대. 동역학에 안 들어간다. -->
       <geom name="pointer" type="box" size="0.10 0.012 0.006" pos="0.10 0 0"
             mass="0" rgba="0 0.66 0.47 1"/>
     </body>
@@ -64,6 +85,19 @@ BEST = {
   "RS04": dict(armature=0.0773, damping=0.0275, frictionloss=0.519),
   "RS03": dict(armature=0.0638, damping=0.0252, frictionloss=0.251),
 }
+
+# 화면 구성 (화소). 위에서부터 제목띠 / 실영상+3차원 / 그래프. 세 덩어리가 딱 붙어서
+# 빈 곳이 남지 않는다. 전체 1600 x 900.
+W, H_HEAD, H_TOP, H_PLOT = 1600, 46, 520, 334
+COL_CMD, COL_REAL, COL_SIM = "#8f8f8f", "#111111", "#00a878"
+COL_CAM = "#c0392b"
+
+
+def font(sz, bold=False):
+  from matplotlib import font_manager
+  name = "DejaVu Sans:style=normal:weight=" + ("bold" if bold else "normal")
+  return ImageFont.truetype(font_manager.findfont(font_manager.FontProperties(
+      family="DejaVu Sans", weight="bold" if bold else "normal")), sz)
 
 
 def load(path):
@@ -116,25 +150,47 @@ def fit_sync(ang, t, pos):
   return best
 
 
-def dial(ax, ang_cmd, ang_real, ang_sim):
-  ax.clear()
-  ax.set_xlim(-1.3, 1.3); ax.set_ylim(-1.3, 1.3)
-  ax.set_aspect("equal"); ax.axis("off")
-  th = np.linspace(0, 2 * np.pi, 200)
-  ax.plot(np.cos(th), np.sin(th), color="#cfcfcf", lw=1.2)
-  for a in range(0, 360, 30):
-    r = a * DEG
-    ax.plot([0.93 * math.cos(r), math.cos(r)], [0.93 * math.sin(r), math.sin(r)],
-            color="#e0e0e0", lw=1)
-  for a, col, lw, lab, al in ((ang_cmd, "#8f8f8f", 3.2, "command", 0.9),
-                              (ang_real, "#111111", 4.2, "real motor (recorded)", 0.55),
-                              (ang_sim, "#00a878", 3.0, "MuJoCo", 0.85)):
-    r = a * DEG
-    ax.plot([0, math.cos(r)], [0, math.sin(r)], color=col, lw=lw, alpha=al,
-            solid_capstyle="round", label=lab)
-  ax.plot([0], [0], "o", color="#444", ms=7)
-  ax.legend(fontsize=7.5, loc="lower center", ncol=3, frameon=False,
-            bbox_to_anchor=(0.5, 0.015))
+def crop_box(cx, cy, w_img, h_img, aspect, h=235.0):
+  """가운데를 잡고 **패널과 같은 가로세로비**로 잘라낸다. 늘어나 보이지 않게."""
+  w = h * aspect
+  x0, x1 = cx - w / 2, cx + w / 2
+  y0, y1 = cy - h * 0.66, cy + h * 0.34
+  x0, x1 = max(0, x0), min(w_img, x1)
+  y0, y1 = max(0, y0), min(h_img, y1)
+  return (int(x0), int(y0), int(x1), int(y1))
+
+
+def make_plot(t, tgt, pos, sim, cam_t, cam_deg, ylim):
+  """그래프를 **한 번만** 그려 화소로 들고 있는다. 프레임마다 바뀌는 것은 시간 막대뿐이라,
+  매번 다시 그리면 시간만 버린다."""
+  fig = plt.figure(figsize=(W / 100.0, H_PLOT / 100.0), dpi=100)
+  ax = fig.add_axes([0.040, 0.175, 0.950, 0.735])
+  ax.plot(t, tgt, color=COL_CMD, lw=1.2, ls=(0, (6, 3)), label="command we sent")
+  ax.plot(cam_t, cam_deg, color=COL_CAM, lw=1.0, alpha=0.55,
+          label="angle read off the film (independent check)")
+  ax.plot(t, pos, color=COL_REAL, lw=1.5, alpha=0.60, label="real motor (recorded)")
+  ax.plot(t, sim, color=COL_SIM, lw=1.4, alpha=0.90, label="MuJoCo with our measured values")
+  ax.set_xlim(t[0], t[-1]); ax.set_ylim(*ylim)
+  ax.set_xlabel("time [s]", fontsize=10)
+  ax.set_ylabel("shaft angle [deg]", fontsize=10)
+  ax.grid(alpha=0.28)
+  ax.legend(fontsize=9, loc="upper right", ncol=4, framealpha=0.85)
+  fig.canvas.draw()
+  rgb = np.asarray(fig.canvas.buffer_rgba())[:, :, :3].copy()
+  bb = ax.get_window_extent()
+  x_of = lambda tt: int(round(float(ax.transData.transform((tt, 0.0))[0])))
+  rows = (int(H_PLOT - bb.y1), int(H_PLOT - bb.y0))
+  plt.close(fig)
+  return rgb, x_of, rows
+
+
+def label(img, xy, text, sz=15, bold=False, fg=(30, 30, 34), bg=(255, 255, 255, 205)):
+  d = ImageDraw.Draw(img, "RGBA")
+  f = font(sz, bold)
+  x, y = xy
+  tb = d.textbbox((x, y), text, font=f)
+  d.rectangle((tb[0] - 7, tb[1] - 5, tb[2] + 7, tb[3] + 5), fill=bg)
+  d.text((x, y), text, font=f, fill=fg)
 
 
 def main(argv=None) -> int:
@@ -146,18 +202,26 @@ def main(argv=None) -> int:
   ap.add_argument("--cx", type=float, default=830); ap.add_argument("--cy", type=float, default=621)
   ap.add_argument("--r0", type=float, default=30); ap.add_argument("--r1", type=float, default=92)
   ap.add_argument("--box", default="740,470,930,700")
-  ap.add_argument("--crop", default="700,450,1000,720")
   ap.add_argument("--kp", type=float, default=20.0); ap.add_argument("--kd", type=float, default=1.0)
   ap.add_argument("--tau-max", type=float, default=8.0)
   ap.add_argument("--delay-ms", type=float, default=0.5)
   ap.add_argument("--dt", type=float, default=0.0005)
   ap.add_argument("--out-fps", type=int, default=20)
-  ap.add_argument("--gain", type=float, default=2.5)
+  ap.add_argument("--phase0", type=float, default=90.0,
+                  help="실제각도 0 일 때 3차원 막대가 놓일 자리. 90 = 화면에서 위")
+  ap.add_argument("--flip", type=float, default=1.0,
+                  help="1 이면 실제각도가 커질 때 화면에서 시계 방향 (실영상과 같은 방향)")
+  ap.add_argument("--elev", type=float, default=-46.0, help="MuJoCo 카메라가 내려보는 각")
+  ap.add_argument("--azim", type=float, default=90.0)
+  ap.add_argument("--dist", type=float, default=0.352)
+  ap.add_argument("--crop-h", type=float, default=235.0,
+                  help="실영상에서 잘라낼 세로 화소 수. 작을수록 모터가 크게 보인다")
+  ap.add_argument("--only-frame", type=float, default=None,
+                  help="이 시각의 한 장만 만들어 눈으로 확인한다 (영상 안 만듦)")
   ap.add_argument("--out", default="../docs/assets/motor_video.mp4")
   a = ap.parse_args(argv)
 
   box = tuple(int(x) for x in a.box.split(","))
-  crop = tuple(int(x) for x in a.crop.split(","))
   t, tgt, tgv, pos = load(a.csv)
   sim = simulate(t, tgt, tgv, a.kp, a.kd, a.dt, a.tau_max, a.delay_ms / 1e3,
                  **BEST[a.family])
@@ -171,51 +235,75 @@ def main(argv=None) -> int:
   r2, fps, lag, k, b = fit_sync(ang, t, pos)
   print(f"프레임 {len(frames)}장 · 실제 프레임률 {fps:.2f} fps · 지연 {lag:.2f}초 · "
         f"설명력 {r2:.3f}")
-  print(f"눈금: 실제각도 = {k:.4f} x 그림각도 + {b:.2f}")
+  print(f"눈금: 실제각도 = {k:.4f} x 그림각도 + {b:.2f}  "
+        f"(→ 실제각도 0 일 때 그림에서 {-b / k:+.1f}도)")
   cam_deg = k * ang + b
   cam_t = np.arange(len(frames)) / fps - lag
 
+  half = W // 2
+  lim = float(max(np.abs(pos).max(), np.abs(tgt).max())) * 1.18
+  plot_rgb, x_of, (row0, row1) = make_plot(t, tgt, pos, sim, cam_t, cam_deg, (-lim, lim))
+  cb = crop_box(a.cx, a.cy, 1280, 720, half / H_TOP, a.crop_h)
+  scene = MotorScene(width=half, height=H_TOP, azimuth=a.azim, elevation=a.elev,
+                     distance=a.dist, lookat=(0.0, 0.0, 0.012))
+  p = BEST[a.family]
+  head_txt = (f"RobStride {a.family}:  the bench and MuJoCo, given the same command   |   "
+              f"rotor inertia {p['armature']}  ·  dry friction {p['frictionloss']} N m  ·  "
+              f"viscous {p['damping']} N m s")
+
+  def compose(tt):
+    fi = int(round((tt + lag) * fps))
+    c = float(np.interp(tt, t, tgt)); rr = float(np.interp(tt, t, pos))
+    ss = float(np.interp(tt, t, sim))
+    canvas = Image.new("RGB", (W, H_HEAD + H_TOP + H_PLOT), (255, 255, 255))
+    d = ImageDraw.Draw(canvas)
+    d.rectangle((0, 0, W, H_HEAD), fill=(28, 30, 36))
+    d.text((16, 13), head_txt, font=font(15, True), fill=(238, 238, 242))
+
+    cam = Image.open(frames[fi]).crop(cb).resize((half, H_TOP), Image.LANCZOS)
+    label(cam, (12, 10), "the real motor, filmed  (wooden pointer taped to the shaft)", 15, True)
+    canvas.paste(cam, (0, H_HEAD))
+
+    ren = Image.fromarray(scene.render(a.phase0 - a.flip * ss,
+                                       a.phase0 - a.flip * rr,
+                                       a.phase0 - a.flip * c))
+    label(ren, (12, 10), "MuJoCo, rendered in 3D  (same camera angle)", 15, True)
+    dr = ImageDraw.Draw(ren, "RGBA")
+    f2 = font(14)
+    y = H_TOP - 118
+    dr.rectangle((10, y - 10, 348, H_TOP - 8), fill=(255, 255, 255, 205))
+    for col, name, val in ((COL_SIM, "MuJoCo (green bar)", ss),
+                           (COL_REAL, "real motor (black bar)", rr),
+                           (COL_CMD, "command (grey bar)", c)):
+      dr.rectangle((18, y + 4, 44, y + 14), fill=col)
+      dr.text((54, y), f"{name:<24}{val:+7.2f} deg", font=f2, fill=(30, 30, 34))
+      y += 26
+    dr.text((18, y + 2), f"MuJoCo minus real: {ss - rr:+.2f} deg", font=font(14, True),
+            fill=(30, 30, 34))
+    canvas.paste(ren, (half, H_HEAD))
+    d.line((half, H_HEAD, half, H_HEAD + H_TOP), fill=(255, 255, 255), width=2)
+
+    strip = plot_rgb.copy()
+    xp = x_of(tt)
+    strip[row0:row1, max(0, xp - 1):xp + 2] = (192, 57, 43)
+    canvas.paste(Image.fromarray(strip), (0, H_HEAD + H_TOP))
+    return canvas
+
+  if a.only_frame is not None:
+    out = os.path.abspath(a.out)
+    compose(a.only_frame).save(out)
+    print(f"한 장만: {out}")
+    shutil.rmtree(fdir, ignore_errors=True)
+    return 0
+
   out_dir = tempfile.mkdtemp(prefix="cmp_")
-  fig = plt.figure(figsize=(13.0, 7.4), dpi=100)
-  gs = fig.add_gridspec(2, 2, height_ratios=[2.5, 1.0], width_ratios=[1.15, 1.0],
-                        hspace=0.28, wspace=0.05, left=0.045, right=0.975,
-                        top=0.905, bottom=0.085)
-  ax_cam, ax_dial, ax_plot = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), \
-      fig.add_subplot(gs[1, :])
   n_out = 0
   for tt in np.arange(t[0], t[-1], 1.0 / a.out_fps):
     fi = int(round((tt + lag) * fps))
     if fi < 0 or fi >= len(frames):
       continue
-    c = float(np.interp(tt, t, tgt)); rr = float(np.interp(tt, t, pos))
-    ss = float(np.interp(tt, t, sim))
-    ax_cam.clear(); ax_cam.axis("off")
-    ax_cam.imshow(Image.open(frames[fi]).crop(crop))
-    ax_cam.set_title("the real motor, filmed  (wooden pointer on the shaft)", fontsize=10)
-    dial(ax_dial, c * a.gain, rr * a.gain, ss * a.gain)
-    ax_dial.set_title("MuJoCo, massless pointer on the shaft\n"
-                      f"angles drawn {a.gain:g}x so they are visible", fontsize=9)
-    ax_dial.text(0.5, -0.045,
-                 f"command {c:+6.1f}      real {rr:+6.1f}      MuJoCo {ss:+6.1f}\n"
-                 f"MuJoCo minus real:  {ss - rr:+.2f} deg", transform=ax_dial.transAxes,
-                 ha="center", va="top", fontsize=10)
-    ax_plot.clear()
-    ax_plot.plot(t, tgt, color="#8f8f8f", lw=1.1, ls=(0, (6, 3)), label="command")
-    ax_plot.plot(cam_t, cam_deg, color="#c0392b", lw=1.0, alpha=0.6,
-                 label="angle read off the film")
-    ax_plot.plot(t, pos, color="#111111", lw=1.4, alpha=0.55, label="real motor (recorded)")
-    ax_plot.plot(t, sim, color="#00a878", lw=1.3, alpha=0.85, label="MuJoCo")
-    ax_plot.axvline(tt, color="#c0392b", lw=1.2)
-    ax_plot.set_xlim(t[0], t[-1]); ax_plot.set_ylim(-42, 42)
-    ax_plot.set_xlabel("time [s]"); ax_plot.set_ylabel("angle [deg]")
-    ax_plot.grid(alpha=0.3); ax_plot.legend(fontsize=8, loc="upper right", ncol=4)
-    p = BEST[a.family]
-    fig.suptitle(f"RobStride {a.family}: the bench and MuJoCo given the same command   |   "
-                 f"inertia {p['armature']} · friction {p['frictionloss']} · "
-                 f"viscous {p['damping']}", fontsize=11.5)
-    fig.savefig(os.path.join(out_dir, f"{n_out:05d}.png"))
+    compose(tt).save(os.path.join(out_dir, f"{n_out:05d}.png"))
     n_out += 1
-  plt.close(fig)
   os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
   subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(a.out_fps),
                   "-i", os.path.join(out_dir, "%05d.png"), "-c:v", "libx264",

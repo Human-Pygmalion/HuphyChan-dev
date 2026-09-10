@@ -1,2254 +1,2271 @@
 {
-  "nodes": [
-    {
-      "id": "gaitfix",
-      "type": "file",
-      "x": 0,
-      "y": 0,
-      "width": 360,
-      "height": 130,
-      "color": "2",
-      "file": "experiments/2026-06-22_12-29-19_gaitfix_v7.md"
-    },
-    {
-      "id": "g1van",
-      "type": "file",
-      "x": 760,
-      "y": 0,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-06-22_17-28-08_g1vanilla.md"
-    },
-    {
-      "id": "siek",
-      "type": "file",
-      "x": 1520,
-      "y": 0,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-06-29_13-00-01_siekmann_v8_flat.md"
-    },
-    {
-      "id": "p2fin",
-      "type": "file",
-      "x": 3040,
-      "y": 0,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-07_P2_final_analysis.md"
-    },
-    {
-      "id": "f25p1",
-      "type": "file",
-      "x": 3800,
-      "y": 0,
-      "width": 360,
-      "height": 120,
-      "color": "1",
-      "file": "experiments/2026-07-10_flat25_p1.md"
-    },
-    {
-      "id": "progp1",
-      "type": "file",
-      "x": 3800,
-      "y": 340,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-10_flat25b_prog_p1.md"
-    },
-    {
-      "id": "gen2p2",
-      "type": "file",
-      "x": 4560,
-      "y": 0,
-      "width": 360,
-      "height": 120,
-      "color": "1",
-      "file": "experiments/2026-07-12_gen2_bent_p2.md"
-    },
-    {
-      "id": "g21p1",
-      "type": "file",
-      "x": 5320,
-      "y": 0,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-13_gen21_bent_p1.md"
-    },
-    {
-      "id": "g21p2",
-      "type": "file",
-      "x": 6080,
-      "y": 0,
-      "width": 360,
-      "height": 140,
-      "color": "4",
-      "file": "experiments/2026-07-13_gen21_bent_p2.md"
-    },
-    {
-      "id": "anchor_lbl",
-      "type": "text",
-      "x": 6080,
-      "y": -190,
-      "width": 360,
-      "height": 110,
-      "color": "4",
-      "text": "★★ FLAT 설계앵커\ngen21_bent_p2 (gen21p2_fc)\n게이트 전항목 통과"
-    },
-    {
-      "id": "why_van",
-      "type": "text",
-      "x": 760,
-      "y": -260,
-      "width": 360,
-      "height": 130,
-      "color": "3",
-      "text": "WHY 피벗: 바닐라 G1 > 20-term 커스텀\n(자연스러움·추종·낙상)\n[[g1-vanilla-beats-custom-reward]] → '검증된 베이스라인 먼저'"
-    },
-    {
-      "id": "tiptoe",
-      "type": "file",
-      "x": 1520,
-      "y": -280,
-      "width": 360,
-      "height": 120,
-      "color": "3",
-      "file": "reward_research/2026-06-29_tiptoe_regression.md"
-    },
-    {
-      "id": "why_clock",
-      "type": "text",
-      "x": 1520,
-      "y": 300,
-      "width": 360,
-      "height": 130,
-      "color": "3",
-      "text": "WHY: humanref 관절참조 추적 반복실패(위상 불일치)\n→ Siekmann 위상클록 채택. pushoff 무캡=보상해킹→cap 순서 원칙"
-    },
-    {
-      "id": "kd_ab",
-      "type": "file",
-      "x": 2280,
-      "y": -300,
-      "width": 360,
-      "height": 120,
-      "color": "3",
-      "file": "53_bc_kd_controlled_ab.md"
-    },
-    {
-      "id": "init_ab",
-      "type": "file",
-      "x": 2280,
-      "y": 300,
-      "width": 360,
-      "height": 120,
-      "color": "3",
-      "file": "55_init_pose_straight_vs_bent.md"
-    },
-    {
-      "id": "bent_ab",
-      "type": "file",
-      "x": 4560,
-      "y": 340,
-      "width": 360,
-      "height": 130,
-      "color": "3",
-      "file": "experiments/2026-07-12_bentinit_ab_result.md"
-    },
-    {
-      "id": "stall_note",
-      "type": "file",
-      "x": 5320,
-      "y": -290,
-      "width": 360,
-      "height": 120,
-      "color": "3",
-      "file": "reward_research/2026-07-13_stall_relative_threshold.md"
-    },
-    {
-      "id": "rgh_fail",
-      "type": "file",
-      "x": 6840,
-      "y": -560,
-      "width": 360,
-      "height": 120,
-      "color": "1",
-      "file": "experiments/2026-07-13_gen21_rough_p1.md"
-    },
-    {
-      "id": "blind",
-      "type": "file",
-      "x": 6840,
-      "y": -820,
-      "width": 360,
-      "height": 120,
-      "color": "3",
-      "file": "reward_research/2026-07-14_rough_p1_blind_stairs_diagnosis.md"
-    },
-    {
-      "id": "unv1",
-      "type": "file",
-      "x": 7600,
-      "y": -560,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-14_gen21_rough_uneven_p1.md"
-    },
-    {
-      "id": "unv2p1",
-      "type": "file",
-      "x": 8360,
-      "y": -560,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-14_gen21_rough_uneven2_p1.md"
-    },
-    {
-      "id": "unv2p2b",
-      "type": "file",
-      "x": 9120,
-      "y": -560,
-      "width": 360,
-      "height": 140,
-      "color": "4",
-      "file": "experiments/2026-07-15_gen21_rough_uneven2_p2b.md"
-    },
-    {
-      "id": "rgh_anchor_lbl",
-      "type": "text",
-      "x": 9120,
-      "y": -730,
-      "width": 360,
-      "height": 90,
-      "color": "4",
-      "text": "★ ROUGH 설계앵커 후보\nuneven2_p2b (v2 측정중)"
-    },
-    {
-      "id": "c30p1",
-      "type": "file",
-      "x": 6840,
-      "y": 560,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-14_cant30_p1.md"
-    },
-    {
-      "id": "c30p2",
-      "type": "file",
-      "x": 7600,
-      "y": 560,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-14_cant30_p2.md"
-    },
-    {
-      "id": "feet",
-      "type": "file",
-      "x": 7600,
-      "y": 860,
-      "width": 360,
-      "height": 120,
-      "color": "3",
-      "file": "68_hip_geometry_variants_viz.md"
-    },
-    {
-      "id": "c30fp1",
-      "type": "file",
-      "x": 8360,
-      "y": 560,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-15_cant30fp_p1.md"
-    },
-    {
-      "id": "c30fp2",
-      "type": "file",
-      "x": 9120,
-      "y": 560,
-      "width": 360,
-      "height": 110,
-      "color": "4",
-      "file": "experiments/2026-07-15_cant30fp_p2.md"
-    },
-    {
-      "id": "cant_design",
-      "type": "file",
-      "x": 6840,
-      "y": 860,
-      "width": 360,
-      "height": 130,
-      "color": "3",
-      "file": "67_hip_cant_and_roll_motor_review.md"
-    },
-    {
-      "id": "roll_p1",
-      "type": "file",
-      "x": 6840,
-      "y": 960,
-      "width": 360,
-      "height": 120,
-      "color": "2",
-      "file": "experiments/2026-07-15_rolloff30_p1.md"
-    },
-    {
-      "id": "roll_p2",
-      "type": "file",
-      "x": 7600,
-      "y": 960,
-      "width": 360,
-      "height": 90,
-      "color": "4",
-      "file": "experiments/2026-07-16_rolloff30_p2.md"
-    },
-    {
-      "id": "n_cant20fp",
-      "type": "file",
-      "x": 9580,
-      "y": 560,
-      "width": 380,
-      "height": 100,
-      "color": "2",
-      "file": "experiments/2026-07-20_cant20fp_p1.md"
-    },
-    {
-      "id": "n_c20p2",
-      "type": "file",
-      "file": "experiments/2026-07-20_cant20fp_p2.md",
-      "x": 9580,
-      "y": 570,
-      "width": 380,
-      "height": 90,
-      "color": "5"
-    },
-    {
-      "id": "n_g1val",
-      "type": "text",
-      "text": "★ 실기 교차검증 (2026-07-24)\nUnitree G1 23DoF 실측 tau_est vs 우리 sim\n스케일 m·g·L → 기하평균 RMS 0.84 · P99 0.79\n= 절대 스케일 일치(앵커 신뢰 상향)\n편차=crouch vs straight-leg gait 차이\n→ docs/65 §9",
-      "x": 6980,
-      "y": -520,
-      "width": 460,
-      "height": 170,
-      "color": "4"
-    },
-    {
-      "id": "n_brg",
-      "type": "text",
-      "text": "베어링 선정 판정 (2026-07-24)\nhip_yaw: 6814(70×90×10) — 내부 61809쌍과 span 29.5mm, s0 1.74\nhip_roll/knee: 포크 양단 + 6910(50×72×12)\nAB 로드엔드: 720kgf, 스톱은 짐벌측 배치\n원칙: 내장 단독 캔틸레버 금지\n→ docs/64 §8~§8f",
-      "x": 6980,
-      "y": -300,
-      "width": 460,
-      "height": 180,
-      "color": "6"
-    },
-    {
-      "id": "n_ankAB",
-      "type": "file",
-      "file": "experiments/2026-08-23_ankleAB_c2.md",
-      "x": 10340,
-      "y": 0,
-      "width": 400,
-      "height": 400,
-      "color": "2"
-    },
-    {
-      "id": "n_ankRP",
-      "type": "file",
-      "file": "experiments/2026-08-23_ankleRP_c2.md",
-      "x": 10340,
-      "y": 440,
-      "width": 400,
-      "height": 400,
-      "color": "2"
-    },
-    {
-      "id": "n_era10",
-      "type": "text",
-      "text": "Era-10 모델 교체 (2026-08-23)\\n프린트 하체 35.35 kg (docs/89) · 실측 모터 J/b/tc + T-N 곡선 · HW 관절/토크 한계\\n발목 AB(폐루프, 크랭크 액션) vs RP(직렬 + 자세별 선형화 토크 클램프)\\n상체 weld + 팔 15° 외전 고정 · 보상 gen21 그대로 · DR/vx/push 단일런 커리큘럼\\n→ docs/92, docs/91\n첫 리뷰 iter 610 (08-23 21:55): 두 arm 모두 CONTINUE\niter 1200 분석(93 §5b): AB 정지 잔떨림/스웨이 · RP bang-bang 발목 목표\n최신 스냅샷 AB iter 1950 r114.2 / RP iter 2162 r113.6 (1 h 자동 리뷰 루프)",
-      "x": 10340,
-      "y": -300,
-      "width": 460,
-      "height": 200,
-      "color": "6"
-    },
-    {
-      "id": "n_solimp",
-      "type": "file",
-      "file": "94_loop_constraint_stiffness.md",
-      "x": 10340,
-      "y": -560,
-      "width": 460,
-      "height": 200,
-      "color": "3"
-    },
-    {
-      "id": "n_ankAB3",
-      "type": "file",
-      "file": "experiments/2026-08-24_ankleAB_c3.md",
-      "x": 10900,
-      "y": 0,
-      "width": 400,
-      "height": 400,
-      "color": "2"
-    },
-    {
-      "id": "n_ankRP3",
-      "type": "file",
-      "file": "experiments/2026-08-24_ankleRP_c3.md",
-      "x": 10900,
-      "y": 440,
-      "width": 400,
-      "height": 400,
-      "color": "2"
-    },
-    {
-      "id": "n_soft",
-      "type": "file",
-      "file": "95_soft_landing_prescription.md",
-      "x": 10900,
-      "y": -300,
-      "width": 460,
-      "height": 200,
-      "color": "3"
-    },
-    {
-      "id": "n_gate_c3",
-      "type": "text",
-      "x": 11400,
-      "y": 180,
-      "width": 420,
-      "height": 300,
-      "color": "5",
-      "text": "**c3 완주** (32,000 · 39 h 45 m · 낙상 0 양쪽)\n\n- 추종 순수vx AB 0.89 / RP 0.90, 평가기 576ep 100 %\n- 모터 여유(모터축) 0.44–0.55 — **동률**\n- 에너지 CoT RP 0.277 < AB 0.314 (−12 %)\n- **T-N 클램프 off에도 정상**(+0.01~0.03)\n- ★버그: MEAS=0이 RP 반사관성 0 → 수정\n- 산출물: accum·demo 영상 각 2편, wrench 3D"
-    },
-    {
-      "id": "n_abrp_vid",
-      "type": "text",
-      "x": 11400,
-      "y": 540,
-      "width": 420,
-      "height": 260,
-      "color": "6",
-      "text": "**AB vs RP 1:1 거동 비교** (iter 8000)\n\n- `abrp_sidebyside_g8000.mp4` 전신+발목, 실시간\n- `abrp_shadow_g8000.mp4` 베이스 정렬 쉐도우 중첩\n- `abrp_gait_compare_g8000.png` 접지·발목각·GRF·추종\n\n리듬·추종 동일(err +0.055/+0.056), 차이는 **발목 사용법**: AB 배굴 스파이크 31° vs RP 평탄 18–22°. GRF p99 1.26/1.29 BW, 리플 동률 → docs/93 §5c"
-    },
-    {
-      "id": "n_track_bneck",
-      "type": "file",
-      "file": "96_tracking_error_bottleneck.md",
-      "x": 11900,
-      "y": 180,
-      "width": 400,
-      "height": 320,
-      "color": "3"
-    },
-    {
-      "id": "n_trend97",
-      "type": "file",
-      "file": "97_c3_reward_trend_review.md",
-      "x": 11900,
-      "y": 560,
-      "width": 400,
-      "height": 320,
-      "color": "3"
-    },
-    {
-      "id": "n_plan98",
-      "type": "file",
-      "file": "98_scratch_training_plan.md",
-      "x": 12400,
-      "y": 360,
-      "width": 400,
-      "height": 340,
-      "color": "4"
-    },
-    {
-      "id": "n_obs100",
-      "type": "file",
-      "file": "100_observation_design_sim2real.md",
-      "x": 12400,
-      "y": 760,
-      "width": 400,
-      "height": 320,
-      "color": "3"
-    },
-    {
-      "id": "n_spec101",
-      "type": "file",
-      "file": "101_policy_spec_and_final_plan.md",
-      "x": 12900,
-      "y": 560,
-      "width": 420,
-      "height": 360,
-      "color": "4"
-    },
-    {
-      "id": "n_energy",
-      "type": "text",
-      "x": 12900,
-      "y": 980,
-      "width": 420,
-      "height": 260,
-      "color": "5",
-      "text": "**AB vs RP 최종 지표** (model_9500 동일 롤아웃)\n\n- **에너지**: CoT AB 0.314 / **RP 0.277** (−12 %), 1 m/s에서 93 vs 73 W. 속도↑일수록 격차↑\n- **충격**: 4게이트 쌍대차 +0.03±0.27 m/s, +0.04±0.18 BW = **무승부**\n- **모터 여유**: 발목 AB 크랭크 35–38 % / **RP 82 %·포화 3.7 %**\n- 손해 출처: 발목 동률, **무릎 +63 %·힙요 +78 %** → 게인 재조정 여지\n\n거래 = 20 W 더 쓰고 발목 여유 2.2배. docs/101 §5"
-    },
-    {
-      "id": "n_handover102",
-      "type": "file",
-      "file": "102_rebuild_handover.md",
-      "x": 12900,
-      "y": 980,
-      "width": 420,
-      "height": 320,
-      "color": "6"
-    },
-    {
-      "id": "n_v2plan",
-      "type": "file",
-      "file": "103_v2_training_plan.md",
-      "x": 13400,
-      "y": 360,
-      "width": 420,
-      "height": 340,
-      "color": "4"
-    },
-    {
-      "id": "n_init104",
-      "type": "file",
-      "file": "104_init_pose_gait_style.md",
-      "x": 13400,
-      "y": 760,
-      "width": 420,
-      "height": 300,
-      "color": "3"
-    },
-    {
-      "id": "n_abrp_cmp",
-      "type": "file",
-      "file": "experiments/2026-08-26_ankleAB_vs_RP_comparison.md",
-      "x": 11400,
-      "y": 760,
-      "width": 420,
-      "height": 320,
-      "color": "5"
-    },
-    {
-      "id": "n_bundle_rr",
-      "type": "file",
-      "file": "reward_research/2026-08-26_human_landing_bundle.md",
-      "x": 13900,
-      "y": 760,
-      "width": 420,
-      "height": 300,
-      "color": "3"
-    },
-    {
-      "id": "n_bctl",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleCTL_AB.md",
-      "x": 13900,
-      "y": 180,
-      "width": 400,
-      "height": 320,
-      "color": "2"
-    },
-    {
-      "id": "n_btrt",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleTRT_AB.md",
-      "x": 13900,
-      "y": 560,
-      "width": 400,
-      "height": 320,
-      "color": "2"
-    },
-    {
-      "id": "n_bundle_verdict",
-      "type": "text",
-      "x": 14400,
-      "y": 300,
-      "width": 420,
-      "height": 300,
-      "color": "3",
-      "text": "**착지 번들 1차 판정 → ★철회** (2026-08-26)\n\n당시(단일 롤아웃): 하중률 46.2→84.5, stride 1.40→0.93 = \"발 안 떼기\"로 읽음\n\n**정정(평가기 32 ep)**: 단일 롤아웃은 판정 불가.\n- `MODE=rate`(대체형) ❌ 기각 유지 — 하중률 15.78\n- `MODE=both`(병행형) ✅ **기각 철회** — 추종 0.117·하중률 8.78·stride 2.83 전부 최고\n\n교훈은 그대로: 검증된 항을 **대체하지 말고 병행**"
-    },
-    {
-      "id": "n_bB2",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleB2_AB.md",
-      "x": 14900,
-      "y": 180,
-      "width": 400,
-      "height": 300,
-      "color": "2"
-    },
-    {
-      "id": "n_bB3",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleB3_AB.md",
-      "x": 14900,
-      "y": 540,
-      "width": 400,
-      "height": 300,
-      "color": "2"
-    },
-    {
-      "id": "n_bC3",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleC3_AB.md",
-      "x": 15400,
-      "y": 180,
-      "width": 400,
-      "height": 300,
-      "color": "4"
-    },
-    {
-      "id": "n_bC4",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleC4_AB.md",
-      "x": 15400,
-      "y": 540,
-      "width": 400,
-      "height": 300,
-      "color": "4"
-    },
-    {
-      "id": "n_bC5",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleC5_AB.md",
-      "x": 15400,
-      "y": 560,
-      "width": 400,
-      "height": 300,
-      "color": "4"
-    },
-    {
-      "id": "n_bundle_final",
-      "type": "text",
-      "x": 15950,
-      "y": 300,
-      "width": 460,
-      "height": 360,
-      "color": "4",
-      "text": "**확정 레시피 v2** (2026-08-26, 평가기 32 ep)\n\n✅ `PYG_INIT_MID` — 무릎 −4.9°, 추종 0.163→0.119, 리셋 낙하 47 mm 제거\n✅ `PYG_SOFT_LANDING_MODE=both` — 추종 0.117·하중률 8.78·stride 2.83 (전부 최고)\n✅ `PYG_KNEE_EXT` w−2.0@25° (조건부) — 무릎 −6.1°, 추종 +0.023 대가\n❌ `MODE=rate` (대체형)\n❌ `PYG_BASE_HEIGHT_ANCHOR` (deadband 안, 기여 −0.0019)\n\n정본: 103_v2_training_plan §4a"
-    },
-    {
-      "id": "n_bD1",
-      "type": "file",
-      "x": 16500,
-      "y": 300,
-      "width": 420,
-      "height": 300,
-      "color": "4",
-      "file": "experiments/2026-08-26_bundleD1_AB.md"
-    },
-    {
-      "id": "n_d1_verdict",
-      "type": "text",
-      "x": 17050,
-      "y": 300,
-      "width": 460,
-      "height": 340,
-      "color": "4",
-      "text": "**D1 = 채택** (2026-08-26)\n\n평가기 32 ep: 피크 GRF **1.093 BW**(최저)·입각 무릎 **39.1°**(최저)·오차 0.133(폭 0.011 최협)\n200 Hz × 24 env: 하중률 **21.0 BW/s(최저)** + 피크 1.224 BW\n→ **피크·하중률 두 축을 동시에 잡은 유일한 arm**\n(C5는 피크만, TRT는 하중률만)\n\n⚠ 실제 변인은 하중률 항이 아니라 `foot_impact_velocity` ½ — 하중률 항은 부호버그로 死"
-    },
-    {
-      "id": "n_signbug",
-      "type": "text",
-      "x": 17050,
-      "y": 700,
-      "width": 460,
-      "height": 300,
-      "color": "1",
-      "text": "**부호 버그: `foot_loading_rate`는 한 번도 안 돌았다**\n\n`reduce=\"netforce\"`의 전역 z는 하중 시 **음수**(−577…0 N)인데 `clamp(min=0)`으로 읽음 → `in_contact` 영구 거짓\n→ TRT·B2·D1 **3런 × 800 iter**를 죽은 항으로\n\n다른 접촉 항은 전부 `norm()`이라 부호가 감춰져 있었다\n\n수정 후 w 0.002 → 스텝당 **−0.664**(보상예산의 8배) → 1e-4로 재교정. 항 자체는 **미시험**\n\n규칙: 새 항은 100 iter 안에 `Episode_Reward/<term>` ≠ 0 확인"
-    },
-    {
-      "id": "n_bCTL_RP",
-      "type": "file",
-      "x": 17600,
-      "y": 120,
-      "width": 400,
-      "height": 260,
-      "color": "5",
-      "file": "experiments/2026-08-26_bundleCTL_RP.md"
-    },
-    {
-      "id": "n_bD1_RP",
-      "type": "file",
-      "x": 17600,
-      "y": 440,
-      "width": 400,
-      "height": 260,
-      "color": "4",
-      "file": "experiments/2026-08-26_bundleD1_RP.md"
-    },
-    {
-      "id": "n_rp_verdict",
-      "type": "text",
-      "x": 18100,
-      "y": 260,
-      "width": 470,
-      "height": 360,
-      "color": "3",
-      "text": "**RP 이식 = 유효하나 이득이 작다** (2026-08-26)\n\nD1_RP vs CTL_RP: 무릎 45.9→**39.9°**, 하중률(200 Hz) 81.5→**64.5 BW/s(−21 %)**, 추종 0.147→**0.140**\n피크 GRF 1.248→1.253 = **변화 없음**\n\n★**RP 대조군엔 AB의 착지 병리가 없었다**\n같은 초기자세·보상인데 200 Hz 피크 **AB 2.353 vs RP 1.248 BW**, 하중률 **277 vs 81.5**, DR하 낙상 **12 vs 0**\n\n⇒ 초기자세의 −48 % 충격 감소는 **AB 한정**(폐루프 발목 + 깊은 굽힘의 결합)\n⚠ 두 정책이 다른 국소최적 → 기구 인과 단정엔 교차시험 필요"
-    },
-    {
-      "id": "n_bD1_ab",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleD1_AB.md",
-      "x": 16500,
-      "y": 180,
-      "width": 420,
-      "height": 300,
-      "color": "4"
-    },
-    {
-      "id": "n_bCTL_rp",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleCTL_RP.md",
-      "x": 17050,
-      "y": 120,
-      "width": 420,
-      "height": 300,
-      "color": "6"
-    },
-    {
-      "id": "n_bD1_rp",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleD1_RP.md",
-      "x": 17050,
-      "y": 480,
-      "width": 420,
-      "height": 300,
-      "color": "4"
-    },
-    {
-      "id": "n_bE1_ab",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleE1_AB_aborted.md",
-      "x": 17600,
-      "y": 120,
-      "width": 420,
-      "height": 300,
-      "color": "1"
-    },
-    {
-      "id": "n_bV4_ab",
-      "type": "file",
-      "file": "experiments/2026-08-26_bundleV4_AB_aborted.md",
-      "x": 17600,
-      "y": 480,
-      "width": 420,
-      "height": 300,
-      "color": "1"
-    },
-    {
-      "id": "n_rp_transfer",
-      "type": "text",
-      "x": 16500,
-      "y": 760,
-      "width": 430,
-      "height": 300,
-      "color": "4",
-      "text": "**RP 이식 시험** (2026-08-26)\n\n`bundleCTL_RP` vs `bundleD1_RP`\n16384 env · RP c3 +800 → 32798\n\n✅ **이식 성공**\n- 입각 무릎 45.9° → **39.9°**\n- 전진 오차 0.147 → **0.140**\n- 200 Hz 하중률 81.5 → **64.5 BW/s**\n- 낙상 0 / 96·96 성공\n\n★대조군이 AB와 다름: CTL_AB 277 BW/s·낙상12\nvs CTL_RP 81.5·낙상0"
-    },
-    {
-      "id": "n_e1v4",
-      "type": "text",
-      "x": 17050,
-      "y": 300,
-      "width": 430,
-      "height": 300,
-      "color": "1",
-      "text": "**bundleE1_AB** — 하중률 항 기각 (2026-08-27)\n\n부호 수정 후 항이 처음 동작 (−0.0637)\n\n❌ **하중률을 벌했더니 하중률이 악화**\n  200 Hz: D1 21.0 → E1 **54.1 BW/s**\n  피크 1.224 → 1.205 BW\n\n원인: 항이 50 Hz로 dF/dt를 재는데\n스파이크 폭은 15–25 ms\n→ 에일리어싱된 양을 최소화\n→ 제어 틱 사이로 충격을 숨김\n\n**레시피는 `half` 유지**"
-    },
-    {
-      "id": "n_v4",
-      "type": "text",
-      "x": 17050,
-      "y": 700,
-      "width": 440,
-      "height": 320,
-      "color": "4",
-      "text": "**bundleV4_AB** — v4 질량 이식 (2026-08-27)\n\n31.316 kg (D1은 35.347)\n32/32 성공 · 낙상 0 · 전진 추종 0.123\n\n★**감량이 충격 여유를 사주지 않는다**\n  절대 착지력 424 → 434 N (그대로)\n  체중 대비 1.224 → **1.412 BW (+15 %)**\n\n계측버그 수정: BW 346.8 하드코딩 →\n모델에서 유도"
-    },
-    {
-      "id": "n_p1low",
-      "type": "file",
-      "file": "experiments/2026-08-27_bundleP1_AB.md",
-      "x": 17550,
-      "y": 300,
-      "width": 400,
-      "height": 300,
-      "color": "5"
-    },
-    {
-      "id": "n_p1s2",
-      "type": "file",
-      "file": "experiments/2026-08-27_bundleP1s2_AB.md",
-      "x": 18070,
-      "y": -60,
-      "width": 400,
-      "height": 300,
-      "color": "5"
-    },
-    {
-      "id": "n_p1s3",
-      "type": "file",
-      "file": "experiments/2026-08-27_bundleP1s3_AB.md",
-      "x": 18070,
-      "y": 300,
-      "width": 400,
-      "height": 300,
-      "color": "5"
-    },
-    {
-      "id": "n_d1s2",
-      "type": "file",
-      "file": "experiments/2026-08-27_bundleD1s2_AB.md",
-      "x": 18070,
-      "y": 660,
-      "width": 400,
-      "height": 300,
-      "color": "4"
-    },
-    {
-      "id": "n_v2s1",
-      "type": "file",
-      "file": "experiments/2026-08-28_v2s1_AB.md",
-      "x": 18100,
-      "y": 300,
-      "width": 420,
-      "height": 320,
-      "color": "6"
-    },
-    {
-      "id": "n_ankleaudit",
-      "type": "file",
-      "file": "experiments/2026-08-28_ab_ankle_usage_audit.md",
-      "x": 16500,
-      "y": 1100,
-      "width": 420,
-      "height": 260,
-      "color": "4"
-    },
-    {
-      "id": "n_v30_st45_smoke",
-      "type": "file",
-      "file": "experiments/2026-09-02_v30proxyfix_AB_st45_imuclip_idrsmoke_test.md",
-      "x": 18580,
-      "y": 300,
-      "width": 440,
-      "height": 320,
-      "color": "6"
-    },
-    {
-      "id": "n_legonly_smoke",
-      "type": "file",
-      "file": "experiments/2026-09-03_legonly_ab_smoke_test.md",
-      "x": 19060,
-      "y": 300,
-      "width": 440,
-      "height": 320,
-      "color": "6"
-    },
-    {
-      "id": "n_legonly_v1",
-      "type": "file",
-      "file": "experiments/2026-09-03_legonly_ab_v1.md",
-      "x": 19540,
-      "y": 300,
-      "width": 440,
-      "height": 320,
-      "color": "6"
-    },
-    {
-      "id": "n_legonly_v2_smoke",
-      "type": "file",
-      "file": "experiments/2026-09-03_legonly_ab_sideaware_smoke.md",
-      "x": 20020,
-      "y": 300,
-      "width": 440,
-      "height": 320,
-      "color": "6"
-    },
-    {
-      "id": "n_legonly_gaitkin",
-      "type": "file",
-      "file": "experiments/2026-09-03_legonly_gait_kinematics.md",
-      "x": 19540,
-      "y": 720,
-      "width": 440,
-      "height": 320,
-      "color": "3"
-    },
-    {
-      "id": "n_legonly_v2",
-      "type": "file",
-      "file": "experiments/2026-09-03_legonly_ab_v2.md",
-      "x": 20500,
-      "y": 300,
-      "width": 440,
-      "height": 320,
-      "color": "4"
-    },
-    {
-      "type": "text",
-      "width": 420,
-      "height": 180,
-      "color": "4",
-      "id": "n_legonly_v2_measure",
-      "x": 21000,
-      "y": 340,
-      "text": "legonly_ab_v2 완주 측정 (2026-09-05)\n무릎 스윙 좌 63.5/70.2° 우 49.5/54.1° (사람 55~65) — 좌우 축 수정 효과 확인\n좌우 비대칭 14° · 저속 정체 0.5 m/s 26 % · 회전 50 %\n모터 실효 전부 정격 안 (엉덩이 벌림 76 %)\n→ 다음: 정비 → 리서치 노트 → 대칭항 / 디딤비율 A/B"
-    },
-    {
-      "id": "n_legonly_v2_research",
-      "type": "file",
-      "file": "reward_research/2026-09-05_legonly_v2_gait_defects_root_cause.md",
-      "x": 21000,
-      "y": 580,
-      "width": 420,
-      "height": 140,
-      "color": "3"
-    },
-    {
-      "id": "n_legonly_v3_keyfix",
-      "type": "file",
-      "file": "experiments/2026-09-05_legonly_ab_v3_keyfix.md",
-      "x": 21480,
-      "y": 580,
-      "width": 420,
-      "height": 160,
-      "color": "4"
-    },
-    {
-      "id": "n_v3_knee_symmetry_research",
-      "type": "file",
-      "file": "reward_research/2026-09-06_v3_knee_symmetry_stance_duty.md",
-      "x": 21900,
-      "y": 266,
-      "width": 400,
-      "height": 170,
-      "color": "5"
-    },
-    {
-      "id": "n_huphy_findings",
-      "type": "file",
-      "file": "124_huphy_handoff_findings.md",
-      "x": 21000,
-      "y": 1100,
-      "width": 420,
-      "height": 180,
-      "color": "5"
-    },
-    {
-      "id": "n_bridge_findings",
-      "type": "file",
-      "file": "126_viewer_bridge_findings.md",
-      "x": 21000,
-      "y": 1320,
-      "width": 420,
-      "height": 180,
-      "color": "5"
-    },
-    {
-      "id": "n_motor_rootcause",
-      "type": "file",
-      "file": "127_motor_wont_move_root_cause.md",
-      "x": 21560,
-      "y": 1210,
-      "width": 420,
-      "height": 180,
-      "color": "5"
-    },
-    {
-      "id": "n_bench_incidents",
-      "type": "text",
-      "text": "**벤치 사고 2건 (2026-09-07)**\n\n확인 작업 중 의도치 않은 관절 이동.\n1) hip_yaw 40.1→0.3도, knee 49.5→5.8도 — 원인 확정:\n   맞춤이 목표 반영 전에 성공 반환 + 무장에 이동 크기 제한 없음.\n   고침: 반영까지 대기 + 10도 초과 시 무장 거부(재확인 시 진행).\n2) hip_yaw 0.25→−9.99도 — **원인 미확정**, 하드웨어 확인 중단.\n\n둘 다 화면을 거치지 않고 프로그램으로 직접 명령한 경로에서 발생.",
-      "x": 21560,
-      "y": 1470,
-      "width": 460,
-      "height": 220,
-      "color": "1"
-    },
-    {
-      "id": "n_rate_limit_fix",
-      "type": "text",
-      "text": "**속도 제한 재구성 (2026-09-07)**\n\n가지 `rate-limit-from-datasheet` `7c17ccc`\n\n기준점을 측정 위치 → **직전 명령**으로.\n옛 방식은 오차를 잘라 토크를 묶었고(kp×3°=1.57 N·m),\n모터가 뒤처지면 명령도 안 나아가 느릴수록 더 느려짐\n(이론 300°/s, 실측 49°/s).\n\n한도는 도/s로 기재 · 데이터시트 정격에서 유도\n(RS03 1080, RS04 1002 도/s).\n명령 50 Hz vs 제어 100 Hz 는 실측 경과시간으로 흡수.\n끊김 뒤 설정점 재시딩 = 사고 3건의 공통 경로 차단.\n\n**공개됨** `b67366d` — 최신 원본(`b4582b8`) 합친 뒤 시험 1116개 통과.\n원본이 MIT 프레임 수정을 독립 해결 → `fix-fault-byte-order` 철회.",
-      "x": 22100,
-      "y": 1470,
-      "width": 460,
-      "height": 260,
-      "color": "4"
-    },
-    {
-      "id": "n_legonly_v3_complete",
-      "type": "text",
-      "x": 21480,
-      "y": 800,
-      "width": 420,
-      "height": 200,
-      "color": "4",
-      "text": "legonly_ab_v3_keyfix 완주 (2026-09-07 09:43)\n총 27,999회 = 1단계 14,000(정상 졸업) + 2단계 14,000\n보상 115.4 / 50회 평균 114.2 (전 학습 최고) · 낙상 0.0000\n램프 후 추종오차 1.032 피크 → 1.009 회복 · 발열 최고 3.01\n총 41시간 1분\n미완: 완주본 정식 측정(운동학·전체 명령 범위 하중·모터 활용도)"
-    },
-    {
-      "id": "n_sweep_ab_2026_09_09",
-      "type": "text",
-      "x": 22640,
-      "y": 1470,
-      "width": 520,
-      "height": 340,
-      "color": "4",
-      "text": "**모형 vs 실물 사인 스윕 (2026-09-09)**\n[[2026-09-09_sim_vs_real_sine_sweep]]\n\n왼무릎 ±8도, 0.2~3.2 Hz 7계단, 발 뜬 상태(base 1.35 m)\n\n**원인 ① 이득 7.3배 감쇄**\n모형 kp 220/kd 6 → 모터 도착 30/1.5\n(뷰어 상한 30/1.5, 로봇 상한 50/2.5)\n감쇠비 0.40 → 0.27 (덜 감쇠)\n\n**원인 ② 명령 사구간 80 ms**\n계단 응답 모형 5 ms vs 실물 79~80 ms\n위상 9.1°+56.7°/Hz → 순수 지연 157 ms\n관측 경로 무죄(시각차 0.31 ms)\n\n★**이득 맞추면 역전**: 실물 0.88~1.04 고름,\n모형 1.2 Hz 1.314 → 1.6 Hz 0.327 붕괴\n\n★80 ms → 한계 kp≈25 ≈ 현행 상한 30\n= 지연 먼저, 이득은 그 다음"
-    },
-    {
-      "id": "n_huphy_ledger",
-      "type": "text",
-      "x": 23220,
-      "y": 1470,
-      "width": 400,
-      "height": 200,
-      "color": "6",
-      "text": "**HUPHY 수정 장부 (2026-09-09)**\n[[128_huphy_change_ledger]]\n\n남의 저장소이므로 가지에서만 수정하고\n왜/무엇을/어디를/어떻게/누가를 남긴다.\n\n001 = 사인 스윕(읽기만, 수정 0건)\n002 = 예정: 로봇 자체 시각 기록\n  (미설명 36~44 ms를 가르기 위해)"
-    },
-    {
-      "id": "n_sysid_method_2026_09_09",
-      "type": "text",
-      "x": 22640,
-      "y": 1900,
-      "width": 520,
-      "height": 250,
-      "color": "6",
-      "text": "**모터 파라미터 취득 방법 조사 (2026-09-09)**\n[[2026-09-09_motor_sysid_method]]\n\n사용자 지시: 믿을 수 있는 사전연구를 찾아 그 방법을 따를 것\n\n쓸 수 있는 자료는 셋 중 하나 —\nRobStride RS02 에 MuJoCo `sysid` 를 적용한 벤치 기록\n\n핵심: **순수 토크**(kp=0·kd=0)로 다중사인을 넣어야\n모터 내부 PD 가 물리를 가리지 않는다\ntau = A(sin2πft + 0.6sin2π·3.4f·t + 0.3sin2π·7.4f·t)\n\n도구는 이미 우리 안에 있었음(mujoco 3.10.0 의 `sysid`)"
-    },
-    {
-      "id": "n_sysid_attempt_2026_09_09",
-      "type": "text",
-      "x": 23220,
-      "y": 1900,
-      "width": 540,
-      "height": 420,
-      "color": "2",
-      "text": "**모터 파라미터 실측 시도 — 1차 (2026-09-09)**\n[[2026-09-09_motor_sysid_attempt]]\n\n무릎 RS04, 축에 부착물 없음, `System_ID/` 에서\n안전장치·우리 통신 경로 우회 (전선 코덱은 유지)\n\n★**결과를 못 믿음**\n· 맞춘 값 여럿이 한계에 붙음(damping 2.0, 마찰 0)\n· 가정 지연 0→30 ms 에 armature 0.14↔0.99 (7배)\n· 맞춤 잔차와 검증 오차가 **반대로** 움직임\n· 최선 2.46° vs 출발값 3.66° = 33% 개선뿐\n\n**원인 = 어댑터 처리량 224 Hz 한계**\n(2000 요청 → 223.8 실측 · 사전연구는 1000)\n왕복 자체는 0.93 ms → 지연 아니라 처리량\nslcan 이 프레임을 22글자 ASCII 로 바꿔 USB 로 보냄\n\n**확정 셋**\n① 어댑터 224 Hz 한계\n② 시킨 토크 ≠ 나온 토크 (0.27~0.37배, 15 ms 늦음)\n③ 80 ms 는 모터 탓 아님 (모터 옆 0.93 ms, 86배)\n   로봇 호스트가 QEMU 가상머신인 것도 확인\n\n⚠현행 모형 값을 이 결과로 고치지 말 것\n단 방향은 일치 — armature 가 최소 8.7배 큼"
-    },
-    {
-      "id": "n_can_bottleneck_next",
-      "type": "text",
-      "x": 23820,
-      "y": 1900,
-      "width": 420,
-      "height": 250,
-      "color": "5",
-      "text": "**다음: 통신 어댑터 (순서 있음)**\n\n1. CANable 펌웨어를 candleLight(gs_usb)로\n   같은 하드웨어·비용 0원, 보통 5~10배\n2. 제어를 실물 기판으로 (가상머신 USB 통과 제거)\n3. MCP2518FD SPI-CAN\n   ※ 가상머신에는 SPI 가 없어 2번이 전제\n\n초당 1000회가 되면 사전연구와 같은 조건에서\n다시 맞추고, 지연도 가정 말고 함께 맞춘다\n\n※ 어댑터를 고쳐도 뷰어 경로 80 ms 는\n   거의 안 줄어듦 (CAN 몫은 1 ms)"
-    },
-    {
-      "id": "n_vm_bottleneck_2026_09_09",
-      "type": "text",
-      "x": 23820,
-      "y": 2400,
-      "width": 560,
-      "height": 400,
-      "color": "1",
-      "text": "**★정정: 병목은 가상머신이었다 (2026-09-09 저녁)**\n[[2026-09-09_motor_sysid_attempt]] §5\n\n바깥 컴퓨터에서 두 변인을 갈라 잼:\n\n  장치에 글자 직접        초당 11,205\n  **커널 CAN 계층 경유    초당 11,088**  ← 1% 차이\n  가상머신, 커널 CAN     초당    230.5\n\n→ **48배 손실 = 전부 가상머신 장치 통과**\n\n★내가 틀렸던 것: 자료 길이를 바꿔도 초당 개수가\n같은 것을 보고 '프레임당 USB 고정비용'이라 했는데,\n관찰은 맞고 **원인 지목이 틀렸다**. 고정비용의 자리는\nUSB·slcan 이 아니라 가상머신 경계였다.\n\n대책 전면 변경\n· 펌웨어 교체 **중단** (바꿔도 원인 잔존)\n· SPI 보드 **불필요** (현 어댑터가 필요치의 11배)\n· 8 MHz 크리스털 논쟁 **무의미해짐**\n· 유일한 해법 = **제어를 가상머신 밖으로**"
-    },
-    {
-      "id": "n_friction_now_2026_09_09",
-      "type": "text",
-      "x": 24440,
-      "y": 2400,
-      "width": 420,
-      "height": 260,
-      "color": "4",
-      "text": "**막힌 것은 절반뿐 (2026-09-09)**\n`System_ID/friction_id.py`\n\n모터 파라미터 셋 중\n· 붙어 있는 힘(정지 마찰)  → 정상상태, **오늘 가능**\n· 속도 비례 힘(점성)      → 정상상태, **오늘 가능**\n· 회전자 무게감(관성)     → 고속 필요, 가상머신 밖\n\n재는 법: 토크를 초당 0.15씩 천천히 올려\n움직이는 순간을 잡음(감지 즉시 힘 뺌).\n속도 5단계를 붙잡고 필요한 힘을 읽어\n직선 절편=마찰, 기울기=점성.\n\n덤: 그 순간 모터는 멈춰 있으므로\n'보고 토크 눈금' 도 여기서 나온다."
-    },
-    {
-      "id": "n_friction_measured_2026_09_09",
-      "type": "text",
-      "x": 25060,
-      "y": 2400,
-      "width": 560,
-      "height": 440,
-      "color": "4",
-      "text": "**마찰 실측 완료 (2026-09-09 밤)**\n[[2026-09-09_motor_sysid_attempt]]\n무릎 RS04, 축에 부착물 없음\n\n★**모형 값 둘 다 낮다**\n  움직일 때 마찰  0.2695 → **0.523**  (1.9배)\n  점성           0.0095 → **0.0276** (2.9배)\n  방향별 적합 결정계수 0.918 / 0.944\n\n★모형에 **없는 항**: 붙어 있다 떨어지는 힘 0.88\n  (움직일 때 0.52 보다 훨씬 큼)\n\n정지 마찰 (12회씩)\n  차가움 29도  + 0.871±0.066  − 0.771±0.022\n  데움  37도  + 0.984±0.033  − 0.780±0.028\n★데워도 안 가벼워짐 · 흩어짐만 0.298→0.028\n★방향 비대칭 0.10~0.20 (원인 미규명)\n\n측정법 정정 2건\n· 속도로 판정 불가(토크 0 에서 6.5 도/s 튐)\n  → 위치 0.2도 문턱\n· 톱니 놀음 0.2도를 마찰로 오인\n  → 올릴 방향으로 미리 밀어 제거\n\n★보고 토크 눈금 = 0.995~1.053 (정확)\n  '0.27~0.37배' 는 지연+가속 혼입이었음"
-    },
-    {
-      "id": "n_psu_regen_warning",
-      "type": "text",
-      "x": 25680,
-      "y": 2400,
-      "width": 420,
-      "height": 300,
-      "color": "1",
-      "text": "**★★ 전원 경고 (2026-09-09)**\n\n15초마다 방향 전환 웜업 → **17초 만에 고장**\n매뉴얼 p.15 코드 0x3022\n  bit2 = 저전압 (보호 12 V 미만)\n  bit3 = 과전압 (경고)\n\n전환 순간: 465 도/s 에서 제동토크 −9.17 Nm\n= **약 74 W 를 전원으로 되밀었음**\n\n단방향 전환 → 5분 완주\n  (30→37도, 482 도/s, 토크 0.71)\n\n★**보행 시 관절이 상시 반전한다.**\n전원이 회생 전력을 받아 줄 수 있는지\n**별도 확인 필요** — 걷기 시험에서\n원인 모를 정지가 나면 이것일 수 있다."
-    },
-    {
-      "id": "n_inertia_measured_2026_09_09",
-      "type": "text",
-      "x": 25700,
-      "y": 2400,
-      "width": 600,
-      "height": 480,
-      "color": "4",
-      "text": "**★ 회전자 관성 실측 완료 — 모형이 8배 가벼웠다 (2026-09-09 밤)**\n[[2026-09-09_motor_rotor_inertia]]\n라즈베리파이 직결(가상머신 제거) → 왕복 초당 1814회\n\n**무릎 RS04 0.0773 kg·m² (모형 0.0097 — 8.0배 낮음)**\n엉덩이회전 RS03 0.0638 (모형 0.0049 — 13.0배)\n\n방법 둘이 독립 합치:\n· 타성 감속(마찰값을 빌림) 73~81 g·m²\n· **마찰 소거법**(토크 대 가속도 기울기) 77.26±0.64, 결정계수 0.9994\n\n교차검증: 절편 0.648 = 전날 마찰 예측 0.643 (1%)\n속도 적분 대 위치 변화 0.3% 일치\n\n**모터만 세운 MuJoCo 대조**: 현행 모형이 실물보다 9.0~13.6배 빠르게 가속.\n실측값 넣으면 곡선 겹침(1~6%).\n→ 'sim overshoot / real 추종실패' 의 **셋째이자 물리 원인**"
-    },
-    {
-      "id": "n_friction_retest_2026_09_09",
-      "type": "text",
-      "x": 26400,
-      "y": 2950,
-      "width": 620,
-      "height": 500,
-      "color": "5",
-      "text": "**마찰 재측정 + 속도 천장 둘 (2026-09-09 밤)**\n[[2026-09-09_motor_friction_retest]]\n라즈베리파이 초당 3300회 · 최고속도 웜업 후\n\n★**어제 값 확정**: 순수 타성 감속(토크 정확히 0)\n마찰 **0.519** (어제 0.523) · 점성 **0.0275** (0.0276)\n→ 224 Hz 한계는 마찰을 망치지 않았다\n\n★★**새 발견 — 속도 천장 둘**\n· 명령 칸 상한 859 도/s → 실제 825 에서 포화\n· **보고 속도도 859 에서 잘리는데 실제는 1362**\n  → 그 위에서 보고 속도 믿으면 안 됨\n\n★전원 전압 **약 57 V** 추론(48 아님)\n→ 속도 여유 19% 넓음, 무릎 고속수요 판정 재검토\n\n★'+ 방향이 무겁다' 정정 — 부호 뒤집힘(톱니 힘)"
-    },
-    {
-      "id": "n_report_timing_2026_09_09",
-      "type": "text",
-      "x": 27150,
-      "y": 3500,
-      "width": 640,
-      "height": 520,
-      "color": "1",
-      "text": "**보고값 대 실제값 + 명령 주기 (2026-09-09 밤)**\n[[2026-09-09_motor_report_and_timing]]\n\n★**속도**: 859 아래 비 1.000 / 위는 0.63 (실제 1367→859)\n★**토크**: 평균은 한 계단(0.059) 낮게 곧음.\n  **한 점은 못 씀** — 타성(실제 0)에서 ±0.7 균일 분포.\n  → 순간 토크로 안전차단 걸면 헛발질\n\n★★**주기**: 지금 501 us(초당 1994) = **이론상한 아님**\n  겹쳐 보내기 → **305 us, 초당 3281, 손실 0%**\n  = 선 천장(초당 3846~4505)의 73~85%\n★**한 모터에 4개는 무너짐** — 모터 수신칸 3개.\n  제한은 **모터마다**라 관절 수와 무관\n★**여유 5.5배** (필요 600/초, 가능 3281/초)\n\n→ **어댑터 펌웨어 굽지 않기로.** CANable 1.0/F042,\n  얻을 최대 +17~37%, CAN-FD 는 다른 실리콘"
-    },
-    {
-      "id": "n_pd_stepchirp_2026_09_09",
-      "type": "text",
-      "x": 27900,
-      "y": 4100,
-      "width": 660,
-      "height": 520,
-      "color": "4",
-      "text": "**★ 같은 지령 대조: 계단·처프 (2026-09-09 밤)**\n[[2026-09-09_pd_step_chirp_sim_vs_real]]\n호스트 PD + 같은 목표 + 같은 지연 0.5 ms\n\n★**처프**: 초당 10번 추종량 **실물 0.22 대 현행 0.86**\n  공진 실물 2.5 Hz/1.41 · 실측값 2.5/1.32 · 현행 봉우리 없음\n★**마찰 절제**: 계단 잔류오차 실물 1.29 · 실측 1.07\n  현행 0.22 · **마찰 제거 0.00**(실물에 없는 완벽함)\n  → frictionloss 에는 **동마찰 0.519**\n\nRS03: 처프 일치, **계단은 불일치**(0.05 대 0.73) — 정지마찰 미측정\n★RS03 점성은 모형이 **8.9배 과대**\n\n★**모터 내부 kp 경로 고장** — 오차 0에서 −90 Nm\n  → 호스트 PD 로 우회. 뷰어 경로 별도 조사 필요"
-    },
-    {
-      "id": "n_regen_bus_2026_09_09",
-      "type": "text",
-      "x": 28650,
-      "y": 4700,
-      "width": 660,
-      "height": 520,
-      "color": "2",
-      "text": "**블리더 3자 비교 + 6모터 200 Hz (2026-09-09 밤)**\n[[2026-09-09_pd_step_chirp_sim_vs_real]] · [[129_mujoco_motor_parameters]]\n\n★**블리더 효과 확정** (같은 600 도/s·15초 전환)\n  없음 17초 저전압 / 잘못설치 15.03초 과전압 / **제대로 40초 완주**\n  5단계 전부 완주, 되민 전력 **353.8 W** = 고장나던 74 W 의 4.8배\n  전원 약 57V, 과전압 문턱 60V → **48V 로 낮출 것**\n\n★**'여유 5.5배' 정정** — 6모터 1버스 200 Hz 는 **99.96%**\n  8%가 3 ms 초과, 최악 6.22 ms(마감 초과)\n  원인은 선이 아니라 호스트·USB → **이진 펌웨어 근거 생김**\n\n블리더 부착 후 값 불변 확인 (관성 77.86 대 77.26)"
-    },
-    {
-      "id": "n_pd_ablation_2026_09_09",
-      "type": "text",
-      "x": 28650,
-      "y": 5350,
-      "width": 680,
-      "height": 560,
-      "color": "6",
-      "text": "**★ 명령 5종 ×10회 + 값 하나씩 쓸어보기 (2026-09-09 밤)**\n[[2026-09-09_pd_ablation_five_commands]]\n\n★**명령마다 다른 값이 갈린다**\n· 처프 10 Hz 추종량 = **armature 전용**\n  없음 0.954 / 지금 0.851 / **실측 0.243** / 4배 0.060 (실물 0.249)\n· 느린삼각파 오차 = **frictionloss 전용**\n  0.144 / 0.814 / **1.478** / 5.038 (실물 1.772)\n\n★★**damping 은 어디서도 안 보인다** (0→4배에 0.5~14%)\n  → 위치제어로 점성 식별 불가, **타성 감속이 맞는 방법**\n\n★★**작은계단만 불일치 = 정지마찰이 빠진 자리**\n  실물 1.398도(명령 1.5도=거의 안 움직임)\n  실측 0.519 → 0.882 / 4배 2.076 → 1.188(더 가까움)\n  정지 0.901 = 동 0.519 의 1.7배. **작은 움직임만 지배**\n  → 걷기 중 1도 안팎 구간은 모형이 실제보다 부드럽다\n\n★**곡선 겹친 그림**(pd_ablation_rs04_overlay.png)\n  처프 빠른 구간: sim ±7.5도 대 실물 ±2.5도\n  점성 칸은 네 곡선이 겹쳐 구분 불가"
-    },
-    {
-      "id": "n_rs03_correction_2026_09_10",
-      "type": "text",
-      "x": 29400,
-      "y": 5950,
-      "width": 680,
-      "height": 500,
-      "color": "1",
-      "text": "**★★ 정정: RS03 마찰을 잘못 쟀다 (2026-09-10)**\n[[2026-09-10_rs03_friction_correction]]\n\n**0.400 · 0.0025 → 0.250 · 0.0252** (결정계수 0.019 → 0.811)\n\n원인 둘: 타성 감속을 4초에서 잘라 **저속 자료 없음**\n  + 놓은 직후 전류가 안 죽어 **고속 구간 오염**\n  (구간별 마찰 0.256/0.291/0.390/0.533/0.780/**0.31↓**)\n\n독립 검증: 삼각파 예측 **0.74도 대 실측 0.75도**\n\n★**'RS03 점성 8.9배 과대' 철회** — 거의 맞았음\n★**'RS03 은 계단만 안 맞는다' 철회** — 측정 오류였음\n→ **RS03 은 armature 하나만 4.2배 낮다**\n\nRS04 는 같은 오염 있었으나 감속이 빨라 무영향 (값 유효)"
-    },
-    {
-      "id": "n_sysid_eli5_2026_09_10",
-      "type": "text",
-      "x": 30150,
-      "y": 6550,
-      "width": 660,
-      "height": 420,
-      "color": "3",
-      "text": "**시스템 식별 이론·방법론 ELI5 (2026-09-10)**\n[[130_system_id_eli5]]\n\n바탕식 하나: 힘 = 관성×가속 + 마찰×방향 + 점성×속도\n미지수 셋, 식 하나 → **한 항만 남기는 상황을 각각 만든다**\n\n· 타성감속(토크 0) → 마찰·점성\n· 마찰 소거 뺄셈(두 토크) → 관성\n· 자리잡은 속도(가속 0) → 마찰\n· 천천히 밀기 → 정지마찰\n\n**어떤 명령이 어떤 값을 드러내나**\n처프=관성(√관성 반비례) · 삼각파=마찰(마찰÷세기)\n작은계단=정지마찰 · **점성은 어디서도 안 보임**\n\n규칙: 미분 대신 적분 · 바깥 검산 · 10회 반복 · 실패 7건 기록\n\n★**30도 재실험 결과**\n처프 9Hz 추종량 실물 0.086 · 지금 모형 0.376(**4.4배**, 8도땐 3.4배)\n→ **큰 동작일수록 시뮬레이터가 유리해진다**\n공진 실물 2.121 Hz = 실측값 2.121 Hz\n삼각파 지연은 진폭 바꿔도 1.49→1.46도(이론 1.487)"
-    },
-    {
-      "id": "n_validity_2026_09_10",
-      "type": "text",
-      "x": 30150,
-      "y": 7200,
-      "width": 680,
-      "height": 520,
-      "color": "5",
-      "text": "**타당성 검증 + 시뮬레이터 이득 재실험 (2026-09-10)**\n[[2026-09-10_motor_value_validity]]\n\n★**세 번째 독립 방법**: 토크 상한 구간의 가속도\n  RS04 0.0786±0.0004 · RS03 0.0634±0.0002 (1.6%/0.7%)\n★**상식 검사**: 최대토크로 무부하까지\n  구 카탈로그 1.2 ms(회전자 40 g) = **비물리**\n  연구원 5.3 ms · **벤치 13.5 ms**(QDD 통상 10~30)\n\n★★**불리한 증거**: 관성 비 RS04÷RS03\n  연구원 2.00배 = 토크비와 일치 / **벤치 1.21배**\n  (단 지름이 달라 이 논리로는 확정 불가)\n\n★**이득이 세면 파라미터가 덜 드러난다**\n  계단 지나침: 지금 모형이 실물 대비 kp20 38% → kp220 95%\n  → **식별은 낮은 이득에서**. 처프 스윕도 이득 따라 넓혀야"
-    }
-  ],
-  "edges": [
-    {
-      "id": "e_gaitfix_g1van",
-      "fromNode": "gaitfix",
-      "toNode": "g1van",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "피벗: 20-term 한계"
-    },
-    {
-      "id": "e_why_van_g1van",
-      "fromNode": "why_van",
-      "toNode": "g1van",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "근거"
-    },
-    {
-      "id": "e_g1van_siek",
-      "fromNode": "g1van",
-      "toNode": "siek",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "까치발→base_height복원 / 위상클록"
-    },
-    {
-      "id": "e_tiptoe_siek",
-      "fromNode": "tiptoe",
-      "toNode": "siek",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "근거"
-    },
-    {
-      "id": "e_why_clock_siek",
-      "fromNode": "why_clock",
-      "toNode": "siek",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "label": "근거"
-    },
-    {
-      "id": "e_siek_p2fin",
-      "fromNode": "siek",
-      "toNode": "p2fin",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "mjlab 이관·튜닝"
-    },
-    {
-      "id": "e_kd_ab_p2fin",
-      "fromNode": "kd_ab",
-      "toNode": "p2fin",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "A/B: Kd6 유지"
-    },
-    {
-      "id": "e_init_ab_p2fin",
-      "fromNode": "init_ab",
-      "toNode": "p2fin",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "label": "A/B(구): bent 재분배"
-    },
-    {
-      "id": "e_p2fin_f25p1",
-      "fromNode": "p2fin",
-      "toNode": "f25p1",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "2.5 커리큘럼 개방"
-    },
-    {
-      "id": "e_f25p1_progp1",
-      "fromNode": "f25p1",
-      "toNode": "progp1",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "WHY: 고속 freeze→진행보상"
-    },
-    {
-      "id": "e_progp1_gen2p2",
-      "fromNode": "progp1",
-      "toNode": "gen2p2",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "Gen-2 번들 4건"
-    },
-    {
-      "id": "e_bent_ab_gen2p2",
-      "fromNode": "bent_ab",
-      "toNode": "gen2p2",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "label": "WHY: init A/B 반전→bent 채택"
-    },
-    {
-      "id": "e_gen2p2_g21p1",
-      "fromNode": "gen2p2",
-      "toNode": "g21p1",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "WHY: creep 게이밍→stall 상대임계"
-    },
-    {
-      "id": "e_stall_note_g21p1",
-      "fromNode": "stall_note",
-      "toNode": "g21p1",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "근거"
-    },
-    {
-      "id": "e_g21p1_g21p2",
-      "fromNode": "g21p1",
-      "toNode": "g21p2",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "P2 DR+push 램프"
-    },
-    {
-      "id": "e_g21p2_rgh_fail",
-      "fromNode": "g21p2",
-      "toNode": "rgh_fail",
-      "fromSide": "top",
-      "toSide": "left",
-      "label": "warm-start rough"
-    },
-    {
-      "id": "e_blind_unv1",
-      "fromNode": "blind",
-      "toNode": "unv1",
-      "fromSide": "bottom",
-      "toSide": "left",
-      "label": "WHY: 장님×계단40%"
-    },
-    {
-      "id": "e_rgh_fail_unv1",
-      "fromNode": "rgh_fail",
-      "toNode": "unv1",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "실패→진단→계단제거"
-    },
-    {
-      "id": "e_unv1_unv2p1",
-      "fromNode": "unv1",
-      "toNode": "unv2p1",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "WHY: 슬로프45°도 불가→17°"
-    },
-    {
-      "id": "e_unv2p1_unv2p2b",
-      "fromNode": "unv2p1",
-      "toNode": "unv2p2b",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "P2 (dr윈도우 버그 수정)"
-    },
-    {
-      "id": "e_g21p2_c30p1",
-      "fromNode": "g21p2",
-      "toNode": "c30p1",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "HW기하: pitch 캔트30°"
-    },
-    {
-      "id": "e_cant_design_c30p1",
-      "fromNode": "cant_design",
-      "toNode": "c30p1",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "label": "설계근거 docs67"
-    },
-    {
-      "id": "e_c30p1_c30p2",
-      "fromNode": "c30p1",
-      "toNode": "c30p2",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "P2 DR+push"
-    },
-    {
-      "id": "e_c30p2_c30fp1",
-      "fromNode": "c30p2",
-      "toNode": "c30fp1",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "WHY: 발 ±9° toe-out→hip_yaw 보정"
-    },
-    {
-      "id": "e_feet_c30fp1",
-      "fromNode": "feet",
-      "toNode": "c30fp1",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "label": "근거 docs68"
-    },
-    {
-      "id": "e_c30fp1_c30fp2",
-      "fromNode": "c30fp1",
-      "toNode": "c30fp2",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "P2"
-    },
-    {
-      "id": "e_g21p2_roll_p1",
-      "fromNode": "g21p2",
-      "toNode": "roll_p1",
-      "fromSide": "bottom",
-      "toSide": "left",
-      "label": "HW기하: roll +30mm 외측"
-    },
-    {
-      "id": "e_roll_p1_roll_p2",
-      "fromNode": "roll_p1",
-      "toNode": "roll_p2",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "P2 대기"
-    },
-    {
-      "id": "e_fp2_c20",
-      "fromNode": "c30fp2",
-      "fromSide": "right",
-      "toNode": "n_cant20fp",
-      "toSide": "left",
-      "label": "WHY: ankle_pitch 100% peak → α20"
-    },
-    {
-      "id": "e_fp2_c20p2",
-      "fromNode": "c30fp2",
-      "fromSide": "right",
-      "toNode": "n_c20p2",
-      "toSide": "left",
-      "label": "WHY: ankle_pitch 100%peak → α20"
-    },
-    {
-      "id": "e_anchor_g1val",
-      "fromNode": "g21p2",
-      "fromSide": "right",
-      "toNode": "n_g1val",
-      "toSide": "left",
-      "label": "실기 검증"
-    },
-    {
-      "id": "e_anchor_brg",
-      "fromNode": "g21p2",
-      "fromSide": "right",
-      "toNode": "n_brg",
-      "toSide": "left",
-      "label": "하중→부품 선정"
-    },
-    {
-      "id": "e_g21_ankAB",
-      "fromNode": "g21p2",
-      "fromSide": "right",
-      "toNode": "n_ankAB",
-      "toSide": "left",
-      "label": "보상·init 계승, 모델 교체 (fresh)"
-    },
-    {
-      "id": "e_g21_ankRP",
-      "fromNode": "g21p2",
-      "fromSide": "right",
-      "toNode": "n_ankRP",
-      "toSide": "left",
-      "label": "보상·init 계승, 모델 교체 (fresh)"
-    },
-    {
-      "id": "e_ab_rp",
-      "fromNode": "n_ankAB",
-      "fromSide": "bottom",
-      "toNode": "n_ankRP",
-      "toSide": "top",
-      "label": "A/B: 발목 기구 단일변인"
-    },
-    {
-      "id": "e_era10",
-      "fromNode": "n_era10",
-      "fromSide": "bottom",
-      "toNode": "n_ankAB",
-      "toSide": "top",
-      "label": "변인 정의"
-    },
-    {
-      "id": "e_solimp",
-      "fromNode": "n_solimp",
-      "fromSide": "bottom",
-      "toNode": "n_ankAB",
-      "toSide": "top",
-      "label": "구속 강성 조사·변인통제 (solimp 0.999 유지, A/B 본런 후)"
-    },
-    {
-      "id": "e_ab23",
-      "fromNode": "n_ankAB",
-      "fromSide": "right",
-      "toNode": "n_ankAB3",
-      "toSide": "left",
-      "label": "warm-start model_3100 + soft-landing"
-    },
-    {
-      "id": "e_rp23",
-      "fromNode": "n_ankRP",
-      "fromSide": "right",
-      "toNode": "n_ankRP3",
-      "toSide": "left",
-      "label": "warm-start model_3100 + soft-landing"
-    },
-    {
-      "id": "e_soft",
-      "fromNode": "n_soft",
-      "fromSide": "bottom",
-      "toNode": "n_ankAB3",
-      "toSide": "top",
-      "label": "시험 2회 → 제곱형 채택"
-    },
-    {
-      "id": "e_ab3rp3",
-      "fromNode": "n_ankAB3",
-      "fromSide": "bottom",
-      "toNode": "n_ankRP3",
-      "toSide": "top",
-      "label": "A/B: 발목 기구 단일변인"
-    },
-    {
-      "id": "e_gate_ab3",
-      "fromNode": "n_ankAB3",
-      "fromSide": "right",
-      "toNode": "n_gate_c3",
-      "toSide": "left",
-      "label": "게이트 측정"
-    },
-    {
-      "id": "e_gate_rp3",
-      "fromNode": "n_ankRP3",
-      "fromSide": "right",
-      "toNode": "n_gate_c3",
-      "toSide": "left",
-      "label": "게이트 측정"
-    },
-    {
-      "id": "e_vid_ab3",
-      "fromNode": "n_ankAB3",
-      "fromSide": "bottom",
-      "toNode": "n_abrp_vid",
-      "toSide": "left",
-      "label": "1:1 영상"
-    },
-    {
-      "id": "e_vid_rp3",
-      "fromNode": "n_ankRP3",
-      "fromSide": "right",
-      "toNode": "n_abrp_vid",
-      "toSide": "left",
-      "label": "1:1 영상"
-    },
-    {
-      "id": "e_bneck_gate",
-      "fromNode": "n_gate_c3",
-      "fromSide": "right",
-      "toNode": "n_track_bneck",
-      "toSide": "left",
-      "label": "err_vel 0.69 분해"
-    },
-    {
-      "id": "e_trend_ab3",
-      "fromNode": "n_ankAB3",
-      "fromSide": "bottom",
-      "toNode": "n_trend97",
-      "toSide": "top",
-      "label": "항별 추세·건강도"
-    },
-    {
-      "id": "e_plan_n_trend97",
-      "fromNode": "n_trend97",
-      "fromSide": "right",
-      "toNode": "n_plan98",
-      "toSide": "left",
-      "label": "문제 6건"
-    },
-    {
-      "id": "e_plan_n_track_bneck",
-      "fromNode": "n_track_bneck",
-      "fromSide": "right",
-      "toNode": "n_plan98",
-      "toSide": "left",
-      "label": "지표·박스"
-    },
-    {
-      "id": "e_obs_plan",
-      "fromNode": "n_obs100",
-      "fromSide": "top",
-      "toNode": "n_plan98",
-      "toSide": "bottom",
-      "label": "관측 설계"
-    },
-    {
-      "id": "e_spec_n_plan98",
-      "fromNode": "n_plan98",
-      "fromSide": "right",
-      "toNode": "n_spec101",
-      "toSide": "left",
-      "label": "최종 계획"
-    },
-    {
-      "id": "e_spec_n_gate_c3",
-      "fromNode": "n_gate_c3",
-      "fromSide": "right",
-      "toNode": "n_spec101",
-      "toSide": "left",
-      "label": "AB/RP 비교"
-    },
-    {
-      "id": "e_energy_spec",
-      "fromNode": "n_spec101",
-      "fromSide": "bottom",
-      "toNode": "n_energy",
-      "toSide": "top",
-      "label": "§5 결론"
-    },
-    {
-      "id": "e_hand_spec",
-      "fromNode": "n_spec101",
-      "fromSide": "bottom",
-      "toNode": "n_handover102",
-      "toSide": "top",
-      "label": "인계"
-    },
-    {
-      "id": "e_v2_n_plan98",
-      "fromNode": "n_plan98",
-      "fromSide": "right",
-      "toNode": "n_v2plan",
-      "toSide": "left",
-      "label": "대체"
-    },
-    {
-      "id": "e_v2_n_spec101",
-      "fromNode": "n_spec101",
-      "fromSide": "right",
-      "toNode": "n_v2plan",
-      "toSide": "left",
-      "label": "c3 결과 반영"
-    },
-    {
-      "id": "e_init_v2",
-      "fromNode": "n_init104",
-      "fromSide": "top",
-      "toNode": "n_v2plan",
-      "toSide": "bottom",
-      "label": "V2 항목 재정의"
-    },
-    {
-      "id": "e_cmp_n_ankAB3",
-      "fromNode": "n_ankAB3",
-      "fromSide": "bottom",
-      "toNode": "n_abrp_cmp",
-      "toSide": "top",
-      "label": "A/B 비교"
-    },
-    {
-      "id": "e_cmp_n_ankRP3",
-      "fromNode": "n_ankRP3",
-      "fromSide": "bottom",
-      "toNode": "n_abrp_cmp",
-      "toSide": "top",
-      "label": "A/B 비교"
-    },
-    {
-      "id": "e_bundle_104",
-      "fromNode": "n_init104",
-      "fromSide": "right",
-      "toNode": "n_bundle_rr",
-      "toSide": "left",
-      "label": "번들 근거"
-    },
-    {
-      "id": "e_n_bctl",
-      "fromNode": "n_ankAB3",
-      "fromSide": "right",
-      "toNode": "n_bctl",
-      "toSide": "left",
-      "label": "model_31999 +800"
-    },
-    {
-      "id": "e_n_btrt",
-      "fromNode": "n_ankAB3",
-      "fromSide": "right",
-      "toNode": "n_btrt",
-      "toSide": "left",
-      "label": "model_31999 +800"
-    },
-    {
-      "id": "e_bundle_ab",
-      "fromNode": "n_bctl",
-      "fromSide": "bottom",
-      "toNode": "n_btrt",
-      "toSide": "top",
-      "label": "A/B: 착지 번들 3변인"
-    },
-    {
-      "id": "e_verdict_n_bctl",
-      "fromNode": "n_bctl",
-      "fromSide": "right",
-      "toNode": "n_bundle_verdict",
-      "toSide": "left",
-      "label": "판정"
-    },
-    {
-      "id": "e_verdict_n_btrt",
-      "fromNode": "n_btrt",
-      "fromSide": "right",
-      "toNode": "n_bundle_verdict",
-      "toSide": "left",
-      "label": "판정"
-    },
-    {
-      "id": "e_n_bB2",
-      "fromNode": "n_bundle_verdict",
-      "fromSide": "right",
-      "toNode": "n_bB2",
-      "toSide": "left",
-      "label": "원인분리"
-    },
-    {
-      "id": "e_n_bB3",
-      "fromNode": "n_bundle_verdict",
-      "fromSide": "right",
-      "toNode": "n_bB3",
-      "toSide": "left",
-      "label": "원인분리"
-    },
-    {
-      "id": "e_n_bC3",
-      "fromNode": "n_bB3",
-      "fromSide": "right",
-      "toNode": "n_bC3",
-      "toSide": "left",
-      "label": "16384 env"
-    },
-    {
-      "id": "e_n_bC4",
-      "fromNode": "n_bB3",
-      "fromSide": "right",
-      "toNode": "n_bC4",
-      "toSide": "left",
-      "label": "16384 env"
-    },
-    {
-      "id": "e_bC5",
-      "fromNode": "n_bC3",
-      "fromSide": "bottom",
-      "toNode": "n_bC5",
-      "toSide": "top",
-      "label": "+무릎 신전항"
-    },
-    {
-      "id": "e_n_bC3_n_bundle_final",
-      "fromNode": "n_bC3",
-      "fromSide": "right",
-      "toNode": "n_bundle_final",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_bC5_n_bundle_final",
-      "fromNode": "n_bC5",
-      "fromSide": "right",
-      "toNode": "n_bundle_final",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_bB2_n_bundle_final",
-      "fromNode": "n_bB2",
-      "fromSide": "right",
-      "toNode": "n_bundle_final",
-      "toSide": "left",
-      "label": "철회 후 채택"
-    },
-    {
-      "id": "e_n_bundle_final_n_bD1",
-      "fromNode": "n_bundle_final",
-      "fromSide": "right",
-      "toNode": "n_bD1",
-      "toSide": "left",
-      "label": "세 안 동시 시험"
-    },
-    {
-      "id": "e_n_bD1_n_d1_verdict",
-      "fromNode": "n_bD1",
-      "fromSide": "right",
-      "toNode": "n_d1_verdict",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_bD1_n_signbug",
-      "fromNode": "n_bD1",
-      "fromSide": "right",
-      "toNode": "n_signbug",
-      "toSide": "left",
-      "label": "텐서보드 0.00000"
-    },
-    {
-      "id": "e_n_d1_verdict_n_bD1_RP",
-      "fromNode": "n_d1_verdict",
-      "fromSide": "right",
-      "toNode": "n_bD1_RP",
-      "toSide": "left",
-      "label": "RP 이식"
-    },
-    {
-      "id": "e_n_bCTL_RP_n_rp_verdict",
-      "fromNode": "n_bCTL_RP",
-      "fromSide": "right",
-      "toNode": "n_rp_verdict",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_bD1_RP_n_rp_verdict",
-      "fromNode": "n_bD1_RP",
-      "fromSide": "right",
-      "toNode": "n_rp_verdict",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_bundle_final_n_bD1_ab",
-      "fromNode": "n_bundle_final",
-      "fromSide": "right",
-      "toNode": "n_bD1_ab",
-      "toSide": "left",
-      "label": "세 안 동시"
-    },
-    {
-      "id": "e_n_bD1_ab_n_bCTL_rp",
-      "fromNode": "n_bD1_ab",
-      "fromSide": "right",
-      "toNode": "n_bCTL_rp",
-      "toSide": "left",
-      "label": "RP 이식: 대조"
-    },
-    {
-      "id": "e_n_bD1_ab_n_bD1_rp",
-      "fromNode": "n_bD1_ab",
-      "fromSide": "right",
-      "toNode": "n_bD1_rp",
-      "toSide": "left",
-      "label": "RP 이식: 처치"
-    },
-    {
-      "id": "e_n_bD1_ab_n_bE1_ab",
-      "fromNode": "n_bD1_ab",
-      "fromSide": "right",
-      "toNode": "n_bE1_ab",
-      "toSide": "left",
-      "label": "+수정된 하중률항"
-    },
-    {
-      "id": "e_n_bD1_ab_n_bV4_ab",
-      "fromNode": "n_bD1_ab",
-      "fromSide": "right",
-      "toNode": "n_bV4_ab",
-      "toSide": "left",
-      "label": "+v4 질량"
-    },
-    {
-      "id": "e_n_bundle_final_n_rp_transfer",
-      "fromNode": "n_bundle_final",
-      "fromSide": "right",
-      "toNode": "n_rp_transfer",
-      "toSide": "left",
-      "label": "RP arm"
-    },
-    {
-      "id": "e_n_bD1_n_e1v4",
-      "fromNode": "n_bD1",
-      "fromSide": "right",
-      "toNode": "n_e1v4",
-      "toSide": "left",
-      "label": "+ 수정된 항 / v4 질량"
-    },
-    {
-      "id": "e_n_bD1_n_v4",
-      "fromNode": "n_bD1",
-      "fromSide": "right",
-      "toNode": "n_v4",
-      "toSide": "left",
-      "label": "v4 질량"
-    },
-    {
-      "id": "e_n_bD1_n_p1low",
-      "fromNode": "n_bD1",
-      "fromSide": "right",
-      "toNode": "n_p1low",
-      "toSide": "left",
-      "label": "저속 deadband A/B"
-    },
-    {
-      "id": "e_p1low_p1s2",
-      "fromNode": "n_p1low",
-      "fromSide": "right",
-      "toNode": "n_p1s2",
-      "toSide": "left",
-      "label": "seed 2 복제"
-    },
-    {
-      "id": "e_p1low_p1s3",
-      "fromNode": "n_p1low",
-      "fromSide": "right",
-      "toNode": "n_p1s3",
-      "toSide": "left",
-      "label": "seed 3 복제"
-    },
-    {
-      "id": "e_bD1_d1s2",
-      "fromNode": "n_bD1",
-      "fromSide": "right",
-      "toNode": "n_d1s2",
-      "toSide": "left",
-      "label": "seed 2 대조(분산 바닥)"
-    },
-    {
-      "id": "e_n_p1low_n_v2s1",
-      "fromNode": "n_p1low",
-      "fromSide": "right",
-      "toNode": "n_v2s1",
-      "toSide": "left",
-      "label": "저속 기각 반영"
-    },
-    {
-      "id": "e_n_rp_transfer_n_ankleaudit",
-      "fromNode": "n_rp_transfer",
-      "fromSide": "right",
-      "toNode": "n_ankleaudit",
-      "toSide": "left",
-      "label": "발목 사용 감사"
-    },
-    {
-      "id": "e_n_v2s1_n_v30_st45_smoke",
-      "fromNode": "n_v2s1",
-      "fromSide": "right",
-      "toNode": "n_v30_st45_smoke",
-      "toSide": "left",
-      "label": "v30 질량·45D 센서·clip·DR 재검증"
-    },
-    {
-      "id": "e_v2s1_legonly_smoke",
-      "fromNode": "n_v2s1",
-      "toNode": "n_legonly_smoke",
-      "label": "recipe inherited, robot model swapped -> LegOnly 12-DOF"
-    },
-    {
-      "id": "e_smoke_v1",
-      "fromNode": "n_legonly_smoke",
-      "toNode": "n_legonly_v1",
-      "label": "smoke PASS -> real 16384-env launch"
-    },
-    {
-      "id": "e_v2s1_legonly_v1_direct",
-      "fromNode": "n_v2s1",
-      "toNode": "n_legonly_v1",
-      "label": "recipe inherited"
-    },
-    {
-      "id": "e_v1_v2smoke",
-      "fromNode": "n_legonly_v1",
-      "toNode": "n_legonly_v2_smoke",
-      "label": "v1 halted (L_knee action window 0 deg) -> config side-aware fix, verified by smoke"
-    },
-    {
-      "id": "e_v1_gaitkin",
-      "fromNode": "n_legonly_v1",
-      "toNode": "n_legonly_gaitkin",
-      "label": "kinematics @5600: L_knee window 0deg (config bug)"
-    },
-    {
-      "id": "e_gaitkin_v2",
-      "fromNode": "n_legonly_gaitkin",
-      "toNode": "n_legonly_v2",
-      "label": "conservative STOP -> side-aware config fix (single variable)"
-    },
-    {
-      "id": "e_v1_v2",
-      "fromNode": "n_legonly_v1",
-      "toNode": "n_legonly_v2",
-      "label": "same recipe/model/DR, config fix only"
-    },
-    {
-      "id": "e_smoke2_v2",
-      "fromNode": "n_legonly_v2_smoke",
-      "toNode": "n_legonly_v2",
-      "label": "smoke PASS (knee window open) -> 16384-env launch; P1 graduated @4100 -> P2 (DR+push ramp), no transition dip; P2 @11565 (64%) reward 108, DR 0.75, fall 0, thermal 2.85 < 3.0"
-    },
-    {
-      "id": "e_v2_to_measure",
-      "fromNode": "n_legonly_v2",
-      "toNode": "n_legonly_v2_measure",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "완주 후 측정"
-    },
-    {
-      "id": "e_gaitkin_to_measure",
-      "fromNode": "n_legonly_gaitkin",
-      "toNode": "n_legonly_v2_measure",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "수정 전 기준선"
-    },
-    {
-      "id": "e_measure_to_research",
-      "fromNode": "n_legonly_v2_measure",
-      "toNode": "n_legonly_v2_research",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "세 결함의 뿌리"
-    },
-    {
-      "id": "e_research_to_v3",
-      "fromNode": "n_legonly_v2_research",
-      "toNode": "n_legonly_v3_keyfix",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "A0: 시작 자세 수정만"
-    },
-    {
-      "id": "e_v2_to_v3",
-      "fromNode": "n_legonly_v2",
-      "toNode": "n_legonly_v3_keyfix",
-      "fromSide": "right",
-      "toSide": "top",
-      "label": "유일 변인"
-    },
-    {
-      "id": "e_v3run_to_kneeresearch",
-      "fromNode": "n_legonly_v3_keyfix",
-      "fromSide": "right",
-      "toNode": "n_v3_knee_symmetry_research",
-      "toSide": "left",
-      "label": "반복 측정 → 정정 + 디딤 불균형"
-    },
-    {
-      "id": "e_huphy_to_rootcause",
-      "fromNode": "n_huphy_findings",
-      "fromSide": "right",
-      "toNode": "n_motor_rootcause",
-      "toSide": "left",
-      "label": "로봇 본체 결함 3건 → 같은 증상"
-    },
-    {
-      "id": "e_bridge_to_rootcause",
-      "fromNode": "n_bridge_findings",
-      "fromSide": "right",
-      "toNode": "n_motor_rootcause",
-      "toSide": "left",
-      "label": "어댑터 결함 3건 → 같은 증상"
-    },
-    {
-      "id": "e_rootcause_to_incidents",
-      "fromNode": "n_motor_rootcause",
-      "fromSide": "bottom",
-      "toNode": "n_bench_incidents",
-      "toSide": "top",
-      "label": "계측기 도입 중 드러난 실제 사고"
-    },
-    {
-      "id": "e_incidents_to_ratefix",
-      "fromNode": "n_bench_incidents",
-      "fromSide": "right",
-      "toNode": "n_rate_limit_fix",
-      "toSide": "left",
-      "label": "재개 첫 패킷 → 재시딩 규칙"
-    },
-    {
-      "id": "e_v3_to_complete",
-      "fromNode": "n_legonly_v3_keyfix",
-      "toNode": "n_legonly_v3_complete",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "완주 27,999회"
-    },
-    {
-      "id": "e_ratelimit_to_sweep",
-      "fromNode": "n_rate_limit_fix",
-      "toNode": "n_sweep_ab_2026_09_09",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "속도 제한 뒤 응답 비교"
-    },
-    {
-      "id": "e_sweep_to_ledger",
-      "fromNode": "n_sweep_ab_2026_09_09",
-      "toNode": "n_huphy_ledger",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "남은 36~44 ms → 로봇 수정 필요"
-    },
-    {
-      "id": "e_sweep_to_sysid_method",
-      "fromNode": "n_sweep_ab_2026_09_09",
-      "toNode": "n_sysid_method_2026_09_09",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "모터 값이 맞는지 확인 필요 → 방법 조사"
-    },
-    {
-      "id": "e_method_to_attempt",
-      "fromNode": "n_sysid_method_2026_09_09",
-      "toNode": "n_sysid_attempt_2026_09_09",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "그 방법대로 실행"
-    },
-    {
-      "id": "e_attempt_to_can",
-      "fromNode": "n_sysid_attempt_2026_09_09",
-      "toNode": "n_can_bottleneck_next",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "224 Hz 가 막음 → 어댑터부터"
-    },
-    {
-      "id": "e_attempt_to_ledger",
-      "fromNode": "n_sysid_attempt_2026_09_09",
-      "toNode": "n_huphy_ledger",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "label": "장부 003 (HUPHY 무수정)"
-    },
-    {
-      "id": "e_can_next_to_vm",
-      "fromNode": "n_can_bottleneck_next",
-      "toNode": "n_vm_bottleneck_2026_09_09",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "label": "실측으로 갈라 봄 → 예상과 다름"
-    },
-    {
-      "id": "e_vm_to_friction",
-      "fromNode": "n_vm_bottleneck_2026_09_09",
-      "toNode": "n_friction_now_2026_09_09",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "막힌 건 관성뿐 → 마찰은 지금"
-    },
-    {
-      "id": "e_fricnow_to_measured",
-      "fromNode": "n_friction_now_2026_09_09",
-      "toNode": "n_friction_measured_2026_09_09",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "실제로 쟀음"
-    },
-    {
-      "id": "e_measured_to_psu",
-      "fromNode": "n_friction_measured_2026_09_09",
-      "toNode": "n_psu_regen_warning",
-      "fromSide": "right",
-      "toSide": "left",
-      "label": "웜업 중 발견"
-    },
-    {
-      "id": "e_n_friction_measured_2026_09_09_to_inertia",
-      "fromNode": "n_friction_measured_2026_09_09",
-      "fromSide": "right",
-      "toNode": "n_inertia_measured_2026_09_09",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_vm_bottleneck_2026_09_09_to_inertia",
-      "fromNode": "n_vm_bottleneck_2026_09_09",
-      "fromSide": "right",
-      "toNode": "n_inertia_measured_2026_09_09",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_inertia_measured_2026_09_09_to_fretest",
-      "fromNode": "n_inertia_measured_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_friction_retest_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_friction_measured_2026_09_09_to_fretest",
-      "fromNode": "n_friction_measured_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_friction_retest_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_friction_retest_2026_09_09_to_reptim",
-      "fromNode": "n_friction_retest_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_report_timing_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_vm_bottleneck_2026_09_09_to_reptim",
-      "fromNode": "n_vm_bottleneck_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_report_timing_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_report_timing_2026_09_09_to_n_pd_stepchirp_2026_09_09",
-      "fromNode": "n_report_timing_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_pd_stepchirp_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_inertia_measured_2026_09_09_to_n_pd_stepchirp_2026_09_09",
-      "fromNode": "n_inertia_measured_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_pd_stepchirp_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_pd_stepchirp_2026_09_09_to_n_regen_bus_2026_09_09",
-      "fromNode": "n_pd_stepchirp_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_regen_bus_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_pd_stepchirp_2026_09_09_to_abl",
-      "fromNode": "n_pd_stepchirp_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_pd_ablation_2026_09_09",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_pd_ablation_2026_09_09_to_rs03fix",
-      "fromNode": "n_pd_ablation_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_rs03_correction_2026_09_10",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_pd_stepchirp_2026_09_09_to_rs03fix",
-      "fromNode": "n_pd_stepchirp_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_rs03_correction_2026_09_10",
-      "toSide": "top"
-    },
-    {
-      "id": "e_abl_to_eli5",
-      "fromNode": "n_pd_ablation_2026_09_09",
-      "fromSide": "right",
-      "toNode": "n_sysid_eli5_2026_09_10",
-      "toSide": "left"
-    },
-    {
-      "id": "e_n_rs03_correction_2026_09_10_to_valid",
-      "fromNode": "n_rs03_correction_2026_09_10",
-      "fromSide": "bottom",
-      "toNode": "n_validity_2026_09_10",
-      "toSide": "top"
-    },
-    {
-      "id": "e_n_pd_ablation_2026_09_09_to_valid",
-      "fromNode": "n_pd_ablation_2026_09_09",
-      "fromSide": "bottom",
-      "toNode": "n_validity_2026_09_10",
-      "toSide": "top"
-    }
-  ]
+ "nodes": [
+  {
+   "id": "gaitfix",
+   "type": "file",
+   "x": 0,
+   "y": 0,
+   "width": 360,
+   "height": 130,
+   "color": "2",
+   "file": "experiments/2026-06-22_12-29-19_gaitfix_v7.md"
+  },
+  {
+   "id": "g1van",
+   "type": "file",
+   "x": 760,
+   "y": 0,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-06-22_17-28-08_g1vanilla.md"
+  },
+  {
+   "id": "siek",
+   "type": "file",
+   "x": 1520,
+   "y": 0,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-06-29_13-00-01_siekmann_v8_flat.md"
+  },
+  {
+   "id": "p2fin",
+   "type": "file",
+   "x": 3040,
+   "y": 0,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-07_P2_final_analysis.md"
+  },
+  {
+   "id": "f25p1",
+   "type": "file",
+   "x": 3800,
+   "y": 0,
+   "width": 360,
+   "height": 120,
+   "color": "1",
+   "file": "experiments/2026-07-10_flat25_p1.md"
+  },
+  {
+   "id": "progp1",
+   "type": "file",
+   "x": 3800,
+   "y": 340,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-10_flat25b_prog_p1.md"
+  },
+  {
+   "id": "gen2p2",
+   "type": "file",
+   "x": 4560,
+   "y": 0,
+   "width": 360,
+   "height": 120,
+   "color": "1",
+   "file": "experiments/2026-07-12_gen2_bent_p2.md"
+  },
+  {
+   "id": "g21p1",
+   "type": "file",
+   "x": 5320,
+   "y": 0,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-13_gen21_bent_p1.md"
+  },
+  {
+   "id": "g21p2",
+   "type": "file",
+   "x": 6080,
+   "y": 0,
+   "width": 360,
+   "height": 140,
+   "color": "4",
+   "file": "experiments/2026-07-13_gen21_bent_p2.md"
+  },
+  {
+   "id": "anchor_lbl",
+   "type": "text",
+   "x": 6080,
+   "y": -190,
+   "width": 360,
+   "height": 110,
+   "color": "4",
+   "text": "★★ FLAT 설계앵커\ngen21_bent_p2 (gen21p2_fc)\n게이트 전항목 통과"
+  },
+  {
+   "id": "why_van",
+   "type": "text",
+   "x": 760,
+   "y": -260,
+   "width": 360,
+   "height": 130,
+   "color": "3",
+   "text": "WHY 피벗: 바닐라 G1 > 20-term 커스텀\n(자연스러움·추종·낙상)\n[[g1-vanilla-beats-custom-reward]] → '검증된 베이스라인 먼저'"
+  },
+  {
+   "id": "tiptoe",
+   "type": "file",
+   "x": 1520,
+   "y": -280,
+   "width": 360,
+   "height": 120,
+   "color": "3",
+   "file": "reward_research/2026-06-29_tiptoe_regression.md"
+  },
+  {
+   "id": "why_clock",
+   "type": "text",
+   "x": 1520,
+   "y": 300,
+   "width": 360,
+   "height": 130,
+   "color": "3",
+   "text": "WHY: humanref 관절참조 추적 반복실패(위상 불일치)\n→ Siekmann 위상클록 채택. pushoff 무캡=보상해킹→cap 순서 원칙"
+  },
+  {
+   "id": "kd_ab",
+   "type": "file",
+   "x": 2280,
+   "y": -300,
+   "width": 360,
+   "height": 120,
+   "color": "3",
+   "file": "53_bc_kd_controlled_ab.md"
+  },
+  {
+   "id": "init_ab",
+   "type": "file",
+   "x": 2280,
+   "y": 300,
+   "width": 360,
+   "height": 120,
+   "color": "3",
+   "file": "55_init_pose_straight_vs_bent.md"
+  },
+  {
+   "id": "bent_ab",
+   "type": "file",
+   "x": 4560,
+   "y": 340,
+   "width": 360,
+   "height": 130,
+   "color": "3",
+   "file": "experiments/2026-07-12_bentinit_ab_result.md"
+  },
+  {
+   "id": "stall_note",
+   "type": "file",
+   "x": 5320,
+   "y": -290,
+   "width": 360,
+   "height": 120,
+   "color": "3",
+   "file": "reward_research/2026-07-13_stall_relative_threshold.md"
+  },
+  {
+   "id": "rgh_fail",
+   "type": "file",
+   "x": 6840,
+   "y": -560,
+   "width": 360,
+   "height": 120,
+   "color": "1",
+   "file": "experiments/2026-07-13_gen21_rough_p1.md"
+  },
+  {
+   "id": "blind",
+   "type": "file",
+   "x": 6840,
+   "y": -820,
+   "width": 360,
+   "height": 120,
+   "color": "3",
+   "file": "reward_research/2026-07-14_rough_p1_blind_stairs_diagnosis.md"
+  },
+  {
+   "id": "unv1",
+   "type": "file",
+   "x": 7600,
+   "y": -560,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-14_gen21_rough_uneven_p1.md"
+  },
+  {
+   "id": "unv2p1",
+   "type": "file",
+   "x": 8360,
+   "y": -560,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-14_gen21_rough_uneven2_p1.md"
+  },
+  {
+   "id": "unv2p2b",
+   "type": "file",
+   "x": 9120,
+   "y": -560,
+   "width": 360,
+   "height": 140,
+   "color": "4",
+   "file": "experiments/2026-07-15_gen21_rough_uneven2_p2b.md"
+  },
+  {
+   "id": "rgh_anchor_lbl",
+   "type": "text",
+   "x": 9120,
+   "y": -730,
+   "width": 360,
+   "height": 90,
+   "color": "4",
+   "text": "★ ROUGH 설계앵커 후보\nuneven2_p2b (v2 측정중)"
+  },
+  {
+   "id": "c30p1",
+   "type": "file",
+   "x": 6840,
+   "y": 560,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-14_cant30_p1.md"
+  },
+  {
+   "id": "c30p2",
+   "type": "file",
+   "x": 7600,
+   "y": 560,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-14_cant30_p2.md"
+  },
+  {
+   "id": "feet",
+   "type": "file",
+   "x": 7600,
+   "y": 860,
+   "width": 360,
+   "height": 120,
+   "color": "3",
+   "file": "68_hip_geometry_variants_viz.md"
+  },
+  {
+   "id": "c30fp1",
+   "type": "file",
+   "x": 8360,
+   "y": 560,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-15_cant30fp_p1.md"
+  },
+  {
+   "id": "c30fp2",
+   "type": "file",
+   "x": 9120,
+   "y": 560,
+   "width": 360,
+   "height": 110,
+   "color": "4",
+   "file": "experiments/2026-07-15_cant30fp_p2.md"
+  },
+  {
+   "id": "cant_design",
+   "type": "file",
+   "x": 6840,
+   "y": 860,
+   "width": 360,
+   "height": 130,
+   "color": "3",
+   "file": "67_hip_cant_and_roll_motor_review.md"
+  },
+  {
+   "id": "roll_p1",
+   "type": "file",
+   "x": 6840,
+   "y": 960,
+   "width": 360,
+   "height": 120,
+   "color": "2",
+   "file": "experiments/2026-07-15_rolloff30_p1.md"
+  },
+  {
+   "id": "roll_p2",
+   "type": "file",
+   "x": 7600,
+   "y": 960,
+   "width": 360,
+   "height": 90,
+   "color": "4",
+   "file": "experiments/2026-07-16_rolloff30_p2.md"
+  },
+  {
+   "id": "n_cant20fp",
+   "type": "file",
+   "x": 9580,
+   "y": 560,
+   "width": 380,
+   "height": 100,
+   "color": "2",
+   "file": "experiments/2026-07-20_cant20fp_p1.md"
+  },
+  {
+   "id": "n_c20p2",
+   "type": "file",
+   "file": "experiments/2026-07-20_cant20fp_p2.md",
+   "x": 9580,
+   "y": 570,
+   "width": 380,
+   "height": 90,
+   "color": "5"
+  },
+  {
+   "id": "n_g1val",
+   "type": "text",
+   "text": "★ 실기 교차검증 (2026-07-24)\nUnitree G1 23DoF 실측 tau_est vs 우리 sim\n스케일 m·g·L → 기하평균 RMS 0.84 · P99 0.79\n= 절대 스케일 일치(앵커 신뢰 상향)\n편차=crouch vs straight-leg gait 차이\n→ docs/65 §9",
+   "x": 6980,
+   "y": -520,
+   "width": 460,
+   "height": 170,
+   "color": "4"
+  },
+  {
+   "id": "n_brg",
+   "type": "text",
+   "text": "베어링 선정 판정 (2026-07-24)\nhip_yaw: 6814(70×90×10) — 내부 61809쌍과 span 29.5mm, s0 1.74\nhip_roll/knee: 포크 양단 + 6910(50×72×12)\nAB 로드엔드: 720kgf, 스톱은 짐벌측 배치\n원칙: 내장 단독 캔틸레버 금지\n→ docs/64 §8~§8f",
+   "x": 6980,
+   "y": -300,
+   "width": 460,
+   "height": 180,
+   "color": "6"
+  },
+  {
+   "id": "n_ankAB",
+   "type": "file",
+   "file": "experiments/2026-08-23_ankleAB_c2.md",
+   "x": 10340,
+   "y": 0,
+   "width": 400,
+   "height": 400,
+   "color": "2"
+  },
+  {
+   "id": "n_ankRP",
+   "type": "file",
+   "file": "experiments/2026-08-23_ankleRP_c2.md",
+   "x": 10340,
+   "y": 440,
+   "width": 400,
+   "height": 400,
+   "color": "2"
+  },
+  {
+   "id": "n_era10",
+   "type": "text",
+   "text": "Era-10 모델 교체 (2026-08-23)\\n프린트 하체 35.35 kg (docs/89) · 실측 모터 J/b/tc + T-N 곡선 · HW 관절/토크 한계\\n발목 AB(폐루프, 크랭크 액션) vs RP(직렬 + 자세별 선형화 토크 클램프)\\n상체 weld + 팔 15° 외전 고정 · 보상 gen21 그대로 · DR/vx/push 단일런 커리큘럼\\n→ docs/92, docs/91\n첫 리뷰 iter 610 (08-23 21:55): 두 arm 모두 CONTINUE\niter 1200 분석(93 §5b): AB 정지 잔떨림/스웨이 · RP bang-bang 발목 목표\n최신 스냅샷 AB iter 1950 r114.2 / RP iter 2162 r113.6 (1 h 자동 리뷰 루프)",
+   "x": 10340,
+   "y": -300,
+   "width": 460,
+   "height": 200,
+   "color": "6"
+  },
+  {
+   "id": "n_solimp",
+   "type": "file",
+   "file": "94_loop_constraint_stiffness.md",
+   "x": 10340,
+   "y": -560,
+   "width": 460,
+   "height": 200,
+   "color": "3"
+  },
+  {
+   "id": "n_ankAB3",
+   "type": "file",
+   "file": "experiments/2026-08-24_ankleAB_c3.md",
+   "x": 10900,
+   "y": 0,
+   "width": 400,
+   "height": 400,
+   "color": "2"
+  },
+  {
+   "id": "n_ankRP3",
+   "type": "file",
+   "file": "experiments/2026-08-24_ankleRP_c3.md",
+   "x": 10900,
+   "y": 440,
+   "width": 400,
+   "height": 400,
+   "color": "2"
+  },
+  {
+   "id": "n_soft",
+   "type": "file",
+   "file": "95_soft_landing_prescription.md",
+   "x": 10900,
+   "y": -300,
+   "width": 460,
+   "height": 200,
+   "color": "3"
+  },
+  {
+   "id": "n_gate_c3",
+   "type": "text",
+   "x": 11400,
+   "y": 180,
+   "width": 420,
+   "height": 300,
+   "color": "5",
+   "text": "**c3 완주** (32,000 · 39 h 45 m · 낙상 0 양쪽)\n\n- 추종 순수vx AB 0.89 / RP 0.90, 평가기 576ep 100 %\n- 모터 여유(모터축) 0.44–0.55 — **동률**\n- 에너지 CoT RP 0.277 < AB 0.314 (−12 %)\n- **T-N 클램프 off에도 정상**(+0.01~0.03)\n- ★버그: MEAS=0이 RP 반사관성 0 → 수정\n- 산출물: accum·demo 영상 각 2편, wrench 3D"
+  },
+  {
+   "id": "n_abrp_vid",
+   "type": "text",
+   "x": 11400,
+   "y": 540,
+   "width": 420,
+   "height": 260,
+   "color": "6",
+   "text": "**AB vs RP 1:1 거동 비교** (iter 8000)\n\n- `abrp_sidebyside_g8000.mp4` 전신+발목, 실시간\n- `abrp_shadow_g8000.mp4` 베이스 정렬 쉐도우 중첩\n- `abrp_gait_compare_g8000.png` 접지·발목각·GRF·추종\n\n리듬·추종 동일(err +0.055/+0.056), 차이는 **발목 사용법**: AB 배굴 스파이크 31° vs RP 평탄 18–22°. GRF p99 1.26/1.29 BW, 리플 동률 → docs/93 §5c"
+  },
+  {
+   "id": "n_track_bneck",
+   "type": "file",
+   "file": "96_tracking_error_bottleneck.md",
+   "x": 11900,
+   "y": 180,
+   "width": 400,
+   "height": 320,
+   "color": "3"
+  },
+  {
+   "id": "n_trend97",
+   "type": "file",
+   "file": "97_c3_reward_trend_review.md",
+   "x": 11900,
+   "y": 560,
+   "width": 400,
+   "height": 320,
+   "color": "3"
+  },
+  {
+   "id": "n_plan98",
+   "type": "file",
+   "file": "98_scratch_training_plan.md",
+   "x": 12400,
+   "y": 360,
+   "width": 400,
+   "height": 340,
+   "color": "4"
+  },
+  {
+   "id": "n_obs100",
+   "type": "file",
+   "file": "100_observation_design_sim2real.md",
+   "x": 12400,
+   "y": 760,
+   "width": 400,
+   "height": 320,
+   "color": "3"
+  },
+  {
+   "id": "n_spec101",
+   "type": "file",
+   "file": "101_policy_spec_and_final_plan.md",
+   "x": 12900,
+   "y": 560,
+   "width": 420,
+   "height": 360,
+   "color": "4"
+  },
+  {
+   "id": "n_energy",
+   "type": "text",
+   "x": 12900,
+   "y": 980,
+   "width": 420,
+   "height": 260,
+   "color": "5",
+   "text": "**AB vs RP 최종 지표** (model_9500 동일 롤아웃)\n\n- **에너지**: CoT AB 0.314 / **RP 0.277** (−12 %), 1 m/s에서 93 vs 73 W. 속도↑일수록 격차↑\n- **충격**: 4게이트 쌍대차 +0.03±0.27 m/s, +0.04±0.18 BW = **무승부**\n- **모터 여유**: 발목 AB 크랭크 35–38 % / **RP 82 %·포화 3.7 %**\n- 손해 출처: 발목 동률, **무릎 +63 %·힙요 +78 %** → 게인 재조정 여지\n\n거래 = 20 W 더 쓰고 발목 여유 2.2배. docs/101 §5"
+  },
+  {
+   "id": "n_handover102",
+   "type": "file",
+   "file": "102_rebuild_handover.md",
+   "x": 12900,
+   "y": 980,
+   "width": 420,
+   "height": 320,
+   "color": "6"
+  },
+  {
+   "id": "n_v2plan",
+   "type": "file",
+   "file": "103_v2_training_plan.md",
+   "x": 13400,
+   "y": 360,
+   "width": 420,
+   "height": 340,
+   "color": "4"
+  },
+  {
+   "id": "n_init104",
+   "type": "file",
+   "file": "104_init_pose_gait_style.md",
+   "x": 13400,
+   "y": 760,
+   "width": 420,
+   "height": 300,
+   "color": "3"
+  },
+  {
+   "id": "n_abrp_cmp",
+   "type": "file",
+   "file": "experiments/2026-08-26_ankleAB_vs_RP_comparison.md",
+   "x": 11400,
+   "y": 760,
+   "width": 420,
+   "height": 320,
+   "color": "5"
+  },
+  {
+   "id": "n_bundle_rr",
+   "type": "file",
+   "file": "reward_research/2026-08-26_human_landing_bundle.md",
+   "x": 13900,
+   "y": 760,
+   "width": 420,
+   "height": 300,
+   "color": "3"
+  },
+  {
+   "id": "n_bctl",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleCTL_AB.md",
+   "x": 13900,
+   "y": 180,
+   "width": 400,
+   "height": 320,
+   "color": "2"
+  },
+  {
+   "id": "n_btrt",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleTRT_AB.md",
+   "x": 13900,
+   "y": 560,
+   "width": 400,
+   "height": 320,
+   "color": "2"
+  },
+  {
+   "id": "n_bundle_verdict",
+   "type": "text",
+   "x": 14400,
+   "y": 300,
+   "width": 420,
+   "height": 300,
+   "color": "3",
+   "text": "**착지 번들 1차 판정 → ★철회** (2026-08-26)\n\n당시(단일 롤아웃): 하중률 46.2→84.5, stride 1.40→0.93 = \"발 안 떼기\"로 읽음\n\n**정정(평가기 32 ep)**: 단일 롤아웃은 판정 불가.\n- `MODE=rate`(대체형) ❌ 기각 유지 — 하중률 15.78\n- `MODE=both`(병행형) ✅ **기각 철회** — 추종 0.117·하중률 8.78·stride 2.83 전부 최고\n\n교훈은 그대로: 검증된 항을 **대체하지 말고 병행**"
+  },
+  {
+   "id": "n_bB2",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleB2_AB.md",
+   "x": 14900,
+   "y": 180,
+   "width": 400,
+   "height": 300,
+   "color": "2"
+  },
+  {
+   "id": "n_bB3",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleB3_AB.md",
+   "x": 14900,
+   "y": 540,
+   "width": 400,
+   "height": 300,
+   "color": "2"
+  },
+  {
+   "id": "n_bC3",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleC3_AB.md",
+   "x": 15400,
+   "y": 180,
+   "width": 400,
+   "height": 300,
+   "color": "4"
+  },
+  {
+   "id": "n_bC4",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleC4_AB.md",
+   "x": 15400,
+   "y": 540,
+   "width": 400,
+   "height": 300,
+   "color": "4"
+  },
+  {
+   "id": "n_bC5",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleC5_AB.md",
+   "x": 15400,
+   "y": 560,
+   "width": 400,
+   "height": 300,
+   "color": "4"
+  },
+  {
+   "id": "n_bundle_final",
+   "type": "text",
+   "x": 15950,
+   "y": 300,
+   "width": 460,
+   "height": 360,
+   "color": "4",
+   "text": "**확정 레시피 v2** (2026-08-26, 평가기 32 ep)\n\n✅ `PYG_INIT_MID` — 무릎 −4.9°, 추종 0.163→0.119, 리셋 낙하 47 mm 제거\n✅ `PYG_SOFT_LANDING_MODE=both` — 추종 0.117·하중률 8.78·stride 2.83 (전부 최고)\n✅ `PYG_KNEE_EXT` w−2.0@25° (조건부) — 무릎 −6.1°, 추종 +0.023 대가\n❌ `MODE=rate` (대체형)\n❌ `PYG_BASE_HEIGHT_ANCHOR` (deadband 안, 기여 −0.0019)\n\n정본: 103_v2_training_plan §4a"
+  },
+  {
+   "id": "n_bD1",
+   "type": "file",
+   "x": 16500,
+   "y": 300,
+   "width": 420,
+   "height": 300,
+   "color": "4",
+   "file": "experiments/2026-08-26_bundleD1_AB.md"
+  },
+  {
+   "id": "n_d1_verdict",
+   "type": "text",
+   "x": 17050,
+   "y": 300,
+   "width": 460,
+   "height": 340,
+   "color": "4",
+   "text": "**D1 = 채택** (2026-08-26)\n\n평가기 32 ep: 피크 GRF **1.093 BW**(최저)·입각 무릎 **39.1°**(최저)·오차 0.133(폭 0.011 최협)\n200 Hz × 24 env: 하중률 **21.0 BW/s(최저)** + 피크 1.224 BW\n→ **피크·하중률 두 축을 동시에 잡은 유일한 arm**\n(C5는 피크만, TRT는 하중률만)\n\n⚠ 실제 변인은 하중률 항이 아니라 `foot_impact_velocity` ½ — 하중률 항은 부호버그로 死"
+  },
+  {
+   "id": "n_signbug",
+   "type": "text",
+   "x": 17050,
+   "y": 700,
+   "width": 460,
+   "height": 300,
+   "color": "1",
+   "text": "**부호 버그: `foot_loading_rate`는 한 번도 안 돌았다**\n\n`reduce=\"netforce\"`의 전역 z는 하중 시 **음수**(−577…0 N)인데 `clamp(min=0)`으로 읽음 → `in_contact` 영구 거짓\n→ TRT·B2·D1 **3런 × 800 iter**를 죽은 항으로\n\n다른 접촉 항은 전부 `norm()`이라 부호가 감춰져 있었다\n\n수정 후 w 0.002 → 스텝당 **−0.664**(보상예산의 8배) → 1e-4로 재교정. 항 자체는 **미시험**\n\n규칙: 새 항은 100 iter 안에 `Episode_Reward/<term>` ≠ 0 확인"
+  },
+  {
+   "id": "n_bCTL_RP",
+   "type": "file",
+   "x": 17600,
+   "y": 120,
+   "width": 400,
+   "height": 260,
+   "color": "5",
+   "file": "experiments/2026-08-26_bundleCTL_RP.md"
+  },
+  {
+   "id": "n_bD1_RP",
+   "type": "file",
+   "x": 17600,
+   "y": 440,
+   "width": 400,
+   "height": 260,
+   "color": "4",
+   "file": "experiments/2026-08-26_bundleD1_RP.md"
+  },
+  {
+   "id": "n_rp_verdict",
+   "type": "text",
+   "x": 18100,
+   "y": 260,
+   "width": 470,
+   "height": 360,
+   "color": "3",
+   "text": "**RP 이식 = 유효하나 이득이 작다** (2026-08-26)\n\nD1_RP vs CTL_RP: 무릎 45.9→**39.9°**, 하중률(200 Hz) 81.5→**64.5 BW/s(−21 %)**, 추종 0.147→**0.140**\n피크 GRF 1.248→1.253 = **변화 없음**\n\n★**RP 대조군엔 AB의 착지 병리가 없었다**\n같은 초기자세·보상인데 200 Hz 피크 **AB 2.353 vs RP 1.248 BW**, 하중률 **277 vs 81.5**, DR하 낙상 **12 vs 0**\n\n⇒ 초기자세의 −48 % 충격 감소는 **AB 한정**(폐루프 발목 + 깊은 굽힘의 결합)\n⚠ 두 정책이 다른 국소최적 → 기구 인과 단정엔 교차시험 필요"
+  },
+  {
+   "id": "n_bD1_ab",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleD1_AB.md",
+   "x": 16500,
+   "y": 180,
+   "width": 420,
+   "height": 300,
+   "color": "4"
+  },
+  {
+   "id": "n_bCTL_rp",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleCTL_RP.md",
+   "x": 17050,
+   "y": 120,
+   "width": 420,
+   "height": 300,
+   "color": "6"
+  },
+  {
+   "id": "n_bD1_rp",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleD1_RP.md",
+   "x": 17050,
+   "y": 480,
+   "width": 420,
+   "height": 300,
+   "color": "4"
+  },
+  {
+   "id": "n_bE1_ab",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleE1_AB_aborted.md",
+   "x": 17600,
+   "y": 120,
+   "width": 420,
+   "height": 300,
+   "color": "1"
+  },
+  {
+   "id": "n_bV4_ab",
+   "type": "file",
+   "file": "experiments/2026-08-26_bundleV4_AB_aborted.md",
+   "x": 17600,
+   "y": 480,
+   "width": 420,
+   "height": 300,
+   "color": "1"
+  },
+  {
+   "id": "n_rp_transfer",
+   "type": "text",
+   "x": 16500,
+   "y": 760,
+   "width": 430,
+   "height": 300,
+   "color": "4",
+   "text": "**RP 이식 시험** (2026-08-26)\n\n`bundleCTL_RP` vs `bundleD1_RP`\n16384 env · RP c3 +800 → 32798\n\n✅ **이식 성공**\n- 입각 무릎 45.9° → **39.9°**\n- 전진 오차 0.147 → **0.140**\n- 200 Hz 하중률 81.5 → **64.5 BW/s**\n- 낙상 0 / 96·96 성공\n\n★대조군이 AB와 다름: CTL_AB 277 BW/s·낙상12\nvs CTL_RP 81.5·낙상0"
+  },
+  {
+   "id": "n_e1v4",
+   "type": "text",
+   "x": 17050,
+   "y": 300,
+   "width": 430,
+   "height": 300,
+   "color": "1",
+   "text": "**bundleE1_AB** — 하중률 항 기각 (2026-08-27)\n\n부호 수정 후 항이 처음 동작 (−0.0637)\n\n❌ **하중률을 벌했더니 하중률이 악화**\n  200 Hz: D1 21.0 → E1 **54.1 BW/s**\n  피크 1.224 → 1.205 BW\n\n원인: 항이 50 Hz로 dF/dt를 재는데\n스파이크 폭은 15–25 ms\n→ 에일리어싱된 양을 최소화\n→ 제어 틱 사이로 충격을 숨김\n\n**레시피는 `half` 유지**"
+  },
+  {
+   "id": "n_v4",
+   "type": "text",
+   "x": 17050,
+   "y": 700,
+   "width": 440,
+   "height": 320,
+   "color": "4",
+   "text": "**bundleV4_AB** — v4 질량 이식 (2026-08-27)\n\n31.316 kg (D1은 35.347)\n32/32 성공 · 낙상 0 · 전진 추종 0.123\n\n★**감량이 충격 여유를 사주지 않는다**\n  절대 착지력 424 → 434 N (그대로)\n  체중 대비 1.224 → **1.412 BW (+15 %)**\n\n계측버그 수정: BW 346.8 하드코딩 →\n모델에서 유도"
+  },
+  {
+   "id": "n_p1low",
+   "type": "file",
+   "file": "experiments/2026-08-27_bundleP1_AB.md",
+   "x": 17550,
+   "y": 300,
+   "width": 400,
+   "height": 300,
+   "color": "5"
+  },
+  {
+   "id": "n_p1s2",
+   "type": "file",
+   "file": "experiments/2026-08-27_bundleP1s2_AB.md",
+   "x": 18070,
+   "y": -60,
+   "width": 400,
+   "height": 300,
+   "color": "5"
+  },
+  {
+   "id": "n_p1s3",
+   "type": "file",
+   "file": "experiments/2026-08-27_bundleP1s3_AB.md",
+   "x": 18070,
+   "y": 300,
+   "width": 400,
+   "height": 300,
+   "color": "5"
+  },
+  {
+   "id": "n_d1s2",
+   "type": "file",
+   "file": "experiments/2026-08-27_bundleD1s2_AB.md",
+   "x": 18070,
+   "y": 660,
+   "width": 400,
+   "height": 300,
+   "color": "4"
+  },
+  {
+   "id": "n_v2s1",
+   "type": "file",
+   "file": "experiments/2026-08-28_v2s1_AB.md",
+   "x": 18100,
+   "y": 300,
+   "width": 420,
+   "height": 320,
+   "color": "6"
+  },
+  {
+   "id": "n_ankleaudit",
+   "type": "file",
+   "file": "experiments/2026-08-28_ab_ankle_usage_audit.md",
+   "x": 16500,
+   "y": 1100,
+   "width": 420,
+   "height": 260,
+   "color": "4"
+  },
+  {
+   "id": "n_v30_st45_smoke",
+   "type": "file",
+   "file": "experiments/2026-09-02_v30proxyfix_AB_st45_imuclip_idrsmoke_test.md",
+   "x": 18580,
+   "y": 300,
+   "width": 440,
+   "height": 320,
+   "color": "6"
+  },
+  {
+   "id": "n_legonly_smoke",
+   "type": "file",
+   "file": "experiments/2026-09-03_legonly_ab_smoke_test.md",
+   "x": 19060,
+   "y": 300,
+   "width": 440,
+   "height": 320,
+   "color": "6"
+  },
+  {
+   "id": "n_legonly_v1",
+   "type": "file",
+   "file": "experiments/2026-09-03_legonly_ab_v1.md",
+   "x": 19540,
+   "y": 300,
+   "width": 440,
+   "height": 320,
+   "color": "6"
+  },
+  {
+   "id": "n_legonly_v2_smoke",
+   "type": "file",
+   "file": "experiments/2026-09-03_legonly_ab_sideaware_smoke.md",
+   "x": 20020,
+   "y": 300,
+   "width": 440,
+   "height": 320,
+   "color": "6"
+  },
+  {
+   "id": "n_legonly_gaitkin",
+   "type": "file",
+   "file": "experiments/2026-09-03_legonly_gait_kinematics.md",
+   "x": 19540,
+   "y": 720,
+   "width": 440,
+   "height": 320,
+   "color": "3"
+  },
+  {
+   "id": "n_legonly_v2",
+   "type": "file",
+   "file": "experiments/2026-09-03_legonly_ab_v2.md",
+   "x": 20500,
+   "y": 300,
+   "width": 440,
+   "height": 320,
+   "color": "4"
+  },
+  {
+   "type": "text",
+   "width": 420,
+   "height": 180,
+   "color": "4",
+   "id": "n_legonly_v2_measure",
+   "x": 21000,
+   "y": 340,
+   "text": "legonly_ab_v2 완주 측정 (2026-09-05)\n무릎 스윙 좌 63.5/70.2° 우 49.5/54.1° (사람 55~65) — 좌우 축 수정 효과 확인\n좌우 비대칭 14° · 저속 정체 0.5 m/s 26 % · 회전 50 %\n모터 실효 전부 정격 안 (엉덩이 벌림 76 %)\n→ 다음: 정비 → 리서치 노트 → 대칭항 / 디딤비율 A/B"
+  },
+  {
+   "id": "n_legonly_v2_research",
+   "type": "file",
+   "file": "reward_research/2026-09-05_legonly_v2_gait_defects_root_cause.md",
+   "x": 21000,
+   "y": 580,
+   "width": 420,
+   "height": 140,
+   "color": "3"
+  },
+  {
+   "id": "n_legonly_v3_keyfix",
+   "type": "file",
+   "file": "experiments/2026-09-05_legonly_ab_v3_keyfix.md",
+   "x": 21480,
+   "y": 580,
+   "width": 420,
+   "height": 160,
+   "color": "4"
+  },
+  {
+   "id": "n_v3_knee_symmetry_research",
+   "type": "file",
+   "file": "reward_research/2026-09-06_v3_knee_symmetry_stance_duty.md",
+   "x": 21900,
+   "y": 266,
+   "width": 400,
+   "height": 170,
+   "color": "5"
+  },
+  {
+   "id": "n_huphy_findings",
+   "type": "file",
+   "file": "124_huphy_handoff_findings.md",
+   "x": 21000,
+   "y": 1100,
+   "width": 420,
+   "height": 180,
+   "color": "5"
+  },
+  {
+   "id": "n_bridge_findings",
+   "type": "file",
+   "file": "126_viewer_bridge_findings.md",
+   "x": 21000,
+   "y": 1320,
+   "width": 420,
+   "height": 180,
+   "color": "5"
+  },
+  {
+   "id": "n_motor_rootcause",
+   "type": "file",
+   "file": "127_motor_wont_move_root_cause.md",
+   "x": 21560,
+   "y": 1210,
+   "width": 420,
+   "height": 180,
+   "color": "5"
+  },
+  {
+   "id": "n_bench_incidents",
+   "type": "text",
+   "text": "**벤치 사고 2건 (2026-09-07)**\n\n확인 작업 중 의도치 않은 관절 이동.\n1) hip_yaw 40.1→0.3도, knee 49.5→5.8도 — 원인 확정:\n   맞춤이 목표 반영 전에 성공 반환 + 무장에 이동 크기 제한 없음.\n   고침: 반영까지 대기 + 10도 초과 시 무장 거부(재확인 시 진행).\n2) hip_yaw 0.25→−9.99도 — **원인 미확정**, 하드웨어 확인 중단.\n\n둘 다 화면을 거치지 않고 프로그램으로 직접 명령한 경로에서 발생.",
+   "x": 21560,
+   "y": 1470,
+   "width": 460,
+   "height": 220,
+   "color": "1"
+  },
+  {
+   "id": "n_rate_limit_fix",
+   "type": "text",
+   "text": "**속도 제한 재구성 (2026-09-07)**\n\n가지 `rate-limit-from-datasheet` `7c17ccc`\n\n기준점을 측정 위치 → **직전 명령**으로.\n옛 방식은 오차를 잘라 토크를 묶었고(kp×3°=1.57 N·m),\n모터가 뒤처지면 명령도 안 나아가 느릴수록 더 느려짐\n(이론 300°/s, 실측 49°/s).\n\n한도는 도/s로 기재 · 데이터시트 정격에서 유도\n(RS03 1080, RS04 1002 도/s).\n명령 50 Hz vs 제어 100 Hz 는 실측 경과시간으로 흡수.\n끊김 뒤 설정점 재시딩 = 사고 3건의 공통 경로 차단.\n\n**공개됨** `b67366d` — 최신 원본(`b4582b8`) 합친 뒤 시험 1116개 통과.\n원본이 MIT 프레임 수정을 독립 해결 → `fix-fault-byte-order` 철회.",
+   "x": 22100,
+   "y": 1470,
+   "width": 460,
+   "height": 260,
+   "color": "4"
+  },
+  {
+   "id": "n_legonly_v3_complete",
+   "type": "text",
+   "x": 21480,
+   "y": 800,
+   "width": 420,
+   "height": 200,
+   "color": "4",
+   "text": "legonly_ab_v3_keyfix 완주 (2026-09-07 09:43)\n총 27,999회 = 1단계 14,000(정상 졸업) + 2단계 14,000\n보상 115.4 / 50회 평균 114.2 (전 학습 최고) · 낙상 0.0000\n램프 후 추종오차 1.032 피크 → 1.009 회복 · 발열 최고 3.01\n총 41시간 1분\n미완: 완주본 정식 측정(운동학·전체 명령 범위 하중·모터 활용도)"
+  },
+  {
+   "id": "n_sweep_ab_2026_09_09",
+   "type": "text",
+   "x": 22640,
+   "y": 1470,
+   "width": 520,
+   "height": 340,
+   "color": "4",
+   "text": "**모형 vs 실물 사인 스윕 (2026-09-09)**\n[[2026-09-09_sim_vs_real_sine_sweep]]\n\n왼무릎 ±8도, 0.2~3.2 Hz 7계단, 발 뜬 상태(base 1.35 m)\n\n**원인 ① 이득 7.3배 감쇄**\n모형 kp 220/kd 6 → 모터 도착 30/1.5\n(뷰어 상한 30/1.5, 로봇 상한 50/2.5)\n감쇠비 0.40 → 0.27 (덜 감쇠)\n\n**원인 ② 명령 사구간 80 ms**\n계단 응답 모형 5 ms vs 실물 79~80 ms\n위상 9.1°+56.7°/Hz → 순수 지연 157 ms\n관측 경로 무죄(시각차 0.31 ms)\n\n★**이득 맞추면 역전**: 실물 0.88~1.04 고름,\n모형 1.2 Hz 1.314 → 1.6 Hz 0.327 붕괴\n\n★80 ms → 한계 kp≈25 ≈ 현행 상한 30\n= 지연 먼저, 이득은 그 다음"
+  },
+  {
+   "id": "n_huphy_ledger",
+   "type": "text",
+   "x": 23220,
+   "y": 1470,
+   "width": 400,
+   "height": 200,
+   "color": "6",
+   "text": "**HUPHY 수정 장부 (2026-09-09)**\n[[128_huphy_change_ledger]]\n\n남의 저장소이므로 가지에서만 수정하고\n왜/무엇을/어디를/어떻게/누가를 남긴다.\n\n001 = 사인 스윕(읽기만, 수정 0건)\n002 = 예정: 로봇 자체 시각 기록\n  (미설명 36~44 ms를 가르기 위해)"
+  },
+  {
+   "id": "n_sysid_method_2026_09_09",
+   "type": "text",
+   "x": 22640,
+   "y": 1900,
+   "width": 520,
+   "height": 250,
+   "color": "6",
+   "text": "**모터 파라미터 취득 방법 조사 (2026-09-09)**\n[[2026-09-09_motor_sysid_method]]\n\n사용자 지시: 믿을 수 있는 사전연구를 찾아 그 방법을 따를 것\n\n쓸 수 있는 자료는 셋 중 하나 —\nRobStride RS02 에 MuJoCo `sysid` 를 적용한 벤치 기록\n\n핵심: **순수 토크**(kp=0·kd=0)로 다중사인을 넣어야\n모터 내부 PD 가 물리를 가리지 않는다\ntau = A(sin2πft + 0.6sin2π·3.4f·t + 0.3sin2π·7.4f·t)\n\n도구는 이미 우리 안에 있었음(mujoco 3.10.0 의 `sysid`)"
+  },
+  {
+   "id": "n_sysid_attempt_2026_09_09",
+   "type": "text",
+   "x": 23220,
+   "y": 1900,
+   "width": 540,
+   "height": 420,
+   "color": "2",
+   "text": "**모터 파라미터 실측 시도 — 1차 (2026-09-09)**\n[[2026-09-09_motor_sysid_attempt]]\n\n무릎 RS04, 축에 부착물 없음, `System_ID/` 에서\n안전장치·우리 통신 경로 우회 (전선 코덱은 유지)\n\n★**결과를 못 믿음**\n· 맞춘 값 여럿이 한계에 붙음(damping 2.0, 마찰 0)\n· 가정 지연 0→30 ms 에 armature 0.14↔0.99 (7배)\n· 맞춤 잔차와 검증 오차가 **반대로** 움직임\n· 최선 2.46° vs 출발값 3.66° = 33% 개선뿐\n\n**원인 = 어댑터 처리량 224 Hz 한계**\n(2000 요청 → 223.8 실측 · 사전연구는 1000)\n왕복 자체는 0.93 ms → 지연 아니라 처리량\nslcan 이 프레임을 22글자 ASCII 로 바꿔 USB 로 보냄\n\n**확정 셋**\n① 어댑터 224 Hz 한계\n② 시킨 토크 ≠ 나온 토크 (0.27~0.37배, 15 ms 늦음)\n③ 80 ms 는 모터 탓 아님 (모터 옆 0.93 ms, 86배)\n   로봇 호스트가 QEMU 가상머신인 것도 확인\n\n⚠현행 모형 값을 이 결과로 고치지 말 것\n단 방향은 일치 — armature 가 최소 8.7배 큼"
+  },
+  {
+   "id": "n_can_bottleneck_next",
+   "type": "text",
+   "x": 23820,
+   "y": 1900,
+   "width": 420,
+   "height": 250,
+   "color": "5",
+   "text": "**다음: 통신 어댑터 (순서 있음)**\n\n1. CANable 펌웨어를 candleLight(gs_usb)로\n   같은 하드웨어·비용 0원, 보통 5~10배\n2. 제어를 실물 기판으로 (가상머신 USB 통과 제거)\n3. MCP2518FD SPI-CAN\n   ※ 가상머신에는 SPI 가 없어 2번이 전제\n\n초당 1000회가 되면 사전연구와 같은 조건에서\n다시 맞추고, 지연도 가정 말고 함께 맞춘다\n\n※ 어댑터를 고쳐도 뷰어 경로 80 ms 는\n   거의 안 줄어듦 (CAN 몫은 1 ms)"
+  },
+  {
+   "id": "n_vm_bottleneck_2026_09_09",
+   "type": "text",
+   "x": 23820,
+   "y": 2400,
+   "width": 560,
+   "height": 400,
+   "color": "1",
+   "text": "**★정정: 병목은 가상머신이었다 (2026-09-09 저녁)**\n[[2026-09-09_motor_sysid_attempt]] §5\n\n바깥 컴퓨터에서 두 변인을 갈라 잼:\n\n  장치에 글자 직접        초당 11,205\n  **커널 CAN 계층 경유    초당 11,088**  ← 1% 차이\n  가상머신, 커널 CAN     초당    230.5\n\n→ **48배 손실 = 전부 가상머신 장치 통과**\n\n★내가 틀렸던 것: 자료 길이를 바꿔도 초당 개수가\n같은 것을 보고 '프레임당 USB 고정비용'이라 했는데,\n관찰은 맞고 **원인 지목이 틀렸다**. 고정비용의 자리는\nUSB·slcan 이 아니라 가상머신 경계였다.\n\n대책 전면 변경\n· 펌웨어 교체 **중단** (바꿔도 원인 잔존)\n· SPI 보드 **불필요** (현 어댑터가 필요치의 11배)\n· 8 MHz 크리스털 논쟁 **무의미해짐**\n· 유일한 해법 = **제어를 가상머신 밖으로**"
+  },
+  {
+   "id": "n_friction_now_2026_09_09",
+   "type": "text",
+   "x": 24440,
+   "y": 2400,
+   "width": 420,
+   "height": 260,
+   "color": "4",
+   "text": "**막힌 것은 절반뿐 (2026-09-09)**\n`System_ID/friction_id.py`\n\n모터 파라미터 셋 중\n· 붙어 있는 힘(정지 마찰)  → 정상상태, **오늘 가능**\n· 속도 비례 힘(점성)      → 정상상태, **오늘 가능**\n· 회전자 무게감(관성)     → 고속 필요, 가상머신 밖\n\n재는 법: 토크를 초당 0.15씩 천천히 올려\n움직이는 순간을 잡음(감지 즉시 힘 뺌).\n속도 5단계를 붙잡고 필요한 힘을 읽어\n직선 절편=마찰, 기울기=점성.\n\n덤: 그 순간 모터는 멈춰 있으므로\n'보고 토크 눈금' 도 여기서 나온다."
+  },
+  {
+   "id": "n_friction_measured_2026_09_09",
+   "type": "text",
+   "x": 25060,
+   "y": 2400,
+   "width": 560,
+   "height": 440,
+   "color": "4",
+   "text": "**마찰 실측 완료 (2026-09-09 밤)**\n[[2026-09-09_motor_sysid_attempt]]\n무릎 RS04, 축에 부착물 없음\n\n★**모형 값 둘 다 낮다**\n  움직일 때 마찰  0.2695 → **0.523**  (1.9배)\n  점성           0.0095 → **0.0276** (2.9배)\n  방향별 적합 결정계수 0.918 / 0.944\n\n★모형에 **없는 항**: 붙어 있다 떨어지는 힘 0.88\n  (움직일 때 0.52 보다 훨씬 큼)\n\n정지 마찰 (12회씩)\n  차가움 29도  + 0.871±0.066  − 0.771±0.022\n  데움  37도  + 0.984±0.033  − 0.780±0.028\n★데워도 안 가벼워짐 · 흩어짐만 0.298→0.028\n★방향 비대칭 0.10~0.20 (원인 미규명)\n\n측정법 정정 2건\n· 속도로 판정 불가(토크 0 에서 6.5 도/s 튐)\n  → 위치 0.2도 문턱\n· 톱니 놀음 0.2도를 마찰로 오인\n  → 올릴 방향으로 미리 밀어 제거\n\n★보고 토크 눈금 = 0.995~1.053 (정확)\n  '0.27~0.37배' 는 지연+가속 혼입이었음"
+  },
+  {
+   "id": "n_psu_regen_warning",
+   "type": "text",
+   "x": 25680,
+   "y": 2400,
+   "width": 420,
+   "height": 300,
+   "color": "1",
+   "text": "**★★ 전원 경고 (2026-09-09)**\n\n15초마다 방향 전환 웜업 → **17초 만에 고장**\n매뉴얼 p.15 코드 0x3022\n  bit2 = 저전압 (보호 12 V 미만)\n  bit3 = 과전압 (경고)\n\n전환 순간: 465 도/s 에서 제동토크 −9.17 Nm\n= **약 74 W 를 전원으로 되밀었음**\n\n단방향 전환 → 5분 완주\n  (30→37도, 482 도/s, 토크 0.71)\n\n★**보행 시 관절이 상시 반전한다.**\n전원이 회생 전력을 받아 줄 수 있는지\n**별도 확인 필요** — 걷기 시험에서\n원인 모를 정지가 나면 이것일 수 있다."
+  },
+  {
+   "id": "n_inertia_measured_2026_09_09",
+   "type": "text",
+   "x": 25700,
+   "y": 2400,
+   "width": 600,
+   "height": 480,
+   "color": "4",
+   "text": "**★ 회전자 관성 실측 완료 — 모형이 8배 가벼웠다 (2026-09-09 밤)**\n[[2026-09-09_motor_rotor_inertia]]\n라즈베리파이 직결(가상머신 제거) → 왕복 초당 1814회\n\n**무릎 RS04 0.0773 kg·m² (모형 0.0097 — 8.0배 낮음)**\n엉덩이회전 RS03 0.0638 (모형 0.0049 — 13.0배)\n\n방법 둘이 독립 합치:\n· 타성 감속(마찰값을 빌림) 73~81 g·m²\n· **마찰 소거법**(토크 대 가속도 기울기) 77.26±0.64, 결정계수 0.9994\n\n교차검증: 절편 0.648 = 전날 마찰 예측 0.643 (1%)\n속도 적분 대 위치 변화 0.3% 일치\n\n**모터만 세운 MuJoCo 대조**: 현행 모형이 실물보다 9.0~13.6배 빠르게 가속.\n실측값 넣으면 곡선 겹침(1~6%).\n→ 'sim overshoot / real 추종실패' 의 **셋째이자 물리 원인**"
+  },
+  {
+   "id": "n_friction_retest_2026_09_09",
+   "type": "text",
+   "x": 26400,
+   "y": 2950,
+   "width": 620,
+   "height": 500,
+   "color": "5",
+   "text": "**마찰 재측정 + 속도 천장 둘 (2026-09-09 밤)**\n[[2026-09-09_motor_friction_retest]]\n라즈베리파이 초당 3300회 · 최고속도 웜업 후\n\n★**어제 값 확정**: 순수 타성 감속(토크 정확히 0)\n마찰 **0.519** (어제 0.523) · 점성 **0.0275** (0.0276)\n→ 224 Hz 한계는 마찰을 망치지 않았다\n\n★★**새 발견 — 속도 천장 둘**\n· 명령 칸 상한 859 도/s → 실제 825 에서 포화\n· **보고 속도도 859 에서 잘리는데 실제는 1362**\n  → 그 위에서 보고 속도 믿으면 안 됨\n\n★전원 전압 **약 57 V** 추론(48 아님)\n→ 속도 여유 19% 넓음, 무릎 고속수요 판정 재검토\n\n★'+ 방향이 무겁다' 정정 — 부호 뒤집힘(톱니 힘)"
+  },
+  {
+   "id": "n_report_timing_2026_09_09",
+   "type": "text",
+   "x": 27150,
+   "y": 3500,
+   "width": 640,
+   "height": 520,
+   "color": "1",
+   "text": "**보고값 대 실제값 + 명령 주기 (2026-09-09 밤)**\n[[2026-09-09_motor_report_and_timing]]\n\n★**속도**: 859 아래 비 1.000 / 위는 0.63 (실제 1367→859)\n★**토크**: 평균은 한 계단(0.059) 낮게 곧음.\n  **한 점은 못 씀** — 타성(실제 0)에서 ±0.7 균일 분포.\n  → 순간 토크로 안전차단 걸면 헛발질\n\n★★**주기**: 지금 501 us(초당 1994) = **이론상한 아님**\n  겹쳐 보내기 → **305 us, 초당 3281, 손실 0%**\n  = 선 천장(초당 3846~4505)의 73~85%\n★**한 모터에 4개는 무너짐** — 모터 수신칸 3개.\n  제한은 **모터마다**라 관절 수와 무관\n★**여유 5.5배** (필요 600/초, 가능 3281/초)\n\n→ **어댑터 펌웨어 굽지 않기로.** CANable 1.0/F042,\n  얻을 최대 +17~37%, CAN-FD 는 다른 실리콘"
+  },
+  {
+   "id": "n_pd_stepchirp_2026_09_09",
+   "type": "text",
+   "x": 27900,
+   "y": 4100,
+   "width": 660,
+   "height": 520,
+   "color": "4",
+   "text": "**★ 같은 지령 대조: 계단·처프 (2026-09-09 밤)**\n[[2026-09-09_pd_step_chirp_sim_vs_real]]\n호스트 PD + 같은 목표 + 같은 지연 0.5 ms\n\n★**처프**: 초당 10번 추종량 **실물 0.22 대 현행 0.86**\n  공진 실물 2.5 Hz/1.41 · 실측값 2.5/1.32 · 현행 봉우리 없음\n★**마찰 절제**: 계단 잔류오차 실물 1.29 · 실측 1.07\n  현행 0.22 · **마찰 제거 0.00**(실물에 없는 완벽함)\n  → frictionloss 에는 **동마찰 0.519**\n\nRS03: 처프 일치, **계단은 불일치**(0.05 대 0.73) — 정지마찰 미측정\n★RS03 점성은 모형이 **8.9배 과대**\n\n★**모터 내부 kp 경로 고장** — 오차 0에서 −90 Nm\n  → 호스트 PD 로 우회. 뷰어 경로 별도 조사 필요"
+  },
+  {
+   "id": "n_regen_bus_2026_09_09",
+   "type": "text",
+   "x": 28650,
+   "y": 4700,
+   "width": 660,
+   "height": 520,
+   "color": "2",
+   "text": "**블리더 3자 비교 + 6모터 200 Hz (2026-09-09 밤)**\n[[2026-09-09_pd_step_chirp_sim_vs_real]] · [[129_mujoco_motor_parameters]]\n\n★**블리더 효과 확정** (같은 600 도/s·15초 전환)\n  없음 17초 저전압 / 잘못설치 15.03초 과전압 / **제대로 40초 완주**\n  5단계 전부 완주, 되민 전력 **353.8 W** = 고장나던 74 W 의 4.8배\n  전원 약 57V, 과전압 문턱 60V → **48V 로 낮출 것**\n\n★**'여유 5.5배' 정정** — 6모터 1버스 200 Hz 는 **99.96%**\n  8%가 3 ms 초과, 최악 6.22 ms(마감 초과)\n  원인은 선이 아니라 호스트·USB → **이진 펌웨어 근거 생김**\n\n블리더 부착 후 값 불변 확인 (관성 77.86 대 77.26)"
+  },
+  {
+   "id": "n_pd_ablation_2026_09_09",
+   "type": "text",
+   "x": 28650,
+   "y": 5350,
+   "width": 680,
+   "height": 560,
+   "color": "6",
+   "text": "**★ 명령 5종 ×10회 + 값 하나씩 쓸어보기 (2026-09-09 밤)**\n[[2026-09-09_pd_ablation_five_commands]]\n\n★**명령마다 다른 값이 갈린다**\n· 처프 10 Hz 추종량 = **armature 전용**\n  없음 0.954 / 지금 0.851 / **실측 0.243** / 4배 0.060 (실물 0.249)\n· 느린삼각파 오차 = **frictionloss 전용**\n  0.144 / 0.814 / **1.478** / 5.038 (실물 1.772)\n\n★★**damping 은 어디서도 안 보인다** (0→4배에 0.5~14%)\n  → 위치제어로 점성 식별 불가, **타성 감속이 맞는 방법**\n\n★★**작은계단만 불일치 = 정지마찰이 빠진 자리**\n  실물 1.398도(명령 1.5도=거의 안 움직임)\n  실측 0.519 → 0.882 / 4배 2.076 → 1.188(더 가까움)\n  정지 0.901 = 동 0.519 의 1.7배. **작은 움직임만 지배**\n  → 걷기 중 1도 안팎 구간은 모형이 실제보다 부드럽다\n\n★**곡선 겹친 그림**(pd_ablation_rs04_overlay.png)\n  처프 빠른 구간: sim ±7.5도 대 실물 ±2.5도\n  점성 칸은 네 곡선이 겹쳐 구분 불가"
+  },
+  {
+   "id": "n_rs03_correction_2026_09_10",
+   "type": "text",
+   "x": 29400,
+   "y": 5950,
+   "width": 680,
+   "height": 500,
+   "color": "1",
+   "text": "**★★ 정정: RS03 마찰을 잘못 쟀다 (2026-09-10)**\n[[2026-09-10_rs03_friction_correction]]\n\n**0.400 · 0.0025 → 0.250 · 0.0252** (결정계수 0.019 → 0.811)\n\n원인 둘: 타성 감속을 4초에서 잘라 **저속 자료 없음**\n  + 놓은 직후 전류가 안 죽어 **고속 구간 오염**\n  (구간별 마찰 0.256/0.291/0.390/0.533/0.780/**0.31↓**)\n\n독립 검증: 삼각파 예측 **0.74도 대 실측 0.75도**\n\n★**'RS03 점성 8.9배 과대' 철회** — 거의 맞았음\n★**'RS03 은 계단만 안 맞는다' 철회** — 측정 오류였음\n→ **RS03 은 armature 하나만 4.2배 낮다**\n\nRS04 는 같은 오염 있었으나 감속이 빨라 무영향 (값 유효)"
+  },
+  {
+   "id": "n_sysid_eli5_2026_09_10",
+   "type": "text",
+   "x": 30150,
+   "y": 6550,
+   "width": 660,
+   "height": 420,
+   "color": "3",
+   "text": "**시스템 식별 이론·방법론 ELI5 (2026-09-10)**\n[[130_system_id_eli5]]\n\n바탕식 하나: 힘 = 관성×가속 + 마찰×방향 + 점성×속도\n미지수 셋, 식 하나 → **한 항만 남기는 상황을 각각 만든다**\n\n· 타성감속(토크 0) → 마찰·점성\n· 마찰 소거 뺄셈(두 토크) → 관성\n· 자리잡은 속도(가속 0) → 마찰\n· 천천히 밀기 → 정지마찰\n\n**어떤 명령이 어떤 값을 드러내나**\n처프=관성(√관성 반비례) · 삼각파=마찰(마찰÷세기)\n작은계단=정지마찰 · **점성은 어디서도 안 보임**\n\n규칙: 미분 대신 적분 · 바깥 검산 · 10회 반복 · 실패 7건 기록\n\n★**30도 재실험 결과**\n처프 9Hz 추종량 실물 0.086 · 지금 모형 0.376(**4.4배**, 8도땐 3.4배)\n→ **큰 동작일수록 시뮬레이터가 유리해진다**\n공진 실물 2.121 Hz = 실측값 2.121 Hz\n삼각파 지연은 진폭 바꿔도 1.49→1.46도(이론 1.487)"
+  },
+  {
+   "id": "n_validity_2026_09_10",
+   "type": "text",
+   "x": 30150,
+   "y": 7200,
+   "width": 680,
+   "height": 520,
+   "color": "5",
+   "text": "**타당성 검증 + 시뮬레이터 이득 재실험 (2026-09-10)**\n[[2026-09-10_motor_value_validity]]\n\n★**세 번째 독립 방법**: 토크 상한 구간의 가속도\n  RS04 0.0786±0.0004 · RS03 0.0634±0.0002 (1.6%/0.7%)\n★**상식 검사**: 최대토크로 무부하까지\n  구 카탈로그 1.2 ms(회전자 40 g) = **비물리**\n  연구원 5.3 ms · **벤치 13.5 ms**(QDD 통상 10~30)\n\n★★**불리한 증거**: 관성 비 RS04÷RS03\n  연구원 2.00배 = 토크비와 일치 / **벤치 1.21배**\n  (단 지름이 달라 이 논리로는 확정 불가)\n\n★**이득이 세면 파라미터가 덜 드러난다**\n  계단 지나침: 지금 모형이 실물 대비 kp20 38% → kp220 95%\n  → **식별은 낮은 이득에서**. 처프 스윕도 이득 따라 넓혀야"
+  },
+  {
+   "id": "n_bench_video_2026_09_10",
+   "type": "text",
+   "x": 30150,
+   "y": 7820,
+   "width": 680,
+   "height": 400,
+   "color": "5",
+   "text": "**실물 영상 + MuJoCo 3차원 렌더 나란히 (2026-09-10)**\n[[2026-09-10_bench_vs_mujoco_video]]\n\n★**정정**: \"이 컴퓨터에 오프스크린 OpenGL 없음\"은 **틀림**\n  `MUJOCO_GL=egl` 로 OpenGL 4.6 정상 · `render()` 성공\n  EGLError 는 **렌더 뒤 소멸자 뒷정리 잡음**이었음\n  (출력 꼬리만 보고 실패로 판단한 것이 원인)\n\n각도 맞추기: 실제각도 = 1.3078 x 영상각도 + 117.72 (R² 0.974)\n  → MuJoCo 관절각 = 90도 − 실제각도, 방위 90 · 내려봄 46도\n화면 1600x900 세 덩어리 이어붙임(빈 곳 0) · 440장 59초\nMuJoCo − 실물 삼각파 구간 0.2~0.5도"
+  }
+ ],
+ "edges": [
+  {
+   "id": "e_gaitfix_g1van",
+   "fromNode": "gaitfix",
+   "toNode": "g1van",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "피벗: 20-term 한계"
+  },
+  {
+   "id": "e_why_van_g1van",
+   "fromNode": "why_van",
+   "toNode": "g1van",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "근거"
+  },
+  {
+   "id": "e_g1van_siek",
+   "fromNode": "g1van",
+   "toNode": "siek",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "까치발→base_height복원 / 위상클록"
+  },
+  {
+   "id": "e_tiptoe_siek",
+   "fromNode": "tiptoe",
+   "toNode": "siek",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "근거"
+  },
+  {
+   "id": "e_why_clock_siek",
+   "fromNode": "why_clock",
+   "toNode": "siek",
+   "fromSide": "top",
+   "toSide": "bottom",
+   "label": "근거"
+  },
+  {
+   "id": "e_siek_p2fin",
+   "fromNode": "siek",
+   "toNode": "p2fin",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "mjlab 이관·튜닝"
+  },
+  {
+   "id": "e_kd_ab_p2fin",
+   "fromNode": "kd_ab",
+   "toNode": "p2fin",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "A/B: Kd6 유지"
+  },
+  {
+   "id": "e_init_ab_p2fin",
+   "fromNode": "init_ab",
+   "toNode": "p2fin",
+   "fromSide": "top",
+   "toSide": "bottom",
+   "label": "A/B(구): bent 재분배"
+  },
+  {
+   "id": "e_p2fin_f25p1",
+   "fromNode": "p2fin",
+   "toNode": "f25p1",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "2.5 커리큘럼 개방"
+  },
+  {
+   "id": "e_f25p1_progp1",
+   "fromNode": "f25p1",
+   "toNode": "progp1",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "WHY: 고속 freeze→진행보상"
+  },
+  {
+   "id": "e_progp1_gen2p2",
+   "fromNode": "progp1",
+   "toNode": "gen2p2",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "Gen-2 번들 4건"
+  },
+  {
+   "id": "e_bent_ab_gen2p2",
+   "fromNode": "bent_ab",
+   "toNode": "gen2p2",
+   "fromSide": "top",
+   "toSide": "bottom",
+   "label": "WHY: init A/B 반전→bent 채택"
+  },
+  {
+   "id": "e_gen2p2_g21p1",
+   "fromNode": "gen2p2",
+   "toNode": "g21p1",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "WHY: creep 게이밍→stall 상대임계"
+  },
+  {
+   "id": "e_stall_note_g21p1",
+   "fromNode": "stall_note",
+   "toNode": "g21p1",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "근거"
+  },
+  {
+   "id": "e_g21p1_g21p2",
+   "fromNode": "g21p1",
+   "toNode": "g21p2",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P2 DR+push 램프"
+  },
+  {
+   "id": "e_g21p2_rgh_fail",
+   "fromNode": "g21p2",
+   "toNode": "rgh_fail",
+   "fromSide": "top",
+   "toSide": "left",
+   "label": "warm-start rough"
+  },
+  {
+   "id": "e_blind_unv1",
+   "fromNode": "blind",
+   "toNode": "unv1",
+   "fromSide": "bottom",
+   "toSide": "left",
+   "label": "WHY: 장님×계단40%"
+  },
+  {
+   "id": "e_rgh_fail_unv1",
+   "fromNode": "rgh_fail",
+   "toNode": "unv1",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "실패→진단→계단제거"
+  },
+  {
+   "id": "e_unv1_unv2p1",
+   "fromNode": "unv1",
+   "toNode": "unv2p1",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "WHY: 슬로프45°도 불가→17°"
+  },
+  {
+   "id": "e_unv2p1_unv2p2b",
+   "fromNode": "unv2p1",
+   "toNode": "unv2p2b",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P2 (dr윈도우 버그 수정)"
+  },
+  {
+   "id": "e_g21p2_c30p1",
+   "fromNode": "g21p2",
+   "toNode": "c30p1",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "HW기하: pitch 캔트30°"
+  },
+  {
+   "id": "e_cant_design_c30p1",
+   "fromNode": "cant_design",
+   "toNode": "c30p1",
+   "fromSide": "top",
+   "toSide": "bottom",
+   "label": "설계근거 docs67"
+  },
+  {
+   "id": "e_c30p1_c30p2",
+   "fromNode": "c30p1",
+   "toNode": "c30p2",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P2 DR+push"
+  },
+  {
+   "id": "e_c30p2_c30fp1",
+   "fromNode": "c30p2",
+   "toNode": "c30fp1",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "WHY: 발 ±9° toe-out→hip_yaw 보정"
+  },
+  {
+   "id": "e_feet_c30fp1",
+   "fromNode": "feet",
+   "toNode": "c30fp1",
+   "fromSide": "top",
+   "toSide": "bottom",
+   "label": "근거 docs68"
+  },
+  {
+   "id": "e_c30fp1_c30fp2",
+   "fromNode": "c30fp1",
+   "toNode": "c30fp2",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P2"
+  },
+  {
+   "id": "e_g21p2_roll_p1",
+   "fromNode": "g21p2",
+   "toNode": "roll_p1",
+   "fromSide": "bottom",
+   "toSide": "left",
+   "label": "HW기하: roll +30mm 외측"
+  },
+  {
+   "id": "e_roll_p1_roll_p2",
+   "fromNode": "roll_p1",
+   "toNode": "roll_p2",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "P2 대기"
+  },
+  {
+   "id": "e_fp2_c20",
+   "fromNode": "c30fp2",
+   "fromSide": "right",
+   "toNode": "n_cant20fp",
+   "toSide": "left",
+   "label": "WHY: ankle_pitch 100% peak → α20"
+  },
+  {
+   "id": "e_fp2_c20p2",
+   "fromNode": "c30fp2",
+   "fromSide": "right",
+   "toNode": "n_c20p2",
+   "toSide": "left",
+   "label": "WHY: ankle_pitch 100%peak → α20"
+  },
+  {
+   "id": "e_anchor_g1val",
+   "fromNode": "g21p2",
+   "fromSide": "right",
+   "toNode": "n_g1val",
+   "toSide": "left",
+   "label": "실기 검증"
+  },
+  {
+   "id": "e_anchor_brg",
+   "fromNode": "g21p2",
+   "fromSide": "right",
+   "toNode": "n_brg",
+   "toSide": "left",
+   "label": "하중→부품 선정"
+  },
+  {
+   "id": "e_g21_ankAB",
+   "fromNode": "g21p2",
+   "fromSide": "right",
+   "toNode": "n_ankAB",
+   "toSide": "left",
+   "label": "보상·init 계승, 모델 교체 (fresh)"
+  },
+  {
+   "id": "e_g21_ankRP",
+   "fromNode": "g21p2",
+   "fromSide": "right",
+   "toNode": "n_ankRP",
+   "toSide": "left",
+   "label": "보상·init 계승, 모델 교체 (fresh)"
+  },
+  {
+   "id": "e_ab_rp",
+   "fromNode": "n_ankAB",
+   "fromSide": "bottom",
+   "toNode": "n_ankRP",
+   "toSide": "top",
+   "label": "A/B: 발목 기구 단일변인"
+  },
+  {
+   "id": "e_era10",
+   "fromNode": "n_era10",
+   "fromSide": "bottom",
+   "toNode": "n_ankAB",
+   "toSide": "top",
+   "label": "변인 정의"
+  },
+  {
+   "id": "e_solimp",
+   "fromNode": "n_solimp",
+   "fromSide": "bottom",
+   "toNode": "n_ankAB",
+   "toSide": "top",
+   "label": "구속 강성 조사·변인통제 (solimp 0.999 유지, A/B 본런 후)"
+  },
+  {
+   "id": "e_ab23",
+   "fromNode": "n_ankAB",
+   "fromSide": "right",
+   "toNode": "n_ankAB3",
+   "toSide": "left",
+   "label": "warm-start model_3100 + soft-landing"
+  },
+  {
+   "id": "e_rp23",
+   "fromNode": "n_ankRP",
+   "fromSide": "right",
+   "toNode": "n_ankRP3",
+   "toSide": "left",
+   "label": "warm-start model_3100 + soft-landing"
+  },
+  {
+   "id": "e_soft",
+   "fromNode": "n_soft",
+   "fromSide": "bottom",
+   "toNode": "n_ankAB3",
+   "toSide": "top",
+   "label": "시험 2회 → 제곱형 채택"
+  },
+  {
+   "id": "e_ab3rp3",
+   "fromNode": "n_ankAB3",
+   "fromSide": "bottom",
+   "toNode": "n_ankRP3",
+   "toSide": "top",
+   "label": "A/B: 발목 기구 단일변인"
+  },
+  {
+   "id": "e_gate_ab3",
+   "fromNode": "n_ankAB3",
+   "fromSide": "right",
+   "toNode": "n_gate_c3",
+   "toSide": "left",
+   "label": "게이트 측정"
+  },
+  {
+   "id": "e_gate_rp3",
+   "fromNode": "n_ankRP3",
+   "fromSide": "right",
+   "toNode": "n_gate_c3",
+   "toSide": "left",
+   "label": "게이트 측정"
+  },
+  {
+   "id": "e_vid_ab3",
+   "fromNode": "n_ankAB3",
+   "fromSide": "bottom",
+   "toNode": "n_abrp_vid",
+   "toSide": "left",
+   "label": "1:1 영상"
+  },
+  {
+   "id": "e_vid_rp3",
+   "fromNode": "n_ankRP3",
+   "fromSide": "right",
+   "toNode": "n_abrp_vid",
+   "toSide": "left",
+   "label": "1:1 영상"
+  },
+  {
+   "id": "e_bneck_gate",
+   "fromNode": "n_gate_c3",
+   "fromSide": "right",
+   "toNode": "n_track_bneck",
+   "toSide": "left",
+   "label": "err_vel 0.69 분해"
+  },
+  {
+   "id": "e_trend_ab3",
+   "fromNode": "n_ankAB3",
+   "fromSide": "bottom",
+   "toNode": "n_trend97",
+   "toSide": "top",
+   "label": "항별 추세·건강도"
+  },
+  {
+   "id": "e_plan_n_trend97",
+   "fromNode": "n_trend97",
+   "fromSide": "right",
+   "toNode": "n_plan98",
+   "toSide": "left",
+   "label": "문제 6건"
+  },
+  {
+   "id": "e_plan_n_track_bneck",
+   "fromNode": "n_track_bneck",
+   "fromSide": "right",
+   "toNode": "n_plan98",
+   "toSide": "left",
+   "label": "지표·박스"
+  },
+  {
+   "id": "e_obs_plan",
+   "fromNode": "n_obs100",
+   "fromSide": "top",
+   "toNode": "n_plan98",
+   "toSide": "bottom",
+   "label": "관측 설계"
+  },
+  {
+   "id": "e_spec_n_plan98",
+   "fromNode": "n_plan98",
+   "fromSide": "right",
+   "toNode": "n_spec101",
+   "toSide": "left",
+   "label": "최종 계획"
+  },
+  {
+   "id": "e_spec_n_gate_c3",
+   "fromNode": "n_gate_c3",
+   "fromSide": "right",
+   "toNode": "n_spec101",
+   "toSide": "left",
+   "label": "AB/RP 비교"
+  },
+  {
+   "id": "e_energy_spec",
+   "fromNode": "n_spec101",
+   "fromSide": "bottom",
+   "toNode": "n_energy",
+   "toSide": "top",
+   "label": "§5 결론"
+  },
+  {
+   "id": "e_hand_spec",
+   "fromNode": "n_spec101",
+   "fromSide": "bottom",
+   "toNode": "n_handover102",
+   "toSide": "top",
+   "label": "인계"
+  },
+  {
+   "id": "e_v2_n_plan98",
+   "fromNode": "n_plan98",
+   "fromSide": "right",
+   "toNode": "n_v2plan",
+   "toSide": "left",
+   "label": "대체"
+  },
+  {
+   "id": "e_v2_n_spec101",
+   "fromNode": "n_spec101",
+   "fromSide": "right",
+   "toNode": "n_v2plan",
+   "toSide": "left",
+   "label": "c3 결과 반영"
+  },
+  {
+   "id": "e_init_v2",
+   "fromNode": "n_init104",
+   "fromSide": "top",
+   "toNode": "n_v2plan",
+   "toSide": "bottom",
+   "label": "V2 항목 재정의"
+  },
+  {
+   "id": "e_cmp_n_ankAB3",
+   "fromNode": "n_ankAB3",
+   "fromSide": "bottom",
+   "toNode": "n_abrp_cmp",
+   "toSide": "top",
+   "label": "A/B 비교"
+  },
+  {
+   "id": "e_cmp_n_ankRP3",
+   "fromNode": "n_ankRP3",
+   "fromSide": "bottom",
+   "toNode": "n_abrp_cmp",
+   "toSide": "top",
+   "label": "A/B 비교"
+  },
+  {
+   "id": "e_bundle_104",
+   "fromNode": "n_init104",
+   "fromSide": "right",
+   "toNode": "n_bundle_rr",
+   "toSide": "left",
+   "label": "번들 근거"
+  },
+  {
+   "id": "e_n_bctl",
+   "fromNode": "n_ankAB3",
+   "fromSide": "right",
+   "toNode": "n_bctl",
+   "toSide": "left",
+   "label": "model_31999 +800"
+  },
+  {
+   "id": "e_n_btrt",
+   "fromNode": "n_ankAB3",
+   "fromSide": "right",
+   "toNode": "n_btrt",
+   "toSide": "left",
+   "label": "model_31999 +800"
+  },
+  {
+   "id": "e_bundle_ab",
+   "fromNode": "n_bctl",
+   "fromSide": "bottom",
+   "toNode": "n_btrt",
+   "toSide": "top",
+   "label": "A/B: 착지 번들 3변인"
+  },
+  {
+   "id": "e_verdict_n_bctl",
+   "fromNode": "n_bctl",
+   "fromSide": "right",
+   "toNode": "n_bundle_verdict",
+   "toSide": "left",
+   "label": "판정"
+  },
+  {
+   "id": "e_verdict_n_btrt",
+   "fromNode": "n_btrt",
+   "fromSide": "right",
+   "toNode": "n_bundle_verdict",
+   "toSide": "left",
+   "label": "판정"
+  },
+  {
+   "id": "e_n_bB2",
+   "fromNode": "n_bundle_verdict",
+   "fromSide": "right",
+   "toNode": "n_bB2",
+   "toSide": "left",
+   "label": "원인분리"
+  },
+  {
+   "id": "e_n_bB3",
+   "fromNode": "n_bundle_verdict",
+   "fromSide": "right",
+   "toNode": "n_bB3",
+   "toSide": "left",
+   "label": "원인분리"
+  },
+  {
+   "id": "e_n_bC3",
+   "fromNode": "n_bB3",
+   "fromSide": "right",
+   "toNode": "n_bC3",
+   "toSide": "left",
+   "label": "16384 env"
+  },
+  {
+   "id": "e_n_bC4",
+   "fromNode": "n_bB3",
+   "fromSide": "right",
+   "toNode": "n_bC4",
+   "toSide": "left",
+   "label": "16384 env"
+  },
+  {
+   "id": "e_bC5",
+   "fromNode": "n_bC3",
+   "fromSide": "bottom",
+   "toNode": "n_bC5",
+   "toSide": "top",
+   "label": "+무릎 신전항"
+  },
+  {
+   "id": "e_n_bC3_n_bundle_final",
+   "fromNode": "n_bC3",
+   "fromSide": "right",
+   "toNode": "n_bundle_final",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_bC5_n_bundle_final",
+   "fromNode": "n_bC5",
+   "fromSide": "right",
+   "toNode": "n_bundle_final",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_bB2_n_bundle_final",
+   "fromNode": "n_bB2",
+   "fromSide": "right",
+   "toNode": "n_bundle_final",
+   "toSide": "left",
+   "label": "철회 후 채택"
+  },
+  {
+   "id": "e_n_bundle_final_n_bD1",
+   "fromNode": "n_bundle_final",
+   "fromSide": "right",
+   "toNode": "n_bD1",
+   "toSide": "left",
+   "label": "세 안 동시 시험"
+  },
+  {
+   "id": "e_n_bD1_n_d1_verdict",
+   "fromNode": "n_bD1",
+   "fromSide": "right",
+   "toNode": "n_d1_verdict",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_bD1_n_signbug",
+   "fromNode": "n_bD1",
+   "fromSide": "right",
+   "toNode": "n_signbug",
+   "toSide": "left",
+   "label": "텐서보드 0.00000"
+  },
+  {
+   "id": "e_n_d1_verdict_n_bD1_RP",
+   "fromNode": "n_d1_verdict",
+   "fromSide": "right",
+   "toNode": "n_bD1_RP",
+   "toSide": "left",
+   "label": "RP 이식"
+  },
+  {
+   "id": "e_n_bCTL_RP_n_rp_verdict",
+   "fromNode": "n_bCTL_RP",
+   "fromSide": "right",
+   "toNode": "n_rp_verdict",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_bD1_RP_n_rp_verdict",
+   "fromNode": "n_bD1_RP",
+   "fromSide": "right",
+   "toNode": "n_rp_verdict",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_bundle_final_n_bD1_ab",
+   "fromNode": "n_bundle_final",
+   "fromSide": "right",
+   "toNode": "n_bD1_ab",
+   "toSide": "left",
+   "label": "세 안 동시"
+  },
+  {
+   "id": "e_n_bD1_ab_n_bCTL_rp",
+   "fromNode": "n_bD1_ab",
+   "fromSide": "right",
+   "toNode": "n_bCTL_rp",
+   "toSide": "left",
+   "label": "RP 이식: 대조"
+  },
+  {
+   "id": "e_n_bD1_ab_n_bD1_rp",
+   "fromNode": "n_bD1_ab",
+   "fromSide": "right",
+   "toNode": "n_bD1_rp",
+   "toSide": "left",
+   "label": "RP 이식: 처치"
+  },
+  {
+   "id": "e_n_bD1_ab_n_bE1_ab",
+   "fromNode": "n_bD1_ab",
+   "fromSide": "right",
+   "toNode": "n_bE1_ab",
+   "toSide": "left",
+   "label": "+수정된 하중률항"
+  },
+  {
+   "id": "e_n_bD1_ab_n_bV4_ab",
+   "fromNode": "n_bD1_ab",
+   "fromSide": "right",
+   "toNode": "n_bV4_ab",
+   "toSide": "left",
+   "label": "+v4 질량"
+  },
+  {
+   "id": "e_n_bundle_final_n_rp_transfer",
+   "fromNode": "n_bundle_final",
+   "fromSide": "right",
+   "toNode": "n_rp_transfer",
+   "toSide": "left",
+   "label": "RP arm"
+  },
+  {
+   "id": "e_n_bD1_n_e1v4",
+   "fromNode": "n_bD1",
+   "fromSide": "right",
+   "toNode": "n_e1v4",
+   "toSide": "left",
+   "label": "+ 수정된 항 / v4 질량"
+  },
+  {
+   "id": "e_n_bD1_n_v4",
+   "fromNode": "n_bD1",
+   "fromSide": "right",
+   "toNode": "n_v4",
+   "toSide": "left",
+   "label": "v4 질량"
+  },
+  {
+   "id": "e_n_bD1_n_p1low",
+   "fromNode": "n_bD1",
+   "fromSide": "right",
+   "toNode": "n_p1low",
+   "toSide": "left",
+   "label": "저속 deadband A/B"
+  },
+  {
+   "id": "e_p1low_p1s2",
+   "fromNode": "n_p1low",
+   "fromSide": "right",
+   "toNode": "n_p1s2",
+   "toSide": "left",
+   "label": "seed 2 복제"
+  },
+  {
+   "id": "e_p1low_p1s3",
+   "fromNode": "n_p1low",
+   "fromSide": "right",
+   "toNode": "n_p1s3",
+   "toSide": "left",
+   "label": "seed 3 복제"
+  },
+  {
+   "id": "e_bD1_d1s2",
+   "fromNode": "n_bD1",
+   "fromSide": "right",
+   "toNode": "n_d1s2",
+   "toSide": "left",
+   "label": "seed 2 대조(분산 바닥)"
+  },
+  {
+   "id": "e_n_p1low_n_v2s1",
+   "fromNode": "n_p1low",
+   "fromSide": "right",
+   "toNode": "n_v2s1",
+   "toSide": "left",
+   "label": "저속 기각 반영"
+  },
+  {
+   "id": "e_n_rp_transfer_n_ankleaudit",
+   "fromNode": "n_rp_transfer",
+   "fromSide": "right",
+   "toNode": "n_ankleaudit",
+   "toSide": "left",
+   "label": "발목 사용 감사"
+  },
+  {
+   "id": "e_n_v2s1_n_v30_st45_smoke",
+   "fromNode": "n_v2s1",
+   "fromSide": "right",
+   "toNode": "n_v30_st45_smoke",
+   "toSide": "left",
+   "label": "v30 질량·45D 센서·clip·DR 재검증"
+  },
+  {
+   "id": "e_v2s1_legonly_smoke",
+   "fromNode": "n_v2s1",
+   "toNode": "n_legonly_smoke",
+   "label": "recipe inherited, robot model swapped -> LegOnly 12-DOF"
+  },
+  {
+   "id": "e_smoke_v1",
+   "fromNode": "n_legonly_smoke",
+   "toNode": "n_legonly_v1",
+   "label": "smoke PASS -> real 16384-env launch"
+  },
+  {
+   "id": "e_v2s1_legonly_v1_direct",
+   "fromNode": "n_v2s1",
+   "toNode": "n_legonly_v1",
+   "label": "recipe inherited"
+  },
+  {
+   "id": "e_v1_v2smoke",
+   "fromNode": "n_legonly_v1",
+   "toNode": "n_legonly_v2_smoke",
+   "label": "v1 halted (L_knee action window 0 deg) -> config side-aware fix, verified by smoke"
+  },
+  {
+   "id": "e_v1_gaitkin",
+   "fromNode": "n_legonly_v1",
+   "toNode": "n_legonly_gaitkin",
+   "label": "kinematics @5600: L_knee window 0deg (config bug)"
+  },
+  {
+   "id": "e_gaitkin_v2",
+   "fromNode": "n_legonly_gaitkin",
+   "toNode": "n_legonly_v2",
+   "label": "conservative STOP -> side-aware config fix (single variable)"
+  },
+  {
+   "id": "e_v1_v2",
+   "fromNode": "n_legonly_v1",
+   "toNode": "n_legonly_v2",
+   "label": "same recipe/model/DR, config fix only"
+  },
+  {
+   "id": "e_smoke2_v2",
+   "fromNode": "n_legonly_v2_smoke",
+   "toNode": "n_legonly_v2",
+   "label": "smoke PASS (knee window open) -> 16384-env launch; P1 graduated @4100 -> P2 (DR+push ramp), no transition dip; P2 @11565 (64%) reward 108, DR 0.75, fall 0, thermal 2.85 < 3.0"
+  },
+  {
+   "id": "e_v2_to_measure",
+   "fromNode": "n_legonly_v2",
+   "toNode": "n_legonly_v2_measure",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "완주 후 측정"
+  },
+  {
+   "id": "e_gaitkin_to_measure",
+   "fromNode": "n_legonly_gaitkin",
+   "toNode": "n_legonly_v2_measure",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "수정 전 기준선"
+  },
+  {
+   "id": "e_measure_to_research",
+   "fromNode": "n_legonly_v2_measure",
+   "toNode": "n_legonly_v2_research",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "세 결함의 뿌리"
+  },
+  {
+   "id": "e_research_to_v3",
+   "fromNode": "n_legonly_v2_research",
+   "toNode": "n_legonly_v3_keyfix",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "A0: 시작 자세 수정만"
+  },
+  {
+   "id": "e_v2_to_v3",
+   "fromNode": "n_legonly_v2",
+   "toNode": "n_legonly_v3_keyfix",
+   "fromSide": "right",
+   "toSide": "top",
+   "label": "유일 변인"
+  },
+  {
+   "id": "e_v3run_to_kneeresearch",
+   "fromNode": "n_legonly_v3_keyfix",
+   "fromSide": "right",
+   "toNode": "n_v3_knee_symmetry_research",
+   "toSide": "left",
+   "label": "반복 측정 → 정정 + 디딤 불균형"
+  },
+  {
+   "id": "e_huphy_to_rootcause",
+   "fromNode": "n_huphy_findings",
+   "fromSide": "right",
+   "toNode": "n_motor_rootcause",
+   "toSide": "left",
+   "label": "로봇 본체 결함 3건 → 같은 증상"
+  },
+  {
+   "id": "e_bridge_to_rootcause",
+   "fromNode": "n_bridge_findings",
+   "fromSide": "right",
+   "toNode": "n_motor_rootcause",
+   "toSide": "left",
+   "label": "어댑터 결함 3건 → 같은 증상"
+  },
+  {
+   "id": "e_rootcause_to_incidents",
+   "fromNode": "n_motor_rootcause",
+   "fromSide": "bottom",
+   "toNode": "n_bench_incidents",
+   "toSide": "top",
+   "label": "계측기 도입 중 드러난 실제 사고"
+  },
+  {
+   "id": "e_incidents_to_ratefix",
+   "fromNode": "n_bench_incidents",
+   "fromSide": "right",
+   "toNode": "n_rate_limit_fix",
+   "toSide": "left",
+   "label": "재개 첫 패킷 → 재시딩 규칙"
+  },
+  {
+   "id": "e_v3_to_complete",
+   "fromNode": "n_legonly_v3_keyfix",
+   "toNode": "n_legonly_v3_complete",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "완주 27,999회"
+  },
+  {
+   "id": "e_ratelimit_to_sweep",
+   "fromNode": "n_rate_limit_fix",
+   "toNode": "n_sweep_ab_2026_09_09",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "속도 제한 뒤 응답 비교"
+  },
+  {
+   "id": "e_sweep_to_ledger",
+   "fromNode": "n_sweep_ab_2026_09_09",
+   "toNode": "n_huphy_ledger",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "남은 36~44 ms → 로봇 수정 필요"
+  },
+  {
+   "id": "e_sweep_to_sysid_method",
+   "fromNode": "n_sweep_ab_2026_09_09",
+   "toNode": "n_sysid_method_2026_09_09",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "모터 값이 맞는지 확인 필요 → 방법 조사"
+  },
+  {
+   "id": "e_method_to_attempt",
+   "fromNode": "n_sysid_method_2026_09_09",
+   "toNode": "n_sysid_attempt_2026_09_09",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "그 방법대로 실행"
+  },
+  {
+   "id": "e_attempt_to_can",
+   "fromNode": "n_sysid_attempt_2026_09_09",
+   "toNode": "n_can_bottleneck_next",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "224 Hz 가 막음 → 어댑터부터"
+  },
+  {
+   "id": "e_attempt_to_ledger",
+   "fromNode": "n_sysid_attempt_2026_09_09",
+   "toNode": "n_huphy_ledger",
+   "fromSide": "top",
+   "toSide": "bottom",
+   "label": "장부 003 (HUPHY 무수정)"
+  },
+  {
+   "id": "e_can_next_to_vm",
+   "fromNode": "n_can_bottleneck_next",
+   "toNode": "n_vm_bottleneck_2026_09_09",
+   "fromSide": "bottom",
+   "toSide": "top",
+   "label": "실측으로 갈라 봄 → 예상과 다름"
+  },
+  {
+   "id": "e_vm_to_friction",
+   "fromNode": "n_vm_bottleneck_2026_09_09",
+   "toNode": "n_friction_now_2026_09_09",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "막힌 건 관성뿐 → 마찰은 지금"
+  },
+  {
+   "id": "e_fricnow_to_measured",
+   "fromNode": "n_friction_now_2026_09_09",
+   "toNode": "n_friction_measured_2026_09_09",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "실제로 쟀음"
+  },
+  {
+   "id": "e_measured_to_psu",
+   "fromNode": "n_friction_measured_2026_09_09",
+   "toNode": "n_psu_regen_warning",
+   "fromSide": "right",
+   "toSide": "left",
+   "label": "웜업 중 발견"
+  },
+  {
+   "id": "e_n_friction_measured_2026_09_09_to_inertia",
+   "fromNode": "n_friction_measured_2026_09_09",
+   "fromSide": "right",
+   "toNode": "n_inertia_measured_2026_09_09",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_vm_bottleneck_2026_09_09_to_inertia",
+   "fromNode": "n_vm_bottleneck_2026_09_09",
+   "fromSide": "right",
+   "toNode": "n_inertia_measured_2026_09_09",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_inertia_measured_2026_09_09_to_fretest",
+   "fromNode": "n_inertia_measured_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_friction_retest_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_friction_measured_2026_09_09_to_fretest",
+   "fromNode": "n_friction_measured_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_friction_retest_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_friction_retest_2026_09_09_to_reptim",
+   "fromNode": "n_friction_retest_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_report_timing_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_vm_bottleneck_2026_09_09_to_reptim",
+   "fromNode": "n_vm_bottleneck_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_report_timing_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_report_timing_2026_09_09_to_n_pd_stepchirp_2026_09_09",
+   "fromNode": "n_report_timing_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_pd_stepchirp_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_inertia_measured_2026_09_09_to_n_pd_stepchirp_2026_09_09",
+   "fromNode": "n_inertia_measured_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_pd_stepchirp_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_pd_stepchirp_2026_09_09_to_n_regen_bus_2026_09_09",
+   "fromNode": "n_pd_stepchirp_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_regen_bus_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_pd_stepchirp_2026_09_09_to_abl",
+   "fromNode": "n_pd_stepchirp_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_pd_ablation_2026_09_09",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_pd_ablation_2026_09_09_to_rs03fix",
+   "fromNode": "n_pd_ablation_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_rs03_correction_2026_09_10",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_pd_stepchirp_2026_09_09_to_rs03fix",
+   "fromNode": "n_pd_stepchirp_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_rs03_correction_2026_09_10",
+   "toSide": "top"
+  },
+  {
+   "id": "e_abl_to_eli5",
+   "fromNode": "n_pd_ablation_2026_09_09",
+   "fromSide": "right",
+   "toNode": "n_sysid_eli5_2026_09_10",
+   "toSide": "left"
+  },
+  {
+   "id": "e_n_rs03_correction_2026_09_10_to_valid",
+   "fromNode": "n_rs03_correction_2026_09_10",
+   "fromSide": "bottom",
+   "toNode": "n_validity_2026_09_10",
+   "toSide": "top"
+  },
+  {
+   "id": "e_n_pd_ablation_2026_09_09_to_valid",
+   "fromNode": "n_pd_ablation_2026_09_09",
+   "fromSide": "bottom",
+   "toNode": "n_validity_2026_09_10",
+   "toSide": "top"
+  },
+  {
+   "id": "e_validity_to_benchvideo",
+   "fromNode": "n_validity_2026_09_10",
+   "fromSide": "bottom",
+   "toNode": "n_bench_video_2026_09_10",
+   "toSide": "top"
+  }
+ ]
 }
