@@ -416,7 +416,9 @@ def main(argv=None) -> int:
         iax.grid(alpha=0.3)
         iax.patch.set_alpha(0.93)
         # 확대한 자리를 네모로만 표시한다. 연결선은 그림을 가로질러 지저분해서 끈다.
-        rect, conn = ax.indicate_inset_zoom(iax, edgecolor="#7f8c8d", alpha=0.55)
+        ind = ax.indicate_inset_zoom(iax, edgecolor="#7f8c8d", alpha=0.55)
+        # matplotlib 3.10 부터 하나의 artist 를 돌려준다(3.12 부터는 풀어 받기 불가).
+        conn = getattr(ind, "connectors", None) or (ind[1] if isinstance(ind, tuple) else [])
         for c in conn:
           c.set_visible(False)
   fig3.suptitle("RobStride motor " + str(a.motor) + ": the simulator drawn straight on top "

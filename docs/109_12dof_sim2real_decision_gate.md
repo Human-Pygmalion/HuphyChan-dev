@@ -1,0 +1,157 @@
+# 109. Pygmalion 12-DOF 보행·Sim2Real 의사결정 게이트
+
+작성: 2026-09-01  
+적용 Skill: `pygmalion-12dof-sim2real`
+
+## 결론
+
+**현재 판정: NO-GO — 본 학습 시작 전 모델 재정산이 필요하다.**
+
+GPU는 학습 가능한 상태지만, 현재 v4 모델은 새 하드웨어의 알루미늄 10개 치환을 반영하지 않는다. 특히 `FEET`와 유력 후보 연결부 4종이 현재 Fusion 덤프에서 PLA로 남아 있다. 이 상태에서 학습하면 Policy가 실제보다 가볍고 관성이 작은 발·정강이에 최적화될 수 있다.
+
+### ELI5
+
+로봇의 신발과 발목 부품을 플라스틱에서 알루미늄으로 바꾸면 단순히 몸무게만 늘어나는 것이 아니다. 무거운 물체가 발끝 쪽에 붙으면 다리를 흔들고 멈추는 데 훨씬 큰 힘이 든다. 현재 시뮬레이터는 아직 가벼운 신발을 신고 있으므로, 그 상태로 잘 걷는 방법을 배워도 실제 로봇에서는 타이밍과 토크가 달라질 수 있다. 먼저 바뀐 10개를 정확히 모델에 넣고, 그 다음 학습하는 것이 가장 빠른 길이다.
+
+## 불변 목표
+
+- Policy 출력: 정확히 **12개**.
+- AB 발목 기준: 양쪽 hip pitch/roll/yaw 6 + knee 2 + crank A/B 4.
+- 상체 전체와 Waist Yaw 모터의 질량·형상·COM·관성은 시뮬레이션에 포함.
+- Waist Yaw와 양쪽 shoulder pitch/roll은 관절 삭제/용접 상태이며 Policy가 사용하지 않음.
+- `PYG_UPPER_DOF=1` 또는 17-action 체크포인트는 이번 목표에서 제외.
+
+## 현재 의사결정에 필요한 증거만 남긴 표
+
+| 판단 기준 | 상태 | 현재 증거 | 의사결정 영향 | 다음 증거 |
+|---|---|---|---|---|
+| GPU 여유 | VERIFIED | RTX 5060 Ti 16,311 MiB, free 15,699 MiB, util 0% | 병목 아님 | 본 학습 직전 재확인 |
+| 호스트 RAM | VERIFIED | 23 GiB, available 약 18 GiB, swap 1 MiB | 단독 작업은 가능, 중첩 금지 | 런처 preflight |
+| 저장공간 | VERIFIED | NFS 99%, 약 153 GiB 여유 | 단기 가능, 대형 산출물 감시 | 런별 예상 산출량·최저 여유 게이트 |
+| 12-action 고정 상체 | VERIFIED(코드) | `pygmalion_constants.py`가 upper 5 joint 삭제; 기존 검증 action 12 | 목표와 일치 | 새 모델 compiled action 순서 캡처 |
+| 현재 v4 질량 | VERIFIED | `validation_pygmalion_v4_printed_loop.json`: 31.316192 kg | 구 하드웨어 기준 | 새 tag 검증 JSON |
+| 발판 2개 알루미늄 반영 | CONTRADICTED | `bodies_v4_printed.json`: `FEET` = PLA 0.181557 kg/leg | 학습 차단 | 양쪽 실물 매핑·실측 질량·CAD 재질 |
+| 연결부 8개 알루미늄 반영 | UNKNOWN/유력 불일치 | 유력 4종/leg가 모두 PLA | 학습 차단 | 실물 사진/도면으로 CAD 이름 확정 |
+| 질량뿐 아니라 COM·관성 갱신 | UNKNOWN | 새 10개를 반영한 massprops 없음 | 학습 차단 | 새 body dump→massprops→URDF/MJCF readback |
+| 배포 action/obs parity | UNKNOWN | 기존 설계는 있으나 새 체크포인트 계약 없음 | 실기 배포 차단 | ordered contract golden test |
+
+## 가장 큰 병목
+
+**물리 하드웨어 리비전과 학습 모델 리비전의 불일치**가 가장 크다. 전문가라면 reward보다 먼저 아래를 의심한다.
+
+1. 발처럼 원점에서 먼 부품의 관성 증가가 빠져 있지 않은가.
+2. 부품을 올바른 rigid body에 귀속했는가. `Ankle2Feet`는 하나의 링크가 아니라 정강이·발목·발에 걸친 기구다.
+3. 양쪽 부품이 실제로 같은 형상·합금·질량인가.
+4. CAD 밀도 2.70 g/cm³가 완성 부품의 실측 질량을 충분히 대변하는가.
+5. mass만 바꾸고 COM·관성을 예전 값으로 남기지 않았는가.
+
+### 최적해
+
+실물 10개를 한 개씩 식별·계량하고 CAD occurrence/body에 매핑한다. export 사본에서 해당 body만 실제 합금/실측 질량으로 수정한 뒤 새 tag로 body dump, massprops, motor proxy, URDF/MJCF, validation, mass DR을 전부 재생성한다. 그 모델로 계약 테스트와 smoke를 통과한 다음 처음부터 P1을 학습한다.
+
+### 차선책
+
+실측이나 Fusion 접근이 당장 불가능하면 유력 body 매핑으로 별도 후보 모델을 만든다. CAD 6061 값과 계량 오차를 포함한 per-link mass/COM/inertia 민감도 스윕으로 학습 가능성만 확인한다. 단, 후보 모델은 본 학습 비교와 시뮬레이션 선행 검토용이며 실기 배포 GO를 받을 수 없다.
+
+## 유력한 10개 매핑과 예상 질량 변화
+
+사용자 설명과 현재 CAD 이름으로 볼 때 한쪽 연결부 4개의 가장 유력한 후보는 다음과 같다. **실물 대조 전에는 추정이다.**
+
+| 한쪽 다리 body | 현재 PLA kg | CAD 6061 kg | 증가 kg | 현재 simulator 귀속 경향 |
+|---|---:|---:|---:|---|
+| `FEET` | 0.181557 | 0.616531 | 0.434974 | foot |
+| `KneeB2AnkleA` | 0.057233 | 0.168516 | 0.111283 | shin 쪽 |
+| `KneeB2AnkleB` | 0.056477 | 0.171836 | 0.115359 | shin 쪽 |
+| `AnkleBraceA` | 0.013326 | 0.040545 | 0.027219 | shin/foot 연결 |
+| `AnkleBraceB` | 0.013326 | 0.040545 | 0.027219 | shin/foot 연결 |
+
+이 매핑·형상·6061 가정이 모두 맞으면:
+
+`2 × (0.434974 + 0.111283 + 0.115359 + 0.027219 + 0.027219) = 1.432108 kg`
+
+따라서 예상 총질량은 `31.316192 + 1.432108 = 32.748300 kg`이다. 이는 새 모델의 목표 검산값이지 확정값이 아니다.
+
+## 실행 순서 로드맵
+
+| 순서 | 작업 | 통과 조건 | 실패/정지 조건 | 개선 효과 |
+|---:|---|---|---|---|
+| 0 | 목표 계약 동결 | action=12, upper/waist welded, ordered action/obs 기록 | 17 action, upper toggle, 이름/순서 미상 | 매우 큼 |
+| 1 | 10개 실물 manifest | 2 feet + 4×2 connector가 CAD body와 1:1 대응 | 개수·이름·좌우 불명 | 최대 |
+| 2 | 부품별 질량 확인 | 실측값 또는 합금·체적·공차 근거 | 총질량만 보정 | 최대 |
+| 3 | 새 모델 생성 | 새 tag, mass/COM/inertia 모두 갱신 | 기존 v4 덮어쓰기, 잔차 미설명 | 최대 |
+| 4 | 기구/형상 검증 | URDF/MJCF readback, 대칭, ROM, sole, collision, loop invariant 통과 | compile/closure/contact 오류 | 매우 큼 |
+| 5 | 배포 계약 golden test | sim/runtime action·obs 순서·부호·단위·scale·rate 동일 | 하나라도 불일치 | 매우 큼 |
+| 6 | 자원 preflight | GPU/RAM/disk 여유, heavy job 0 | swap 압박·중첩 작업 | 중간 |
+| 7 | 짧은 smoke | action 12, actor obs 기대값, finite, constraint 안정 | NaN/Inf/OOM/차원 불일치 | 큼 |
+| 8 | P1 scratch | nominal model, broad DR 없음, 고정 config | reward로 모델 오류 은폐 | 큼 |
+| 9 | 100/1000 iter·60 min 판독 | tracking/fall/saturation/q-qtarget/PD/contact 기록 | gate 누락·진행 강행 | 큼 |
+| 10 | P2 DR | 실측 불확실성과 P1 실패 범위에서 산정 | 임의로 넓은 DR | 중간~큼 |
+| 11 | 전체 명령 박스·다중 seed·200 Hz 하중 측정 | 명령별 성능/하중/열 한계 통과 | 평균 점수만 좋음 | 큼 |
+| 12 | 단계적 Sim2Real | 계약 replay→restrained→supported→tethered 순 통과 | sign/zero/E-stop/limit 미검증 | 필수 |
+
+## 실패할 조건
+
+### 즉시 실패
+
+- action이 12가 아니거나 Waist Yaw/shoulder가 action에 포함됨.
+- `PYG_UPPER_DOF=0` 문자열이 truthy로 해석되어 상체가 풀림.
+- 알루미늄 실물 10개와 CAD body 10개가 일대일 대응하지 않음.
+- 새 총질량은 맞지만 링크별 COM 또는 inertia가 그대로임.
+- 기존 v4 파일을 덮어써 체크포인트 계보가 사라짐.
+- AB에서 policy가 passive ankle pitch/roll을 직접 제어한다고 가정함.
+- 배포 코드의 action/observation 순서·부호·단위·scale·제어주기가 학습과 다름.
+- 실제 모터 전압/T-N/열/토크 제한이 시뮬레이션 범위 밖임.
+
+### 학습 중 자동 정지
+
+- NaN/Inf, loop closure 발산, 접촉 폭주, OOM 또는 swap 압박.
+- 명령 추종이 좋아져도 saturation, qtarget error, PD torque, impact가 지속 악화.
+- 특정 명령 구간에서만 생존하고 전체 command box가 붕괴.
+- P1 모델 오차를 넓은 DR이나 reward 수정으로 덮으려는 상황.
+- 100/1000 iter 또는 60분 검토 증거가 생성되지 않음.
+
+### Sim2Real 실패 가능성이 큰 간과 변수
+
+위험도 순서는 대략 영향×발생 가능성이다.
+
+1. distal mass의 COM·관성 및 rigid-body 귀속.
+2. action/encoder/IMU 부호와 zero offset.
+3. AB crank↔ankle FK/Jacobian, backlash, rod-end compliance, loop stiffness.
+4. 48 V가 아닌 실제 bus voltage에서의 T-N 곡선과 voltage sag.
+5. 제어 지연·jitter·packet loss·실제 50 Hz 유지 여부.
+6. 발바닥 고무/바닥 마찰, 접촉 순응도, sole 형상.
+7. 케이블·볼트·커버·배터리·페이로드와 좌우 비대칭.
+8. encoder quantization, IMU bias/축 정렬/필터 지연.
+9. 모터 열 제한, 연속 토크와 peak torque 혼동.
+10. 실제 프레임 탄성, 체결 유격, 구조 공진.
+
+## 80점에서 100점으로 채우는 기준
+
+점수는 우선순위 도구일 뿐 하드 실패를 상쇄하지 않는다.
+
+| 영역 | 배점 | 현재 상태 | 100점에 필요한 증거 |
+|---|---:|---|---|
+| 목표·12-action 계약 | 15 | 13 | 새 모델 resolved order/hash |
+| 10개 질량·COM·관성 | 25 | 8 | 실물 매핑·계량·새 massprops |
+| 기구·접촉·액추에이터 | 15 | 12 | 새 모델 invariant/readback |
+| 학습 프로토콜·자원 | 15 | 14 | 본 런 preflight·gate artifact |
+| 평가·하중 측정 | 15 | 12 | 새 정책 full-box·200 Hz 결과 |
+| 배포 계약·안전 | 15 | 8 | golden parity·단계별 실기 gate |
+| **합계** | **100** | **67** | 질량과 배포 증거가 핵심 결손 |
+
+이전 작업 품질을 80점으로 가정하더라도, 이번 물리 변경이 들어오면 증거 유효기간이 끝난다. 현재 목표에 대한 실질 준비도는 약 67점이며, 질량 provenance와 배포 parity가 채워지기 전에는 학습/실기 GO가 아니다.
+
+## 지금 할 단 하나의 작업
+
+양쪽 다리에서 바뀐 10개 실물을 펼쳐 좌/우·부품명을 표시한 사진과 각 부품의 실측 질량을 만든다. 동시에 네 연결부가 `KneeB2AnkleA/B`, `AnkleBraceA/B`가 맞는지 CAD 화면과 대조한다. 이 결과로 `side, real_part, CAD occurrence, CAD body, quantity, alloy, measured_g, confidence` 열을 가진 manifest가 완성되면 모델 재생성을 시작할 수 있다.
+
+## 근거 파일
+
+- `mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/pygmalion_constants.py`
+- `/home/syaro/pyg_fea/fusion/bodies_v4_printed.json`
+- `/home/syaro/pyg_fea/fusion/printed_density_plan.json`
+- `pygmalion_locomotion/assets/pygmalion_v2/validation_pygmalion_v4_printed_loop.json`
+- `tools/robot_model/massprops_fusion.py`
+- `tools/fusion/set_printed_density.py`
+- `docs/89_printed_parts_density_ratio.md`
+- `docs/105_imu_and_shoulder_cad_update.md`

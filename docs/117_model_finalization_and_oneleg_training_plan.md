@@ -42,6 +42,10 @@ FUSION_MCP_HOST=127.0.0.1:27182` + `M.connect()` 먼저 호출.
   `class="foot_box"` 유지, 접촉 사이트(`left_foot`/`right_foot`)는 그대로.
 - 검증: `resolve_zero_pose_overlaps`가 여전히 비인접쌍 겹침을 잡아주는지 재확인, 제로포즈 렌더로
   캡슐이 실제 메시를 벗어나지 않는지 확인.
+- **완료(2026-09-03)**: 발바닥 3-box(`foot1/2/3_collision`, X축 0.0867m 간격 연속 배열, 총 풋프린트
+  X −0.08~+0.18m) 전 변형에 반영 확인. `resolve_zero_pose_overlaps`를 최신 6변형 XML(FullDoF/
+  SemiFullDoF/LegOnly × serial/loop) 전체에 재실행 — **8개 파일 전부 CLEAN**(비인접쌍 잔여 겹침
+  0건, SemiFullDoF는 이번에 처음 재확인). Task 1 종료.
 
 ## 2. Inertia/COM 검증 + DR 확정
 
@@ -55,11 +59,25 @@ FUSION_MCP_HOST=127.0.0.1:27182` + `M.connect()` 먼저 호출.
 - 나사/모터 실측: RS03 0.9195kg/RS04 1.514kg 실측 이미 반영(`RS0{3,4}_MEASURED_KG`). 나사는
   CAD 집계 2.431547kg 포함이나 SCM 실제 나사의 절반만 모델링됐을 가능성 있음
   (docs/114 §5) — `PYG_FASTENER_COMPLETENESS_MIN`으로 처리.
-- **DR 범위 재확정**(이번 세션, 수정된 body 귀속 기준 재실행):
+- **DR 범위 재확정 1차**(이번 세션, 수정된 body 귀속만 반영):
   `mass_dr.py --bodies=.../bodies_printed_prototype_tempmass.json` →
   일반 링크 mass 0.95–1.05·COM ±5mm, pelvis/torso 0.95–1.15·COM ±20mm,
   ankle_pitch_link만 넓음(0.891–1.115, 표본 3개뿐이라 상대불확실성 큼).
-  그림: `docs/img/mass_dr_round4_v30proxyfix.png`.
+  그림: `docs/img/mass_dr_round4_v30proxyfix.png`. **주의**: 이 1차본은
+  `PYG_FASTENER_COMPLETENESS_MIN` 기본값(1.0, 나사 완전성 가정)으로 돌아 docs/114 §5의 50% 나사
+  불확실성 방법론이 **빠져 있었다** — 기존 `mass_dr_fastener50_prototype-tempmass.json`은 반대로
+  나사 방법론은 맞지만 이번 세션 이전(HipPitchFlange/IMU/Torso2ShoulderP 수정 전)의 **낡은 body
+  귀속**을 쓰고 있어, 두 파일 중 어느 쪽도 단독으로 완전하지 않았다.
+- **DR 범위 재확정 2차(완결, 2026-09-03)**: `PYG_FASTENER_COMPLETENESS_MIN=0.5`로 재실행해 두
+  보정을 합쳤다 —
+  `PYG_FASTENER_COMPLETENESS_MIN=0.5 mass_dr.py --bodies=.../bodies_printed_prototype_tempmass.json`
+  → `mass_dr_fastener50_v30proxyfix_corrected.json` / `docs/img/mass_dr_fastener50_v30proxyfix_corrected.png`.
+  전 링크(pelvis/hip_pitch/hip_roll/thigh/shin/ankle_pitch/foot/torso/shoulder_pitch/arm) mass·COM·
+  관성 95% 구간 전부 갱신. **이 파일이 이제 권위본**이며, 이전 두 파일은 각각 방법론 절반만 맞아
+  superseded. LegOnly 훈련용으로 torso/shoulder_pitch_link/arm(모델에 없는 바디)만 제외한 서브셋
+  `mass_dr_legonly_fastener50_prototype-tempmass.json`도 함께 생성 — §5 실제 본학습(스모크 이후)은
+  이 파일을 `PYG_MASS_DR_JSON`으로 써야 한다(스모크 자체는 방법론 검증용 구버전 서브셋으로
+  이미 launch됐고 재launch하지 않음, [[2026-09-03_legonly_ab_smoke_test]] §3 참고).
 - 불확실성이 큰 부분: (a) ankle_pitch_link(3바디, universal-joint cross만) (b) 나사 완전성
   가정 c~U(0.5,1) (c) huphy 대비 큰 질량차 링크(shin/foot) — CAD 소스가 다른 세대일 가능성,
   향후 huphy 쪽 BOM 확인 필요.
@@ -86,7 +104,22 @@ FullDoF/SemiFullDoF/LegOnly 전부 이번 세션 수정 반영해서 재생성. 
 - Reward: docs/110 §3의 22개 항목 번들 그대로(현재 v2s1_AB와 동일 레시피).
 - DR: P1 커맨드 커리큘럼만(dr_factor=0), P2에서 push/friction/encoder 10k iter ramp +
   §2에서 재확정한 mass/COM/inertia DR.
-- 학습 런처: `scripts/run_training.sh`(하드 규칙, 직접 train.py 금지).
+- 학습 런처: 실제로는 `run_v2_scratch.py`가 v2s1 이후 확정된 P1(게이트 커리큘럼)→P2(DR 램프)
+  2단계 오케스트레이터다(`scripts/run_training.sh`는 구식 단일런 방식, v2s1/AB-RP 계열은 전부
+  run_v2_scratch 사용 — 2026-09-03 확인).
+- **2026-09-03 진행**: `legonly_ab_smoke_test`(1024 env 스모크)로 오케스트레이션 자체를 먼저
+  검증 — P1 게이트 top-stage 도달(iter 200, 낙상 0)·P2 checkpoint full-resume·DR 0→1 램프까지
+  크래시 없이 확인 중([[2026-09-03_legonly_ab_smoke_test]]). 핵심 리스크였던 "PYG_INERTIAL_DR의
+  질량DR JSON이 LegOnly에 없는 torso/shoulder/arm 바디명을 참조해 P2에서 깨질 것"은 leg-only
+  서브셋 DR JSON으로 사전 회피 확인.
+- 스모크 PASS 확정 시 다음 명령으로 본학습 착수(§2의 fastener50 합본 DR 사용, 16384 env 풀스택):
+  ```bash
+  bash analysis/run_v2_scratch.sh \
+    --run legonly_ab_v1 --ankle AB --vy-stages --model-v4 \
+    --env PYG_MODEL_TAG=LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix \
+    --env PYG_MASS_DR_JSON=/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json
+  ```
+  (`--model-v4`는 no-op이나 v2s1과의 명령 대칭을 위해 유지; PYG_MODEL_TAG가 파일 선택을 전담)
 - 게이트: 1000 iter/60분마다 스냅샷+판정(§2c 표), `gate_watch.sh` 백그라운드 필수.
 - 실기 배포는 이 학습의 범위 밖(docs/114 §6·§7의 H/W P0 항목들은 여기서 다루지 않음) —
   목표는 시뮬레이션에서 상체 없이 걷는 정책 확보.

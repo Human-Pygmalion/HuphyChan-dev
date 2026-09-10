@@ -1,0 +1,312 @@
+{
+  "model": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+  "fps": 20,
+  "duration_s": 12.5,
+  "sequence": "0 -> +upper -> -lower -> 0; 4 s each, 0.25 s holds",
+  "view": "camera looks along outward rotor-flange normal; +normal appears clockwise",
+  "right_normal": "not mirrored; provisional user installation rule",
+  "huphy_ab_mapping": {
+    "crank_A": "ankle_b",
+    "crank_B": "ankle_a"
+  },
+  "reviewer_reversed": [
+    "L_crank_B_joint",
+    "L_hip_pitch_joint",
+    "L_shoulder_pitch_joint",
+    "R_crank_A_joint",
+    "R_hip_roll_joint",
+    "R_knee_joint",
+    "R_shoulder_roll_joint"
+  ],
+  "joints": {
+    "waist_yaw_joint": {
+      "lower_deg": -44.99999063801583,
+      "upper_deg": 44.99999063801583,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        0.0,
+        1.0
+      ],
+      "axis": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "huphy_motor_id": null,
+      "review_agrees": true
+    },
+    "L_shoulder_pitch_joint": {
+      "lower_deg": -90.00021045914971,
+      "upper_deg": 60.0001403060998,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": null,
+      "review_agrees": true
+    },
+    "L_shoulder_roll_joint": {
+      "lower_deg": -31.999979336954045,
+      "upper_deg": 30.000012857270395,
+      "model_qplus": "CW",
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "huphy_motor_id": null,
+      "review_agrees": true
+    },
+    "R_shoulder_pitch_joint": {
+      "lower_deg": -90.00021045914971,
+      "upper_deg": 60.0001403060998,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": null,
+      "review_agrees": false
+    },
+    "R_shoulder_roll_joint": {
+      "lower_deg": -31.999979336954045,
+      "upper_deg": 30.000012857270395,
+      "model_qplus": "CCW",
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "huphy_motor_id": null,
+      "review_agrees": true
+    },
+    "L_hip_pitch_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": 1,
+      "review_agrees": true
+    },
+    "L_hip_roll_joint": {
+      "lower_deg": -85.00000778104302,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CW",
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "huphy_motor_id": 2,
+      "review_agrees": true
+    },
+    "L_hip_yaw_joint": {
+      "lower_deg": -44.99999063801583,
+      "upper_deg": 44.99999063801583,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        0.0,
+        -1.0
+      ],
+      "axis": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "huphy_motor_id": 3,
+      "review_agrees": true
+    },
+    "L_knee_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 0.0,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "huphy_motor_id": 4,
+      "review_agrees": true
+    },
+    "L_crank_A_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": 6,
+      "review_agrees": false
+    },
+    "L_crank_B_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": 5,
+      "review_agrees": false
+    },
+    "R_hip_pitch_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": 7,
+      "review_agrees": false
+    },
+    "R_hip_roll_joint": {
+      "lower_deg": -85.00000778104302,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CCW",
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "axis": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "huphy_motor_id": 8,
+      "review_agrees": true
+    },
+    "R_hip_yaw_joint": {
+      "lower_deg": -44.99999063801583,
+      "upper_deg": 44.99999063801583,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        0.0,
+        -1.0
+      ],
+      "axis": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "huphy_motor_id": 9,
+      "review_agrees": true
+    },
+    "R_knee_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 0.0,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "huphy_motor_id": 10,
+      "review_agrees": false
+    },
+    "R_crank_A_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": 12,
+      "review_agrees": true
+    },
+    "R_crank_B_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        1.0,
+        0.0
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "huphy_motor_id": 11,
+      "review_agrees": true
+    }
+  }
+}

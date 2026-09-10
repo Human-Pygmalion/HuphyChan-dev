@@ -1,0 +1,247 @@
+{
+  "valid": false,
+  "invalid_reason": "rotor/stator-to-URDF-child/parent attachment parity was omitted; UNKNOWN was also coerced to CCW",
+  "model": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+  "fps": 20,
+  "duration_s": 12.5,
+  "sequence": "0 -> +upper -> -lower -> 0; 4 s each, 0.25 s holds",
+  "view": "face-on outside: outward normal points out of screen; camera ray and CW motor-positive axis are -normal",
+  "supersedes": "2026-09-01 grid that put outward normal into the screen",
+  "right_normal": "never mirrored/copied; independent MJCF candidates or UNKNOWN",
+  "huphy_ab_mapping": {
+    "crank_A_upper": "ankle_a",
+    "crank_B_lower": "ankle_b"
+  },
+  "reviewer_reversed": [
+    "L_crank_B_joint",
+    "L_hip_pitch_joint",
+    "L_shoulder_pitch_joint",
+    "R_crank_A_joint",
+    "R_hip_roll_joint",
+    "R_knee_joint",
+    "R_shoulder_roll_joint"
+  ],
+  "joints": {
+    "waist_yaw_joint": {
+      "lower_deg": -44.99999063801583,
+      "upper_deg": 44.99999063801583,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        0.0,
+        1.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": null,
+      "prior_reviewed_as_reversed": false
+    },
+    "L_shoulder_pitch_joint": {
+      "lower_deg": -90.00021045914971,
+      "upper_deg": 60.0001403060998,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": null,
+      "prior_reviewed_as_reversed": true
+    },
+    "L_shoulder_roll_joint": {
+      "lower_deg": -31.999979336954045,
+      "upper_deg": 30.000012857270395,
+      "model_qplus": "CCW",
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": null,
+      "prior_reviewed_as_reversed": false
+    },
+    "R_shoulder_pitch_joint": {
+      "lower_deg": -90.00021045914971,
+      "upper_deg": 60.0001403060998,
+      "model_qplus": "UNKNOWN",
+      "normal": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "evidence": "UNKNOWN FLANGE; q+ VIEW ONLY",
+      "huphy_motor_id": null,
+      "prior_reviewed_as_reversed": false
+    },
+    "R_shoulder_roll_joint": {
+      "lower_deg": -31.999979336954045,
+      "upper_deg": 30.000012857270395,
+      "model_qplus": "UNKNOWN",
+      "normal": [
+        1.0,
+        -0.0,
+        -0.0
+      ],
+      "evidence": "UNKNOWN FLANGE; q+ VIEW ONLY",
+      "huphy_motor_id": null,
+      "prior_reviewed_as_reversed": true
+    },
+    "L_hip_pitch_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": 1,
+      "prior_reviewed_as_reversed": true
+    },
+    "L_hip_roll_joint": {
+      "lower_deg": -85.00000778104302,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CCW",
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": 2,
+      "prior_reviewed_as_reversed": false
+    },
+    "L_hip_yaw_joint": {
+      "lower_deg": -44.99999063801583,
+      "upper_deg": 44.99999063801583,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        0.0,
+        -1.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": 3,
+      "prior_reviewed_as_reversed": false
+    },
+    "L_knee_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 0.0,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": 4,
+      "prior_reviewed_as_reversed": false
+    },
+    "L_crank_A_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "CCW",
+      "normal": [
+        -0.0,
+        1.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": 5,
+      "prior_reviewed_as_reversed": false
+    },
+    "L_crank_B_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "evidence": "LIVE FUSION FLANGE",
+      "huphy_motor_id": 6,
+      "prior_reviewed_as_reversed": true
+    },
+    "R_hip_pitch_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CCW",
+      "normal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "evidence": "INDEPENDENT MJCF; PROVISIONAL",
+      "huphy_motor_id": 7,
+      "prior_reviewed_as_reversed": false
+    },
+    "R_hip_roll_joint": {
+      "lower_deg": -85.00000778104302,
+      "upper_deg": 24.999982066502238,
+      "model_qplus": "CW",
+      "normal": [
+        1.0,
+        -0.0,
+        -0.0
+      ],
+      "evidence": "INDEPENDENT MJCF; PROVISIONAL",
+      "huphy_motor_id": 8,
+      "prior_reviewed_as_reversed": true
+    },
+    "R_hip_yaw_joint": {
+      "lower_deg": -44.99999063801583,
+      "upper_deg": 44.99999063801583,
+      "model_qplus": "CCW",
+      "normal": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "evidence": "INDEPENDENT MJCF; PROVISIONAL",
+      "huphy_motor_id": 9,
+      "prior_reviewed_as_reversed": false
+    },
+    "R_knee_joint": {
+      "lower_deg": -120.0002806121996,
+      "upper_deg": 0.0,
+      "model_qplus": "CW",
+      "normal": [
+        -0.0,
+        1.0,
+        -0.0
+      ],
+      "evidence": "INDEPENDENT MJCF; PROVISIONAL",
+      "huphy_motor_id": 10,
+      "prior_reviewed_as_reversed": true
+    },
+    "R_crank_A_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "UNKNOWN",
+      "normal": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "evidence": "UNKNOWN FLANGE; q+ VIEW ONLY",
+      "huphy_motor_id": 11,
+      "prior_reviewed_as_reversed": true
+    },
+    "R_crank_B_joint": {
+      "lower_deg": -68.75493541569878,
+      "upper_deg": 68.75493541569878,
+      "model_qplus": "UNKNOWN",
+      "normal": [
+        -0.0,
+        -1.0,
+        -0.0
+      ],
+      "evidence": "UNKNOWN FLANGE; q+ VIEW ONLY",
+      "huphy_motor_id": 12,
+      "prior_reviewed_as_reversed": false
+    }
+  }
+}
