@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2시간 경과: 1,518/16,000회, 넘어짐 0, 정상 진행 중. 다음 매시 판정은 곧 나올 예정",
+  "title": "legonly_ab_v4_motorparams 2시간 17분 경과: 1,778/16,000회, 보상 109.7, 넘어짐 0. 직전 학습(가벼운 모터 값)과 같은 시점 비교에서 계속 동급 — 무거운 모터로도 학습 속도가 떨어지지 않고 있음",
   "detail": "",
-  "since": "2026-09-11 04:36"
+  "since": "2026-09-11 04:56"
  },
  "items": {
   "shouldermesh": {
@@ -2403,5 +2403,5 @@
   "ankle-envelope",
   "handoff-training"
  ],
- "updated": "2026-09-11 04:36"
+ "updated": "2026-09-11 04:56"
 }
