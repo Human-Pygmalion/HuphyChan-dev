@@ -28,11 +28,11 @@ PY=../mujoco-sim/mjlab/.venv/bin/python3
 #   REACH 실물 막대가 원판 반지름의 몇 배까지 뻗는가
 # 좌표는 **1280x720 에서 잰 값**입니다. 해상도를 바꾸면 이 값도 다시 재야 합니다.
 if [ "$M" = 4 ]; then
-  MODEL=RS04; HUB="592,167"; DISC=122; R0=45; R1=112; SCORE=wood
-  CROP="322,0,862,462"; REACH=1.49; EXPOSURE=200   # 추적 여유 18.0
+  MODEL=RS04; HUB="483,159"; DISC=119; R0=40; R1=105; SCORE=wood
+  CROP="214,0,754,462"; REACH=1.49; EXPOSURE=200   # 추적 여유 21.0
 else
-  MODEL=RS03; HUB="1006,172"; DISC=89; R0=40; R1=82; SCORE=dark
-  CROP="736,0,1276,462"; REACH=1.70; EXPOSURE=100   # 추적 여유 107.8
+  MODEL=RS03; HUB="908,224"; DISC=88; R0=38; R1=76; SCORE=dark
+  CROP="638,0,1178,462"; REACH=1.70; EXPOSURE=100
 fi
 # ★ 2026-09-10 — 1920x1080 을 초당 30장 원본으로 쓰면 초당 124 메가바이트인데 **SD 카드가
 # 못 받습니다.** 처음 13초는 캐시가 받아 주다 차면 카메라가 멈춥니다(실측: 모터 4 는 12.9초
