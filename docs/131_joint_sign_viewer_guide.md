@@ -159,6 +159,56 @@ L_hip_pitch_joint — range -120.0 to 25.0 deg — sign OK vs RS04 Hip_R
 
 # 7. 이 도구를 켜는 법 (개발자용)
 
+## 어느 저장소, 어느 브랜치인가
+
+이 도구는 저장소 `maido-39/HuphyChan-dev`의 **`Viewer-Prototype`** 브랜치에 있습니다
+(`main`이 아닙니다 — 이 문서를 쓴 시점에 `Viewer-Prototype`은 `main`보다 커밋 163개
+앞서 있고, `main`에서 이 브랜치로 아직 반영 안 된 커밋은 없습니다). 새로 이 코드를
+받는다면:
+
+```bash
+git clone git@github.com:maido-39/HuphyChan-dev.git
+cd HuphyChan-dev
+git checkout Viewer-Prototype
+```
+
+이미 받아 둔 저장소라면 최신 상태인지만 확인합니다.
+
+```bash
+git fetch origin
+git status               # 지금 Viewer-Prototype 브랜치에 있는지 확인
+git log --oneline -1     # 최신 커밋 확인
+```
+
+## 처음 설치하는 경우 (환경 준비)
+
+이 도구는 저장소 안의 `mujoco-sim/mjlab` 폴더가 갖춘 파이썬 환경으로 돌아갑니다. 그
+환경을 만드는 방법입니다.
+
+1. **`uv`가 없다면 먼저 설치합니다** (파이썬 패키지·가상환경을 관리하는 도구입니다):
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+2. **`mujoco-sim/mjlab` 폴더 안에서 환경을 만듭니다.** 이 관절 방향 확인 도구는 학습을
+   하지 않고 그냥 각도만 보여주는 것이라 그래픽카드(GPU)가 필요 없습니다 — 아래 CPU용
+   명령이면 충분합니다.
+   ```bash
+   cd mujoco-sim/mjlab
+   make sync-cpu     # GPU가 있고 나중에 학습도 돌릴 거라면 make sync 로 대체
+   ```
+   이 명령이 `mujoco-sim/mjlab/.venv`라는 폴더에 파이썬과 필요한 패키지(mujoco, viser,
+   mjviser 등)를 전부 설치합니다. 몇 분 걸립니다.
+3. **설치가 됐는지 확인**:
+   ```bash
+   cd ../..   # 저장소 맨 위 폴더로
+   mujoco-sim/mjlab/.venv/bin/python3 -c "import mujoco, viser, mjviser; print('OK')"
+   ```
+   `OK`가 찍히면 준비된 것입니다. (주의: 그냥 시스템에 깔린 `python3`로 실행하면 이
+   패키지들이 없어서 바로 오류가 납니다 — 반드시 `mujoco-sim/mjlab/.venv/bin/python3`를
+   써야 합니다.)
+
+환경은 한 번만 만들면 되고, 그다음부터는 아래 실행 명령만 반복하면 됩니다.
+
 ## 실행 명령
 
 ```bash
