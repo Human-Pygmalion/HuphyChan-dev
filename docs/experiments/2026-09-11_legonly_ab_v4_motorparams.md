@@ -88,6 +88,7 @@ PYG_ANKLE_MODE=AB mujoco-sim/mjlab/.venv/bin/python3 tools/robot_model/check_mot
 
 | 시각 | iter | reward | ep_len | noise σ | value loss | entropy | surrogate / LR | fell / low_base | err_vxy / err_wz | DR / vx_max | thermal | 판정 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 09-11 03:38 | 775 | 109.0 (50avg 109.0) | 1000 | 0.215 | 0.0265 | -4.75 | 0.0005 / 2.0e-04 | 0.000 / 0.000 | 0.448 / 0.505 | 0.00 / 0.8 | 1.42 | **계속** — 게이트 1(03:46): iter 775, reward 109.0 (50avg 109.0)(50평균 109.0), ep_len 1000, 낙상 0.000 / 0.000, 추종오차 0.448 / 0.505, thermal 1.42. **v3_keyfix 같은 시점(iter 724: 108.8, 오차 0.470/0.495, 단계 0)과 동급이거나 우세**(이번 런은 이미 단계 1 진입, 오차 0.448/0.505) — 모터가 무거워졌는데도 초기 학습 속도가 떨어지지 않았다. 중단 사유 없음 |
 (런처·리뷰루프가 채운다)
 
 ## §R 참조
