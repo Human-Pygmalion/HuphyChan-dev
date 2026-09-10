@@ -20,12 +20,18 @@ M=${1:-4}
 PY=../mujoco-sim/mjlab/.venv/bin/python3
 
 # 모터마다 다른 값 — 사진에서 실측한 것 (2026-09-10, 1920x1080)
+# 2026-09-10 실측 (1920x1080 한 프레임에서 눈금 얹어 읽음). 카메라가 조금씩 움직이므로
+# 영상을 찍기 전에 다시 재는 것이 좋습니다 — 실제로 한 번 움직여서 다시 쟀습니다.
+#   HUB   축 중심 (원본 프레임 좌표)      DISC  사진 속 도는 원판 반지름 [화소]
+#   R0,R1 막대를 찾을 고리 (원판 **안쪽**에 있어야 함 — 바깥은 나무 책상이라 색이 비슷)
+#   SCORE 막대를 무엇으로 찾을까 (RS04 붉은기 여유 22.0 / RS03 어두움 여유 92.1)
+#   REACH 실물 막대가 원판 반지름의 몇 배까지 뻗는가
 if [ "$M" = 4 ]; then
-  MODEL=RS04; HUB="1052,320"; DISC=177; R0=60; R1=165; SCORE=wood
-  CROP="647,0,1457,693"; REACH=1.55
+  MODEL=RS04; HUB="1035,325"; DISC=177; R0=55; R1=160; SCORE=wood
+  CROP="630,0,1440,693"; REACH=1.49
 else
-  MODEL=RS03; HUB="1738,245"; DISC=139; R0=45; R1=100; SCORE=dark
-  CROP="1110,0,1920,693"; REACH=1.76
+  MODEL=RS03; HUB="1712,290"; DISC=139; R0=55; R1=125; SCORE=dark
+  CROP="1110,0,1920,693"; REACH=1.45
 fi
 W=1920; H=1080; FPS=30; SECS=32
 RAW=/home/maido/System_ID/data/cam_vs_${M}

@@ -194,7 +194,8 @@ def zoom_window(ts, tgt):
 
 def draw_panels(cases, amps, family, motor, kp, kd, out, xlabel):
   n = len(amps)
-  cols = 4
+  # 칸 수에 맞춰 줄을 고른다. 5칸을 4열로 놓으면 둘째 줄에 하나만 남고 세 자리가 빈다.
+  cols = n if n <= 5 else 4
   rows = int(math.ceil(n / cols))
   # 범례는 그림 아래에 한 줄로 깔린다. 칸이 한 줄뿐일 때도 글자가 x축 이름을 덮지 않도록,
   # **띄울 높이를 그림 높이에 맞춰** 계산한다(고정 비율로 두면 한 줄짜리에서 겹친다).
