@@ -243,15 +243,15 @@ def main(argv=None) -> int:
   A, T = a.amp, a.tag
   CMDS = [
     (f"big step +-{A:g} deg",     "step",
-     f"pd_step_{a.motor}_kp20_kd1_a{A:g}_r*_{T}.csv"),
+     f"pd_step_{a.motor}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}_r*_{T}.csv"),
     ("small step +-1.5 deg",      "step",
-     f"pd_step_{a.motor}_kp20_kd1_a1.5_r*_{T}.csv"),
+     f"pd_step_{a.motor}_kp{a.kp:g}_kd{a.kd:g}_a1.5_r*_{T}.csv"),
     (f"chirp {a.f0:g}-{a.f1:g} Hz", "chirp",
-     f"pd_chirp_{a.motor}_kp20_kd1_a{A:g}_r*_{T}.csv"),
+     f"pd_chirp_{a.motor}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}_r*_{T}.csv"),
     ("slow triangle",             "triangle",
-     f"pd_triangle_{a.motor}_kp20_kd1_a{A:g}_r*_{T}.csv"),
+     f"pd_triangle_{a.motor}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}_r*_{T}.csv"),
     ("fast triangle",             "triangle",
-     f"pd_triangle_{a.motor}_kp20_kd1_a{A:g}_r*_{T}f.csv"),
+     f"pd_triangle_{a.motor}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}_r*_{T}f.csv"),
   ]
 
   loaded = []

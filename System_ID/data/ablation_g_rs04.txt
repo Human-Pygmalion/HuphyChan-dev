@@ -1,0 +1,91 @@
+big step +-5 deg           10회 · 12.0초 · 회차 사이 흩어짐(제곱평균) 0.100도
+small step +-1.5 deg       10회 · 12.0초 · 회차 사이 흩어짐(제곱평균) 0.051도
+chirp 0.1-10 Hz            10회 · 45.0초 · 회차 사이 흩어짐(제곱평균) 0.105도
+slow triangle              10회 · 4.0초 · 회차 사이 흩어짐(제곱평균) 0.031도
+fast triangle              10회 · 3.0초 · 회차 사이 흩어짐(제곱평균) 0.034도
+
+그림: /home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/pd_ablation_g_rs04_runs.png
+그림: /home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/pd_ablation_g_rs04_sweep.png
+그림: /home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/pd_ablation_g_rs04_overlay.png
+
+============================================================================================================
+
+■ big step +-5 deg
+  설정                                      left-over error [deg]          overshoot [%]       rise to 90% [ms]
+  실물 (10회 평균)                                         0.07528                  42.05                     48
+  armature       almost none (1/20)                 1.196e-13                  40.21                   55.4  
+  armature       model today                        6.807e-07                   40.2                   53.1  
+  armature       MEASURED                             0.00594                  44.57                   44.3 ←
+  armature       4x too big                           0.01109                  89.35                   62.3  
+  frictionloss   none (0)                           4.441e-15                  46.16                   43.2  
+  frictionloss   model today                         0.002772                  45.34                   43.7  
+  frictionloss   MEASURED                             0.00594                  44.57                   44.3 ←
+  frictionloss   4x too big                          0.004935                  39.93                   48.8  
+  damping        none (0)                            0.005894                  44.77                   44.3  
+  damping        model today                          0.00591                   44.7                   44.3  
+  damping        MEASURED                             0.00594                  44.57                   44.3 ←
+  damping        4x too big                          0.006063                     44                   44.9  
+
+■ small step +-1.5 deg
+  설정                                      left-over error [deg]          overshoot [%]       rise to 90% [ms]
+  실물 (10회 평균)                                         0.06835                  41.36                  35.25
+  armature       almost none (1/20)                 3.902e-14                  36.49                  56.88  
+  armature       model today                        4.843e-07                  36.46                     61  
+  armature       MEASURED                           0.0004788                  36.37                     46 ←
+  armature       4x too big                           0.01939                  75.21                   63.5  
+  frictionloss   none (0)                           1.665e-16                  41.97                  42.37  
+  frictionloss   model today                          0.00193                  39.14                     44  
+  frictionloss   MEASURED                           0.0004788                  36.37                     46 ←
+  frictionloss   4x too big                           0.01542                  33.21                  175.4  
+  damping        none (0)                           0.0003348                  36.41                  45.75  
+  damping        model today                        0.0003847                  36.39                  45.87  
+  damping        MEASURED                           0.0004788                  36.37                     46 ←
+  damping        4x too big                         0.0009005                  36.27                  46.62  
+
+■ chirp 0.1-10 Hz
+  설정                                               gain at 9 Hz              peak gain         peak freq [Hz]
+  실물 (10회 평균)                                           1.366                  1.411                  9.541
+  armature       almost none (1/20)                     1.001                  1.002                  9.541  
+  armature       model today                            1.052                  1.054                  9.541  
+  armature       MEASURED                               1.188                  1.234                  6.551 ←
+  armature       4x too big                            0.5155                  1.704                  4.095  
+  frictionloss   none (0)                                1.21                  1.258                  6.551  
+  frictionloss   model today                            1.198                  1.245                  6.551  
+  frictionloss   MEASURED                               1.188                  1.234                  6.551 ←
+  frictionloss   4x too big                             1.121                  1.161                  6.551  
+  damping        none (0)                               1.193                  1.239                  6.551  
+  damping        model today                            1.191                  1.237                  6.551  
+  damping        MEASURED                               1.188                  1.234                  6.551 ←
+  damping        4x too big                             1.171                  1.219                  6.551  
+
+■ slow triangle
+  설정                                       tracking error [deg]  stuck at reversal [%]lag behind command [deg]
+  실물 (10회 평균)                                          0.1872                  9.682                 0.1638
+  armature       almost none (1/20)                    0.1192                 0.1001                 0.1154  
+  armature       model today                           0.1216                 0.2502                 0.1201  
+  armature       MEASURED                              0.1442                 0.8256                 0.1433 ←
+  armature       4x too big                            0.2402                  1.826                 0.2222  
+  frictionloss   none (0)                             0.03468                 0.5754                0.02378  
+  frictionloss   model today                          0.08606                 0.6755                0.08585  
+  frictionloss   MEASURED                              0.1442                 0.8256                 0.1433 ←
+  frictionloss   4x too big                            0.5074                  3.453                 0.4891  
+  damping        none (0)                               0.142                 0.8256                 0.1411  
+  damping        model today                           0.1427                 0.8256                 0.1419  
+  damping        MEASURED                              0.1442                 0.8256                 0.1433 ←
+  damping        4x too big                            0.1507                 0.8256                 0.1497  
+
+■ fast triangle
+  설정                                       tracking error [deg]  stuck at reversal [%]lag behind command [deg]
+  실물 (10회 평균)                                          0.3698                  3.133                 0.1789
+  armature       almost none (1/20)                   0.07959                      0                0.07031  
+  armature       model today                           0.1433                    0.8                 0.1425  
+  armature       MEASURED                              0.5105                  2.467                 0.5102 ←
+  armature       4x too big                             3.112                    4.4                  3.102  
+  frictionloss   none (0)                              0.4711                  2.433                 0.4355  
+  frictionloss   model today                           0.4744                  2.467                 0.4743  
+  frictionloss   MEASURED                              0.5105                  2.467                 0.5102 ←
+  frictionloss   4x too big                            0.7474                    2.5                 0.7336  
+  damping        none (0)                               0.505                  2.467                 0.5049  
+  damping        model today                           0.5069                  2.467                 0.5068  
+  damping        MEASURED                              0.5105                  2.467                 0.5102 ←
+  damping        4x too big                            0.5265                  2.467                 0.5257  
