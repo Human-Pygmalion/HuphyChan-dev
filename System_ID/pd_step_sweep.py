@@ -33,6 +33,8 @@ RS03 은 뒤의 두 벌이 **같은 값**이라 선이 둘만 나옵니다.
 from __future__ import annotations
 
 import argparse
+import csv
+import glob as globmod
 import math
 import os
 
@@ -62,6 +64,8 @@ MODELS = {
 }
 
 AMPS = [1.5, 3.0, 5.0, 8.0, 12.0, 20.0, 30.0, 45.0]
+TAU_MAX_USED = [8.0]      # one_case 가 쓰도록 main 에서 채운다
+FAMILY_USED = ["RS04"]
 HOMES = [-60.0, -30.0, 0.0, 30.0, 60.0]
 
 
@@ -106,6 +110,34 @@ def step_metrics(ts, tgt, pos):
   return f(ss), f(ov), f(rise)
 
 
+def inertia_from_saturation(ts, tgt, pos, tau, tau_max, frictionloss):
+  """토크가 **상한에 붙어 있는 동안**의 가속도로 관성을 곧바로 구한다.
+
+  큰 계단을 치면 제어기가 곧장 토크 상한에 붙습니다. 그동안은 힘이 **일정**하므로
+
+      관성 = (토크 상한 − 마찰) ÷ 가속도
+
+  이 됩니다. 되먹임도 이득도 안 들어가고, 맞춤도 없습니다. 가속도는 위치를 2차식으로
+  맞춰서 구합니다 — 두 번 미분하면 잡음이 커지기 때문입니다.
+
+  이 값은 계단 크기가 클수록 잘 나옵니다. 작은 계단은 상한에 아예 안 붙습니다."""
+  ed = edges_of(tgt)
+  out = []
+  for k in ed[:-1]:
+    te = ts[k]
+    w = (ts >= te + 0.004) & (ts <= te + 0.075)      # 계단 직후 4~75 밀리초
+    if w.sum() < 30:
+      continue
+    if np.mean(np.abs(tau[w])) < 0.98 * tau_max:     # 상한에 안 붙었으면 못 쓴다
+      continue
+    c = np.polyfit(ts[w] - te, pos[w], 2)
+    acc = 2.0 * c[0] * DEG                            # 도/s^2 → 라디안/s^2
+    if abs(acc) < 1e-6:
+      continue
+    out.append((tau_max - frictionloss) / abs(acc))
+  return out
+
+
 def one_case(data, motor, kp, kd, amp, tag, home, dt, tau_max, delay_ms, models):
   """한 조건(크기 하나 · 자리 하나)을 읽고, 실물 지표와 각 값의 시뮬레이터 지표를 낸다."""
   hs = "" if home == 0.0 else f"_h{home:+g}"
@@ -115,12 +147,25 @@ def one_case(data, motor, kp, kd, amp, tag, home, dt, tau_max, delay_ms, models)
     return None
   ts, tgt, tgv, P = common_grid(runs)
   real = [step_metrics(ts, tgt, p) for p in P]
+  # 토크는 common_grid 가 안 돌려주므로 파일에서 직접 읽는다
+  Js = []
+  for fp in sorted(globmod.glob(os.path.join(data, pat))):
+    with open(fp) as f:
+      r = list(csv.DictReader(f))
+    if len(r) < 200:
+      continue
+    tt = np.array([float(x["t_s"]) for x in r])
+    gg = np.array([float(x["target_deg"]) for x in r])
+    pp = np.array([float(x["pos_deg"]) for x in r])
+    qq = np.array([float(x["tau_cmd_nm"]) for x in r])
+    Js += inertia_from_saturation(tt, gg, pp, qq, TAU_MAX_USED[0],
+                                  BEST[FAMILY_USED[0]]["frictionloss"])
   sims = {}
   for name, prm, *_ in models:
     y = simulate(ts, tgt, tgv, kp, kd, dt, tau_max, delay_ms / 1e3, **prm)
     sims[name] = (step_metrics(ts, tgt, y), y)
   return dict(ts=ts, tgt=tgt, P=P, real=np.array(real, dtype=float), sims=sims,
-              n=len(runs), pat=pat)
+              n=len(runs), pat=pat, J=np.array(Js, dtype=float))
 
 
 def zoom_window(ts, tgt):
@@ -181,9 +226,10 @@ def draw_panels(cases, amps, family, motor, kp, kd, out, xlabel):
 def draw_metrics(cases, keys, family, motor, kp, kd, out, xname, logx, extra_line=None):
   names = ["left-over error once it settles [deg]", "overshoot past the target [%]",
            "time to reach 90% of the step [ms]"]
-  fig, axs = plt.subplots(1, 3, figsize=(16.0, 4.9))
+  fig, axs = plt.subplots(2, 2, figsize=(13.6, 9.2))
+  axs = axs.ravel()
   ks = [k for k in keys if cases.get(k) is not None]
-  for j, (ax, nm) in enumerate(zip(axs, names)):
+  for j, (ax, nm) in enumerate(zip(axs[:3], names)):
     r_mu = [float(np.nanmean(cases[k]["real"][:, j])) for k in ks]
     r_sd = [float(np.nanstd(cases[k]["real"][:, j])) for k in ks]
     ax.errorbar(ks, r_mu, yerr=r_sd, color="#111111", lw=1.8, alpha=0.65, marker="o",
@@ -208,10 +254,43 @@ def draw_metrics(cases, keys, family, motor, kp, kd, out, xname, logx, extra_lin
     ax.set_xlabel(xname, fontsize=10); ax.set_ylabel(nm, fontsize=10)
     ax.set_title(nm, fontsize=10.5); ax.grid(alpha=0.28)
     ax.legend(fontsize=8, framealpha=0.9)
+
+  # 네 번째 칸: 되먹임도 맞춤도 안 들어간 **직접 계산**
+  ax = axs[3]
+  xs, mu, sd, cnt = [], [], [], []
+  for k in ks:
+    J = cases[k].get("J")
+    if J is None or len(J) < 3:
+      continue
+    xs.append(k); mu.append(float(np.mean(J))); sd.append(float(np.std(J))); cnt.append(len(J))
+  if xs:
+    ax.errorbar(xs, mu, yerr=sd, color="#111111", lw=1.8, alpha=0.7, marker="o", ms=5,
+                capsize=3, zorder=6, label="from the bench, no fitting at all")
+    for name, prm, col, lw, al in MODELS[family]:
+      ax.axhline(prm["armature"], color=col, lw=lw + 0.3, alpha=al, ls="--",
+                 label=name)
+    for x, m_, c_ in zip(xs, mu, cnt):
+      ax.annotate(f"{c_} edges", (x, m_), textcoords="offset points", xytext=(0, 9),
+                  ha="center", fontsize=7.5, color="#666")
+    if logx:
+      ax.set_xscale("log"); ax.set_xticks(xs); ax.set_xticklabels([f"{k:g}" for k in xs])
+    lo = min(min(mu) - max(sd), min(p["armature"] for _, p, *_ in MODELS[family]))
+    hi = max(max(mu) + max(sd), max(p["armature"] for _, p, *_ in MODELS[family]))
+    ax.set_ylim(lo - 0.09 * (hi - lo), hi + 0.16 * (hi - lo))   # 글자 얹을 자리
+  else:
+    ax.text(0.5, 0.5, "no step here pushed the torque to its limit,\n"
+                      "so this check needs the bigger steps",
+            ha="center", va="center", transform=ax.transAxes, fontsize=10, color="#888")
+  ax.set_xlabel(xname, fontsize=10)
+  ax.set_ylabel("rotor inertia [kg m2]", fontsize=10)
+  ax.set_title("rotor inertia straight from the saturated acceleration\n"
+               "inertia = (torque limit - friction) / acceleration", fontsize=10.5)
+  ax.grid(alpha=0.28); ax.legend(fontsize=8, framealpha=0.9)
+
   fig.suptitle(f"RobStride {family} (motor {motor}) - the same three numbers across every "
                f"step, real against the simulator\ngains kp {kp:g} / kd {kd:g}",
                fontsize=12, y=0.995)
-  fig.tight_layout(rect=(0, 0, 1, 0.90))
+  fig.tight_layout(rect=(0, 0, 1, 0.945))
   os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
   fig.savefig(out, dpi=125); plt.close(fig)
   print(f"그림: {out}")
@@ -236,6 +315,7 @@ def main(argv=None) -> int:
 
   fam, mot = a.family, a.motor
   models = MODELS[fam]
+  TAU_MAX_USED[0], FAMILY_USED[0] = a.tau_max, fam
   print(f"{fam} (모터 {mot}) · 이득 kp={a.kp} kd={a.kd} · 태그 {a.tag}")
 
   if a.part == "sweep":
