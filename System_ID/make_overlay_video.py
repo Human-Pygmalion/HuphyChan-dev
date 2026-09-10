@@ -8,6 +8,31 @@
 보이지만 **얼마나 어긋나는지**는 눈으로 못 잽니다. 겹쳐 놓으면 어긋남이 그대로 각도 차이로
 보입니다.
 
+무엇을 맞추고, 무엇을 절대 안 건드리는가
+----------------------------------------
+사용자 지시: **"속도나 배율 조정해서 억지로 겹치는게 아니라, 실제로 Sim / Real 응답을 비교하고
+싶은거야. 그러니 뷰랑 배치는 최대한 겹치되, 그외에 응답에 대한 부분은 절대 억지로 후처리
+하지말고, 보여줘."**
+
+**맞추는 것 (자리와 시야뿐)**
+
+* 시뮬레이터 그림의 **크기** — 모델 모터 원통 반지름을 사진 속 원판 반지름에 맞춥니다
+* **어디가 0도인가**, **어느 쪽이 시계 방향인가** — 사진에 얹을 자리를 정하는 값입니다
+
+**절대 안 건드리는 것 (응답 그 자체)**
+
+* **시간** — 카메라 시각은 커널이 프레임마다 찍은 값이고, 모터 기록도 같은 컴퓨터의 같은
+  시계입니다. 뺄셈 하나로 맞으므로 **초당 장수를 맞추거나 늘리거나 하는 일이 없습니다.**
+  (앞의 웹캠 판은 초당 장수를 수색해서 맞췄습니다. 그건 이제 안 합니다.)
+* **각도 크기** — 실물 곡선은 모터가 보고한 값 그대로, 시뮬레이터 곡선은 같은 명령을 같은
+  토크 상한으로 넣어 나온 값 그대로입니다. 어느 쪽에도 배율을 곱하지 않습니다.
+* 아래 오른쪽 "얼마나 벌어지나" 칸은 **오직 시뮬레이터 빼기 실물**입니다.
+
+★ 영상에서 읽은 각도(붉은 선)는 **참고용**입니다. 카메라가 비스듬해서 원판이 타원으로 보이고,
+그 기울기 보정값을 실물 기록에 맞춰 구하기 때문에 **크기는 실물과 같아질 수밖에** 없습니다.
+그래서 그 선은 "모양이 맞는가"를 보는 데만 쓰고, **견주는 칸에는 넣지 않습니다.** 보정값이
+1에 가까울수록 카메라가 수직에 가깝다는 뜻이라, 그 숫자도 같이 적습니다.
+
 겹치려면 세 가지가 맞아야 합니다
 --------------------------------
 ① **투영** — 사진은 위에서 거의 수직으로 내려다본 것이라, 시뮬레이터도 **직교 투영**(멀고
@@ -161,22 +186,25 @@ def make_plots(t, tgt, pos, sim, cam_t, cam_deg, family, prm):
   ax1 = fig.add_axes([0.115, 0.560, 0.865, 0.395])
   ax2 = fig.add_axes([0.115, 0.085, 0.865, 0.350])
   ax1.plot(t, tgt, color=COL_CMD, lw=1.3, ls=(0, (6, 3)), label="command we sent")
-  ax1.plot(cam_t, cam_deg, color=COL_CAM, lw=1.0, alpha=0.55,
-           label="angle read off the film")
+  ax1.plot(cam_t, cam_deg, color=COL_CAM, lw=1.0, alpha=0.45,
+           label="read off the film (shape only - see note)")
   ax1.plot(t, pos, color=COL_REAL, lw=1.6, alpha=0.60, label="real motor (recorded)")
   ax1.plot(t, sim, color=COL_SIM, lw=1.5, alpha=0.95, label="MuJoCo, measured values")
   ax1.set_ylabel("shaft angle [deg]", fontsize=10)
-  ax1.set_title(f"RobStride {family}: same command into the bench and into MuJoCo",
-                fontsize=11)
+  ax1.set_title(f"RobStride {family}: the same command into the bench and into the mjlab "
+                f"model", fontsize=11)
   ax1.legend(fontsize=8.5, loc="upper right", ncol=2, framealpha=0.9)
 
   ax2.axhline(0, color="#999", lw=0.9)
-  ax2.plot(t, sim - pos, color=COL_SIM, lw=1.4, alpha=0.95, label="MuJoCo minus real motor")
-  ax2.plot(cam_t, cam_deg - np.interp(cam_t, t, pos), color=COL_CAM, lw=1.0, alpha=0.55,
-           label="film minus real motor (how well the camera reads it)")
+  # ★ 이 칸에는 **시뮬레이터 빼기 실물**만 넣는다. 영상에서 읽은 각도는 기울기 보정을 실물에
+  # 맞춰 구하므로, 여기에 넣으면 "맞춰 놓고 맞는지 본다"가 된다.
+  ax2.plot(t, sim - pos, color=COL_SIM, lw=1.4, alpha=0.95,
+           label="simulator minus real motor - nothing scaled, nothing time-shifted")
   ax2.set_xlabel("time [s]", fontsize=10)
   ax2.set_ylabel("difference [deg]", fontsize=10)
-  ax2.set_title("how far apart they are", fontsize=11)
+  rms = float(np.sqrt(np.mean((sim - pos) ** 2)))
+  ax2.set_title(f"how far apart the simulator and the real motor are   "
+                f"(root-mean-square {rms:.3f} deg)", fontsize=11)
   ax2.legend(fontsize=8.5, loc="upper right", framealpha=0.9)
   for ax in (ax1, ax2):
     ax.set_xlim(t[0], t[-1]); ax.grid(alpha=0.28)
@@ -241,9 +269,14 @@ def main(argv=None) -> int:
   k, b, r2 = fit_scale(ang, ang_t, t, pos)
   cam_deg = k * ang + b
   print(f"프레임 {len(frames)}장 · 실제 초당 "
-        f"{len(frames) / max(1e-9, cam_t[-1] - cam_t[0]):.2f}장 · "
-        f"각도 눈금 실제 = {k:.4f} x 사진각 + {b:.2f} · 설명력 {r2:.3f}")
-  print(f"  → 실제각도 0 일 때 사진에서 {-b / k:+.1f}도")
+        f"{len(frames) / max(1e-9, cam_t[-1] - cam_t[0]):.2f}장 "
+        f"(커널이 찍은 시각 그대로, 맞춘 것 없음)")
+  print(f"  기울기 보정 {k:.4f} — 1.0 이면 카메라가 원판을 정면으로 본다는 뜻 "
+        f"(예전 웹캠은 1.31 이었음). 0도 자리는 사진에서 {-b / k:+.1f}도")
+  print(f"  ★ 이 보정은 **막대를 사진 위 어디에 놓을지**에만 씁니다. 실물 곡선과 시뮬레이터 "
+        f"곡선에는 아무 배율도 곱하지 않습니다.")
+  print(f"  시뮬레이터 − 실물: 평균제곱근 {float(np.sqrt(np.mean((sim - pos) ** 2))):.3f}도 · "
+        f"최대 {float(np.max(np.abs(sim - pos))):.3f}도")
 
   # 사진 -> 왼쪽 칸으로 옮길 때의 배율과 자리.
   # **칸을 꽉 채우도록** 늘린 뒤 넘치는 만큼 가운데를 남기고 잘라 낸다. 비율을 그대로 두고
@@ -272,9 +305,10 @@ def main(argv=None) -> int:
     return (true_deg - b) / k
 
   plot_rgb, x_of, spans = make_plots(t, tgt, pos, sim, ang_t, cam_deg, a.family, prm)
-  head = (f"RobStride {a.family} (motor {a.motor})   |   mjlab's own 3D render, drawn on top "
-          f"of the real motor at the same size   |   rotor inertia {prm['armature']}  ·  "
-          f"friction {prm['frictionloss']} N m  ·  viscous {prm['damping']} N m s")
+  head = (f"RobStride {a.family} (motor {a.motor})   |   mjlab's own 3D render laid over the "
+          f"real motor   |   inertia {prm['armature']} · friction {prm['frictionloss']} N m · "
+          f"viscous {prm['damping']} N m s   |   only size and place are aligned: the time base "
+          f"is one shared clock and no angle is rescaled")
 
   def compose(tt):
     fi = int(np.argmin(np.abs(cam_t - tt)))
