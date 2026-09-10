@@ -21,8 +21,27 @@ REPO = '/home/syaro/MikuchanRemote/Human-Pygmalion'
 XMLS = f'{REPO}/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls'
 OUT = f'{REPO}/pygmalion_locomotion/assets/pygmalion_v2/ankle_rp_envelope.json'
 IMG = f'{REPO}/docs/img/ankle_rp_envelope.png'
-# measured on the bench (user, 2026-08-23, motor-id 127, output side): RS03 = both ankle motors
-MOTOR = dict(name='RS03', peak=60.0, rated=20.0, J=0.015265, b=0.022342, tc=0.285370)
+# RS03 = both ankle motors. J/b/tc are read from the sim's single source of truth
+# (pygmalion_constants.MOTOR_MEAS) so this file cannot drift away from it again.
+#
+# ★ 2026-09-11 correction. Until today this line hard-coded J=0.015265, b=0.022342,
+# tc=0.285370 - the 2026-08-23 numbers - while MOTOR_MEAS had already been updated to the
+# re-measured 0.0638 / 0.0252 / 0.251 on 2026-09-10. The ankles were therefore training on
+# a rotor inertia 4.2x too low while hip_yaw, the same motor family, used the measured one.
+# Inconsistent inside one model, and silent, because nothing checks the two against
+# each other. Reading MOTOR_MEAS here removes the second copy.
+import importlib.util as _ilu
+_spec = _ilu.spec_from_file_location(
+    'pyg_const',
+    f'{REPO}/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/pygmalion_constants.py')
+try:
+    _c = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_c)
+    _m = _c.MOTOR_MEAS['RS03']
+    _J, _B, _TC = _m['armature'], _m['damping'], _m['frictionloss']
+except Exception as _e:                                     # noqa: BLE001
+    raise SystemExit(f'could not read MOTOR_MEAS from pygmalion_constants: {_e}')
+MOTOR = dict(name='RS03', peak=60.0, rated=20.0, J=_J, b=_B, tc=_TC)
+print(f'motor params from MOTOR_MEAS: J={_J} b={_B} tc={_TC}')
 PITCH = np.radians(np.arange(-50, 30 + 1e-9, 5.0))       # design ROM, docs/88
 ROLL = np.radians(np.arange(-20, 20 + 1e-9, 5.0))
 H = 1e-4
