@@ -245,6 +245,9 @@ def main(argv=None) -> int:
                   help="실물 막대가 원판 반지름의 몇 배까지 뻗는가")
   ap.add_argument("--crop", required=True, help="잘라 낸 영역 x0,y0,x1,y1 (원본 프레임 좌표)")
   ap.add_argument("--alpha-disc", type=float, default=0.20)
+  ap.add_argument("--alpha-sim", type=float, default=0.34,
+                  help="**시뮬레이터 막대만**의 진하기. 옅을수록 아래 실물 나무 막대가 비쳐 "
+                       "보여 어긋난 양이 눈에 들어온다")
   ap.add_argument("--alpha-ptr", type=float, default=0.52,
                   help="막대를 얼마나 진하게 얹을까. 진하면 그 **아래 실물 나무 "
                        "막대가 안 보인다** — 정작 견줄 대상이 가려진다")
@@ -328,13 +331,12 @@ def main(argv=None) -> int:
     cam = (Image.open(frames[fi]).crop((0, 0, cw, ch)).resize((fw, fh), Image.LANCZOS)
            .crop((offx, offy, offx + LEFT, offy + H_CAM)))
     base = np.asarray(cam, dtype=np.float32)
-    rgb, m_disc, m_ptr = scene.render(img_deg(ss), img_deg(rr), img_deg(c))
+    rgb, m_disc, m_sim, m_ptr = scene.render(img_deg(ss), img_deg(rr), img_deg(c))
     ov = np.asarray(Image.fromarray(rgb).resize((ov_size, ov_size), Image.LANCZOS),
                     dtype=np.float32)
-    md = np.asarray(Image.fromarray(m_disc.astype(np.uint8) * 255).resize(
+    up = lambda m: np.asarray(Image.fromarray(m.astype(np.uint8) * 255).resize(  # noqa: E731
         (ov_size, ov_size), Image.NEAREST)) > 127
-    mp = np.asarray(Image.fromarray(m_ptr.astype(np.uint8) * 255).resize(
-        (ov_size, ov_size), Image.NEAREST)) > 127
+    md, msi, mp = up(m_disc), up(m_sim), up(m_ptr)
     ox = int(round(hub_px[0] - ov_size / 2)); oy = int(round(hub_px[1] - ov_size / 2))
     sx0, sy0 = max(0, -ox), max(0, -oy)
     dx0, dy0 = max(0, ox), max(0, oy)
@@ -342,8 +344,10 @@ def main(argv=None) -> int:
     if ww > 0 and hh2 > 0:
       sub = (slice(sy0, sy0 + hh2), slice(sx0, sx0 + ww))
       dst = (slice(dy0, dy0 + hh2), slice(dx0, dx0 + ww))
-      # 원판은 옅게, 막대는 진하게 얹는다. 원판까지 진하게 얹으면 정작 봐야 할 실물이 가려진다.
-      for msk, al in ((md[sub], a.alpha_disc), (mp[sub], a.alpha_ptr)):
+      # 원판은 옅게, 견주기 막대는 진하게, **시뮬레이터 막대는 그 중간으로** 얹는다.
+      # 시뮬 막대까지 진하면 그 아래 실물 나무 막대가 가려져, 정작 얼마나 어긋났는지가 안 보인다.
+      for msk, al in ((md[sub], a.alpha_disc), (mp[sub], a.alpha_ptr),
+                      (msi[sub], a.alpha_sim)):
         blk = base[dst]
         blk[msk] = (1.0 - al) * blk[msk] + al * ov[sub][msk]
         base[dst] = blk

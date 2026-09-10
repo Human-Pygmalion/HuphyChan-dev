@@ -147,6 +147,7 @@ class MjlabJointScene:
         mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, "bench_cmd_joint")]
     self.gid_motor = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, motor_geom)
     self.gid_sim = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "bench_ptr_sim")
+    self.gid_hub = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "hub_sim")
 
     self.opt = mujoco.MjvOption()
     mujoco.mjv_defaultOption(self.opt)
@@ -223,10 +224,16 @@ class MjlabJointScene:
     return (img_deg - a0) / s
 
   def render(self, sim_img_deg, real_img_deg, cmd_img_deg):
-    """세 각도는 **사진에서 보일 각도**로 준다. (그림, 모터 자리, 막대 자리)"""
+    """세 각도는 **사진에서 보일 각도**로 준다.
+
+    돌려주는 자리가 셋입니다 — 모터 원통 / **시뮬레이터 막대** / 견주기 막대(실물·명령).
+    시뮬레이터 막대를 따로 떼어 놓는 이유는, 그 막대만 더 옅게 얹기 위해서입니다. 세 막대를
+    같은 진하기로 얹으면 정작 견줄 대상인 **실물 나무 막대가 아래에서 안 보입니다.**"""
     self._pose(self.scene_deg_for_img(sim_img_deg), self.scene_deg_for_img(real_img_deg),
                self.scene_deg_for_img(cmd_img_deg))
     self.renderer.update_scene(self.data, self.cam, self.opt)
     rgb = self.renderer.render()
     seg = self._seg()
-    return rgb, seg == self.gid_motor, (seg >= 0) & (seg != self.gid_motor)
+    m_motor = seg == self.gid_motor
+    m_sim = (seg == self.gid_sim) | (seg == self.gid_hub)
+    return rgb, m_motor, m_sim, (seg >= 0) & ~m_motor & ~m_sim
