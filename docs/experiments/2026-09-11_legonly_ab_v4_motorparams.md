@@ -84,6 +84,125 @@ PYG_ANKLE_MODE=AB mujoco-sim/mjlab/.venv/bin/python3 tools/robot_model/check_mot
 (런처가 §1b~§1b-4 보상·게인·액추에이터·가동범위 표를 자동 삽입한다)
 <!-- SPEC-TABLES:END -->
 
+<!-- SPEC-TABLES:BEGIN (analysis/run_spec_tables.py) -->
+
+## 1b. 이 run의 Reward & Gains (config에서 파싱 — 재현용)
+
+**Reward 항목** (weight·왜·어떻게):
+
+| reward | weight | 왜 | 어떻게 |
+|---|--:|---|---|
+| foot_clearance | **-2** | 스윙발 지면 이격(발끌림 방지) | 목표 높이 오차×발 수평속도 |
+| stance_knee_extension | **-2** | 입각 중 과도한 crouch 억제 | 접촉 중 \|knee\|>25 deg 초과량^2 |
+| track_angular_velocity | **+2** | 명령 회전속도 추종 | exp(-err²/std²) |
+| track_linear_velocity | **+2** | 명령 전진/측방 속도 추종 | exp(-err²/std²) |
+| air_time | **+1** | 체공시간 보상(질질끌기 억제) | 0.05~0.5 s 체공 발 수; \|command\|>0.5에서 활성 |
+| dof_pos_limits | **-1** | 관절범위 한계 벌점 | 한계초과 L1 |
+| pose | **+1** | 기본 관절자세 정규화(기괴자세 억제) | default-pose L2 |
+| self_collisions | **-1** | 자기충돌 벌점 | -접촉수 |
+| stand_still_penalty | **-1** | 이동 명령을 무시하고 서는 stall 방지 | 명령 대비 진행률<30%이면 flat cost |
+| track_lin_vel_progress | **+1** | 고속 명령에서 정지하는 local optimum 방지 | 명령방향 실제속도 투영값, 명령크기에서 cap |
+| upright | **+1** | 몸통 직립 유지(넘어짐 방지) | exp 자세 |
+| foot_impact_velocity | **-0.5** | 착지 직전 발 하강속도 감소 | 지면 근처 공중 발의 downward velocity^2 |
+| knee_overspeed | **-0.5** | 실측 RS04 무부하 속도를 넘는 보행 억제 | relu(\|knee velocity\|-19.9)^2 |
+| foot_swing_height | -0.25 | 스윙발 높이 성형 | 스윙 중 목표 높이 오차 |
+| action_rate_l2 | -0.1 | 액션 급변 벌점 | -\|Δa\|² |
+| foot_slip | -0.1 | 접지발 미끄러짐 벌점 | -\|v_contact\| |
+| body_ang_vel | -0.05 | 몸통 각속도 벌점(흔들림 억제) | -\|ω\|² |
+| angular_momentum | -0.02 | 전신 각운동량 벌점(회전 낭비 억제) | -\|L\|² |
+| thermal_effort | -0.02 | ★열분배: Σ(τ/rated)² 정규화(관절 균등화) | -Σ(τ/rated)² |
+| contact_force_cap | -0.01 | ★충격 cap: 발 GRF 역치초과분 벌점(사뿐착지) | -min(max(F-600,0),800) |
+| soft_landing | -1e-05 | 착지 첫접촉 충격 벌점(약) | -첫접촉 GRF |
+| torque_limit | -0 | commanded 토크 한계초과 벌점 | off(0) |
+
+**관절별 Kp/Kd** (position-PD, effort=관절측 peak):
+
+| 관절 | 모터 | Kp(stiffness) | Kd(damping) | effort [N·m] |
+|---|---|--:|--:|--:|
+| hip_pitch | RS04 | 150 | 6 | 120 |
+| hip_roll | RS04 | 150 | 6 | 120 |
+| hip_yaw | RS03 | 150 | 6 | 60 |
+| knee | RS04 | 220 | 6 | 120 |
+| crank_A | RS03 | 22.3 | 1.41 | 60 |
+| crank_B | RS03 | 22.3 | 1.41 | 60 |
+
+
+**§1b-2. 액추에이터 동역학·한계** (이 런의 `params/env.yaml` 파싱 — `2026-09-11_02-39-21_legonly_ab_v4_motorparams_p1`)
+
+| 관절 그룹 | 모터 | Kp [N·m/rad] | Kd [N·m·s/rad] | effort 한계 [N·m] | 무부하 속도 [rad/s] | 로터 관성 armature [kg·m²] | 쿨롱 마찰 [N·m] | 점성 [N·m·s/rad] | T-N 곡선 |
+|---|---|--:|--:|--:|--:|--:|--:|--:|---|
+| crank_A, crank_B | RS03 | 22.266 | 1.414 | 60 (stall 59.7) | 20.94 | 0.0638 | 0.251 | 0.0252 | 실측 37점 (`PYG_TN=1`) |
+| hip_yaw | RS03 | 150 | 6 | 60 (stall 59.7) | 20.94 | 0.0638 | 0.251 | 0.0252 | 실측 37점 (`PYG_TN=1`) |
+| hip_pitch | RS04 | 150 | 6 | 120 (stall 120.1) | 20.94 | 0.0773 | 0.519 | 0.0275 | 실측 22점 (`PYG_TN=1`) |
+| knee | RS04 | 220 | 6 | 120 (stall 120.1) | 20.94 | 0.0773 | 0.519 | 0.0275 | 실측 22점 (`PYG_TN=1`) |
+| ankle_pitch / ankle_roll | (수동, 크랭크가 구동) | — | — | — | — | — | — | — | 폐루프 `equality/connect` 등식구속 |
+
+토크는 `effort_limit`과 (있으면) 실측 T-N 곡선의 속도의존 상한 중 **작은 값**으로 클램프된다. armature/쿨롱/점성은 모터 실측값(`PYG_MOTOR_MEAS=1`)이면 실측, 아니면 카탈로그 추정치다.
+
+**§1b-3. ROM 한계·액션 창** (모델 XML range · soft 한계 = 중심±0.5·range×0.9 (mjlab `Entity` 규약) · 액션 clip = env.yaml `actions.joint_pos.clip` · 창 = clip 폭 · default = 액션 0 자세)
+
+**soft 한계와 액션 clip은 같은 공식이다** — `Entity.soft_joint_pos_limits`와 `pygmalion_constants.safe_target_clip()`이 둘 다 *중심 ± 0.5·range·factor*를 쓴다(각 경계에 factor를 곱하는 것이 아니다: 비대칭 관절에서 두 식이 갈린다 — knee `[0,120]`은 `[6,114]`이지 `[0,108]`이 아니다). 그래서 `PYG_SAFE_TARGET_CLIP=1`인 런에서는 두 열이 정확히 일치하고, 정책이 통과하는 클램프와 시뮬레이터가 강제하는 클램프가 하나의 계약이 된다.
+
+모델 출처: 런 디렉토리 `repro/` 스냅샷 (권위) — `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml`
+
+| 관절 | XML range [°] | soft 한계 [°] | 액션 clip [°] | 사용가능 창 [°] | default [°] | 구동 |
+|---|---|---|---|--:|--:|---|
+| L_hip_pitch_joint | [-120, 25] | [-112.8, 17.7] | [-112.8, 17.7] | 130.5 | -10.03 | 액션 |
+| L_hip_roll_joint | [-25, 85] | [-19.5, 79.5] | [-19.5, 79.5] | 99 | 0 | 액션 |
+| L/R_hip_yaw_joint | [-45, 45] | [-40.5, 40.5] | [-40.5, 40.5] | 81 | 0 | 액션 |
+| L_knee_joint | [0, 120] | [6, 114] | [6, 114] | 108 | 20.05 | 액션 |
+| L_crank_A_joint | [-68.8, 68.8] | [-61.9, 61.9] | [-61.9, 61.9] | 123.8 | 17.03 | 액션 |
+| L_crank_B_joint | [-68.8, 68.8] | [-61.9, 61.9] | [-61.9, 61.9] | 123.8 | -17.26 | 액션 |
+| L_ankle_pitch_joint | [-50, 30] | [-46, 26] | — (수동) | — | 20.63 | 수동 |
+| L_ankle_roll_joint | [-20, 20] | [-18, 18] | — (수동) | — | 0 | 수동 |
+| R_hip_pitch_joint | [-25, 120] | [-17.7, 112.8] | [-17.7, 112.8] | 130.5 | 10.03 | 액션 |
+| R_hip_roll_joint | [-85, 25] | [-79.5, 19.5] | [-79.5, 19.5] | 99 | 0 | 액션 |
+| R_knee_joint | [-120, 0] | [-114, -6] | [-114, -6] | 108 | -20.05 | 액션 |
+| R_crank_A_joint | [-68.8, 68.8] | [-61.9, 61.9] | [-61.9, 61.9] | 123.8 | -17.03 | 액션 |
+| R_crank_B_joint | [-68.8, 68.8] | [-61.9, 61.9] | [-61.9, 61.9] | 123.8 | 17.26 | 액션 |
+| R_ankle_pitch_joint | [-50, 30] | [-46, 26] | — (수동) | — | 20.63 | 수동 |
+| R_ankle_roll_joint | [-20, 20] | [-18, 18] | — (수동) | — | 0 | 수동 |
+
+액션 스케일 0.25 rad/단위, 오프셋 = default (`use_default_offset`). clip이 없는 구 설정에서는 정책 목표각을 시뮬레이터의 soft 한계가 사후에 잡는다 — 창은 soft 한계 폭으로 읽는다.
+
+**§1b-4. 이 런의 스택 플래그 (`PYG_*`)**
+
+출처: 런 디렉토리 `repro/launch_manifest.json` (권위)
+
+| 플래그 | 값 |
+|---|---|
+| `PYG_ANKLE_MODE` | AB |
+| `PYG_ARM_ABD_DEG` | 15 |
+| `PYG_CMD_VY_STAGES` | 1 |
+| `PYG_CRITIC_DR_OBS` | 1 |
+| `PYG_DR_END_ITER` | 100000001 |
+| `PYG_DR_START_ITER` | 100000000 |
+| `PYG_GATED_CURRICULUM` | 1 |
+| `PYG_GATE_ERR_RATIO` | 1.1 |
+| `PYG_GATE_FELL_MAX` | 0.005 |
+| `PYG_GATE_MAX_DWELL` | 3000 |
+| `PYG_GATE_MIN_DWELL` | 800 |
+| `PYG_GATE_MIN_EPISODES` | 64 |
+| `PYG_GATE_WINDOW` | 100 |
+| `PYG_INIT_BENT` | 1 |
+| `PYG_INIT_MID` | 1 |
+| `PYG_KNEE_EXT` | 1 |
+| `PYG_KNEE_EXT_DEG` | 25 |
+| `PYG_KNEE_EXT_W` | 2.0 |
+| `PYG_MASS_DR_JSON` | `mass_dr_legonly_fastener50_prototype-tempmass.json` |
+| `PYG_MODEL_TAG` | LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix |
+| `PYG_MOTOR_MEAS` | 1 |
+| `PYG_SAFE_TARGET_CLIP` | 1 |
+| `PYG_SOFT_LANDING` | 1 |
+| `PYG_SOFT_LANDING_MODE` | half |
+| `PYG_STUDENT_TEACHER` | 1 |
+| `PYG_TN` | 1 |
+| `PYG_V2` | 1 |
+
+§1b의 리워드 가중치 표가 정본이다 — 플래그는 그 가중치가 어떻게 조립됐는지의 기록이다.
+
+<!-- SPEC-TABLES:END -->
+
 ## §2c 학습 중 리뷰 (게이트마다 스냅샷, docs/27 체크리스트)
 
 | 시각 | iter | reward | ep_len | noise σ | value loss | entropy | surrogate / LR | fell / low_base | err_vxy / err_wz | DR / vx_max | thermal | 판정 |
@@ -93,7 +212,38 @@ PYG_ANKLE_MODE=AB mujoco-sim/mjlab/.venv/bin/python3 tools/robot_model/check_mot
 | 09-11 05:39 | 2384 | 107.5 (50avg 106.6) | 999 | 0.262 | 0.0462 | -2.07 | 0.0010 / 8.8e-05 | 0.000 / 0.167 | 0.694 / 0.656 | 0.00 / 1.6 | 2.31 | **계속** — 게이트 3(05:48): iter 2384, reward 107.5 (50avg 106.6)(50평균 106.6), ep_len 999, 낙상 0.000 / 0.167, 추종오차 0.694 / 0.656, vx_max 0.00 / 1.6, thermal 2.31. v3_keyfix 같은 시점(iter 2233: 105.8, 오차 0.724/0.640, vx_max 1.6, thermal 2.61)과 동급이거나 우세 — **발열이 오히려 더 낮다**(2.31 대 2.61), 모터가 무거워졌는데도 열 부담이 늘지 않음(완주 후 §7 모터 활용도에서 원인 확인 예정). 중단 사유 없음 |
 | 09-11 06:39 | 3201 | 101.9 (50avg 101.6) | 994 | 0.293 | 0.0598 | -0.42 | -0.0009 / 2.0e-04 | 0.000 / 0.292 | 0.856 / 0.777 | 0.00 / 2.5 | 2.76 | **계속** — 게이트 4(06:42): iter 3201, reward 101.9 (50avg 101.6)(50평균 101.6), ep_len 994, 낙상 0.000 / 0.292, 추종오차 0.856 / 0.777, vx_max 0.00 / 2.5(**마지막 단계 도달**), thermal 2.76. v3_keyfix 같은 시점(iter 3228, 4단계: 102.1, 오차 1.017/0.700, thermal 2.17)과 보상은 동급이고 추종오차는 오히려 낮다(0.856 대 1.017). 다만 **발열은 이번엔 더 높다**(2.76 대 2.17) — 직전 게이트의 '더 낮음' 추세가 뒤집혔다(등락으로 판단, thermal 감시선 3.0 아래라 중단 사유 아님). 낙상 0 유지. 중단 사유 없음 |
 | 09-11 07:39 | 4023 | 101.0 (50avg 100.7) | 1000 | 0.306 | 0.0659 | 0.18 | 0.0009 / 8.8e-05 | 0.000 / 0.208 | 0.913 / 0.815 | 0.00 / 2.5 | 3.12 | **계속 — 예상된 신호 확인, 감시 시작** — 게이트 5(07:40): iter 4023, reward 101.0 (50avg 100.7)(50평균 100.7), 낙상 0.000 / 0.208, 추종오차 0.913 / 0.815, thermal 3.12. **발열이 3.09~3.13으로 6회 연속 감시선(3.0) 위**(로그 직접값으로 확인, 스냅샷 튐 아님) — v3_keyfix는 같은 시점(iter 3800~4200대)에 3.0을 넘지 않았다. 이는 §0에서 예고한 그대로다: 모터가 4~5배 무겁고 마찰·점성이 2~3배 커졌으니 **같은 동작에 토크가 더 든다.** 보상·낙상은 정상(101, 낙상 0)이라 지금은 중단 사유가 아니다. **중단 조건 명시**: 다음 두 게이트에서 발열이 계속 3.0 위에 머물고 50회 평균 보상이 100 아래로 내려가면 중단하고 직전 체크포인트로 판단한다. 완주 후 §7 모터 활용도(제곱평균·상위5%·최댓값 대 정격)로 실제 부담을 정량화한다 |
+| 09-11 07:45 | 4104 | 100.8 (50avg 100.8) | 993 | 0.306 | 0.0649 | 0.13 | 0.0006 / 8.8e-05 | 0.000 / 0.167 | 0.947 / 0.822 | 0.00 / 2.5 | 3.10 | P1 phase-end: review before P2 |
 (런처·리뷰루프가 채운다)
+
+## §2c-1 1단계 졸업 (2026-09-11 07:45) — v3_keyfix보다 훨씬 빠르다
+
+**결과: 4,100회에서 정상 졸업**(v2와 같은 지점, v3_keyfix의 14,000회보다 3.4배 빠르다).
+
+| 항목 | 값 |
+|---|---|
+| 종료 반복 | **4,100회**(상한 16,000회) |
+| 종료 사유 | `settled at top stage` — 정착 오차 0.226 ≤ 문턱(기준 0.2131×1.1=0.2344)을 **연속 27회** 유지 |
+| 낙상 | 0.0000 |
+| 강제 승격 | **0회**(다섯 단계 모두 정상 게이트 통과) |
+| 체크포인트 | `2026-09-11_02-39-21_legonly_ab_v4_motorparams_p1/model_4100.pt` |
+| 소요 | 발사(02:38:47)부터 5시간 6분 |
+
+**v3_keyfix·v2와 비교.** v3_keyfix는 같은 게이트 규칙으로 **14,000회**까지 걸렸다(마지막 단계에서 정착 오차가 문턱을 오래 못 넘겨서, [[2026-09-05_legonly_ab_v3_keyfix]] §2c-1).
+이 런은 v2(4,100회)와 같은 지점에서 졸업했다. 즉 v3_keyfix의 긴 1단계는 **모터 값과 무관한 요인**(그 런 특유의 확률적 결과 또는 다른 조건)이었다는 것이 이번 결과로 뒷받침된다 —
+모터가 더 무겁고 뻑뻑해졌는데도 졸업이 오히려 v3_keyfix보다 훨씬 빨랐다.
+
+**직전 게이트의 발열 감시는 종료.** 게이트 5에서 발열이 3.09~3.13으로 감시선 위에 머무는 것을 지켜보고 있었는데, 그 상태 그대로 정상 졸업했다(정착 오차·낙상 모두 기준 통과).
+무거운 모터가 초기 학습을 방해하지 않는다는 뜻으로 읽는다. 완주 후 §7 모터 활용도에서 실제 부담을 정량화한다.
+
+## §2c-2 2단계 발사 (2026-09-11 07:45)
+
+| 항목 | 값 |
+|---|---|
+| 프로세스 | pid 2914576, 로그 `logs/legonly_ab_v4_motorparams_p2.log` |
+| 런 디렉터리 | `logs/rsl_rl/pygmalion_velocity/2026-09-11_07-45-55_legonly_ab_v4_motorparams_p2` |
+| 반복 구간 | 4,100 → **18,099회**(2단계 14,000회: 무작위화 램프 10,000 + 굳히기 4,000) |
+| 설정 | 33개(1단계 27개 + 무작위화·탐색노이즈 일정 6개), 엔트로피 0.01 → 0.002 |
+| 예상 완주 | 지금 속도 기준(약 25 iter/분) 약 9시간 후, **09-11 저녁** |
 
 ## §R 참조
 - 직전 런: [[2026-09-05_legonly_ab_v3_keyfix]] · 핸드오프 문서: [[137_training_handoff_motor_params]]
