@@ -62,7 +62,22 @@ def build_table(w, cx, cy, r0, r1, nang, nr):
   return tab
 
 
+# 막대를 무엇으로 찾을 것인가. **모터마다 다르다** — 2026-09-10 한 프레임으로 실측:
+#
+#   RS04  은색 민무늬 원판 + 옅은 나무 막대   → 붉은기(V-U)  여유 23.4  (밝기로는 반사에 속음)
+#   RS03  하얗게 날아간 원판 + 짙은 올리브 막대 → 어두움(-Y)   여유 68.9  (붉은기로는 여유 3.2)
+#
+# "여유" 는 진짜 막대 자리의 값이 **다른 데서 가장 높은 값보다** 얼마나 큰가입니다. 이 값이
+# 작으면 한 프레임만 어긋나도 엉뚱한 곳으로 튑니다. 그래서 모터마다 골라 씁니다.
+SCORES = {
+  "wood": lambda buf, b: buf[b + 3] - buf[b + 1],          # V - U (붉은/노란기)
+  "dark": lambda buf, b: -(buf[b] + buf[b + 2]),           # 밝기의 반대
+  "bright": lambda buf, b: buf[b] + buf[b + 2],
+}
+
+
 def track(a) -> int:
+  score = SCORES[a.score]
   m, rows = load_meta(a.raw)
   w, h, sz = m["width"], m["height"], m["sizeimage"]
   nang, nr = a.nang, a.nr
@@ -81,7 +96,7 @@ def track(a) -> int:
       for col in tab:
         # 막대는 고리를 통째로 가로지르므로 **모든 반지름에서** 값이 크다. 한 반지름에만
         # 있는 얼룩(테이프 조각 등)은 하위 30% 를 쓰면 걸러진다.
-        vals = sorted(buf[b + 3] - buf[b + 1] for b in col)
+        vals = sorted(score(buf, b) for b in col)
         prof.append(vals[q])
       k = max(range(nang), key=prof.__getitem__)
       mean = sum(prof) / nang
@@ -134,6 +149,8 @@ def main(argv=None) -> int:
   t.add_argument("--r1", type=float, default=120.0)
   t.add_argument("--nang", type=int, default=720)
   t.add_argument("--nr", type=int, default=24)
+  t.add_argument("--score", default="wood", choices=sorted(SCORES),
+                 help="막대를 무엇으로 찾을까. RS04 는 wood, RS03 은 dark (실측)")
   t.set_defaults(fn=track)
   c = sub.add_parser("crop", help="영상에 쓸 장만 잘라 낸다")
   c.add_argument("--raw", required=True)
