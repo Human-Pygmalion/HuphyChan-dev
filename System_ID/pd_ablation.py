@@ -100,7 +100,11 @@ def sweep_for(family):
   }
 
 
-COLS = ["#8e44ad", "#c0392b", "#16a085", "#e67e22"]
+COLS = ["#7b3fbf",   # almost none        - 보라
+        "#e8443a",   # model today        - 빨강
+        "#00a878",   # MEASURED           - 초록
+        "#f2a007"]   # 4x too big         - 주황
+# 실물은 검정 계열로 두고 알파를 낮춘다. 색선과 색상환에서 겹치지 않아 섞여도 구분된다.
 
 
 def load_runs(pattern):
@@ -267,8 +271,8 @@ def main(argv=None) -> int:
     w = min(ts[-1], 6.0)
     s = ts <= w
     for p in P:
-      ax.plot(ts[s], p[s], color="#2c3e50", lw=0.8, alpha=0.28)
-    ax.plot(ts[s], P.mean(axis=0)[s], color="#2c3e50", lw=2.4, alpha=0.95,
+      ax.plot(ts[s], p[s], color="#2c3e50", lw=0.6, alpha=0.16)
+    ax.plot(ts[s], P.mean(axis=0)[s], color="#2c3e50", lw=1.8, alpha=0.75,
             label=f"real motor - average of the {len(P)} runs")
     ax.plot(ts[s], tgt[s], color="#7f8c8d", lw=1.3, ls=(0, (6, 3)),
             label="the target we asked for")
@@ -349,8 +353,8 @@ def main(argv=None) -> int:
       ZOOM[nm] = (0.0, min(9.0, tsx[-1]))
     else:
       ZOOM[nm] = (0.0, min(3.0, tsx[-1]))
-  LW = [2.6, 2.0, 1.5, 1.0]            # 겹쳐도 밑이 보이도록 굵기를 층지게
-  fig3, axs3 = plt.subplots(len(loaded), 3, figsize=(18.5, 4.2 * len(loaded)),
+  LW = [1.9, 1.5, 1.15, 0.85]          # 겹쳐도 밑이 보이도록 굵기를 층지게
+  fig3, axs3 = plt.subplots(len(loaded), 3, figsize=(17.0, 3.4 * len(loaded)),
                             squeeze=False)
   for ri, (name, mode, ts, tgt, tgv, P) in enumerate(loaded):
     lo, hi = ZOOM[name]
@@ -360,15 +364,15 @@ def main(argv=None) -> int:
     mean = P.mean(axis=0)
     for ci, (pname, options) in enumerate(SWEEP.items()):
       ax = axs3[ri][ci]
-      ax.plot(ts[z], tgt[z], color="#95a5a6", lw=1.3, ls=(0, (6, 3)),
+      ax.plot(ts[z], tgt[z], color="#95a5a6", lw=1.0, alpha=0.65, ls=(0, (6, 3)),
               label="the target we asked for")
       for k, prun in enumerate(P):
-        ax.plot(ts[z], prun[z], color="#2c3e50", lw=0.7, alpha=0.20,
+        ax.plot(ts[z], prun[z], color="#2c3e50", lw=0.5, alpha=0.13,
                 label=("real motor - each of the %d runs" % len(P)) if k == 0 else None)
-      ax.plot(ts[z], mean[z], color="#2c3e50", lw=3.0, alpha=0.95, zorder=6,
+      ax.plot(ts[z], mean[z], color="#111111", lw=1.7, alpha=0.42, zorder=6,
               label="real motor - average of the %d" % len(P))
       for (lab, val), col, lw in zip(options, COLS, LW):
-        ax.plot(ts[z], traces[(name, pname, lab)][z], color=col, lw=lw, alpha=0.80,
+        ax.plot(ts[z], traces[(name, pname, lab)][z], color=col, lw=lw, alpha=0.58,
                 zorder=5, label="sim, %s = %.4g  (%s)" % (PLAIN[pname][0], val, ROLE[lab]))
       ax.grid(alpha=0.3)
       if ri == 0:
@@ -381,46 +385,9 @@ def main(argv=None) -> int:
       if ri == 0:          # 범례는 맨 윗줄에만 — 아래 줄에서는 자료를 가린다
         ax.legend(fontsize=6.6, loc="lower left", ncol=1, framealpha=0.9)
 
-      # --- 모서리 확대 두 곳 (계단 명령만) ---------------------------------
-      # 보이는 구간 **안에 있는** 모서리만 고른다. 전체 기록에서 고르면 확대창이 화면 밖을
-      # 가리켜 무엇을 확대한 것인지 알 수 없다(처음에 그렇게 만들어 놓고 헤맸다).
-      if not mode.startswith("step"):
-        continue
-      span = float(tgt.max() - tgt.min())
-      ei = np.where(np.abs(np.diff(tgt)) > 0.4 * span)[0]
-      ups = [ts[e] for e in ei if tgt[e + 1] > tgt[e] and lo <= ts[e] <= hi - 0.4]
-      dns = [ts[e] for e in ei if tgt[e + 1] < tgt[e] and lo <= ts[e] <= hi - 0.4]
-      for rising, te, box in ((True, ups[0] if ups else None, [0.605, 0.60, 0.375, 0.305]),
-                              (False, dns[0] if dns else None, [0.605, 0.09, 0.375, 0.305])):
-        if te is None:
-          continue
-        w = (ts >= te + 0.02) & (ts <= te + 0.70)   # 모서리 **이후**만
-        if w.sum() < 10:
-          continue
-        iax = ax.inset_axes(box)
-        iax.plot(ts[w], tgt[w], color="#95a5a6", lw=1.1, ls=(0, (5, 3)))
-        for prun in P:
-          iax.plot(ts[w], prun[w], color="#2c3e50", lw=0.6, alpha=0.22)
-        iax.plot(ts[w], mean[w], color="#2c3e50", lw=2.6, alpha=0.95, zorder=6)
-        for (lab, _v), col, lw in zip(options, COLS, LW):
-          iax.plot(ts[w], traces[(name, pname, lab)][w], color=col, lw=lw, alpha=0.85)
-        # 세로는 **모서리 값 언저리**로 좁게. 지나쳐 가는 쪽에 여유를 더 준다.
-        corner = float(tgt[w][-1])
-        pad = max(0.25, span * 0.10)
-        iax.set_ylim(corner - pad * (1.6 if not rising else 0.5),
-                     corner + pad * (1.6 if rising else 0.5))
-        iax.set_xlim(te + 0.02, te + 0.70)
-        iax.tick_params(labelsize=5.5, pad=1)
-        iax.set_title("zoom: TOP corner just after the step UP" if rising
-                      else "zoom: BOTTOM corner just after the step DOWN", fontsize=6.0)
-        iax.grid(alpha=0.3)
-        iax.patch.set_alpha(0.93)
-        # 확대한 자리를 네모로만 표시한다. 연결선은 그림을 가로질러 지저분해서 끈다.
-        ind = ax.indicate_inset_zoom(iax, edgecolor="#7f8c8d", alpha=0.55)
-        # matplotlib 3.10 부터 하나의 artist 를 돌려준다(3.12 부터는 풀어 받기 불가).
-        conn = getattr(ind, "connectors", None) or (ind[1] if isinstance(ind, tuple) else [])
-        for c in conn:
-          c.set_visible(False)
+      # 2026-09-10 사용자: "추가 뷰 넣으니 너무 복잡해지네. 빼자" → 모서리 확대창 제거.
+      # 알파와 굵기 층(겹친 선이 비치게)은 유지한다.
+
   fig3.suptitle("RobStride motor " + str(a.motor) + ": the simulator drawn straight on top "
                 "of the real motor - one thing changed at a time", fontsize=13)
   fig3.tight_layout(rect=(0, 0, 1, 0.975))

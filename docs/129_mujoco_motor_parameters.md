@@ -100,30 +100,18 @@ which is active control), this is a passive property."*
 
 ## 2. 되돌리는 스위치
 
-같은 파일 100줄에 이미 있습니다.
+같은 파일에 이미 있습니다.
 
 ```python
 _MOTOR_MEAS = os.environ.get("PYG_MOTOR_MEAS", "1") != "0"
 ```
 
 `PYG_MOTOR_MEAS=0` 으로 돌리면 **카탈로그 값**(RS04 0.007 / RS03 0.005, 마찰 없음)으로
-돌아갑니다. 옛 설정을 재현할 때 씁니다. 새 값을 넣어도 이 스위치는 그대로 동작합니다.
+돌아갑니다. 옛 설정을 재현할 때 씁니다.
 
-**권합니다**: 새 값을 바로 덮어쓰지 말고 스위치를 하나 더 두어 A/B 를 하십시오.
-
-```python
-_MEAS_GEN = os.environ.get("PYG_MOTOR_MEAS_GEN", "2")   # "1" = 2026-08-23, "2" = 2026-09-09
-MOTOR_MEAS = {
-  "1": {"RS04": dict(armature=0.016333, damping=0.009492, frictionloss=0.269456),
-        "RS03": dict(armature=0.015265, damping=0.022342, frictionloss=0.285370)},
-  "2": {"RS04": dict(armature=0.0773, damping=0.0275, frictionloss=0.519),
-        "RS03": dict(armature=0.0638, damping=0.0025, frictionloss=0.400)},
-}[_MEAS_GEN]
-```
-
-이유는 아래 4번에 적습니다.
-
----
+★ **값 묶음을 여러 벌 두지 않습니다.** 쓰는 값은 한 벌이고, 예전 값으로 돌아가려면 파일을
+그 커밋 시점으로 되돌립니다(`git show <커밋>:...pygmalion_constants.py`). 어느 값으로
+학습했는지는 런 노트가 기록합니다.
 
 ## 3. 이 값이 **못 담는** 것 — 정지 마찰
 
@@ -163,7 +151,7 @@ Stribeck 속도와 미끄러지기 전 강성을 **추가로 측정**해야 합�
 
 1. **모터만 세운 대조를 먼저 다시 돌립니다** — 값을 넣은 뒤 `pd_sim_vs_real.py` 로 실물
    기록과 다시 겹쳐 확인. 이건 학습 없이 몇 초면 끝납니다.
-2. **짧은 A/B 학습**(같은 시드, 같은 리워드, `PYG_MOTOR_MEAS_GEN` 만 다르게)으로 학습이
+2. **짧은 A/B 학습**(같은 시드, 같은 리워드, `MOTOR_MEAS` 만 다르게 — 파일을 되돌려서)으로 학습이
    수렴하는지, 걸음이 어떻게 달라지는지 봅니다.
 3. **제어 이득을 다시 사이징**합니다. 관성이 4.7배면 같은 감쇠비를 내는 `damping`(Kd)이
    √4.7 = 2.2배 커야 합니다. 지금 값 그대로면 **덜 감쇠**되어 출렁입니다.
