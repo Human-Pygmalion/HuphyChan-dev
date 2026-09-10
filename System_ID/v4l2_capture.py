@@ -145,6 +145,47 @@ def probe(dev) -> int:
   return 0
 
 
+def fs_of(path):
+  """이 경로가 어느 파일계통에 있는지. 램 위(tmpfs)인지 보려고 쓴다."""
+  path = os.path.abspath(path)
+  best = ("", "")
+  try:
+    for line in open("/proc/mounts"):
+      dev, mnt, typ, *_ = line.split()
+      if path.startswith(mnt) and len(mnt) >= len(best[0]):
+        best = (mnt, typ)
+  except OSError:
+    pass
+  return best[1]
+
+
+def check_disk(a) -> None:
+  """찍기 전에 **자리와 속도를 먼저 따진다.**
+
+  ★ 2026-09-10 실측 사고 — 1920x1080 을 초당 30장 원본으로 쓰면 **초당 124 메가바이트**다.
+  SD 카드는 그걸 못 받는다. 처음 13초는 커널 캐시가 받아 주다가, 캐시가 차면 쓰기가 막히고
+  **카메라가 통째로 멈춘다**(모터 3 촬영에서 11.7초가 사라졌고, 모터 4 는 12.9초부터 프레임
+  간격이 33 밀리초에서 400~570 밀리초로 무너졌다). 자료가 조용히 망가지는 종류라, 나중에
+  그래프에서야 알아챘다. 그래서 **여기서 먼저 거부한다.**
+  """
+  need = a.seconds * a.fps * a.width * a.height * 2
+  st = os.statvfs(a.out)
+  free = st.f_bavail * st.f_frsize
+  typ = fs_of(a.out)
+  rate = a.fps * a.width * a.height * 2
+  print(f"필요한 자리 {need/1e9:.2f} GB · 남은 자리 {free/1e9:.2f} GB · "
+        f"초당 {rate/1e6:.0f} MB · 파일계통 {typ or '모름'}")
+  if need > 0.9 * free:
+    raise SystemExit(f"자리가 모자랍니다: {need/1e9:.2f} GB 가 필요한데 "
+                     f"{free/1e9:.2f} GB 뿐입니다. 해상도·장수·시간을 줄이거나 다른 곳에 쓰세요")
+  if rate > 80e6 and typ != "tmpfs" and not a.allow_slow_disk:
+    raise SystemExit(
+        f"초당 {rate/1e6:.0f} MB 를 {typ or '이 장치'} 에 쓰려고 합니다. **SD 카드는 못 받고, "
+        f"차면 카메라가 멈춥니다**(2026-09-10 실측: 13초 뒤 초당 2장으로 무너짐, 11.7초 결실).\n"
+        f"  → 램 위(tmpfs, 보통 /tmp)에 쓰거나, 848x480 초당 60장처럼 초당 80 MB 아래로 "
+        f"낮추세요.\n  → 정말 이대로 가려면 --allow-slow-disk 를 붙이세요")
+
+
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -156,6 +197,8 @@ def main(argv=None) -> int:
   ap.add_argument("--height", type=int, default=720)
   ap.add_argument("--fps", type=int, default=60)
   ap.add_argument("--nbuf", type=int, default=8, help="커널과 주고받는 칸 수")
+  ap.add_argument("--allow-slow-disk", action="store_true",
+                  help="느린 저장장치에 높은 속도로 쓰는 것을 굳이 허용한다 (권장하지 않음)")
   ap.add_argument("--warmup", type=float, default=1.0, help="노출이 자리잡을 때까지 버릴 시간")
   a = ap.parse_args(argv)
 
@@ -164,6 +207,7 @@ def main(argv=None) -> int:
     return probe(a.dev)
 
   os.makedirs(a.out, exist_ok=True)
+  check_disk(a)
   fd = os.open(a.dev, os.O_RDWR)
   w, h, sizeimage = set_format(fd, a.width, a.height, a.fps)
   print(f"{a.dev} · {w}x{h} · 한 장 {sizeimage} 바이트 · 초당 {a.fps}장 부탁")
@@ -216,9 +260,20 @@ def main(argv=None) -> int:
               frames=kept, warmup_skipped=dropped, span_s=span,
               fps_actual=(kept - 1) / span if span > 0 else 0.0, device=a.dev,
               pixelformat="YUYV")
+  ts = [float(r[1]) for r in rows]
+  gaps = [b - a_ for a_, b in zip(ts, ts[1:])] or [0.0]
+  gaps_sorted = sorted(gaps)
+  med = gaps_sorted[len(gaps_sorted) // 2]
+  worst = max(gaps)
+  meta["gap_median_ms"] = med * 1e3
+  meta["gap_max_s"] = worst
   json.dump(meta, open(os.path.join(a.out, "meta.json"), "w"), indent=1)
   print(f"찍은 장수 {kept} · {span:.2f}초 · **실제 초당 {meta['fps_actual']:.2f}장** · "
         f"{os.path.getsize(os.path.join(a.out, 'frames.raw')) / 1e6:.0f} MB · {a.out}")
+  print(f"프레임 간격: 중앙 {med*1e3:.1f} ms · 가장 긴 것 {worst*1e3:.0f} ms")
+  if worst > 4.0 / max(1, a.fps):
+    print(f"★★ 중간에 멈췄습니다 (가장 긴 간격 {worst:.2f}초). 저장이 못 따라온 것입니다 — "
+          f"자료를 쓰기 전에 확인하세요")
   return 0
 
 

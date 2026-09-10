@@ -26,16 +26,26 @@ PY=../mujoco-sim/mjlab/.venv/bin/python3
 #   R0,R1 막대를 찾을 고리 (원판 **안쪽**에 있어야 함 — 바깥은 나무 책상이라 색이 비슷)
 #   SCORE 막대를 무엇으로 찾을까 (RS04 붉은기 여유 22.0 / RS03 어두움 여유 92.1)
 #   REACH 실물 막대가 원판 반지름의 몇 배까지 뻗는가
+# 좌표는 **1280x720 에서 잰 값**입니다. 해상도를 바꾸면 이 값도 다시 재야 합니다.
 if [ "$M" = 4 ]; then
-  MODEL=RS04; HUB="1044,320"; DISC=176; R0=55; R1=160; SCORE=wood
-  CROP="639,0,1449,693"; REACH=1.49; EXPOSURE=200
+  MODEL=RS04; HUB="707,145"; DISC=137; R0=45; R1=125; SCORE=wood
+  CROP="437,0,977,462"; REACH=1.49; EXPOSURE=200   # 추적 여유 20.0
 else
-  MODEL=RS03; HUB="1720,240"; DISC=138; R0=55; R1=125; SCORE=dark
-  CROP="1110,0,1920,693"; REACH=1.45; EXPOSURE=100
+  MODEL=RS03; HUB="1196,150"; DISC=82; R0=38; R1=72; SCORE=dark
+  CROP="740,0,1280,462"; REACH=1.70; EXPOSURE=100   # 추적 여유 92.0
 fi
-W=1920; H=1080; FPS=30; SECS=32
-RAW=/home/maido/System_ID/data/cam_vs_${M}
+# ★ 2026-09-10 — 1920x1080 을 초당 30장 원본으로 쓰면 초당 124 메가바이트인데 **SD 카드가
+# 못 받습니다.** 처음 13초는 캐시가 받아 주다 차면 카메라가 멈춥니다(실측: 모터 4 는 12.9초
+# 뒤 초당 2장으로 무너지고, 모터 3 은 11.7초가 통째로 사라졌습니다). 그래서
+#   ① 해상도를 1280x720 으로 낮춰 초당 55 메가바이트로 만들고
+#   ② **램 위(tmpfs, /tmp)** 에 씁니다 — 32초에 1.8 기가바이트, 남은 3.3 기가바이트 안.
+# 그러면 초당 30장이 끝까지 유지됩니다. 촬영 프로그램도 이제 자리·속도를 미리 따져 거부합니다.
+W=1280; H=720; FPS=30; SECS=32
+RAW=/tmp/cam_vs_${M}
 LOCAL=/tmp/cam_vs_${M}
+
+# 램은 좁다(3.3 기가바이트). 지난 촬영이 남아 있으면 이번 것이 안 들어가므로 먼저 치운다.
+./pi_run.sh "rm -rf /tmp/cam_vs_*"
 
 echo "===== ① 찍으면서 돌린다 ====="
 ./pi_run.sh "cd ~/System_ID && bash run_video_rs.sh $M $MODEL videosync $W $H $FPS $SECS $RAW $EXPOSURE"
@@ -66,4 +76,6 @@ MUJOCO_GL=egl $PY make_overlay_video.py \
   --family $MODEL --motor $M --hub "$HUB" --disc-r $DISC --ptr-reach $REACH \
   --crop "$CROP" --out-fps 25 \
   --out "../docs/assets/bench_vs_mujoco_${MODEL,,}.mp4"
+# 램에 둔 원본은 크다. 필요한 것(각도·자른 그림)은 이미 가져왔으니 비운다.
+./pi_run.sh "rm -f $RAW/frames.raw $RAW/crops.bin"
 echo PIPELINE_DONE

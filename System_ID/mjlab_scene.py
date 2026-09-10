@@ -145,9 +145,26 @@ class MjlabJointScene:
         mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, "bench_real_joint")]
     self.q_cmd = self.model.jnt_qposadr[
         mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, "bench_cmd_joint")]
-    self.gid_motor = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, motor_geom)
-    self.gid_sim = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "bench_ptr_sim")
-    self.gid_hub = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "hub_sim")
+    def gid(n):
+      """geom 번호를 이름으로 찾는다. **못 찾으면 여기서 멈춘다.**
+
+      ★ 2026-09-10 — 못 찾으면 mujoco 는 −1 을 돌려주는데, 물체 구분 그림에서 **−1 은
+      배경**입니다. 그래서 `seg == 번호` 가 배경 전체와 일치해 버리고, 화면 가득 커다란
+      사각형 얼룩이 얹힙니다(RS03·RS04 영상에서 실제로 그렇게 나왔습니다). 조용히 틀리는
+      종류라, 없는 이름은 여기서 바로 멈추게 합니다."""
+      i = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, n)
+      if i < 0:
+        raise SystemExit(f"[mjlab_scene] geom '{n}' 을 못 찾았습니다 — 이름을 확인하세요")
+      return i
+
+    self.gid_motor = gid(motor_geom)
+    self.gid_sim = gid("bench_ptr_sim")
+    # ★ 2026-09-10 — **투명하게 만든 geom 도 물체 구분 그림에는 그대로 들어옵니다.**
+    # 투명은 색깔 이야기일 뿐이라 구분 그림은 알파를 안 봅니다. 그래서 "모터와 시뮬 막대를
+    # **뺀 나머지 전부**" 를 견주기 막대 자리로 삼으면, 안 보이게 해 둔 다리·골반까지 딸려
+    # 들어와 화면에 커다란 사각형 얼룩으로 얹힙니다(RS03 영상에서 그렇게 나왔습니다).
+    # 그래서 **쓸 geom 번호를 이름으로 콕 집어** 둡니다.
+    self.gid_ghost = [gid("bench_real_ptr"), gid("bench_cmd_ptr")]
 
     self.opt = mujoco.MjvOption()
     mujoco.mjv_defaultOption(self.opt)
@@ -235,5 +252,8 @@ class MjlabJointScene:
     rgb = self.renderer.render()
     seg = self._seg()
     m_motor = seg == self.gid_motor
-    m_sim = (seg == self.gid_sim) | (seg == self.gid_hub)
-    return rgb, m_motor, m_sim, (seg >= 0) & ~m_motor & ~m_sim
+    m_sim = seg == self.gid_sim
+    m_ghost = np.zeros_like(m_sim)
+    for g in self.gid_ghost:
+      m_ghost |= seg == g
+    return rgb, m_motor, m_sim, m_ghost
