@@ -27,18 +27,18 @@ PY=../mujoco-sim/mjlab/.venv/bin/python3
 #   SCORE 막대를 무엇으로 찾을까 (RS04 붉은기 여유 22.0 / RS03 어두움 여유 92.1)
 #   REACH 실물 막대가 원판 반지름의 몇 배까지 뻗는가
 if [ "$M" = 4 ]; then
-  MODEL=RS04; HUB="1035,325"; DISC=177; R0=55; R1=160; SCORE=wood
-  CROP="630,0,1440,693"; REACH=1.49
+  MODEL=RS04; HUB="1044,320"; DISC=176; R0=55; R1=160; SCORE=wood
+  CROP="639,0,1449,693"; REACH=1.49; EXPOSURE=200
 else
-  MODEL=RS03; HUB="1712,290"; DISC=139; R0=55; R1=125; SCORE=dark
-  CROP="1110,0,1920,693"; REACH=1.45
+  MODEL=RS03; HUB="1720,240"; DISC=138; R0=55; R1=125; SCORE=dark
+  CROP="1110,0,1920,693"; REACH=1.45; EXPOSURE=100
 fi
 W=1920; H=1080; FPS=30; SECS=32
 RAW=/home/maido/System_ID/data/cam_vs_${M}
 LOCAL=/tmp/cam_vs_${M}
 
 echo "===== ① 찍으면서 돌린다 ====="
-./pi_run.sh "cd ~/System_ID && bash run_video_rs.sh $M $MODEL videosync $W $H $FPS $SECS $RAW"
+./pi_run.sh "cd ~/System_ID && bash run_video_rs.sh $M $MODEL videosync $W $H $FPS $SECS $RAW $EXPOSURE"
 
 echo "===== ② 막대 각도를 파이에서 읽는다 ($SCORE) ====="
 ./pi_run.sh "cd ~/System_ID && python3 -u yuyv_tools.py track --raw $RAW \

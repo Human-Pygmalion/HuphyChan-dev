@@ -20,6 +20,19 @@ cd "$(dirname "$0")"
 M=${1:-4}; MODEL=${2:-RS04}; MODE=${3:-videosync}
 W=${4:-1920}; H=${5:-1080}; FPS=${6:-30}; SECS=${7:-32}
 OUT=${8:-$HOME/System_ID/data/cam_${MODE}_${M}_${W}x${H}}
+EXPOSURE=${9:-150}
+
+# ★ 노출과 화이트밸런스를 **고정**한다. 자동으로 두면 촬영 중에 밝기와 색이 움직이는데,
+# 막대를 색(RS04)이나 어두움(RS03)으로 찾기 때문에 그러면 각도 읽기가 흔들린다. 실제로
+# 자동일 때 RS04 의 "여유"(진짜 막대가 다른 후보보다 얼마나 뚜렷한가)가 22 에서 4.9 로
+# 떨어지는 것을 봤다. 고정하면 프레임을 다시 찍어도 같은 값이 나온다.
+#
+# 알맞은 값이 모터마다 다르다 (실측):
+#   RS04 붉은기로 찾음 → 밝을수록 색이 살아남   노출 200 에서 여유 18
+#   RS03 어두운 막대로 찾음 → 어두울수록 대비   노출 100 에서 여유 72 (200 에서는 12)
+v4l2-ctl -d /dev/video4 -c auto_exposure=1,white_balance_automatic=0 2>/dev/null || true
+v4l2-ctl -d /dev/video4 -c white_balance_temperature=4600,exposure_time_absolute=$EXPOSURE 2>/dev/null || true
+sleep 1.5
 
 rm -rf "$OUT"
 python3 -u v4l2_capture.py --out "$OUT" --seconds $SECS --width $W --height $H --fps $FPS &

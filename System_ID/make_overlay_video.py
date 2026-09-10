@@ -245,7 +245,9 @@ def main(argv=None) -> int:
                   help="실물 막대가 원판 반지름의 몇 배까지 뻗는가")
   ap.add_argument("--crop", required=True, help="잘라 낸 영역 x0,y0,x1,y1 (원본 프레임 좌표)")
   ap.add_argument("--alpha-disc", type=float, default=0.20)
-  ap.add_argument("--alpha-ptr", type=float, default=0.70)
+  ap.add_argument("--alpha-ptr", type=float, default=0.52,
+                  help="막대를 얼마나 진하게 얹을까. 진하면 그 **아래 실물 나무 "
+                       "막대가 안 보인다** — 정작 견줄 대상이 가려진다")
   ap.add_argument("--kp", type=float, default=20.0)
   ap.add_argument("--kd", type=float, default=1.0)
   ap.add_argument("--tau-max", type=float, default=8.0)
@@ -305,10 +307,12 @@ def main(argv=None) -> int:
     return (true_deg - b) / k
 
   plot_rgb, x_of, spans = make_plots(t, tgt, pos, sim, ang_t, cam_deg, a.family, prm)
-  head = (f"RobStride {a.family} (motor {a.motor})   |   mjlab's own 3D render laid over the "
-          f"real motor   |   inertia {prm['armature']} · friction {prm['frictionloss']} N m · "
-          f"viscous {prm['damping']} N m s   |   only size and place are aligned: the time base "
-          f"is one shared clock and no angle is rescaled")
+  # 제목띠는 한 줄이라 길면 잘린다. 두 줄로 나눠 담는다.
+  head1 = (f"RobStride {a.family} (motor {a.motor})   ·   mjlab's own 3D render laid over the "
+           f"real motor   ·   inertia {prm['armature']}, friction {prm['frictionloss']} N m, "
+           f"viscous {prm['damping']} N m s")
+  head2 = ("only size and place are aligned - one shared clock for both, and neither angle is "
+           "rescaled")
 
   def compose(tt):
     fi = int(np.argmin(np.abs(cam_t - tt)))
@@ -317,7 +321,8 @@ def main(argv=None) -> int:
     canvas = Image.new("RGB", (W, H), (255, 255, 255))
     d = ImageDraw.Draw(canvas)
     d.rectangle((0, 0, W, H_HEAD), fill=(26, 28, 34))
-    d.text((16, 16), head, font=font(15, True), fill=(238, 238, 242))
+    d.text((16, 7), head1, font=font(14, True), fill=(238, 238, 242))
+    d.text((16, 28), head2, font=font(13), fill=(170, 176, 190))
 
     # --- 왼쪽: 사진 위에 시뮬레이터를 얹는다 ---
     cam = (Image.open(frames[fi]).crop((0, 0, cw, ch)).resize((fw, fh), Image.LANCZOS)
@@ -350,20 +355,25 @@ def main(argv=None) -> int:
     canvas.paste(left, (0, H_HEAD))
 
     # 왼쪽 칸 아래 설명
-    y = H_HEAD + H_CAM + 10
+    y = H_HEAD + H_CAM + 5
     dc = ImageDraw.Draw(canvas, "RGBA")
     dc.rectangle((0, H_HEAD + H_CAM, LEFT, H), fill=(20, 22, 28))
     f2 = font(15, True)
+    # 색은 겹쳐 그린 막대와 **같은 색**이어야 한다. 실물 막대는 거의 검정이라 어두운 띠 위에서
+    # 안 보이므로 흰 테두리를 두른다.
     for i, (col, lab) in enumerate((((0, 204, 140), "mjlab model, our measured numbers"),
-                                    ((235, 235, 240), "the real motor (recorded angle)"),
-                                    ((255, 184, 26), "the command"))):
-      dc.rectangle((22, y + i * 26 + 4, 52, y + i * 26 + 16), fill=col)
-      dc.text((64, y + i * 26), lab, font=f2, fill=(232, 232, 238))
-    dc.text((520, y), f"MuJoCo   {ss:+7.2f} deg", font=f2, fill=(0, 220, 150))
-    dc.text((520, y + 26), f"real     {rr:+7.2f} deg", font=f2, fill=(238, 238, 244))
-    dc.text((520, y + 52), f"apart    {ss - rr:+7.2f} deg", font=font(16, True),
+                                    ((16, 16, 20), "the real motor (its recorded angle)"),
+                                    ((255, 179, 26), "the command"))):
+      dc.rectangle((22, y + i * 24 + 4, 52, y + i * 24 + 15), fill=col,
+                   outline=(210, 214, 224), width=1)
+      dc.text((64, y + i * 24), lab, font=f2, fill=(232, 232, 238))
+    dc.text((22, y + 3 * 24 + 3), "under them: the wooden pointer taped to the real shaft",
+            font=font(13), fill=(150, 156, 170))
+    dc.text((560, y), f"mjlab model {ss:+7.2f} deg", font=f2, fill=(0, 220, 150))
+    dc.text((560, y + 24), f"real motor  {rr:+7.2f} deg", font=f2, fill=(238, 238, 244))
+    dc.text((560, y + 48), f"apart       {ss - rr:+7.2f} deg", font=font(16, True),
             fill=(255, 210, 120))
-    dc.text((790, y + 26), f"t = {tt:5.2f} s", font=f2, fill=(180, 184, 196))
+    dc.text((880, y + 24), f"t = {tt:5.2f} s", font=f2, fill=(180, 184, 196))
 
     # --- 오른쪽: 그래프 + 지금 시각 막대 ---
     strip = plot_rgb.copy()

@@ -65,7 +65,7 @@ class MjlabJointScene:
   """학습용 로봇 파일에서 관절 하나만 꺼내 그리는 장면."""
 
   def __init__(self, xml_path, family="RS04", size=900, ptr_reach=1.45, cmd_reach=1.62,
-               ptr_width=0.010):
+               ptr_width=0.0075):
     joint_name, motor_geom = JOINTS[family]
     spec = mujoco.MjSpec.from_file(xml_path)
     jnt = spec.joint(joint_name)
@@ -101,8 +101,8 @@ class MjlabJointScene:
 
     # 견주기용 막대 둘. 같은 자리·같은 축으로 도는 **따로 도는 몸통**을 고정 쪽에 붙인다.
     self.ghosts = []
-    for nm, key, off, ln, rad in (("bench_real", "real", 0.80, L, ptr_width * 0.55),
-                                  ("bench_cmd", "cmd", 1.05, Lc, ptr_width * 0.40)):
+    for nm, key, off, ln, rad in (("bench_real", "real", 0.80, L, ptr_width * 0.70),
+                                  ("bench_cmd", "cmd", 1.05, Lc, ptr_width * 0.45)):
       b = stator.add_body()
       b.name = nm
       b.pos = rotor.pos
