@@ -1,16 +1,28 @@
-"""Interactive per-joint MJCF viewer for the Pygmalion FullDoF robot, served over viser.
+"""Interactive per-joint MJCF viewer for the Pygmalion robot, served over viser.
 
 Lets a human move every joint with a +/- slider in a browser to eyeball ROM and motor
 sign convention against the design intent. Read-only: never edits the XML/URDF.
 
-Two models are loadable (docs/66 registry, 2026-09-02 latest entry):
-  loop      FullDoF_..._v30_proxyfix_loop.xml   2-RSU closed-loop ankle (crank A/B driven,
-            ankle_pitch/roll PASSIVE). This is the AB model that the current main run
-            (v2s1_AB, docs/experiments/2026-08-28_v2s1_AB.md) and the latest smoke test
-            (docs/experiments/2026-09-02_v30proxyfix_AB_st45_imuclip_idrsmoke_test.md,
-            2026-09-02) both train on -> DEFAULT / 정본.
-  proxyfix  FullDoF_..._v30_proxyfix.xml         serial ankle: ankle_pitch/roll are direct
-            hinges, no crank. This is the RP model (ankleRP_c3 etc).
+Two robot-body variants x two ankle modes = 4 loadable combinations (docs/66 registry,
+docs/117 3-variant regen, 2026-09-03 latest armfix/v30_proxyfix set):
+  --variant fulldof   FullDoF_..._v30_proxyfix{,_loop}.xml   full body: legs + waist_yaw +
+                       both arms.
+  --variant legonly   LegOnly_..._v30_proxyfix{,_loop}.xml   legs only, waist-yaw actuator
+                       MASS kept but no waist/arm JOINTS at all (they simply don't exist in
+                       this XML -- the joint groups below skip themselves automatically).
+  --model loop        2-RSU closed-loop ankle (crank A/B driven, ankle_pitch/roll PASSIVE).
+                       This is the AB mode.
+  --model proxyfix    serial ankle: ankle_pitch/roll are direct hinges, no crank. RP mode.
+
+Why MJCF, not the URDF the model-build step also emits: the AB/loop ankle's closed
+kinematic loop (rod end -> ball joint on the foot) cannot be expressed in URDF at all --
+build_robot.py's URDF output leaves it as a plain comment ("loop closure, not expressible
+in URDF ... see the <equality><connect> in the MJCF") and instead lists ankle_pitch/roll
+AND crank_A/B AND the rod universal joints as independent, kinematically over-determined
+tree joints. Driving any of those directly in the URDF would show a pose the real
+mechanism can never reach. The MJCF's `<equality><connect>` is the only representation
+that is physically correct for AB mode, so that is what this viewer loads and settles via
+mj_step() (see the AB handling note below) for both --variant choices.
 
 Closed-loop ankle handling (crank -> ankle_pitch/roll): mj_forward() alone does NOT
 kinematically resolve the `equality/connect` constraints that close the rod ends onto the
@@ -56,8 +68,14 @@ XMLS = REPO / "mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls"
 SIGN_JSON = REPO / "tools/robot_model/motor_sign_convention.json"
 
 MODELS = {
-  "loop": "FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
-  "proxyfix": "FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix.xml",
+  "fulldof": {
+    "loop": "FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+    "proxyfix": "FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix.xml",
+  },
+  "legonly": {
+    "loop": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+    "proxyfix": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix.xml",
+  },
 }
 
 CRANK_KP, CRANK_KD, CRANK_FORCE = 22.3, 1.41, 60.0
@@ -104,8 +122,8 @@ def sign_badge(joint_name: str, sign_conv: dict) -> str:
   return f"sign UNVERIFIED (CAD-only) vs {motor}{note}"
 
 
-def build_model(kind: str):
-  xml = XMLS / MODELS[kind]
+def build_model(variant: str, kind: str):
+  xml = XMLS / MODELS[variant][kind]
   assert xml.exists(), xml
   spec = mujoco.MjSpec.from_file(str(xml))
   spec.option.gravity[:] = [0, 0, 0]  # pure kinematic pose review, no gravity sag
@@ -270,7 +288,10 @@ def run_generic(xml_path: str, host: str, port: int, label: str):
 
 def main():
   ap = argparse.ArgumentParser()
-  ap.add_argument("--model", choices=list(MODELS), default="loop",
+  ap.add_argument("--variant", choices=list(MODELS), default="fulldof",
+                   help="fulldof = legs+waist_yaw+arms; legonly = legs only "
+                        "(waist-yaw actuator mass kept, no waist/arm joints)")
+  ap.add_argument("--model", choices=["loop", "proxyfix"], default="loop",
                    help="loop = AB 2-RSU closed-loop ankle (정본/default); "
                         "proxyfix = RP serial ankle")
   ap.add_argument("--xml", default=None,
@@ -286,7 +307,7 @@ def main():
                 args.label or f"Joint viewer [{os.path.basename(args.xml)}]")
     return
 
-  m, crank_actuators = build_model(args.model)
+  m, crank_actuators = build_model(args.variant, args.model)
   d = mujoco.MjData(m)
   sign_conv = load_sign_convention()
 
@@ -319,7 +340,7 @@ def main():
   mujoco.mj_forward(m, d)
 
   server = viser.ViserServer(host=args.host, port=args.port,
-                              label=f"Pygmalion FullDoF joint viewer [{args.model}]")
+                              label=f"Pygmalion joint viewer [{args.variant}/{args.model}]")
   scene = ViserMujocoScene(server, m, num_envs=1)
   com = ComMarkers(server, m)
 
@@ -362,19 +383,22 @@ def main():
       else:
         h.content = f"**{cur_deg:.1f} deg**"
 
+  variant_label = "FullDoF (legs + waist_yaw + arms)" if args.variant == "fulldof" \
+    else "LegOnly (legs only — no waist/arm joints)"
   server.gui.add_markdown(
-    f"# Pygmalion FullDoF joint viewer — `{args.model}` model\n"
-    f"File: `{MODELS[args.model]}`\n\n"
-    + ("This is the **AB / 2-RSU closed-loop** ankle model — the one the current main "
-       "training run (v2s1_AB) and the latest smoke test (2026-09-02) both use. "
+    f"# Pygmalion joint viewer — `{args.variant}` / `{args.model}` model\n"
+    f"File: `{MODELS[args.variant][args.model]}`\n"
+    f"Robot body: **{variant_label}**\n\n"
+    + ("This is the **AB / 2-RSU closed-loop** ankle mode — the one the current main "
+       "training run (v2s1_AB / legonly_ab_*) uses. "
        "**Crank A/B sliders drive the real RS03 motors**; ankle pitch/roll below them are "
        "PASSIVE and shown read-only, resolved by stepping MuJoCo's constraint solver "
        "(not simple forward kinematics) each time a crank moves — see the module "
-       "docstring for why. Switch to `--model proxyfix` for the RP serial-ankle model "
+       "docstring for why. Switch to `--model proxyfix` for the RP serial-ankle mode "
        "where ankle pitch/roll are direct sliders instead."
        if is_loop else
-       "This is the **RP / serial** ankle model — ankle pitch/roll are ordinary direct "
-       "hinges here, no closed-loop mechanism. Use `--model loop` for the AB model that "
+       "This is the **RP / serial** ankle mode — ankle pitch/roll are ordinary direct "
+       "hinges here, no closed-loop mechanism. Use `--model loop` for the AB mode that "
        "the current main training run actually uses.")
   )
   server.gui.add_markdown("---")
@@ -422,7 +446,8 @@ def main():
   scene.update_from_mjdata(d)
   com.update(d)
 
-  print(f"[mjcf_joint_viewer] model={args.model} ({MODELS[args.model]})")
+  print(f"[mjcf_joint_viewer] variant={args.variant} model={args.model} "
+        f"({MODELS[args.variant][args.model]})")
   print(f"[mjcf_joint_viewer] serving on http://{args.host}:{args.port}  "
         f"(browse http://<this-machine-lan-ip>:{args.port} or use SSH -L {args.port}:localhost:{args.port})")
   while True:
