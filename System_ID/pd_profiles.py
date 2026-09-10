@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import os
 import statistics
@@ -92,7 +93,7 @@ def run_profile(m: Motor, profile, seconds: float, kp: float, kd: float, p0: flo
   why = "끝까지"
   acc, last_raw = 0.0, None
   trail = []
-  t0 = time.monotonic()
+  t0 = time.monotonic()          # ★ 이 값을 돌려준다 — 카메라 프레임과 같은 시계다
   tau = 0.0
   while True:
     t = time.monotonic() - t0
@@ -132,7 +133,7 @@ def run_profile(m: Motor, profile, seconds: float, kp: float, kd: float, p0: flo
       break
   for _ in range(25):
     m.torque(0.0); m.recv(timeout_s=0.002)
-  return rows, why
+  return rows, why, t0
 
 
 def main(argv=None) -> int:
@@ -193,8 +194,8 @@ def main(argv=None) -> int:
       print(f"{'kp':>5} {'오차(도)':>9} {'보고토크':>10} {'kp x 오차[라디안]':>18} "
             f"{'움직임':>9}")
       for kp, dd in ((10, 1.0), (10, 2.0), (20, 1.0), (20, 2.0), (30, 1.0), (30, 1.5)):
-        rows, why = run_profile(m, lambda t: (dd, 0.0), 1.0, kp, 0.2, p0,
-                                a.bound_deg, a.temp_stop, a.tau_max)
+        rows, why, _ = run_profile(m, lambda t: (dd, 0.0), 1.0, kp, 0.2, p0,
+                                   a.bound_deg, a.temp_stop, a.tau_max)
         if len(rows) < 100:
           print(f"{kp:5.0f} {dd:9.2f}  자료 부족 ({why})")
           continue
@@ -278,8 +279,8 @@ def main(argv=None) -> int:
           print(f"    식히는 중 {stc.temp_c:.1f}도 → {a.cool_to:.0f}도 "
                 f"({time.monotonic() - t_wait:.0f}초)", flush=True)
           time.sleep(10.0)
-      rows, why = run_profile(m, prof, secs, a.kp, a.kd, p0, a.bound_deg, a.temp_stop,
-                              a.tau_max)
+      rows, why, t_start = run_profile(m, prof, secs, a.kp, a.kd, p0, a.bound_deg,
+                                       a.temp_stop, a.tau_max)
       hs = "" if a.home_deg == 0.0 else f"_h{a.home_deg:+g}"
       name = (f"pd_{a.mode}_{a.motor_id}_kp{a.kp:g}_kd{a.kd:g}_a{A:g}{hs}"
               f"_r{rep}{suffix}.csv")
@@ -288,6 +289,13 @@ def main(argv=None) -> int:
         w.writerow(["t_s", "target_deg", "target_vel_deg_s", "pos_deg", "vel_deg_s",
                     "tau_cmd_nm", "tau_rep_nm", "temp_c"])
         w.writerows(rows)
+      # 카메라와 시각을 맞추기 위한 쪽지. **같은 컴퓨터의 같은 시계**(time.monotonic)로 찍힌
+      # 값이라, 카메라의 frames.csv 와 그대로 빼면 맞습니다 — 예전처럼 프레임률과 지연을
+      # 수색해서 맞출 필요가 없습니다.
+      with open(os.path.join(a.out_dir, name.replace(".csv", ".meta.json")), "w") as f:
+        json.dump(dict(t0_monotonic=t_start, mode=a.mode, motor_id=a.motor_id,
+                       model=a.model, kp=a.kp, kd=a.kd, amp=A, home_deg=a.home_deg,
+                       tau_max=a.tau_max, seconds=secs, why=why, rows=len(rows)), f, indent=1)
       if rows:
         errs = [abs(r[3] - r[1]) for r in rows]
         print(f"  #{rep}: {len(rows):6d}줄 · {rows[-1][0]:5.1f}초 · 추종 오차 중앙 "

@@ -40,6 +40,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob as globmod
+import json
 import math
 import os
 import shutil
@@ -150,6 +151,69 @@ def fit_sync(ang, t, pos):
   return best
 
 
+def frames_from_realsense(fdir, csv_path, meta_path=None):
+  """`rs_capture.py` 가 남긴 폴더에서 **그림과 그 시각**을 읽는다.
+
+  카메라와 모터가 같은 컴퓨터에 붙어 있으므로 둘 다 같은 시계(`time.monotonic`)로 찍혔다.
+  그래서 카메라 시각에서 모터가 시작한 시각을 빼면 **그것이 곧 모터 자료의 시간축**이다.
+  예전처럼 프레임률과 지연을 수색할 이유가 없다."""
+  meta_path = meta_path or csv_path.replace(".csv", ".meta.json")
+  if not os.path.exists(meta_path):
+    raise SystemExit(f"모터 쪽지 파일이 없습니다: {meta_path}\n"
+                     "  (2026-09-10 이후 pd_profiles.py 로 찍은 자료여야 합니다)")
+  t0 = float(json.load(open(meta_path))["t0_monotonic"])
+  with open(os.path.join(fdir, "frames.csv")) as f:
+    rows = list(csv.DictReader(f))
+  paths, ts = [], []
+  for r in rows:
+    p = os.path.join(fdir, f"color_{int(r['idx']):05d}.jpg")
+    if os.path.exists(p):
+      paths.append(p)
+      ts.append(float(r["t_mono_s"]) - t0)
+  if not paths:
+    raise SystemExit(f"{fdir} 안에 그림이 없습니다")
+  return paths, np.array(ts)
+
+
+def fit_scale(ang, cam_t, t, pos):
+  """시각은 이미 정확하므로 **각도 눈금만** 맞춘다.
+
+  카메라가 비스듬히 보므로 원판이 타원으로 보이고, 그림에서 잰 각도와 실제 각도는 바로
+  같지 않다. 그 관계(기울기와 치우침)만 최소제곱으로 구한다."""
+  m = (cam_t >= t[0]) & (cam_t <= t[-1])
+  ref = np.interp(cam_t[m], t, pos)
+  A = np.vstack([ang[m], np.ones(int(m.sum()))]).T
+  sol, *_ = np.linalg.lstsq(A, ref, rcond=None)
+  r2 = 1 - np.sum((ref - A @ sol) ** 2) / np.sum((ref - ref.mean()) ** 2)
+  return float(sol[0]), float(sol[1]), float(r2)
+
+
+def preview(path, out, cx, cy, r0, r1, box):
+  """새 카메라에서 **축 중심과 고리 반지름을 눈으로 읽기 위한** 한 장.
+
+  카메라를 바꾸면 해상도도 화각도 달라지므로, 예전 값(cx 830 / cy 621)을 그대로 쓰면
+  엉뚱한 곳을 본다. 100 화소마다 눈금을 긋고 지금 값이 어디인지 그려 준다."""
+  im = Image.open(path).convert("RGB")
+  d = ImageDraw.Draw(im, "RGBA")
+  W_, H_ = im.size
+  for x in range(0, W_, 100):
+    d.line((x, 0, x, H_), fill=(0, 160, 255, 90), width=1)
+    d.text((x + 3, 3), str(x), font=font(13), fill=(0, 120, 200))
+  for y in range(0, H_, 100):
+    d.line((0, y, W_, y), fill=(0, 160, 255, 90), width=1)
+    d.text((3, y + 3), str(y), font=font(13), fill=(0, 120, 200))
+  d.ellipse((cx - r0, cy - r0, cx + r0, cy + r0), outline=(230, 60, 40), width=3)
+  d.ellipse((cx - r1, cy - r1, cx + r1, cy + r1), outline=(230, 60, 40), width=3)
+  d.line((cx - 18, cy, cx + 18, cy), fill=(230, 60, 40), width=3)
+  d.line((cx, cy - 18, cx, cy + 18), fill=(230, 60, 40), width=3)
+  if box:
+    d.rectangle(box, outline=(0, 170, 90), width=3)
+  label(im, (12, H_ - 34),
+        f"red = the ring we search (cx {cx:g}, cy {cy:g}, r {r0:g}..{r1:g}) · "
+        f"green = the box we limit it to · grid every 100 px", 15, True)
+  im.save(out)
+
+
 def crop_box(cx, cy, w_img, h_img, aspect, h=235.0):
   """가운데를 잡고 **패널과 같은 가로세로비**로 잘라낸다. 늘어나 보이지 않게."""
   w = h * aspect
@@ -196,7 +260,13 @@ def label(img, xy, text, sz=15, bold=False, fg=(30, 30, 34), bg=(255, 255, 255, 
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("--cam", required=True)
+  ap.add_argument("--cam", default=None,
+                  help="예전 방식: 웹캠 mp4 하나. 프레임률·지연을 **수색해서** 맞춘다")
+  ap.add_argument("--frames-dir", default=None,
+                  help="새 방식: rs_capture.py 가 남긴 폴더(color_*.jpg + frames.csv). "
+                       "프레임마다 시각이 적혀 있고 모터와 **같은 시계**라 맞출 것이 없다")
+  ap.add_argument("--meta", default=None,
+                  help="모터 기록의 쪽지 파일(.meta.json). 없으면 --csv 옆에서 찾는다")
   ap.add_argument("--csv", required=True)
   ap.add_argument("--family", default="RS04", choices=list(BEST))
   ap.add_argument("--cx", type=float, default=830); ap.add_argument("--cy", type=float, default=621)
@@ -216,6 +286,9 @@ def main(argv=None) -> int:
   ap.add_argument("--dist", type=float, default=0.352)
   ap.add_argument("--crop-h", type=float, default=235.0,
                   help="실영상에서 잘라낼 세로 화소 수. 작을수록 모터가 크게 보인다")
+  ap.add_argument("--preview-frame", type=int, default=None,
+                  help="이 번호의 원본 프레임에 **좌표 눈금**을 얹어 한 장 저장하고 끝낸다. "
+                       "새 카메라에서 축 중심(--cx/--cy)과 고리 반지름을 눈으로 읽기 위한 것")
   ap.add_argument("--only-frame", type=float, default=None,
                   help="이 시각의 한 장만 만들어 눈으로 확인한다 (영상 안 만듦)")
   ap.add_argument("--out", default="../docs/assets/motor_video.mp4")
@@ -226,24 +299,49 @@ def main(argv=None) -> int:
   sim = simulate(t, tgt, tgv, a.kp, a.kd, a.dt, a.tau_max, a.delay_ms / 1e3,
                  **BEST[a.family])
 
-  fdir = tempfile.mkdtemp(prefix="vf_")
-  subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", a.cam, "-vsync", "0",
-                  os.path.join(fdir, "%05d.jpg")], check=True)
-  frames = sorted(globmod.glob(os.path.join(fdir, "*.jpg")))
+  fdir = None
+  if a.frames_dir:
+    frames, cam_t = frames_from_realsense(a.frames_dir, a.csv, a.meta)
+    print(f"프레임 {len(frames)}장 · **시각은 기록된 값 그대로** (수색 없음) · "
+          f"실제 초당 {len(frames) / max(1e-9, cam_t[-1] - cam_t[0]):.2f}장")
+  else:
+    if not a.cam:
+      print("--cam 이나 --frames-dir 중 하나는 있어야 합니다", file=sys.stderr)
+      return 1
+    fdir = tempfile.mkdtemp(prefix="vf_")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", a.cam, "-vsync", "0",
+                    os.path.join(fdir, "%05d.jpg")], check=True)
+    frames = sorted(globmod.glob(os.path.join(fdir, "*.jpg")))
+    cam_t = None
+
+  if a.preview_frame is not None:
+    out = os.path.abspath(a.out)
+    preview(frames[min(a.preview_frame, len(frames) - 1)], out, a.cx, a.cy, a.r0, a.r1, box)
+    print(f"눈금 얹은 한 장: {out}  — 여기서 축 중심과 고리 반지름을 읽으세요")
+    if fdir:
+      shutil.rmtree(fdir, ignore_errors=True)
+    return 0
+
   ang = np.array([pointer_angle(p, a.cx, a.cy, a.r0, a.r1, box=box)[0] for p in frames])
   ang = np.degrees(np.unwrap(np.radians(ang)))
-  r2, fps, lag, k, b = fit_sync(ang, t, pos)
-  print(f"프레임 {len(frames)}장 · 실제 프레임률 {fps:.2f} fps · 지연 {lag:.2f}초 · "
-        f"설명력 {r2:.3f}")
+  if cam_t is None:
+    r2, fps, lag, k, b = fit_sync(ang, t, pos)
+    print(f"실제 프레임률 {fps:.2f} fps · 지연 {lag:.2f}초 · 설명력 {r2:.3f}")
+    cam_t = np.arange(len(frames)) / fps - lag
+  else:
+    fps = len(frames) / max(1e-9, cam_t[-1] - cam_t[0])
+    lag = -cam_t[0]
+    k, b, r2 = fit_scale(ang, cam_t, t, pos)
+    print(f"각도 눈금만 맞춤 · 설명력 {r2:.3f}")
   print(f"눈금: 실제각도 = {k:.4f} x 그림각도 + {b:.2f}  "
         f"(→ 실제각도 0 일 때 그림에서 {-b / k:+.1f}도)")
   cam_deg = k * ang + b
-  cam_t = np.arange(len(frames)) / fps - lag
 
   half = W // 2
   lim = float(max(np.abs(pos).max(), np.abs(tgt).max())) * 1.18
   plot_rgb, x_of, (row0, row1) = make_plot(t, tgt, pos, sim, cam_t, cam_deg, (-lim, lim))
-  cb = crop_box(a.cx, a.cy, 1280, 720, half / H_TOP, a.crop_h)
+  w_img, h_img = Image.open(frames[0]).size      # 카메라를 바꾸면 해상도가 달라진다
+  cb = crop_box(a.cx, a.cy, w_img, h_img, half / H_TOP, a.crop_h)
   scene = MotorScene(width=half, height=H_TOP, azimuth=a.azim, elevation=a.elev,
                      distance=a.dist, lookat=(0.0, 0.0, 0.012))
   p = BEST[a.family]
@@ -252,7 +350,7 @@ def main(argv=None) -> int:
               f"viscous {p['damping']} N m s")
 
   def compose(tt):
-    fi = int(round((tt + lag) * fps))
+    fi = int(np.argmin(np.abs(cam_t - tt)))
     c = float(np.interp(tt, t, tgt)); rr = float(np.interp(tt, t, pos))
     ss = float(np.interp(tt, t, sim))
     canvas = Image.new("RGB", (W, H_HEAD + H_TOP + H_PLOT), (255, 255, 255))
@@ -293,14 +391,14 @@ def main(argv=None) -> int:
     out = os.path.abspath(a.out)
     compose(a.only_frame).save(out)
     print(f"한 장만: {out}")
-    shutil.rmtree(fdir, ignore_errors=True)
+    if fdir:
+      shutil.rmtree(fdir, ignore_errors=True)
     return 0
 
   out_dir = tempfile.mkdtemp(prefix="cmp_")
   n_out = 0
   for tt in np.arange(t[0], t[-1], 1.0 / a.out_fps):
-    fi = int(round((tt + lag) * fps))
-    if fi < 0 or fi >= len(frames):
+    if tt < cam_t[0] or tt > cam_t[-1]:
       continue
     compose(tt).save(os.path.join(out_dir, f"{n_out:05d}.png"))
     n_out += 1
@@ -308,7 +406,9 @@ def main(argv=None) -> int:
   subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(a.out_fps),
                   "-i", os.path.join(out_dir, "%05d.png"), "-c:v", "libx264",
                   "-pix_fmt", "yuv420p", "-crf", "20", a.out], check=True)
-  shutil.rmtree(fdir, ignore_errors=True); shutil.rmtree(out_dir, ignore_errors=True)
+  if fdir:
+    shutil.rmtree(fdir, ignore_errors=True)
+  shutil.rmtree(out_dir, ignore_errors=True)
   print(f"합성 {n_out}장 → 영상: {a.out}")
   return 0
 
