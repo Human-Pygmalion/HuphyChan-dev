@@ -175,6 +175,20 @@ def frames_from_realsense(fdir, csv_path, meta_path=None):
   return paths, np.array(ts)
 
 
+def angles_from_csv(path, csv_path, meta_path=None):
+  """파이가 미리 읽어 둔 각도를 그대로 쓴다.
+
+  파이는 **원본 전체**(초당 30~60장)를 보고 각도를 읽지만, 이 컴퓨터로는 영상에 쓸 장만
+  옵니다. 그러니 그래프에 그릴 붉은 선은 파이가 읽은 촘촘한 쪽을 쓰는 편이 낫습니다."""
+  meta_path = meta_path or csv_path.replace(".csv", ".meta.json")
+  t0 = float(json.load(open(meta_path))["t0_monotonic"])
+  with open(path) as f:
+    rows = list(csv.DictReader(f))
+  ang = np.degrees(np.unwrap(np.radians(
+      np.array([float(r["angle_img_deg"]) for r in rows]))))
+  return ang, np.array([float(r["t_mono_s"]) for r in rows]) - t0
+
+
 def fit_scale(ang, cam_t, t, pos):
   """시각은 이미 정확하므로 **각도 눈금만** 맞춘다.
 
@@ -265,6 +279,10 @@ def main(argv=None) -> int:
   ap.add_argument("--frames-dir", default=None,
                   help="새 방식: rs_capture.py 가 남긴 폴더(color_*.jpg + frames.csv). "
                        "프레임마다 시각이 적혀 있고 모터와 **같은 시계**라 맞출 것이 없다")
+  ap.add_argument("--angles", default=None,
+                  help="파이가 미리 읽어 둔 막대 각도(angles.csv). 주면 여기서 다시 안 읽는다. "
+                       "파이는 원본 전체를 보고 읽지만 이 컴퓨터로는 필요한 장만 오므로, "
+                       "**더 촘촘한 각도**를 쓸 수 있다")
   ap.add_argument("--meta", default=None,
                   help="모터 기록의 쪽지 파일(.meta.json). 없으면 --csv 옆에서 찾는다")
   ap.add_argument("--csv", required=True)
@@ -322,8 +340,12 @@ def main(argv=None) -> int:
       shutil.rmtree(fdir, ignore_errors=True)
     return 0
 
-  ang = np.array([pointer_angle(p, a.cx, a.cy, a.r0, a.r1, box=box)[0] for p in frames])
-  ang = np.degrees(np.unwrap(np.radians(ang)))
+  if a.angles:
+    ang, ang_t = angles_from_csv(a.angles, a.csv, a.meta)
+  else:
+    ang = np.array([pointer_angle(p, a.cx, a.cy, a.r0, a.r1, box=box)[0] for p in frames])
+    ang = np.degrees(np.unwrap(np.radians(ang)))
+    ang_t = cam_t
   if cam_t is None:
     r2, fps, lag, k, b = fit_sync(ang, t, pos)
     print(f"실제 프레임률 {fps:.2f} fps · 지연 {lag:.2f}초 · 설명력 {r2:.3f}")
@@ -331,15 +353,17 @@ def main(argv=None) -> int:
   else:
     fps = len(frames) / max(1e-9, cam_t[-1] - cam_t[0])
     lag = -cam_t[0]
-    k, b, r2 = fit_scale(ang, cam_t, t, pos)
+    k, b, r2 = fit_scale(ang, ang_t, t, pos)
     print(f"각도 눈금만 맞춤 · 설명력 {r2:.3f}")
   print(f"눈금: 실제각도 = {k:.4f} x 그림각도 + {b:.2f}  "
         f"(→ 실제각도 0 일 때 그림에서 {-b / k:+.1f}도)")
   cam_deg = k * ang + b
+  if a.angles is None:
+    ang_t = cam_t
 
   half = W // 2
   lim = float(max(np.abs(pos).max(), np.abs(tgt).max())) * 1.18
-  plot_rgb, x_of, (row0, row1) = make_plot(t, tgt, pos, sim, cam_t, cam_deg, (-lim, lim))
+  plot_rgb, x_of, (row0, row1) = make_plot(t, tgt, pos, sim, ang_t, cam_deg, (-lim, lim))
   w_img, h_img = Image.open(frames[0]).size      # 카메라를 바꾸면 해상도가 달라진다
   cb = crop_box(a.cx, a.cy, w_img, h_img, half / H_TOP, a.crop_h)
   scene = MotorScene(width=half, height=H_TOP, azimuth=a.azim, elevation=a.elev,
