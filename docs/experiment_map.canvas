@@ -1269,6 +1269,16 @@
    "height": 400,
    "color": "4",
    "text": "**학습 세션 인수인계 (2026-09-11)**\n[[137_training_handoff_motor_params]]\n\n명령: `PYG_ANKLE_MODE=AB PYG_V2=1 PYG_INIT_BENT=1 run_training.sh <런>`\n걸기 전 점검: `tools/robot_model/check_motor_params.py`\n  → 값 출처가 하나인지, 마찰 빠진 관절이 없는지 확인 (새로 만듦)\n\n★**세기는 건드리지 말 것** (kp 220/150, Kd 6)\n  G1 질량환산 · 벤치 실측 지나침 1.3% · Kd 상향은 docs/53 에서 기각\n★**철회 3건 취소선으로 명시**: Kd x2.18 · 지나침 41.2% · '모두 반영'\n★**함정**: 직렬 방식은 발목 마찰 0 (반드시 AB) · bench XML 불필요\n  · BEYONDMIMIC 35/14/16 은 옛 관성 유도 · 코깅은 넣지 않음\n견줄 대상: legonly_ab_v3_keyfix (변인 = 모터 값 넷뿐)"
+  },
+  {
+   "id": "n_legonly_v4_motorparams",
+   "type": "file",
+   "file": "experiments/2026-09-11_legonly_ab_v4_motorparams.md",
+   "x": 21980,
+   "y": 580,
+   "width": 420,
+   "height": 160,
+   "color": "6"
   }
  ],
  "edges": [
@@ -2402,6 +2412,14 @@
    "fromSide": "bottom",
    "toNode": "n_handoff_2026_09_11",
    "toSide": "top"
+  },
+  {
+   "id": "e_v3keyfix_to_v4motorparams",
+   "fromNode": "n_legonly_v3_keyfix",
+   "fromSide": "right",
+   "toNode": "n_legonly_v4_motorparams",
+   "toSide": "left",
+   "label": "유일 변인: 재측정 모터 값"
   }
  ]
 }
