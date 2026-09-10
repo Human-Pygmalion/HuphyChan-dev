@@ -124,6 +124,63 @@ def metrics(rel, seg):
   return f(ov), f(rise), f(ss)
 
 
+def asymmetry_vs_position(data, motor, kp, kd, amp, out):
+  """**쏠림이 축의 자리에 따라 달라지는가.** 자리별 실험(대칭 ±10도) 자료를 다시 읽어 본다.
+
+  달라진다면 **코깅**(자석과 철심이 만드는 톱니 같은 힘)이고, 자리와 무관하게 일정하다면
+  **한쪽으로 당기는 일정한 힘**(전선 장력, 축이 살짝 기울어 생기는 중력 성분 따위)입니다.
+
+  ★ 주의 — 이 자료는 −A 와 +A 를 오가는 **대칭** 계단이라, 0 에서 한쪽으로만 가는 위 실험과
+  같은 동작이 아닙니다. 그래서 숫자를 곧바로 견주면 안 되고, **자리에 따라 변하는가**만
+  봅니다."""
+  homes = [-60.0, -30.0, 0.0, 30.0, 60.0]
+  xs, ys, ns = [], [], []
+  for h in homes:
+    hs = "" if h == 0.0 else f"_h{h:+g}"
+    U, D = [], []
+    for fp in sorted(globmod.glob(os.path.join(
+        data, f"pd_step_{motor}_kp{kp:g}_kd{kd:g}_a{amp:g}{hs}_r*_p.csv"))):
+      with open(fp) as f:
+        r = list(csv.DictReader(f))
+      if len(r) < 200:
+        continue
+      ts = np.array([float(x["t_s"]) for x in r])
+      tg = np.array([float(x["target_deg"]) for x in r])
+      po = np.array([float(x["pos_deg"]) for x in r])
+      lo, hi = float(tg.min()), float(tg.max())
+      up = tg > 0.5 * (lo + hi)
+      ed = np.nonzero(np.diff(up.astype(int)))[0]
+      for i, k in enumerate(ed[:-1]):
+        tn = ts[ed[i + 1]]
+        going_up = tg[min(k + 2, len(tg) - 1)] > 0.5 * (lo + hi)
+        lvl = hi if going_up else lo
+        m = (ts > tn - 0.5) & (ts < tn)
+        if m.sum() > 5:
+          v = float(np.median(po[m] - lvl)) * (1 if going_up else -1)
+          (U if going_up else D).append(v)
+    if U and D:
+      xs.append(h); ys.append(np.mean(U) - np.mean(D)); ns.append(min(len(U), len(D)))
+  if not xs:
+    return None
+  fig, ax = plt.subplots(figsize=(7.6, 4.6))
+  ax.axhline(0, color="#999", lw=1.0)
+  ax.plot(xs, ys, color="#111111", lw=1.8, marker="o", ms=7, alpha=0.8)
+  for x, y, n in zip(xs, ys, ns):
+    ax.annotate(f"{y:+.2f}", (x, y), textcoords="offset points", xytext=(0, 10),
+                ha="center", fontsize=9)
+  ax.set_xlabel("where on the shaft the step was taken [deg]", fontsize=10)
+  ax.set_ylabel("up minus down, where it stopped [deg]", fontsize=10)
+  ax.set_title("does the lean depend on where the shaft is?\n"
+               "changing with position points at cogging; a flat line points at a steady pull",
+               fontsize=11)
+  ax.grid(alpha=0.28)
+  fig.tight_layout()
+  fig.savefig(out, dpi=125); plt.close(fig)
+  print(f"그림: {out}   (자리별 쏠림 " +
+        " · ".join(f"{x:+.0f}도 {y:+.2f}" for x, y in zip(xs, ys)) + ")")
+  return list(zip(xs, ys))
+
+
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -218,8 +275,10 @@ def main(argv=None) -> int:
   fig.tight_layout(rect=(0, 0, 1, 0.91))
   os.makedirs(os.path.abspath(a.out_dir), exist_ok=True)
   out = os.path.join(a.out_dir, f"pd_updown_{a.family.lower()}.png")
-  fig.savefig(out, dpi=125)
+  fig.savefig(out, dpi=125); plt.close(fig)
   print(f"그림: {out}")
+  asymmetry_vs_position(a.data, a.motor, a.kp, a.kd, a.amp,
+                        os.path.join(a.out_dir, f"pd_updown_position_{a.family.lower()}.png"))
   return 0
 
 
