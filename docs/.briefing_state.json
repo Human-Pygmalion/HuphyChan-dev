@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "A1·A2 끝, A3 은 방법 한계로 보류 — 다음은 HUPHY 안전 필터 검증",
+  "title": "legonly_ab_v4_motorparams 2단계 5시간 44분 경과: 7,924/18,100회, 보상 106.8로 계속 상승, 넘어짐 0",
   "detail": "",
-  "since": "2026-09-11 13:10"
+  "since": "2026-09-11 13:29"
  },
  "items": {
   "shouldermesh": {
@@ -2410,5 +2410,5 @@
   "bench-backlash",
   "bench-remaining"
  ],
- "updated": "2026-09-11 13:10"
+ "updated": "2026-09-11 13:29"
 }
