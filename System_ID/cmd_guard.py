@@ -30,6 +30,13 @@
 5. **손 떼면 멈춤**   `deadman_s` 안에 새 명령이 없으면 자세를 붙잡고 힘을 끊습니다.
                       화면이 닫히거나 인터넷이 끊겨도 그렇게 됩니다.
 6. **뜨거우면 끊음**  `max_temp_c` 를 넘으면 힘을 끊고, 5도 내려가야 다시 받습니다.
+6b. **절대 한계**     `limit_by` 로 준 관절은 **모터 각도 기준의 고정 구간** 밖으로
+                      못 나갑니다. 위의 "좁은 구간"은 힘을 넣은 자리에서 재는 상대값이라,
+                      **한쪽 끝이 하드스톱인 관절에는 그것만으로 부족합니다** — 무릎이
+                      그렇습니다(한쪽이 완전히 편 자세이고 그 너머는 없습니다).
+                      2026-09-12 에 무릎을 상대 구간만으로 열었다가 하드스톱 쪽으로
+                      9.5도까지 밀 수 있는 상태를 만들었습니다. 그 관절은 절대 한계를
+                      주지 않으면 **열지 않습니다**.
 7. **암호(선택)**     `arm_token` 을 주면 다른 꾸러미는 버립니다. **비워 두면 검사하지
                       않습니다** — 화면에 닿을 수 있는 사람은 누구나 움직일 수 있다는
                       뜻이므로, 바깥에 열지 않은 망 안에서만 그렇게 쓸 것.
@@ -128,7 +135,7 @@ class CommandGuard:
   def __init__(self, *, allow, arm_token, port=9872, kp=10.0, kd=1.0,
                kp_cap=20.0, kd_cap=5.0, span_deg=10.0, max_vel_deg_s=20.0,
                deadman_s=0.3, max_temp_c=50.0, dry_run=True, pair_mask=None,
-               kp_by=None, span_by=None):
+               kp_by=None, span_by=None, limit_by=None, needs_limit=()):
     bad = [n for n in allow if n not in ALLOWED]
     if bad:
       raise SystemExit(f"허락되지 않은 관절 {bad}. 가능한 것: {sorted(ALLOWED)}")
@@ -143,6 +150,15 @@ class CommandGuard:
                   for n, v in (kp_by or {}).items() if n in ALLOWED}
     self.span_by = {ALLOWED[n]["motor"]: abs(float(v))
                     for n, v in (span_by or {}).items() if n in ALLOWED}
+    # 모터 각도 기준의 **고정** 구간. 상대 구간과 달리 자리가 옮겨 다니지 않는다.
+    self.limit_by = {ALLOWED[n]["motor"]: (float(a), float(b))
+                     for n, (a, b) in (limit_by or {}).items() if n in ALLOWED}
+    for n in needs_limit:
+      row = ALLOWED.get(n)
+      if row and row["motor"] in self.allow and row["motor"] not in self.limit_by:
+        raise SystemExit(
+          f"{n} 은 한쪽 끝이 하드스톱인 관절입니다. 절대 한계를 주지 않으면 열 수 "
+          f"없습니다 — --limit-map \"{n}=<낮은쪽>:<높은쪽>\" (모터 각도 기준)")
     self.max_vel = abs(float(max_vel_deg_s))
     self.deadman = float(deadman_s)
     self.max_temp = float(max_temp_c)
@@ -326,6 +342,9 @@ class CommandGuard:
     want = self.wanted.get(motor_id, q0)
     span = self.span_by.get(motor_id, self.span)
     lo, hi = q0 - span, q0 + span
+    abs_lim = self.limit_by.get(motor_id)
+    if abs_lim is not None:          # 고정 한계가 있으면 **그것이 우선**
+      lo, hi = max(lo, abs_lim[0]), min(hi, abs_lim[1])
     clipped = min(hi, max(lo, want))
     if clipped != want:
       self.stats["clipped"] += 1

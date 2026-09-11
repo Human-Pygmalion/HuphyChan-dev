@@ -282,6 +282,27 @@ class CamWatch:
       self._stop.wait(self.period)
 
 
+NEEDS_LIMIT = ("L_knee_joint", "R_knee_joint")
+"""한쪽 끝이 하드스톱이라 **상대 구간만으로는 열 수 없는** 관절.
+
+무릎은 완전히 편 자세가 곧 끝이고 그 너머는 없습니다. "지금 자리에서 ±N도" 만
+걸면 그 끝을 넘어 밀 수 있습니다 — 2026-09-12 에 실제로 그렇게 열었고,
+하드스톱 쪽으로 9.5도까지 밀 수 있는 상태였습니다."""
+
+
+def _kv2(text: str) -> dict:
+  """`이름=낮은쪽:높은쪽` 을 사전으로."""
+  out = {}
+  for part in (text or "").split(","):
+    part = part.strip()
+    if not part:
+      continue
+    name, _, rng = part.partition("=")
+    a, _, b = rng.partition(":")
+    out[name.strip()] = (float(a), float(b))
+  return out
+
+
 def _kv(text: str) -> dict:
   """`이름=값,이름=값` 을 사전으로. 비어 있으면 빈 사전."""
   out = {}
@@ -688,6 +709,9 @@ def main(argv=None) -> int:
                   help="관절마다 다른 세기. 예: L_knee_joint=12,R_knee_joint=12")
   ap.add_argument("--span-map", default="",
                   help="관절마다 다른 구간(도). 예: L_knee_joint=15,R_knee_joint=15")
+  ap.add_argument("--limit-map", default="",
+                  help="모터 각도 기준의 고정 한계. 예: L_knee_joint=0:120 "
+                       "(한쪽 끝이 하드스톱인 관절은 이것 없이는 못 엶)")
   ap.add_argument("--live", action="store_true",
                   help="**정말로 힘을 넣음.** 없으면 계산만 하고 힘은 안 넣음(시험)")
   ap.add_argument("--telemetry", default=None,
@@ -719,7 +743,8 @@ def main(argv=None) -> int:
       kp=a.kp, kd=a.kd, span_deg=a.span_deg, max_vel_deg_s=a.max_vel_deg_s,
       deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live,
       pair_mask=pair_mask,
-      kp_by=_kv(a.kp_map), span_by=_kv(a.span_map)).start()
+      kp_by=_kv(a.kp_map), span_by=_kv(a.span_map),
+      limit_by=_kv2(a.limit_map), needs_limit=NEEDS_LIMIT).start()
     st = guard.status()
     print(f"  ** 움직이는 명령 {'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
     print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "
