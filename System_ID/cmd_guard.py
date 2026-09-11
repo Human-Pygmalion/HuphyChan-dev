@@ -93,7 +93,26 @@ ENC_RS03 = dict(pmax=12.57, vmax=20.0, tmax=60.0, kp_max=5000.0, kd_max=100.0)
 ALLOWED = {
   "L_hip_yaw_joint": dict(motor=3, iface="can0", enc=ENC_RS03, ko="왼 엉덩이회전"),
   "R_hip_yaw_joint": dict(motor=9, iface="can1", enc=ENC_RS03, ko="오른 엉덩이회전"),
+  # 발목 크랭크. **둘은 하나의 기구다** — 아래 PAIR 와 마스크를 같이 볼 것.
+  "L_crank_A_joint": dict(motor=5,  iface="can0", enc=ENC_RS03, ko="왼 발목 A", leg="left"),
+  "L_crank_B_joint": dict(motor=6,  iface="can0", enc=ENC_RS03, ko="왼 발목 B", leg="left"),
+  "R_crank_A_joint": dict(motor=11, iface="can1", enc=ENC_RS03, ko="오른 발목 A", leg="right"),
+  "R_crank_B_joint": dict(motor=12, iface="can1", enc=ENC_RS03, ko="오른 발목 B", leg="right"),
 }
+
+PAIR = {5: 6, 6: 5, 11: 12, 12: 11}
+"""발목 크랭크의 짝. 한쪽만 움직여도 **다른 쪽이 갈 수 있는 범위가 바뀐다.**
+
+발목은 모터 두 개가 로드 두 개로 발판 하나를 밀고 당기는 닫힌 기구다. 그래서 두
+각도를 따로 자르면 안 된다 — 각각은 범위 안이어도 **그 조합이 갈 수 없는 자리**일 수
+있고, 실물에서 그것은 기구가 버티는 상태다.
+
+`ankle_pair_mask.json` 은 HUPHY 의 발목 기구학으로 미리 계산한 **갈 수 있는 조합**의
+지도다. 순진한 사각형의 12.1% 만 실제로 갈 수 있다.
+
+★ 전제: 지금 실측 영점이 없어서 **모터 각도 = 크랭크 각도**로 본다(sign 1, offset 0).
+그것이 어긋나면 이 지도도 어긋나므로, 지도만 믿지 않고 **켠 자리에서의 좁은 구간**을
+함께 건다. 실측 영점이 생기면 그때 이 전제를 지운다."""
 
 
 class CommandGuard:
@@ -101,7 +120,7 @@ class CommandGuard:
 
   def __init__(self, *, allow, arm_token, port=9872, kp=10.0, kd=1.0,
                kp_cap=20.0, kd_cap=5.0, span_deg=10.0, max_vel_deg_s=20.0,
-               deadman_s=0.3, max_temp_c=50.0, dry_run=True):
+               deadman_s=0.3, max_temp_c=50.0, dry_run=True, pair_mask=None):
     bad = [n for n in allow if n not in ALLOWED]
     if bad:
       raise SystemExit(f"허락되지 않은 관절 {bad}. 가능한 것: {sorted(ALLOWED)}")
@@ -133,7 +152,9 @@ class CommandGuard:
     self.torque_on = {}       # 모터 -> 힘이 켜져 있다고 우리가 아는가
     self.cut_temp = {}        # 모터 -> 뜨거워서 끊었는가
     self.pending_ctrl = {}    # 모터 -> 다음에 보낼 켜기/끄기 프레임
-    self.stats = dict(rx=0, bad_token=0, unknown=0, clipped=0, stale=0)
+    self.meas = {}            # 모터 -> 가장 최근 측정 각도 (짝을 볼 때 씀)
+    self.mask = pair_mask     # 발목 크랭크 조합 지도
+    self.stats = dict(rx=0, bad_token=0, unknown=0, clipped=0, stale=0, pair_clipped=0)
     self.note = "아직 명령 없음"
     self._stop = threading.Event()
 
@@ -227,6 +248,7 @@ class CommandGuard:
       return None
 
     with self.lock:
+      self.meas[motor_id] = deg_now
       pend = self.pending_ctrl.pop(motor_id, None)
       if pend is not None:
         return ("ctrl", pend)
@@ -268,17 +290,47 @@ class CommandGuard:
       self.cmd[motor_id] = target
       return mit_frame(target, self.kp, self.kd, row["enc"])
 
+  def _pair_ok(self, motor_id, value) -> bool:
+    """이 값과 짝의 지금 값이 **같이 갈 수 있는 조합인가.**"""
+    if self.mask is None or motor_id not in PAIR:
+      return True
+    row = self.allow.get(motor_id)
+    partner = PAIR[motor_id]
+    other = self.cmd.get(partner, self.meas.get(partner, 0.0))
+    a, b = (value, other) if motor_id in (5, 11) else (other, value)
+    g = self.mask
+    lim, step = g["lim_deg"], g["step_deg"]
+    i, j = int(round((a + lim) / step)), int(round((b + lim) / step))
+    rows = g["mask"].get(row.get("leg", "right"), [])
+    if not (0 <= i < len(rows) and 0 <= j < len(rows[0])):
+      return False
+    return rows[i][j] == "1"
+
   def _bounded(self, motor_id, deg_now, dt, preview=False):
-    """받은 목표를 **구간**과 **속도**로 줄인다."""
+    """받은 목표를 **구간**과 **속도**로 줄이고, 발목이면 **짝까지 보고** 더 줄인다."""
     q0 = self.q0.get(motor_id, deg_now)
     want = self.wanted.get(motor_id, q0)
     lo, hi = q0 - self.span, q0 + self.span
     clipped = min(hi, max(lo, want))
-    if clipped != want and not preview:
+    if clipped != want:
       self.stats["clipped"] += 1
     prev = self.cmd.get(motor_id, deg_now)
     step = self.max_vel * max(0.0, min(dt, 0.05))      # 루프가 멈췄다 오면 한 주기 몫만
-    return min(prev + step, max(prev - step, clipped))
+    value = min(prev + step, max(prev - step, clipped))
+
+    if motor_id in PAIR and self.mask is not None and not self._pair_ok(motor_id, value):
+      # 갈 수 없는 조합이면 **직전 자리 쪽으로 물러난다.** 한 번에 뛰지 않고 반씩.
+      lo_v, hi_v = prev, value
+      for _ in range(12):
+        mid = (lo_v + hi_v) / 2
+        if self._pair_ok(motor_id, mid):
+          lo_v = mid
+        else:
+          hi_v = mid
+      value = lo_v
+      self.stats["pair_clipped"] += 1     # 시험 모드에서도 센다. 안 그러면
+                                          # 걸렸는데 안 걸린 것처럼 보인다
+    return value
 
   def release(self, motor_id: int):
     """끝낼 때 부르는 것. 다음 주기에 끄기 프레임이 나간다."""
@@ -297,6 +349,7 @@ class CommandGuard:
         note=self.note, rx_age_s=round(age, 2) if age is not None else None,
         needs_token=bool(self.arm_token),
         stats=dict(self.stats), port=self.port,
+        has_pair_mask=self.mask is not None,
         motors={str(m): dict(ko=r["ko"], sim=r["sim"], iface=r["iface"],
                              torque_on=self.torque_on.get(m, False),
                              age_s=(round(now - self.last_rx[m], 2)

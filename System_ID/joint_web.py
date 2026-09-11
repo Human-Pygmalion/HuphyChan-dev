@@ -690,13 +690,19 @@ def main(argv=None) -> int:
   guard = None
   if a.command:
     from cmd_guard import CommandGuard
+    mp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ankle_pair_mask.json")
+    pair_mask = json.load(open(mp)) if os.path.exists(mp) else None
+    if pair_mask is None and any("crank" in n for n in a.allow):
+      raise SystemExit("발목을 열려면 ankle_pair_mask.json 이 있어야 합니다 "
+                       "(크랭크 두 개를 한 쌍으로 자르는 지도)")
     if not a.arm_token:
       print("  ** 암호 없이 돕니다 — 이 화면에 닿는 사람은 누구나 움직일 수 있습니다. **")
       print("     바깥에 열어 둔 주소(터널 등)가 있으면 먼저 닫을 것.", flush=True)
     guard = CommandGuard(
       allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
       kp=a.kp, kd=a.kd, span_deg=a.span_deg, max_vel_deg_s=a.max_vel_deg_s,
-      deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live).start()
+      deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live,
+      pair_mask=pair_mask).start()
     st = guard.status()
     print(f"  ** 움직이는 명령 {'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
     print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "
