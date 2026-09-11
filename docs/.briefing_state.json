@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2단계 3시간 46분 경과: 6,624/18,100회, 보상 104.9로 계속 상승, 넘어짐 0",
+  "title": "legonly_ab_v4_motorparams 2단계 4시간 42분 경과: 7,249/18,100회, 보상 105.7로 계속 상승, 넘어짐 0",
   "detail": "",
-  "since": "2026-09-11 11:31"
+  "since": "2026-09-11 12:27"
  },
  "items": {
   "shouldermesh": {
@@ -2403,5 +2403,5 @@
   "ankle-envelope",
   "handoff-training"
  ],
- "updated": "2026-09-11 11:31"
+ "updated": "2026-09-11 12:27"
 }
