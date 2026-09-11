@@ -97,14 +97,21 @@ def decode(data: bytes, rng: dict) -> dict:
 
 
 class Poller:
-  """열두 모터를 계속 읽어 최신 값을 들고 있는다. 버스마다 스레드 하나."""
+  """열두 모터를 계속 읽어 최신 값을 들고 있다. 버스마다 스레드 하나.
 
-  def __init__(self, buses, hz=20.0):
+  **버스로 나가는 곳은 여기 한 군데뿐이다.** 다른 프로그램이 따로 보내면 세기 0 인
+  프레임과 세기가 있는 프레임이 번갈아 나가 힘이 반으로 깎이고 떨린다. 그래서
+  움직이는 명령도 여기서 함께 내보내되, **무엇을 보낼지는 `cmd_guard` 가 정한다.**
+  """
+
+  def __init__(self, buses, hz=20.0, guard=None):
     self.buses = buses                      # [{"iface":..,"leg":..,"motors":[..]}]
+    self.guard = guard                      # None 이면 읽기만 한다
     self.period = 1.0 / hz
     self.lock = threading.Lock()
     self.state = {}                         # 모터번호 -> 값
     self.bus_stat = {b["iface"]: dict(ok=0, miss=0, leg=b["leg"]) for b in buses}
+    self._last = {}
     self._stop = threading.Event()
 
   def start(self):
@@ -142,8 +149,22 @@ class Poller:
             sock.recv(16)
         except (BlockingIOError, TimeoutError, socket.timeout):
           pass
+        # 이번 주기에 이 모터로 보낼 것. 가드가 없거나 할 말이 없으면 세기 0.
+        data, last = ZERO_FRAME, self._last.get(mid, 0.0)
+        now_t = time.monotonic()
+        if self.guard is not None:
+          with self.lock:
+            v = self.state.get(mid)
+          got = self.guard.frame_for(
+            mid, v["deg"] if v else 0.0, v["temp"] if v else 0.0,
+            now_t - last if last else self.period)
+          if isinstance(got, tuple):
+            data = got[1]
+          elif got is not None:
+            data = got
+        self._last[mid] = now_t
         try:
-          sock.send(struct.pack(CAN_FRAME, mid, 8, ZERO_FRAME))
+          sock.send(struct.pack(CAN_FRAME, mid, 8, data))
         except OSError:
           time.sleep(0.2)
           continue
@@ -325,7 +346,7 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
 """
 
 
-def make_handler(poller, rows, cam_url, cam_watch, viser_url):
+def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
   body_rows = json.dumps(rows, ensure_ascii=False)
 
   class H(BaseHTTPRequestHandler):
@@ -354,6 +375,7 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url):
         state, stat = poller.snapshot()
         self._send(200, "application/json",
                    json.dumps(dict(motors=state, buses=stat, cam=cam_watch.data,
+                                   cmd=(guard.status() if guard else None),
                                    t=round(time.time(), 2))).encode())
       else:
         self._send(404, "text/plain; charset=utf-8", "없는 주소".encode())
@@ -511,6 +533,22 @@ def main(argv=None) -> int:
   ap.add_argument("--cam-status", default=None,
                   help="카메라 상태 주소. 안 주면 --cam 에서 만들어 씀")
   ap.add_argument("--viser", default="http://10.8.0.16:8094/", help="3D 화면 주소")
+  # ---- 움직이는 명령 (기본은 꺼져 있음) --------------------------------
+  ap.add_argument("--command", action="store_true",
+                  help="화면 슬라이더로 관절을 움직일 수 있게 함. 이것 없이는 읽기만 함")
+  ap.add_argument("--allow", nargs="+", default=["L_hip_yaw_joint", "R_hip_yaw_joint"],
+                  help="움직여도 되는 시뮬 관절 이름. 여기 없는 것은 무시함")
+  ap.add_argument("--arm-token", default="", help="이 암호가 맞는 꾸러미만 받음")
+  ap.add_argument("--cmd-port", type=int, default=9872)
+  ap.add_argument("--kp", type=float, default=10.0)
+  ap.add_argument("--kd", type=float, default=1.0)
+  ap.add_argument("--span-deg", type=float, default=10.0,
+                  help="힘을 넣은 자리에서 좌우로 이만큼까지만 움직임")
+  ap.add_argument("--max-vel-deg-s", type=float, default=20.0)
+  ap.add_argument("--deadman-s", type=float, default=0.3)
+  ap.add_argument("--max-temp-c", type=float, default=50.0)
+  ap.add_argument("--live", action="store_true",
+                  help="**정말로 힘을 넣음.** 없으면 계산만 하고 힘은 안 넣음(시험)")
   ap.add_argument("--telemetry", default=None,
                   help="뷰어로도 같은 값을 보냄. 예: 192.168.20.177:9871")
   a = ap.parse_args(argv)
@@ -524,7 +562,24 @@ def main(argv=None) -> int:
 
   for b in buses:
     print(f"  {b['iface']}  {b['leg']}  모터 {b['motors']}")
-  poller = Poller(buses, hz=a.hz).start()
+  guard = None
+  if a.command:
+    from cmd_guard import CommandGuard
+    if not a.arm_token:
+      raise SystemExit("--command 를 쓰려면 --arm-token 이 있어야 합니다 "
+                       "(암호 없이 열어 두면 누구나 움직일 수 있음)")
+    guard = CommandGuard(
+      allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
+      kp=a.kp, kd=a.kd, span_deg=a.span_deg, max_vel_deg_s=a.max_vel_deg_s,
+      deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live).start()
+    st = guard.status()
+    print(f"  ** 움직이는 명령 {'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
+    print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "
+          f"구간 ±{st['span_deg']:g}도 · 속도 {st['max_vel_deg_s']:g}도/초")
+    print(f"     손 떼면 {st['deadman_s']:g}초 안에 멈춤 · {st['max_temp_c']:g}도에서 끊음 · "
+          f"받는 포트 {st['port']}", flush=True)
+
+  poller = Poller(buses, hz=a.hz, guard=guard).start()
   sender = None
   if a.telemetry:
     sender = TelemetrySender(poller, a.telemetry).start()
@@ -536,7 +591,7 @@ def main(argv=None) -> int:
 
   srv = ThreadingHTTPServer(
     (a.bind, a.port),
-    make_handler(poller, build_rows(conv), a.cam, cam_watch, a.viser))
+    make_handler(poller, build_rows(conv), a.cam, cam_watch, a.viser, guard))
   srv.daemon_threads = True
   print(f"관절 화면 http://{a.bind}:{a.port}/   (Ctrl-C 로 멈춤)", flush=True)
   try:
@@ -544,6 +599,13 @@ def main(argv=None) -> int:
   except KeyboardInterrupt:
     pass
   finally:
+    # ★ 무슨 일로 끝나든 힘부터 끊는다. 끄기 프레임이 실제로 나가도록 잠깐 기다린다.
+    if guard is not None:
+      for mid in guard.allow:
+        guard.release(mid)
+      time.sleep(0.3)
+      guard.stop()
+      print("  힘을 끊었습니다", flush=True)
     if sender is not None:
       sender.stop()
     cam_watch.stop()
