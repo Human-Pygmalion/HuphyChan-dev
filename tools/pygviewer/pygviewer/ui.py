@@ -18,6 +18,7 @@ telemetry all speak.
 
 from __future__ import annotations
 
+import os
 import json
 import math
 import threading
@@ -113,6 +114,25 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
   gui = server.gui
   state["scene"] = ViserMujocoScene(server, core.m, num_envs=1)
   state["scene"].update_from_mjdata(core.d)
+
+  # ------------------------------------------------------------- Bench camera
+  # 2026-09-12, user: "viser Wrapper 뷰어에 카메라 화면뜨게 할수있나? 지연 최대한 적게".
+  #
+  # The browser fetches the MJPEG stream DIRECTLY from the camera server, so the frames
+  # never pass through this process or viser's websocket: no decode, no re-encode, no
+  # extra hop.  That is the lowest-latency option available here - ``gui.add_image`` would
+  # mean pulling every frame into this process and pushing it back out again.
+  #
+  # Off unless ``PYG_CAM_URL`` is set, so a viewer started without it is byte-for-byte the
+  # viewer that existed before this block.
+  cam_url = os.environ.get("PYG_CAM_URL", "").strip()
+  if cam_url:
+    with gui.add_folder("Bench camera"):
+      gui.add_html(
+        f'<img src="{cam_url}" alt="bench" '
+        f'style="width:100%;border-radius:6px;display:block" />'
+        f'<div style="font-size:11px;opacity:.6;margin-top:4px">{cam_url}</div>'
+      )
 
   # ------------------------------------------------------------------ Model
   with gui.add_folder("Model"):
