@@ -380,6 +380,28 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
       else:
         self._send(404, "text/plain; charset=utf-8", "없는 주소".encode())
 
+    def do_POST(self):
+      """화면에서 오는 목표 하나. **누르고 있는 동안만** 들어온다.
+
+      손을 떼면 이 요청이 끊기고, 0.3초 뒤 가드가 힘을 뺀다 (`deadman_s`).
+      화면을 닫든 인터넷이 끊기든 같은 일이 일어난다 - 원격에서 쓰기에 이 편이
+      '무장해 두면 계속 나가는' 방식보다 안전하다.
+      """
+      if self.path.split("?")[0] != "/cmd" or guard is None:
+        self._send(404, "text/plain; charset=utf-8", "없는 주소".encode())
+        return
+      try:
+        n = int(self.headers.get("Content-Length", 0))
+        body = json.loads(self.rfile.read(n) or b"{}")
+      except (ValueError, TypeError):
+        self._send(400, "application/json",
+                   json.dumps(dict(ok=False, why="못 읽음"), ensure_ascii=False).encode())
+        return
+      r = guard.local_target(str(body.get("name", "")), float(body.get("deg", 0.0)),
+                             str(body.get("token", "")))
+      self._send(200 if r.get("ok") else 403, "application/json",
+                 json.dumps(r, ensure_ascii=False).encode())
+
     def _proxy_cam(self, single: bool) -> None:
       import urllib.request
       src = cam_url.rsplit("/", 1)[0] + ("/snapshot.jpg" if single else "/stream.mjpg")
@@ -424,6 +446,19 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
         style="color:#5b9bd5">{viser_url} 에서 열기</a>
         <div class="dim" style="margin-top:4px">실물 관절이 그대로 반영됩니다.
         이 화면과 같은 값을 씁니다.</div></div></div>
+  </div>
+  <div class="card" id="ctlcard" style="display:none;margin-bottom:12px">
+    <h2>관절 움직이기 <span id="ctlmode"></span></h2>
+    <div style="padding:10px 12px">
+      <div style="margin-bottom:8px">
+        <label class="dim">암호</label>
+        <input id="tok" type="password" style="width:170px;background:#12141a;color:#e8e8e8;
+          border:1px solid #3a3f4a;border-radius:6px;padding:4px 7px" placeholder="arm token">
+        <span class="dim">&nbsp;누르고 있는 동안만 움직입니다. 떼면 0.3초 안에 힘이 빠집니다.</span>
+      </div>
+      <div id="ctl"></div>
+      <div id="ctlstat" class="dim" style="margin-top:8px"></div>
+    </div>
   </div>
   <div class="card"><h2>관절 &mdash; 손으로 움직여 보세요</h2>
     <table id="j"><thead><tr>
@@ -507,6 +542,40 @@ async function tick(){{
       + (c.restarts ? ` <span class="pill warn">재시작 ${{c.restarts}}회</span>` : '') + `</td></tr>`;
   }}
 
+  // ---- 움직이기 칸 ----------------------------------------------------
+  const K = j.cmd;
+  if (K){{
+    document.getElementById('ctlcard').style.display = '';
+    document.getElementById('ctlmode').innerHTML = K.dry_run
+      ? '<span class="pill warn">시험 모드 &mdash; 힘이 안 들어감</span>'
+      : '<span class="pill bad">힘이 들어갑니다</span>';
+    if (!window._ctlBuilt){{
+      window._ctlBuilt = true;
+      const box = document.getElementById('ctl');
+      for (const [mid, m] of Object.entries(K.motors)){{
+        box.insertAdjacentHTML('beforeend',
+          `<div style="margin:7px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap">`
+          + `<b style="min-width:104px">${{m.ko}}</b>`
+          + `<span class="dim">${{mid}}번</span>`
+          + `<input type="range" id="s${{mid}}" min="${{-K.span_deg}}" max="${{K.span_deg}}"`
+          + ` step="0.5" value="0" style="width:210px">`
+          + `<span id="v${{mid}}" class="big" style="min-width:62px">+0.0&deg;</span>`
+          + `<button id="b${{mid}}">누르고 있는 동안 움직임</button>`
+          + `<span id="n${{mid}}" class="dim"></span></div>`);
+      }}
+      for (const mid of Object.keys(K.motors)) hookHold(mid);
+    }}
+    const rows = Object.entries(K.motors).map(([mid, m]) =>
+      `${{m.ko}}: ${{m.torque_on ? '<span class="pill bad">힘 켜짐</span>' : '<span class="pill ok">힘 꺼짐</span>'}}`
+      + (m.q0 != null ? ` 기준 ${{m.q0.toFixed(2)}}\u00B0` : '')
+      + (m.cmd != null ? ` \u2192 목표 ${{m.cmd.toFixed(2)}}\u00B0` : '')).join(' &nbsp;|&nbsp; ');
+    document.getElementById('ctlstat').innerHTML = rows
+      + `<br>세기 ${{K.kp}}/${{K.kd}} · 구간 \u00B1${{K.span_deg}}\u00B0 · 속도 ${{K.max_vel_deg_s}}\u00B0/s`
+      + ` · 마지막 명령 ${{K.rx_age_s == null ? '없음' : K.rx_age_s + '초 전'}}`
+      + ` · 잘림 ${{K.stats.clipped}} · 암호틀림 ${{K.stats.bad_token}}`;
+    for (const [mid, m] of Object.entries(K.motors)) if (m.torque_on) hot.push(`${{m.ko}} 힘 켜짐`);
+  }}
+
   const bt = document.getElementById('bus');
   bt.innerHTML = '<tr><th class="l">선</th><th class="l">다리</th><th>응답</th><th>무응답</th></tr>'
     + Object.entries(j.buses).map(([k,v])=>
@@ -516,6 +585,43 @@ async function tick(){{
   const B = document.getElementById('banner');
   if (hot.length){{ B.className='on'; B.textContent='\\u2716 ' + hot.join(' \\u00B7 '); }}
   else B.className='';
+}}
+function hookHold(mid){{
+  const sl = document.getElementById('s'+mid), vv = document.getElementById('v'+mid),
+        bt2 = document.getElementById('b'+mid), nn = document.getElementById('n'+mid);
+  const NAME = {{}};  // 모터번호 -> 시뮬 관절 이름
+  for (const r of ROWS) NAME[r.id] = r.sim;
+  let timer = null, base = 0;
+  const show = () => vv.textContent = (sl.value >= 0 ? '+' : '') + (+sl.value).toFixed(1) + '\u00B0';
+  sl.addEventListener('input', show); show();
+  async function beat(){{
+    const tok = document.getElementById('tok').value;
+    try{{
+      const r = await fetch('/cmd', {{method:'POST', headers:{{'Content-Type':'application/json'}},
+        body: JSON.stringify({{name: NAME[mid], deg: base + (+sl.value), token: tok}})}});
+      const j2 = await r.json();
+      nn.textContent = j2.ok ? '보내는 중' : ('거부: ' + (j2.why||''));
+    }}catch(e){{ nn.textContent = '못 보냄'; }}
+  }}
+  function start(ev){{
+    ev.preventDefault();
+    if (timer) return;
+    // 누르는 순간의 실제 각도를 기준으로 잡는다. 가드도 같은 자리를 기준으로 잡는다.
+    fetch('/joints.json', {{cache:'no-store'}}).then(r=>r.json()).then(j2=>{{
+      base = (j2.motors[mid] || {{deg:0}}).deg;
+      beat(); timer = setInterval(beat, 100);
+      bt2.style.background = '#7f1d1d';
+    }});
+  }}
+  function stop(){{
+    if (!timer) return;
+    clearInterval(timer); timer = null;
+    bt2.style.background = ''; nn.textContent = '뗌 \u2014 힘이 빠집니다';
+  }}
+  bt2.addEventListener('pointerdown', start);
+  for (const e of ['pointerup','pointerleave','pointercancel','blur']) bt2.addEventListener(e, stop);
+  window.addEventListener('blur', stop);
+  document.addEventListener('visibilitychange', () => {{ if (document.hidden) stop(); }});
 }}
 tick(); setInterval(tick, 200);
 </script>"""

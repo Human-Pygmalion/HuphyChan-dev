@@ -177,6 +177,28 @@ class CommandGuard:
         self.last_rx = time.monotonic()
         self.note = f"{took}개 관절 목표 받음"
 
+  def local_target(self, name: str, deg: float, token: str) -> dict:
+    """화면에서 바로 들어오는 목표. UDP 로 오는 것과 **똑같은 검사**를 거친다.
+
+    화면이 인터넷에 열려 있으므로 암호를 반드시 본다. 암호가 없으면 이 길은 닫힌
+    것과 같다.
+    """
+    if not self.arm_token or str(token) != self.arm_token:
+      with self.lock:
+        self.stats["bad_token"] += 1
+      return dict(ok=False, why="암호가 다릅니다")
+    row = ALLOWED.get(name)
+    if row is None or row["motor"] not in self.allow:
+      with self.lock:
+        self.stats["unknown"] += 1
+      return dict(ok=False, why=f"허락되지 않은 관절입니다: {name}")
+    with self.lock:
+      self.stats["rx"] += 1
+      self.wanted[row["motor"]] = float(deg)
+      self.last_rx = time.monotonic()
+      self.note = f"{row['ko']} 목표 {deg:+.2f}도"
+    return dict(ok=True, motor=row["motor"])
+
   # ---- 읽는 쪽이 매 주기 물어보는 것 -------------------------------------
   def frame_for(self, motor_id: int, deg_now: float, temp_c: float, dt: float):
     """이 모터로 이번 주기에 보낼 8바이트. `None` 이면 세기 0 프레임을 보내라는 뜻.
