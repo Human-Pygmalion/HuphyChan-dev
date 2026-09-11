@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2단계 7시간 46분 경과: 9,299/18,100회, 보상 107.1, 넘어짐 0",
+  "title": "legonly_ab_v4_motorparams 2단계 8시간 47분 경과: 9,974/18,100회, 보상 107.8, 넘어짐 0. 무작위화 강도가 절반을 넘어섬",
   "detail": "",
-  "since": "2026-09-11 15:31"
+  "since": "2026-09-11 16:32"
  },
  "items": {
   "shouldermesh": {
@@ -173,24 +173,6 @@
    "section": "correct",
    "changed": "2026-08-28 13:30"
   },
-  "sim2sim_qual": {
-   "id": "sim2sim_qual",
-   "created": "2026-08-28 15:33",
-   "title": "MuJoCo·IsaacSim 두 엔진 걸음 비교 — 그림과 영상",
-   "finding": "완료: 비교 그림 4장 + 두 엔진을 나란히 붙인 15초 실시간 영상(왼쪽 MuJoCo·오른쪽 IsaacSim, 자막이 다섯 박자를 지나가고 각 패널에 그 순간 발에 걸리는 힘을 표시). 같은 로봇·같은 '앞으로 1.6 m/s' 명령을 두 물리엔진에서 걷게 한 결과, 걸음의 리듬(박자·접지시간·보폭·충격량)은 10% 안에서 같다. 착지 순간의 최대 힘과 힘이 차오르는 속도만 약 2배 차이인데, 로봇이 다르게 걸어서가 아니라 엔진의 접촉 계산 정밀도 설정 탓이며, 자동 변환 때 가장 나쁜 설정(32/1)이 소리 없이 들어가 있었다. 4/8로 바꾸면 최대 힘 차이가 2배에서 1.1배, 상승률이 2.9배에서 1.4배로 줄어든다. 영상은 진짜 로봇을 렌더한 것(데이터 애니메이션 폴백 아님) — 단 두 패널 모두 MuJoCo 렌더러로 그렸고 오른쪽은 IsaacSim이 실제로 만든 관절 궤적을 재생한 것이다.",
-   "number": "박자·접지시간·충격량 10% 이내 / 최대힘 2.0배→1.1배, 상승률 2.9배→1.4배(설정 32/1→4/8) / 두 롤아웃 낙상 0, 평균 vx 1.73(MuJoCo)·1.70(Isaac) / 영상 15.0초 실시간, 25fps 검증",
-   "now_": "네 장의 비교 그림을 완성했고, 두 엔진을 나란히 붙인 걸음 영상을 만드는 중",
-   "media": [
-    "docs/img/sim2sim_video_poster.png",
-    "docs/img/sim2sim_grf_waveform.png",
-    "docs/img/sim2sim_solver_iters.png",
-    "docs/img/sim2sim_agreement.png",
-    "docs/img/sim2sim_tracking.png"
-   ],
-   "section": "done",
-   "changed": "2026-08-28 15:55",
-   "collapsed": true
-  },
   "upperdof": {
    "id": "upperdof",
    "created": "2026-08-28 15:36",
@@ -198,31 +180,6 @@
    "why": "지금까지는 팔·허리를 고정하고 다리만 학습했습니다. 상체를 풀어서 학습시키면 걸음걸이와 하중이 어떻게 달라지는지 비교하려는 것입니다.",
    "section": "next",
    "changed": "2026-08-28 15:36"
-  },
-  "ankleaudit": {
-   "id": "ankleaudit",
-   "created": "2026-08-28 15:45",
-   "title": "발목 미사용 의혹 — 버그 아님 확인",
-   "why": "링크식 발목에서 토크가 0으로 나와, 발목을 아예 안 쓰는 버그가 아닌지 확인이 필요했습니다.",
-   "finding": "버그 아닙니다. 토크 0은 '0이어야 하는 계산 항목' 딱 하나였고, 발목은 실제로 60~71도씩 움직이며 밀어차는 일을 합니다. 링크(크랭크) 모터가 힘을 내고, 그 힘이 발목으로 100% 전달되며(상관 0.999), 직렬식 발목과 ±10%로 같습니다. 다음 상체-자유 학습을 이 위에 얹어도 됩니다.",
-   "number": "발목 각도 이동 61~71도(직렬식 66~72도와 동급), 발목 실토크 20 N·m, 크랭크→발목 전달 상관 0.9999",
-   "section": "done",
-   "changed": "2026-08-28 15:45",
-   "collapsed": true
-  },
-  "sim2simqual": {
-   "id": "sim2simqual",
-   "created": "2026-08-28 16:00",
-   "title": "두 시뮬레이터 정성 비교 — 영상+플롯 완성",
-   "why": "설계에 쓸 힘 데이터가 시뮬레이터에 따라 어디까지 같고 어디서 갈리는지, 눈으로 볼 수 있게 정리했습니다.",
-   "finding": "같은 정책·같은 명령을 두 엔진에 돌린 실시간 나란히 영상(5단계 설명 캡션)과 플롯 4종을 만들었습니다. 걸음걸이는 두 엔진이 거의 같고(케이던스 9% 이내), 착지 순간 힘만 2배 차이 — 그것도 버그가 아니라 계산 정밀도 설정 하나 때문임을 파형으로 보였습니다.",
-   "number": "영상 실시간 15초, 플롯 4종(파형·솔버·일치도·추종). 케이던스 일치 91%, 피크 차이는 솔버 32/1→4/8로 해소",
-   "media": [
-    "/home/syaro/MikuchanRemote/Human-Pygmalion/docs/img/sim2sim_grf_waveform.png"
-   ],
-   "section": "done",
-   "changed": "2026-08-28 16:00",
-   "collapsed": true
   },
   "romtable": {
    "id": "romtable",
@@ -2223,6 +2180,15 @@
    "media": [
     "docs/img/huphy_safety_gate_coverage.png"
    ]
+  },
+  "pi_usb_dead": {
+   "id": "pi_usb_dead",
+   "created": "2026-09-11 16:07",
+   "title": "로봇 오른다리를 붙인 라즈베리파이의 USB가 통째로 죽음",
+   "why": "카메라와 CAN 어댑터가 둘 다 그 USB에 붙어 있어, 실물 확인도 영상 스트리밍도 시작할 수 없습니다",
+   "section": "blocked",
+   "changed": "2026-09-11 16:07",
+   "needs": "사람이 보드의 불빛을 눈으로 확인해 주어야 합니다. 부트로더 갱신을 걸고 재부팅한 뒤 12분째 돌아오지 않아, 갱신이 진행 중인지·실패했는지·부팅 자체를 못 하는지를 원격으로는 가릴 수 없습니다. 초록 불이 빠르게 깜빡이면 쓰는 중이므로 전원을 빼면 안 됩니다."
   }
  },
  "order": [
@@ -2243,10 +2209,7 @@
   "lowspeed2",
   "landingfix",
   "mcprestart",
-  "sim2sim_qual",
   "upperdof",
-  "ankleaudit",
-  "sim2simqual",
   "romtable",
   "pretrain-audit",
   "upper-smoke",
@@ -2411,7 +2374,8 @@
   "bench-stiction",
   "bench-backlash",
   "bench-remaining",
-  "huphy_safety_audit"
+  "huphy_safety_audit",
+  "pi_usb_dead"
  ],
- "updated": "2026-09-11 15:31"
+ "updated": "2026-09-11 16:32"
 }
