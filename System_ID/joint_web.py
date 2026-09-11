@@ -341,6 +341,10 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url):
       p = self.path.split("?")[0]
       if p in ("/", "/index.html"):
         self._send(200, "text/html; charset=utf-8", self._page().encode("utf-8"))
+      elif p in ("/cam.mjpg", "/cam.jpg"):
+        # 카메라를 **이 서버가 대신 받아 넘긴다.** 화면 안에 내부 주소를 박아 두면
+        # 바깥(터널)에서 열었을 때 그림만 안 나온다 - 2026-09-11 실제로 그랬다.
+        self._proxy_cam(single=(p == "/cam.jpg"))
       elif p == "/joints.json":
         state, stat = poller.snapshot()
         self._send(200, "application/json",
@@ -349,12 +353,42 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url):
       else:
         self._send(404, "text/plain; charset=utf-8", "없는 주소".encode())
 
+    def _proxy_cam(self, single: bool) -> None:
+      import urllib.request
+      src = cam_url.rsplit("/", 1)[0] + ("/snapshot.jpg" if single else "/stream.mjpg")
+      try:
+        up = urllib.request.urlopen(src, timeout=5.0)
+      except Exception as exc:                                  # noqa: BLE001
+        self._send(502, "text/plain; charset=utf-8",
+                   f"카메라 서버에 못 닿음: {type(exc).__name__}".encode())
+        return
+      if single:
+        self._send(200, "image/jpeg", up.read())
+        return
+      self.send_response(200)
+      self.send_header("Content-Type", up.headers.get(
+        "Content-Type", "multipart/x-mixed-replace; boundary=huphyframe"))
+      self.send_header("Cache-Control", "no-store")
+      self.send_header("Connection", "close")
+      self.end_headers()
+      try:
+        while True:
+          chunk = up.read(32768)
+          if not chunk:
+            break
+          self.wfile.write(chunk)
+      except (BrokenPipeError, ConnectionResetError, OSError):
+        pass                                  # 보던 사람이 창을 닫음. 정상임
+      finally:
+        up.close()
+      self.close_connection = True
+
     def _page(self):
       return PAGE_HEAD + f"""
 <div class="wrap">
   <div>
     <div class="card"><h2>벤치 화면 <span id="camlive"></span></h2>
-      <img src="{cam_url}" alt="벤치">
+      <img src="/cam.mjpg" alt="벤치">
       <table id="cam"></table></div>
     <div class="card" style="margin-top:12px"><h2>통신 상태</h2>
       <table id="bus"></table></div>
