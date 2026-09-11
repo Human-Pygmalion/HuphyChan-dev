@@ -397,6 +397,13 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
         padding:9px 14px;cursor:pointer;font:inherit;min-height:44px;touch-action:manipulation}
  button:hover{background:#333844}
  button.on{background:#7f1d1d;border-color:#a33;color:#fff;font-weight:700}
+ button:disabled{opacity:.38;cursor:not-allowed}
+ button:disabled:hover{background:#2a2e37}
+ button#lock{background:#14532d;border-color:#2f7d4f;color:#d7f5e1;font-weight:700}
+ button#lock.open{background:#7a5c10;border-color:#c9a227;color:#fff}
+ #ctlbody.locked input[type=range]{opacity:.38;pointer-events:none}
+ #lockbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+          border:1px solid #3a3f4a;border-radius:8px;padding:9px 11px;margin-bottom:10px}
  input[type=range]{height:38px;accent-color:var(--acc);touch-action:manipulation}
  @media(max-width:700px){
    header{gap:8px} h1{font-size:14px}
@@ -536,16 +543,22 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
         <input id="tok" type="password" style="width:170px;background:#12141a;color:#e8e8e8;
           border:1px solid #3a3f4a;border-radius:6px;padding:8px 9px" placeholder="arm token">
       </div>
+      <div id="lockbar">
+        <button id="lock" aria-pressed="true">\U0001F512 \uC7A0\uAE40</button>
+        <span class="dim" id="locknote"></span>
+      </div>
       <div class="dim" style="margin-bottom:8px">
         단추를 켜면 움직이고, 끄면 멈춥니다. <b>화면을 닫거나 다른 앱으로 가면
         0.3초 안에 힘이 빠집니다.</b>
       </div>
+      <div id="ctlbody" class="locked">
       <div style="margin-bottom:10px">
         <button id="allzero" style="font-weight:700">전부 0\u00B0 로</button>
         <button id="allstop">전부 멈춤</button>
         <span class="dim" id="allnote" style="margin-left:8px"></span>
       </div>
       <div id="ctl"></div>
+      </div>
       <div id="ctlstat" class="dim" style="margin-top:8px"></div>
     </div>
   </div>
@@ -557,6 +570,39 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
 </div>
 <script>
 const ROWS = {body_rows};
+
+// ------------------------------------------------------------------ 잠금
+// 화면을 열면 **언제나 잠긴 채로** 시작한다. 새로고침이 잠금을 푸는 일이 있으면
+// 안 되므로 저장하지 않는다 -- 주머니 속에서 눌리거나 남이 열었을 때,
+// "지난번에 풀어 뒀다" 가 이유가 되면 안 된다.
+//
+// ★ '전부 멈춤' 은 **절대 잠그지 않는다.** 멈추는 길이 잠겨 있으면 그건 잠금이
+//   아니라 덫이다. 잠그는 행위 자체도 돌고 있던 관절을 전부 멈춘다.
+let LOCKED = true;
+function setLocked(on, why){{
+  LOCKED = !!on;
+  const b = document.getElementById('lock'), body = document.getElementById('ctlbody');
+  if (!b || !body) return;
+  b.textContent = LOCKED ? '\U0001F512 \uC7A0\uAE40' : '\U0001F513 \uD480\uB9BC';
+  b.classList.toggle('open', !LOCKED);
+  b.setAttribute('aria-pressed', LOCKED ? 'true' : 'false');
+  body.classList.toggle('locked', LOCKED);
+  document.getElementById('locknote').textContent = LOCKED
+    ? '\uC7A0\uACA8 \uC788\uC2B5\uB2C8\uB2E4 \u2014 \uD480\uC5B4\uC57C '
+      + '\uAD00\uC808\uC744 \uC6C0\uC9C1\uC77C \uC218 \uC788\uC2B5\uB2C8\uB2E4'
+      + (why ? ' (' + why + ')' : '')
+    : '\uD480\uB824 \uC788\uC2B5\uB2C8\uB2E4 \u2014 \uB2E8\uCD94\uAC00 '
+      + '\uBC14\uB85C \uB4E3\uC2B5\uB2C8\uB2E4';
+  for (const el of document.querySelectorAll('#ctlbody button')) {{
+    if (el.id === 'allstop') continue;          // 멈추는 길은 늘 열려 있다
+    el.disabled = LOCKED;
+  }}
+  for (const el of document.querySelectorAll('#ctlbody input[type=range]'))
+    el.disabled = LOCKED;
+  if (LOCKED && window.__HOOKS)
+    for (const h of Object.values(window.__HOOKS))
+      h.stop('\uC7A0\uAE08');                 // 잠그면 돌던 것도 멈춘다
+}}
 let base = JSON.parse(localStorage.getItem('base') || '{{}}');
 function zeroAll(){{ fetch('/joints.json',{{cache:'no-store'}}).then(r=>r.json()).then(j=>{{
     base = {{}}; for (const k in j.motors) base[k] = j.motors[k].deg;
@@ -675,6 +721,12 @@ async function tick(){{
         for (const h of Object.values(window.__HOOKS)) h.stop('\uC804\uBD80 \uBA48\uCDA4');
         document.getElementById('allnote').textContent = '';
       }});
+      const lb = document.getElementById('lock');
+      if (!lb.dataset.hooked) {{
+        lb.dataset.hooked = '1';
+        lb.addEventListener('click', () => setLocked(!LOCKED));
+      }}
+      setLocked(LOCKED);        // 새로 만든 단추·슬라이더에도 지금 상태를 입힌다
     }}
     const rows = Object.entries(K.motors).map(([mid, m]) =>
       `${{m.ko}}: ${{m.torque_on ? '<span class="pill bad">힘 켜짐</span>' : '<span class="pill ok">힘 꺼짐</span>'}}`
@@ -742,6 +794,10 @@ function hookToggle(mid){{
   function start(){{
     // 켜는 순간의 자리를 기준으로 삼지 않는다 -- 로봇 쪽 가드가 **먼저 영자세로**
     // 데려가고, 도착한 뒤에야 슬라이더 값을 쓴다. 그래서 여기서 읽을 것이 없다.
+    //
+    // 잠금은 여기서도 본다. 단추를 못 누르게 하는 것만으로는 부족하다 -- 이 함수는
+    // '전부 0도로' 처럼 다른 코드에서도 불리므로, 길목 자체를 막아야 한다.
+    if (LOCKED) {{ nn.textContent = '\uC7A0\uACA8 \uC788\uC2B5\uB2C8\uB2E4'; return; }}
     if (timer) return;
     until = Date.now() + AUTO_OFF_S*1000;
     started = true;
