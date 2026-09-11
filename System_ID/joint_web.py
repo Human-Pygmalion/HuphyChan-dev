@@ -22,7 +22,18 @@
 뷰어에는 명령을 보내는 길이 있습니다. 지금은 **실수로도 모터가 움직이면 안 되는**
 단계라, 명령을 만들 방법 자체가 없는 프로그램을 따로 둡니다.
 
+뷰어로도 같이 보낸다
+--------------------
+`--telemetry <주소>:<포트>` 를 주면 같은 값을 HUPHY 형식 UDP 로 내보냅니다. 뷰어의
+3D 화면이 그것을 받아 실물 자세를 그대로 따라 그립니다.
+
+**읽는 곳은 한 군데뿐입니다.** 두 프로그램이 같은 통신선을 따로 읽으면 서로의 응답을
+가로채 엉뚱한 값을 집습니다. 그래서 웹 화면과 뷰어 송신이 **같은 읽기 결과**를 씁니다.
+
+보내기만 하고 받지 않습니다 — 뷰어가 내리는 명령을 받는 통로가 이 프로그램에 없습니다.
+
     joint_web.py --port 8098
+    joint_web.py --port 8098 --telemetry 192.168.20.177:9871
     http://<파이 주소>:8098/
 """
 
@@ -159,6 +170,97 @@ class Poller:
     sock.close()
 
 
+class TelemetrySender:
+  """읽은 값을 HUPHY 형식 UDP 로 내보낸다. **보내기만 한다.**
+
+      {"t": 초, "loop_dt": 밀리초,
+       "left_leg/knee/pos": 도, ".../tgt": 도, ".../err": 도,
+       ".../vel": 도/초, ".../tau": 뉴턴미터, ".../temp": 도, ...}
+
+  힘을 넣지 않으므로 `tgt` 는 언제나 `pos` 와 같고 `err` 는 0 입니다. 뷰어에 보이는
+  움직임은 **전부 사람이 손으로 만든 것**입니다.
+  """
+
+  def __init__(self, poller, target: str, hz: float = 50.0):
+    host, _, port = target.partition(":")
+    self.addr = (host, int(port or 9871))
+    self.poller, self.period = poller, 1.0 / hz
+    self.sent = 0
+    self._stop = threading.Event()
+    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+  def start(self):
+    threading.Thread(target=self._run, daemon=True).start()
+    return self
+
+  def stop(self):
+    self._stop.set()
+
+  def _run(self):
+    t0 = last = time.monotonic()
+    while not self._stop.is_set():
+      now = time.monotonic()
+      state, _ = self.poller.snapshot()
+      pkt = {"t": round(now - t0, 4), "loop_dt": round((now - last) * 1000.0, 3)}
+      last = now
+      for mid, (leg, motor, _m, _ko, _sim) in LAYOUT.items():
+        v = state.get(mid)
+        if v is None:
+          continue
+        k = f"{leg}_leg/{motor}"
+        pkt[f"{k}/pos"] = v["deg"]
+        pkt[f"{k}/tgt"] = v["deg"]          # 힘을 안 넣으므로 목표 = 지금 자리
+        pkt[f"{k}/err"] = 0.0
+        pkt[f"{k}/vel"] = v["vel"]
+        pkt[f"{k}/tau"] = v["nm"]
+        pkt[f"{k}/temp"] = v["temp"]
+        pkt[f"{k}/age"] = round(v["age_s"] * 1000.0, 1)
+        pkt[f"{k}/ack"] = 1.0 if v["age_s"] < 0.5 else 0.0
+        pkt[f"{k}/miss"] = 0.0
+      try:
+        self.sock.sendto(json.dumps(pkt).encode(), self.addr)
+        self.sent += 1
+      except OSError:
+        pass
+      time.sleep(max(0.0, self.period - (time.monotonic() - now)))
+
+
+class CamWatch:
+  """카메라 서버에 **우리가 대신 물어봐 준다.**
+
+  왜 화면이 직접 안 묻는가: 관절 화면(8098)과 카메라(8099)는 포트가 달라 브라우저가
+  서로 묻는 것을 막습니다. 서버끼리 물으면 그 제약이 없습니다.
+
+  왜 필요한가: 벤치가 가만히 있으면 **멎은 화면과 살아 있는 화면이 똑같이 보입니다.**
+  숫자가 올라가는 것을 보여 주는 것이 유일하게 확실한 증거입니다.
+  """
+
+  def __init__(self, url: str, period: float = 1.0):
+    self.url, self.period = url, period
+    self.data = {"reachable": False}
+    self._stop = threading.Event()
+
+  def start(self):
+    if self.url:
+      threading.Thread(target=self._run, daemon=True).start()
+    return self
+
+  def stop(self):
+    self._stop.set()
+
+  def _run(self):
+    import urllib.request
+    while not self._stop.is_set():
+      try:
+        with urllib.request.urlopen(self.url, timeout=2.0) as r:
+          d = json.loads(r.read())
+        d["reachable"] = True
+        self.data = d
+      except Exception as exc:                                  # noqa: BLE001
+        self.data = {"reachable": False, "why": f"{type(exc).__name__}"}
+      self._stop.wait(self.period)
+
+
 def build_rows(conv):
   rows = []
   for mid, (leg, motor, model, ko, sim) in sorted(LAYOUT.items()):
@@ -199,6 +301,11 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
  button{background:#2a2e37;color:var(--tx);border:1px solid #3a3f4a;border-radius:6px;
         padding:5px 10px;cursor:pointer;font:inherit}
  button:hover{background:#333844}
+ .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#444;
+      margin-left:6px;vertical-align:middle}
+ .dot.beat{background:#7fd6a0;box-shadow:0 0 0 0 rgba(127,214,160,.7);animation:b .45s ease-out}
+ .dot.dead{background:#ff6b5b}
+ @keyframes b{from{box-shadow:0 0 0 0 rgba(127,214,160,.8)}to{box-shadow:0 0 0 9px rgba(127,214,160,0)}}
  #banner{display:none;padding:9px 14px;background:var(--bad);font-weight:600}
  #banner.on{display:block}
 </style>
@@ -213,7 +320,7 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
 """
 
 
-def make_handler(poller, rows, cam_url):
+def make_handler(poller, rows, cam_url, cam_watch, viser_url):
   body_rows = json.dumps(rows, ensure_ascii=False)
 
   class H(BaseHTTPRequestHandler):
@@ -237,7 +344,7 @@ def make_handler(poller, rows, cam_url):
       elif p == "/joints.json":
         state, stat = poller.snapshot()
         self._send(200, "application/json",
-                   json.dumps(dict(motors=state, buses=stat,
+                   json.dumps(dict(motors=state, buses=stat, cam=cam_watch.data,
                                    t=round(time.time(), 2))).encode())
       else:
         self._send(404, "text/plain; charset=utf-8", "없는 주소".encode())
@@ -246,9 +353,16 @@ def make_handler(poller, rows, cam_url):
       return PAGE_HEAD + f"""
 <div class="wrap">
   <div>
-    <div class="card"><h2>벤치 화면</h2><img src="{cam_url}" alt="벤치"></div>
+    <div class="card"><h2>벤치 화면 <span id="camlive"></span></h2>
+      <img src="{cam_url}" alt="벤치">
+      <table id="cam"></table></div>
     <div class="card" style="margin-top:12px"><h2>통신 상태</h2>
       <table id="bus"></table></div>
+    <div class="card" style="margin-top:12px"><h2>3D 화면</h2>
+      <div style="padding:8px 12px"><a href="{viser_url}" target="_blank"
+        style="color:#5b9bd5">{viser_url} 에서 열기</a>
+        <div class="dim" style="margin-top:4px">실물 관절이 그대로 반영됩니다.
+        이 화면과 같은 값을 씁니다.</div></div></div>
   </div>
   <div class="card"><h2>관절 &mdash; 손으로 움직여 보세요</h2>
     <table id="j"><thead><tr>
@@ -302,6 +416,36 @@ async function tick(){{
       + ` <span class="dim">${{r.id}}번 · ${{r.sim}}</span></td>`
       + `<td>${{cur}}</td><td>${{dlt}}</td><td class="l">${{rng}}</td><td class="l">${{st}}</td></tr>`);
   }}
+  // ---- 카메라가 정말 새 장면을 받고 있는지 ----------------------------
+  const c = j.cam || {{}}, CD = document.getElementById('camlive'),
+        CT = document.getElementById('cam');
+  if (!c.reachable){{
+    CD.innerHTML = '<span class="dot dead"></span>';
+    CT.innerHTML = '<tr><td class="l"><span class="pill bad">카메라 서버에 못 물어봄</span>'
+      + ` <span class="dim">${{c.why||''}}</span></td></tr>`;
+    hot.push('\uCE74\uBA54\uB77C \uC11C\uBC84 \uC751\uB2F5 \uC5C6\uC74C');
+  }} else {{
+    const grew = (window._camFrames != null) && (c.frames > window._camFrames);
+    window._camFrames = c.frames;
+    if (grew){{                       // 새 장면이 올 때마다 점을 한 번 뛰게 한다
+      CD.innerHTML = '<span class="dot"></span>';
+      const d = CD.firstChild; void d.offsetWidth; d.className = 'dot beat';
+    }} else if (!CD.innerHTML) CD.innerHTML = '<span class="dot"></span>';
+    if (c.stalled){{
+      CD.innerHTML = '<span class="dot dead"></span>';
+      hot.push(`\uD654\uBA74\uC774 \uBA48\uCCA0\uC74C (${{c.age_s}}\uCD08 \uC804)`);
+    }}
+    CT.innerHTML =
+      `<tr><th class="l">받은 장수</th><td class="l"><span class="big">${{c.frames}}</span>`
+      + ` <span class="dim">\uACC4\uC18D \uC62C\uB77C\uAC00\uBA74 \uC0B4\uC544\uC788\uB294 \uAC83</span></td></tr>`
+      + `<tr><th class="l">초당 장수</th><td class="l">${{c.fps}}</td></tr>`
+      + `<tr><th class="l">마지막 장면</th><td class="l">`
+      + (c.stalled ? `<span class="pill bad">${{c.age_s}}초 전</span>`
+                   : `<span class="pill ok">${{c.age_s}}초 전</span>`) + `</td></tr>`
+      + `<tr><th class="l">놓친 장수</th><td class="l">${{c.dropped}}`
+      + (c.restarts ? ` <span class="pill warn">재시작 ${{c.restarts}}회</span>` : '') + `</td></tr>`;
+  }}
+
   const bt = document.getElementById('bus');
   bt.innerHTML = '<tr><th class="l">선</th><th class="l">다리</th><th>응답</th><th>무응답</th></tr>'
     + Object.entries(j.buses).map(([k,v])=>
@@ -325,6 +469,11 @@ def main(argv=None) -> int:
   ap.add_argument("--bind", default="0.0.0.0")
   ap.add_argument("--hz", type=float, default=20.0)
   ap.add_argument("--cam", default="http://10.8.0.17:8099/stream.mjpg")
+  ap.add_argument("--cam-status", default=None,
+                  help="카메라 상태 주소. 안 주면 --cam 에서 만들어 씀")
+  ap.add_argument("--viser", default="http://10.8.0.16:8094/", help="3D 화면 주소")
+  ap.add_argument("--telemetry", default=None,
+                  help="뷰어로도 같은 값을 보냄. 예: 192.168.20.177:9871")
   a = ap.parse_args(argv)
 
   if not os.path.exists(MAP_PATH):
@@ -337,8 +486,18 @@ def main(argv=None) -> int:
   for b in buses:
     print(f"  {b['iface']}  {b['leg']}  모터 {b['motors']}")
   poller = Poller(buses, hz=a.hz).start()
+  sender = None
+  if a.telemetry:
+    sender = TelemetrySender(poller, a.telemetry).start()
+    print(f"  뷰어로도 보냅니다 -> {a.telemetry} (보내기만 함)", flush=True)
 
-  srv = ThreadingHTTPServer((a.bind, a.port), make_handler(poller, build_rows(conv), a.cam))
+  cam_status = a.cam_status or a.cam.rsplit("/", 1)[0] + "/status.json"
+  cam_watch = CamWatch(cam_status).start()
+  print(f"  카메라 상태를 물어봅니다 -> {cam_status}", flush=True)
+
+  srv = ThreadingHTTPServer(
+    (a.bind, a.port),
+    make_handler(poller, build_rows(conv), a.cam, cam_watch, a.viser))
   srv.daemon_threads = True
   print(f"관절 화면 http://{a.bind}:{a.port}/   (Ctrl-C 로 멈춤)", flush=True)
   try:
@@ -346,6 +505,9 @@ def main(argv=None) -> int:
   except KeyboardInterrupt:
     pass
   finally:
+    if sender is not None:
+      sender.stop()
+    cam_watch.stop()
     poller.stop()
     srv.server_close()
   return 0
