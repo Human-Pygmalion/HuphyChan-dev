@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2단계 14시간 54분 경과: 14,074/18,100회, 보상 108.1, 넘어짐 0. 무작위화 램프가 곧 끝나고 굳히기 구간 진입 예정",
+  "title": "legonly_ab_v4_motorparams 2단계 15시간 56분 경과: 14,724/18,100회, 보상 109.1로 최고치, 넘어짐 0. 굳히기 구간 진입",
   "detail": "",
-  "since": "2026-09-11 22:41"
+  "since": "2026-09-11 23:41"
  },
  "items": {
   "shouldermesh": {
@@ -2497,5 +2497,5 @@
   "sign_never_reconciled",
   "ankle_pair_clip"
  ],
- "updated": "2026-09-11 22:52"
+ "updated": "2026-09-11 23:41"
 }
