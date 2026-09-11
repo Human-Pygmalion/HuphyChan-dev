@@ -129,6 +129,14 @@ ALLOWED = {
   "R_hip_roll_joint":  dict(motor=8, iface="can1", enc=ENC_RS04, ko="오른 엉덩이좌우"),
 }
 
+HOME_SETTLE_S = 1.5
+"""영자세를 명령한 채 이만큼 기다리면, 관절이 못 따라왔어도 끝난 것으로 본다.
+
+약한 세기는 **일부러 고른 것**이다 -- 다리 무게를 억지로 들지 않으려고 그렇게
+두었다. 그러니 "못 따라옴" 은 고장이 아니라 예상된 결과이고, 그걸 이유로
+슬라이더를 영영 잠가 두면 안 된다. 대신 화면에 **몇 도 처졌는지 숫자로** 적는다."""
+
+
 PAIR = {5: 6, 6: 5, 11: 12, 12: 11}
 """발목 크랭크의 짝. 한쪽만 움직여도 **다른 쪽이 갈 수 있는 범위가 바뀐다.**
 
@@ -201,6 +209,7 @@ class CommandGuard:
     self.mask = pair_mask     # 발목 크랭크 조합 지도
     self.margin = abs(float(home_margin_deg))
     self.homing = {}          # ★ 모터 -> 아직 영자세로 가는 중인가
+    self._home_since = {}     # 모터 -> 명령이 영자세에 닿은 시각
     """왜 힘을 넣자마자 영자세부터 가는가 (사용자 지시 2026-09-12).
 
     *"이제 어떤 하드웨어 명령을 보내더라도, 먼저 이 영점 위치로 복귀하고, 그 다음
@@ -321,8 +330,26 @@ class CommandGuard:
       if pend is not None:
         return ("ctrl", pend)
 
+      # ★ 2026-09-12 사용자 지적으로 뜻이 바뀐 자리.
+      #
+      #   *"영자세로 가게 한 다음 힘이 왜 빠지냐고. 자세 유지하라고."*
+      #   *"지금 내가 슬라이더로 넣는건 q target 이라고. 끄면 중력이던 외력이던
+      #     작용해서 싱크 박살나잖아."*
+      #
+      # 슬라이더는 **목표 위치**다. 목표를 받은 관절은 그 자리를 **계속 잡고
+      # 있어야** 화면의 값과 실물이 같은 것을 가리킨다. 손을 떼었다고 힘을 빼면
+      # 중력이 관절을 끌어내리고 그 순간 둘이 어긋난다.
+      #
+      # 그래서 명령이 끊긴 것은 이제 **힘을 빼는 이유가 아니다.** 마지막 목표를
+      # 그대로 잡는다. 힘이 빠지는 길은 셋뿐:
+      #   * 사람이 힘 빼기를 누름 (`release`)
+      #   * 권선이 너무 뜨거움 (`cut_temp`)
+      #   * 시험 모드 (`dry_run`)
       seen = self.last_rx.get(motor_id)
       fresh = (time.monotonic() - seen) <= self.deadman if seen else False
+      holding = seen is not None          # 목표를 한 번이라도 받았는가
+      if seen is not None and not fresh:
+        self.stats["stale"] += 1          # 세기만 한다. 끊지 않는다
       hot = temp_c >= self.max_temp
       if hot:
         self.cut_temp[motor_id] = True
@@ -331,18 +358,16 @@ class CommandGuard:
       blocked = self.cut_temp.get(motor_id, False)
 
       # -- 힘을 끊어야 하는 경우 --------------------------------------
-      if not fresh or blocked or self.dry_run:
+      if not holding or blocked or self.dry_run:
         if self.torque_on.get(motor_id):
           self.torque_on[motor_id] = False
           self.q0.pop(motor_id, None)
           self.cmd.pop(motor_id, None)
           self.homing.pop(motor_id, None)
           self.note = ("뜨거워서 끊음" if blocked else
-                       "명령이 끊겨 힘을 뺌" if not fresh else "시험 모드")
+                       "시험 모드" if self.dry_run else "힘을 뺌")
           self.pending_ctrl[motor_id] = control_frame(CMD_STOP)
-          if not fresh:
-            self.stats["stale"] += 1
-        if self.dry_run and fresh and not blocked:
+        if self.dry_run and holding and not blocked:
           # 보내지는 않지만 **무엇을 보낼지는 계산해 둔다** — 길이 뚫렸는지 보려고.
           self.cmd[motor_id] = self._bounded(motor_id, deg_now, dt, preview=True)
         return None
@@ -460,21 +485,71 @@ class CommandGuard:
                                           # 걸렸는데 안 걸린 것처럼 보인다
 
     if self.homing.get(motor_id) and not preview:
-      # **명령과 실제 자리가 둘 다** 영자세에 닿아야 끝난 것으로 본다. 명령만 보면
-      # 관절이 아직 따라오지 못했는데 슬라이더가 살아난다.
-      if abs(value - home) <= 0.05 and abs(deg_now - home) <= 1.0:
-        self.homing[motor_id] = False
-        self.stats["homed"] += 1
-        self.note = (f"{self.allow[motor_id]['ko']} 영자세 도착 — "
-                     f"이제 슬라이더가 듣습니다")
+      # 끝났다고 보는 조건이 둘이다. 하나만 두면 안 된다.
+      #
+      #  (가) 명령이 영자세에 닿았고 **관절도 따라왔다** -- 제일 깔끔한 경우.
+      #  (나) 명령이 영자세에 닿은 채 `HOME_SETTLE_S` 가 지났다 -- 관절이 못
+      #       따라온 경우. **이것도 끝난 것으로 본다.**
+      #
+      # (나) 가 없으면 슬라이더가 영영 안 열린다. 2026-09-12 실제로 그랬다:
+      # 엉덩이회전을 세기 10 으로 켜 두었더니 정지마찰을 못 이겨 1.29도에서
+      # 멈춰 있었고, "영자세로 돌아가는 중" 이 12초 넘게 안 끝났다. 약한 세기로
+      # 처지는 것은 **우리가 일부러 고른 것**이므로, 그걸 고장으로 보고 길을
+      # 막으면 안 된다.
+      if abs(value - home) <= 0.05:
+        t = self._home_since.get(motor_id)
+        if t is None:
+          self._home_since[motor_id] = time.monotonic()
+          t = self._home_since[motor_id]
+        close = abs(deg_now - home) <= 1.0
+        waited = (time.monotonic() - t) >= HOME_SETTLE_S
+        if close or waited:
+          self.homing[motor_id] = False
+          self._home_since.pop(motor_id, None)
+          self.stats["homed"] += 1
+          gap = deg_now - home
+          self.note = (
+            f"{self.allow[motor_id]['ko']} 영자세 도착 — 이제 슬라이더가 듣습니다"
+            if close else
+            f"{self.allow[motor_id]['ko']} 영자세에서 {gap:+.1f}도 처진 채 멈춤 "
+            f"(세기가 무게를 못 이김) — 슬라이더를 엽니다")
+      else:
+        self._home_since.pop(motor_id, None)
     return value
 
   def release(self, motor_id: int):
-    """끝낼 때 부르는 것. 다음 주기에 끄기 프레임이 나간다."""
+    """끝낼 때 부르는 것. 다음 주기에 끄기 프레임이 나간다.
+
+    **바로 끊는 길이다.** 데드맨(응답이 끊기면 끄는 것)은 사람이 사라졌을 때를 위한
+    뒷문이라 넉넉하게 잡아 두는데, 사람이 **직접 멈춤을 눌렀을 때**까지 그만큼
+    기다리면 안 된다. 그래서 화면의 멈춤은 이 길로 온다.
+
+    `last_rx` 도 같이 지운다 -- 안 지우면 아직 신선한 명령이 남아 있다고 보고
+    다음 주기에 **혼자 다시 켜진다.**
+    """
     with self.lock:
+      self.last_rx.pop(motor_id, None)
+      self.wanted.pop(motor_id, None)
+      self.homing.pop(motor_id, None)
+      self._home_since.pop(motor_id, None)
       if self.torque_on.get(motor_id):
         self.torque_on[motor_id] = False
+        self.q0.pop(motor_id, None)
+        self.cmd.pop(motor_id, None)
+        self.note = f"{self.allow[motor_id]['ko']} 사람이 멈춤 — 바로 힘을 뺌"
         self.pending_ctrl[motor_id] = control_frame(CMD_STOP)
+
+  def release_by_name(self, name: str, token: str) -> dict:
+    """화면에서 이름으로 부르는 멈춤. 암호는 **보지 않는다.**
+
+    멈추는 길에 암호를 걸면, 암호가 틀린 사람은 **켤 수는 없는데 끌 수도 없게**
+    된다. 그건 안전장치가 아니다."""
+    del token
+    row = ALLOWED.get(name)
+    if row is None or row["motor"] not in self.allow:
+      return dict(ok=False, why=f"허락되지 않은 관절입니다: {name}")
+    self.release(row["motor"])
+    return dict(ok=True, motor=row["motor"], released=True)
 
   def status(self):
     with self.lock:

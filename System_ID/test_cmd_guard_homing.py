@@ -175,15 +175,43 @@ class TestItStillObeysTheOtherGuards:
     # 한 주기(0.02초) 에 20도/초 = 0.4도까지만
     assert decode_pos(frame) == pytest.approx(80.0 - 0.4, abs=0.05)
 
-  def test_letting_go_during_the_return_cuts_torque(self):
-    """영자세로 가는 도중에 손을 떼도 데드맨이 그대로 듣는다."""
+  def test_letting_go_keeps_holding_the_last_target(self):
+    """손을 떼도 **힘은 그대로 둔다.** 2026-09-12 에 뜻이 뒤집힌 자리다.
+
+    그전에는 명령이 0.3초 끊기면 힘을 뺐다. 사용자 지적:
+
+      *"영자세로 가게 한 다음 힘이 왜 빠지냐고. 자세 유지하라고."*
+      *"지금 내가 슬라이더로 넣는건 q target 이라고. 끄면 중력이던 외력이던
+        작용해서 싱크 박살나잖아."*
+
+    슬라이더는 목표 위치다. 힘을 빼면 중력이 관절을 끌어내리고, 화면이 말하는
+    각도와 실물이 어긋난다. 손을 뗀 것은 **잡은 채로 두라**는 뜻이다.
+    """
     g = make_guard(span_deg=50.0)
     arm(g, 30.0)
     assert g.torque_on[MOTOR] is True
-    g.last_rx[MOTOR] = 0.0                         # 0.3초보다 오래됨
-    g.frame_for(MOTOR, 30.0, 30.0, 0.02)
+    g.last_rx[MOTOR] = 0.0                         # 아주 오래된 명령
+    for _ in range(50):
+      g.frame_for(MOTOR, 30.0, 30.0, 0.02)
+    assert g.torque_on[MOTOR] is True, "손을 떼도 잡고 있어야 한다"
+    assert g.stats["stale"] > 0, "끊긴 것은 세되, 끊지는 않는다"
+
+  def test_only_an_explicit_release_cuts_torque(self):
+    g = make_guard(span_deg=50.0)
+    arm(g, 30.0)
+    g.release_by_name(JOINT, "")
+    g.frame_for(MOTOR, 30.0, 30.0, 0.02)           # 끄기 프레임이 나감
     assert g.torque_on[MOTOR] is False
     assert MOTOR not in g.homing
+
+  def test_it_does_not_switch_itself_back_on_after_a_release(self):
+    """놓은 뒤에 남은 명령이 있다고 혼자 다시 켜지면 안 된다."""
+    g = make_guard(span_deg=50.0)
+    arm(g, 30.0)
+    g.release_by_name(JOINT, "")
+    for _ in range(50):
+      g.frame_for(MOTOR, 30.0, 30.0, 0.02)
+    assert g.torque_on.get(MOTOR) is not True
 
   def test_too_hot_during_the_return_cuts_torque(self):
     g = make_guard(span_deg=50.0, max_temp_c=50.0)
@@ -231,3 +259,45 @@ class TestWhatTheScreenIsTold:
     arm(g, 40.0)
     row = g.status()["motors"][str(MOTOR)]
     assert row["homing"] is True and row["home"] == pytest.approx(3.0)
+
+
+class TestASaggingJointStillOpensTheSlider:
+  """세기가 무게를 못 이겨 영자세에 못 닿아도 슬라이더는 열려야 한다.
+
+  2026-09-12 실물에서 이것 때문에 막혔다 -- 엉덩이회전이 정지마찰로 1.29도에서
+  멈춰 있었고 "영자세로 돌아가는 중" 이 끝나지 않아 조작이 아예 안 됐다.
+  """
+
+  def test_it_gives_up_waiting_and_opens(self, monkeypatch):
+    g = make_guard(span_deg=50.0)
+    arm(g, 10.0)
+    # 관절이 **전혀 안 움직이는** 극단. 명령만 0 으로 간다.
+    for _ in range(400):
+      g.local_target(JOINT, 0.0, "")
+      g.frame_for(MOTOR, 10.0, 30.0, 0.02)
+    assert g.homing[MOTOR] is True, "아직 기다리는 중이어야 함"
+
+    now = [cg.time.monotonic() + cg.HOME_SETTLE_S + 0.1]
+    monkeypatch.setattr(cg.time, "monotonic", lambda: now[0])
+    g.local_target(JOINT, 0.0, "")
+    g.frame_for(MOTOR, 10.0, 30.0, 0.02)
+    assert g.homing[MOTOR] is False, "기다림이 끝나면 열려야 함"
+    assert "처진" in g.note and "10.0" in g.note, g.note
+
+  def test_a_joint_that_does_follow_opens_without_waiting(self):
+    """따라오는 관절은 기다릴 것 없이 바로 열린다."""
+    g = make_guard(span_deg=50.0)
+    arm(g, 10.0)
+    drive(g, deg_now=10.0, targets_deg=0.0, cycles=300)
+    assert g.homing[MOTOR] is False
+    # note 는 매 명령마다 덮어써지므로 셈으로 본다.
+    assert g.stats["homed"] == 1
+    assert MOTOR not in g._home_since
+
+  def test_drifting_back_out_restarts_the_wait(self):
+    """영자세를 명령하다 딴 데로 가면, 기다린 시간은 없던 일이 된다."""
+    g = make_guard(span_deg=50.0)
+    arm(g, 40.0)
+    g.local_target(JOINT, 0.0, "")
+    g.frame_for(MOTOR, 40.0, 30.0, 0.02)      # 아직 0 근처가 아님
+    assert MOTOR not in g._home_since

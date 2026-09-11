@@ -475,6 +475,17 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
       화면을 닫든 인터넷이 끊기든 같은 일이 일어난다 - 원격에서 쓰기에 이 편이
       '무장해 두면 계속 나가는' 방식보다 안전하다.
       """
+      if self.path.split("?")[0] == "/release" and guard is not None:
+        # 사람이 멈춤을 눌렀다. **데드맨을 기다리지 않고 바로 끊는다.**
+        try:
+          n = int(self.headers.get("Content-Length", 0))
+          body = json.loads(self.rfile.read(n) or b"{}")
+        except (ValueError, TypeError):
+          body = {}
+        r = guard.release_by_name(str(body.get("name", "")), str(body.get("token", "")))
+        self._send(200 if r.get("ok") else 403, "application/json",
+                   json.dumps(r, ensure_ascii=False).encode())
+        return
       if self.path.split("?")[0] != "/cmd" or guard is None:
         self._send(404, "text/plain; charset=utf-8", "없는 주소".encode())
         return
@@ -554,7 +565,8 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
       <div id="ctlbody" class="locked">
       <div style="margin-bottom:10px">
         <button id="allzero" style="font-weight:700">전부 0\u00B0 로</button>
-        <button id="allstop">전부 멈춤</button>
+        <button id="allstop">전부 멈춤 (자세는 잡고 있음)</button>
+        <button id="allfree">전부 힘 빼기</button>
         <span class="dim" id="allnote" style="margin-left:8px"></span>
       </div>
       <div id="ctl"></div>
@@ -594,14 +606,14 @@ function setLocked(on, why){{
     : '\uD480\uB824 \uC788\uC2B5\uB2C8\uB2E4 \u2014 \uB2E8\uCD94\uAC00 '
       + '\uBC14\uB85C \uB4E3\uC2B5\uB2C8\uB2E4';
   for (const el of document.querySelectorAll('#ctlbody button')) {{
-    if (el.id === 'allstop') continue;          // 멈추는 길은 늘 열려 있다
+    if (el.id === 'allstop' || el.id === 'allfree') continue;   // 멈추고 힘 빼는 길은 늘 열려 있다
     el.disabled = LOCKED;
   }}
   for (const el of document.querySelectorAll('#ctlbody input[type=range]'))
     el.disabled = LOCKED;
   if (LOCKED && window.__HOOKS)
     for (const h of Object.values(window.__HOOKS))
-      h.stop('\uC7A0\uAE08');                 // 잠그면 돌던 것도 멈춘다
+      h.stop('\uC7A0\uAE08');   // 잠그면 보내기만 멈춘다. 힘은 그대로 -- 목표 위치를 잡고 있어야 한다
 }}
 let base = JSON.parse(localStorage.getItem('base') || '{{}}');
 function zeroAll(){{ fetch('/joints.json',{{cache:'no-store'}}).then(r=>r.json()).then(j=>{{
@@ -640,7 +652,6 @@ async function tick(){{
                 + (m.age_s>1 ? ` <span class="pill warn">${{m.age_s}}초 전</span>` : '')
                 + ` <span class="dim">${{m.temp}}\\uB3C4</span>`;
       if (m.temp >= 45) hot.push(`${{r.ko}} ${{m.temp}}\\uB3C4`);
-      if (m.mode===2) hot.push(`${{r.ko}} \\uD798\\uC774 \\uCF1C\\uC838 \\uC788\\uC74C`);
     }}
     tb.insertAdjacentHTML('beforeend',
       `<tr><td class="l">${{r.leg==='left'?'왼':'오른'}} ${{r.ko}}`
@@ -719,7 +730,13 @@ async function tick(){{
       }});
       document.getElementById('allstop').addEventListener('click', () => {{
         for (const h of Object.values(window.__HOOKS)) h.stop('\uC804\uBD80 \uBA48\uCDA4');
-        document.getElementById('allnote').textContent = '';
+        document.getElementById('allnote').textContent =
+          '\uBCF4\uB0B4\uAE30\uB9CC \uBA48\uCDA4 \u2014 \uC790\uC138\uB294 \uC7A1\uACE0 \uC788\uC2B5\uB2C8\uB2E4';
+      }});
+      document.getElementById('allfree').addEventListener('click', () => {{
+        for (const h of Object.values(window.__HOOKS)) h.free('\uC804\uBD80 \uD798 \uBE7C\uAE30');
+        document.getElementById('allnote').textContent =
+          '\uD798\uC744 \uBE84\uC2B5\uB2C8\uB2E4 \u2014 \uC911\uB825\uC73C\uB85C \uCC98\uC9D1\uB2C8\uB2E4';
       }});
       const lb = document.getElementById('lock');
       if (!lb.dataset.hooked) {{
@@ -736,7 +753,12 @@ async function tick(){{
       + `<br>세기 ${{K.kp}}/${{K.kd}} · 구간 \u00B1${{K.span_deg}}\u00B0 · 속도 ${{K.max_vel_deg_s}}\u00B0/s`
       + ` · 마지막 명령 ${{K.rx_age_s == null ? '없음' : K.rx_age_s + '초 전'}}`
       + ` · 잘림 ${{K.stats.clipped}} · 암호틀림 ${{K.stats.bad_token}}`;
-    for (const [mid, m] of Object.entries(K.motors)) if (m.torque_on) hot.push(`${{m.ko}} 힘 켜짐`);
+    // 힘이 켜진 것은 **경고가 아니다** -- 사람이 그렇게 시킨 것이고, 단추가 이미
+    // '멈추기' 로 바뀌어 있다. 여기에 넣었더니 관절 12개가 붉은 띠로 화면 위를
+    // 덮어서, 정작 봐야 할 과열·통신두절이 그 안에 묻혔다 (2026-09-12 사용자 지적).
+    // 띠에는 **사람이 시키지 않았는데 잘못된 것**만 올린다.
+    for (const [mid, m] of Object.entries(K.motors))
+      if (m.temp_cut) hot.push(`${{m.ko}} \\uB108\\uBB34 \\uB728\\uAC70\\uC6CC \\uB04A\\uC74C`);
   }}
 
   else {{
@@ -765,14 +787,26 @@ function hookToggle(mid){{
   const NAME = {{}};
   for (const r of ROWS) NAME[r.id] = r.sim;
   const HOME = window.__HOME || {{}};
-  let timer = null, base = 0, until = 0, started = false;
-  const AUTO_OFF_S = 120;   // 켜 둔 채 잊어도 스스로 꺼진다
+  let timer = null, base = 0, started = false;
+  // 2026-09-12 사용자 지시: *"모터 지멋대로 계속 꺼지잖아. 내가 풀면 꺼지도록해.
+  // 니멋대로 끄지마."*
+  //
+  // 그래서 **스스로 끄는 것을 전부 없앴다.** 예전에는 넷이 있었다:
+  //   1. 120초가 지나면 꺼짐            -> 없앰
+  //   2. 화면이 뒤로 가면(blur) 꺼짐     -> 없앰. 다른 창을 누르는 것은 손을 뗀 것이 아니다
+  //   3. 화면이 가려지면 꺼짐            -> 없앰
+  //   4. 명령이 0.3초 끊기면 꺼짐        -> 남기되 **넉넉하게**. 아래 참고
+  //
+  // 남은 것은 셋뿐이고 전부 **사람이 한 일이거나, 사람이 사라진 것**이다:
+  //   * 멈춤을 누름 / 자물쇠를 잠금  -> `/release` 로 **바로** 끊는다
+  //   * 화면이 실제로 닫힘(pagehide) -> 같은 길
+  //   * 화면이 죽어 명령이 끊김       -> 데드맨. 이건 꺼야 한다 -- 안 그러면 아무도
+  //     안 보는 로봇에 힘이 계속 들어가 있다
   const show = () => vv.textContent = (sl.value >= 0 ? '+' : '') + (+sl.value).toFixed(1) + '\u00B0';
   sl.addEventListener('input', show); show();
 
   async function beat(){{
     if (!timer && started) return;        // 이미 멈췄으면 아무것도 쓰지 않는다
-    if (Date.now() > until){{ stop('시간이 다 되어 꺼짐'); return; }}
     const el = document.getElementById('tok');
     try{{
       const r = await fetch('/cmd', {{method:'POST', headers:{{'Content-Type':'application/json'}},
@@ -784,10 +818,8 @@ function hookToggle(mid){{
       if (!timer) return;
       nn.textContent = !j2.ok ? ('거부: ' + (j2.why||''))
         : j2.homing
-          ? `\uC601\uC790\uC138\uB85C \uB3CC\uC544\uAC00\uB294 \uC911 \u00B7 `
-            + `${{Math.ceil((until-Date.now())/1000)}}\uCD08 \uB4A4 \uC790\uB3D9 \uAEBC\uC9D0`
-          : `\uBAA9\uD45C ${{(+sl.value).toFixed(1)}}\u00B0 \uC720\uC9C0 \u00B7 `
-            + `${{Math.ceil((until-Date.now())/1000)}}\uCD08 \uB4A4 \uC790\uB3D9 \uAEBC\uC9D0`;
+          ? '\uC601\uC790\uC138\uB85C \uB3CC\uC544\uAC00\uB294 \uC911'
+          : `\uBAA9\uD45C ${{(+sl.value).toFixed(1)}}\u00B0 \uC720\uC9C0 \uC911`;
       if (!j2.ok) stop('거부됨');
     }}catch(e){{ stop('연결 끊김'); }}
   }}
@@ -799,16 +831,31 @@ function hookToggle(mid){{
     // '전부 0도로' 처럼 다른 코드에서도 불리므로, 길목 자체를 막아야 한다.
     if (LOCKED) {{ nn.textContent = '\uC7A0\uACA8 \uC788\uC2B5\uB2C8\uB2E4'; return; }}
     if (timer) return;
-    until = Date.now() + AUTO_OFF_S*1000;
     started = true;
     timer = setInterval(beat, 100); beat();
     bt2.classList.add('on'); bt2.textContent = '멈추기';
   }}
+  // 멈춤 = **보내기를 멈춘다.** 힘은 그대로 둔다.
+  //
+  // 슬라이더는 목표 위치이므로, 힘을 빼면 중력이 관절을 끌어내리고 화면과 실물이
+  // 어긋난다 (2026-09-12 사용자 지적). 그래서 멈춤은 "마지막 목표를 잡은 채로
+  // 손을 뗀다" 는 뜻이다. 힘을 빼는 것은 `free()` 하나뿐이고, 사람이 따로 누른다.
   function stop(why){{
     if (!timer) return;
     clearInterval(timer); timer = null;
     bt2.classList.remove('on'); bt2.textContent = '움직이기';
-    nn.textContent = (why || '멈춤') + ' \u2014 힘이 빠집니다';
+    nn.textContent = (why || '멈춤') + ' \u2014 \uC790\uC138\uB294 \uC7A1\uACE0 \uC788\uC2B5\uB2C8\uB2E4';
+  }}
+  function free(why){{
+    if (timer) {{ clearInterval(timer); timer = null; }}
+    bt2.classList.remove('on'); bt2.textContent = '움직이기';
+    nn.textContent = (why || '\uD798 \uBE7C\uAE30') + ' \u2014 \uD798\uC774 \uBE60\uC84C\uC2B5\uB2C8\uB2E4';
+    const el = document.getElementById('tok');
+    try{{
+      fetch('/release', {{method:'POST', headers:{{'Content-Type':'application/json'}},
+        keepalive: true,
+        body: JSON.stringify({{name: NAME[mid], token: el ? el.value : ''}})}});
+    }}catch(e){{}}
   }}
   bt2.addEventListener('click', () => timer ? stop('멈춤') : start());
   // 영자세로. 슬라이더를 그 관절의 영자세에 놓고 켠다 -- 켜면 가드가 어차피 먼저
@@ -818,11 +865,10 @@ function hookToggle(mid){{
     if (!timer) start();
   }}
   zb.addEventListener('click', toZero);
-  window.__HOOKS[mid] = {{toZero, stop, start}};
-  // ★ 화면이 사라지면 반드시 멈춘다. 모바일에서 앱을 바꾸거나 화면이 꺼지는 것도 여기 걸린다.
-  document.addEventListener('visibilitychange', () => {{ if (document.hidden) stop('화면이 가려짐'); }});
+  window.__HOOKS[mid] = {{toZero, stop, start, free}};
+  // 화면이 **실제로 닫힐 때만** 멈춘다. 다른 창을 누르거나(blur) 잠깐 가려지는 것은
+  // 손을 뗀 것이 아니다 -- 그것들로 끄던 것이 "지멋대로 꺼진다" 의 정체였다.
   window.addEventListener('pagehide', () => stop('화면이 닫힘'));
-  window.addEventListener('blur', () => stop('화면이 뒤로 감'));
 }}
 tick(); setInterval(tick, 200);
 </script>"""
