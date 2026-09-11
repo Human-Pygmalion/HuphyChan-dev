@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2단계 5시간 44분 경과: 7,924/18,100회, 보상 106.8로 계속 상승, 넘어짐 0",
+  "title": "legonly_ab_v4_motorparams 2단계 6시간 45분 경과: 8,624/18,100회, 보상 107.2, 넘어짐 0",
   "detail": "",
-  "since": "2026-09-11 13:29"
+  "since": "2026-09-11 14:30"
  },
  "items": {
   "shouldermesh": {
@@ -172,17 +172,6 @@
    "now_": "둘 다 틀림. Autodesk 공식 내장 기능(Preferences→API 체크박스)이고, 체크 해제→다시 체크만으로 서버가 in-process 재시작됩니다 — Fusion 안 꺼지고 문서 손실 0. 웹 조사로 확인(공식 문서화된 복구 절차).",
    "section": "correct",
    "changed": "2026-08-28 13:30"
-  },
-  "v2done": {
-   "id": "v2done",
-   "created": "2026-08-28 14:25",
-   "title": "본학습 완주 — 확정 스택 첫 정책 완성",
-   "why": "이 프로젝트의 목적은 걸을 때 하드웨어에 걸리는 힘을 재는 것이고, 그 힘을 낼 정책을 처음부터 제대로 학습시켜야 했습니다.",
-   "finding": "2단계 자동 학습이 끝까지 완주했습니다. 1단계(평지, 성적 기반 자동 진급)가 4,100회에 최고 난도까지 도달, 2단계(교란 서서히 증가)가 18,099회에 종료. 넘어짐 없이 진행됐습니다. 이제 이 정책으로 하중 측정을 시작합니다.",
-   "number": "P1 4,100회(최고단계 안착) → P2 18,099회 종료, DR 만배",
-   "section": "done",
-   "changed": "2026-08-28 14:25",
-   "collapsed": true
   },
   "sim2sim_qual": {
    "id": "sim2sim_qual",
@@ -2254,7 +2243,6 @@
   "lowspeed2",
   "landingfix",
   "mcprestart",
-  "v2done",
   "sim2sim_qual",
   "upperdof",
   "ankleaudit",
@@ -2425,5 +2413,5 @@
   "bench-remaining",
   "huphy_safety_audit"
  ],
- "updated": "2026-09-11 13:34"
+ "updated": "2026-09-11 14:30"
 }
