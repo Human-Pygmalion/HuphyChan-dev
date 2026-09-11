@@ -51,6 +51,11 @@ BITRATE_FLAG = "-s8"                                 # 초당 100만 비트
 MAP_PATH = os.path.expanduser("~/System_ID/can_map.json")
 
 LEGS = {"left_leg": (1, 2, 3, 4, 5, 6), "right_leg": (7, 8, 9, 10, 11, 12)}
+"""번호 묶음 -> 다리 이름. **이 짝은 설정 파일(robot_v1.0.yaml)에 적힌 것이지
+실물에서 확인한 것이 아닙니다.** 확인된 것은 '어느 선에 어느 번호가 있는가'까지입니다.
+
+어느 번호가 진짜 어느 다리인지는 사람이 그 다리를 손으로 움직여 어느 줄이 따라
+움직이는지 봐야 정해집니다 (`joint_map_*.json` 의 `side_mapping_verified`)."""
 
 
 def run(cmd, **kw):
@@ -166,11 +171,11 @@ def main(argv=None) -> int:
     if bad:
       problems.append(f"{iface}: 고장 기록이 있는 모터 {bad}")
 
-  print(f"  {'선':<6} {'어댑터 일련번호':<26} {'다리':<11} 모터")
+  print(f"  {'선':<6} {'어댑터 일련번호':<26} {'다리(설정상)':<14} 모터")
   print("  " + "-" * 72)
   for row in table:
     leg = row["leg"] or "??"
-    print(f"  {row['iface']:<6} {row['serial']:<26} {leg:<11} "
+    print(f"  {row['iface']:<6} {row['serial']:<26} {leg:<14} "
           f"{row['motors']}  {row['note']}")
     if row["faulted"]:
       print(f"  {'':<6} {'':<26} {'':<11} ** 고장: {row['faulted']} **")
@@ -181,6 +186,9 @@ def main(argv=None) -> int:
               ensure_ascii=False, indent=2)
   print(f"\n  지도를 남겼습니다: {MAP_PATH}")
   print("  다른 프로그램은 can0/can1 을 짐작하지 말고 이 파일을 읽을 것.")
+  print("\n  ** '다리' 칸은 설정 파일에 적힌 짝입니다 — 실물에서 확인한 것이 아닙니다. **")
+  print("     확인된 것: 어느 선에 어느 번호가 있는가.")
+  print("     확인 방법: 그 다리를 손으로 움직여 관절 화면의 어느 줄이 따라 움직이는지 볼 것.")
 
   if problems:
     print("\n  ** 확인할 것 **")

@@ -316,6 +316,11 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
   <button onclick="zeroAll()">지금 자세를 0으로</button>
   <button onclick="clearZero()">기준 지우기</button>
 </header>
+<div style="padding:7px 14px;background:#3a2d10;color:#ffcf70;font-size:13px">
+  &#9888; 줄 이름의 <b>왼/오른</b>은 설정 파일에 적힌 짝이지 실물에서 확인한 것이
+  아닙니다. 확인하려면 한쪽 무릎을 손으로 굽혀 보고, <b>오른 무릎(10번)</b>이 움직이면
+  설정이 맞고 <b>왼 무릎(4번)</b>이 움직이면 좌우가 뒤바뀐 것입니다.
+</div>
 <div id="banner"></div>
 """
 
