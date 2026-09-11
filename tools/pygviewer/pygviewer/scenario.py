@@ -32,6 +32,28 @@ PROGRAM_OBS_STREAMER = 2
 PROGRAM_POLICY_EXEC = 3
 """Reserved: runs a policy on the robot and streams its observations. Not written yet."""
 
+PROGRAM_JOINT_WEB_READ = 4
+"""``System_ID/joint_web.py`` with no ``--command`` - torque cannot leave, by construction.
+
+This is the observation streamer :data:`PROGRAM_OBS_STREAMER` was reserved for, arrived from
+the other direction: it was written on the robot side as a joint-angle page for a human
+standing at the bench, and it happens to be exactly what ``mirror-hardware`` needs - all 12
+joints reported at ~50 Hz with the motors free. It sends only the zero-gain frame, so there
+is no mode in which it can push."""
+
+PROGRAM_JOINT_WEB_DRY = 5
+"""Same program with ``--command`` but not ``--live``: it computes what it would send and
+sends nothing. Torque still cannot leave."""
+
+PROGRAM_JOINT_WEB_LIVE = 6
+"""Same program with ``--live``: pressing a button on that page puts torque into a motor.
+
+Deliberately a SEPARATE id from the dry variant rather than one id plus a flag. An id is what
+this module turns into the words "힘 꺼짐"/"힘 켜짐" on screen, and a flag that has to be read
+alongside the id is a flag that will one day be read late. See ``System_ID/joint_web.py``
+(``PROG_READ_ONLY``/``PROG_SLIDER_DRY``/``PROG_SLIDER_LIVE``) - **the numbers must match on
+both sides**; change one and this module silently falls back to "unknown"."""
+
 PROGRAMS: dict[int, dict] = {
   PROGRAM_REMOTE_MOTION: {"id": PROGRAM_REMOTE_MOTION, "name": "huphy_remote_motion",
                           "label": "화면에서 준 목표를 모터로 보내는 프로그램",
@@ -42,6 +64,15 @@ PROGRAMS: dict[int, dict] = {
   PROGRAM_POLICY_EXEC: {"id": PROGRAM_POLICY_EXEC, "name": "policy_exec",
                         "label": "로봇이 정책을 돌리며 관측을 내보내는 프로그램",
                         "torque": "ON", "exists": False},
+  PROGRAM_JOINT_WEB_READ: {"id": PROGRAM_JOINT_WEB_READ, "name": "joint_web(read-only)",
+                           "label": "관절 화면 — 읽기만 함 (힘이 나갈 수 없음)",
+                           "torque": "OFF", "exists": True},
+  PROGRAM_JOINT_WEB_DRY: {"id": PROGRAM_JOINT_WEB_DRY, "name": "joint_web(dry-run)",
+                          "label": "관절 화면 — 시험 모드 (계산만 하고 안 보냄)",
+                          "torque": "OFF", "exists": True},
+  PROGRAM_JOINT_WEB_LIVE: {"id": PROGRAM_JOINT_WEB_LIVE, "name": "joint_web(live)",
+                           "label": "관절 화면 — 사람이 슬라이더로 모터를 움직임",
+                           "torque": "ON", "exists": True},
 }
 
 PROGRAM_STALE_S = 2.0
@@ -81,9 +112,7 @@ SCENARIOS: tuple[Scenario, ...] = (
     key="mirror-hardware", name_ko="손으로 미러링",
     summary="사람이 손으로 움직인 각도를 물리 계산 없이 화면에 그대로 그립니다.",
     action="아무것도 전송하지 않습니다. 받아서 그리기만 합니다.",
-    mode="real_replay", tx_armed=False, program=PROGRAM_OBS_STREAMER, arms_torque=False,
-    available=False,
-    unavailable_reason="관측만 내보내는 로봇 프로그램이 아직 없습니다",
+    mode="real_replay", tx_armed=False, program=PROGRAM_JOINT_WEB_READ, arms_torque=False,
   ),
   Scenario(
     key="shadow-policy", name_ko="로봇 정책 관측",

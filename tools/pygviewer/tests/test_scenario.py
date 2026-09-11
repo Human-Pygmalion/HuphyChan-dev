@@ -62,10 +62,23 @@ def test_arming_warning_appears_only_when_torque_would_actually_turn_on():
   assert S.would_arm_torque(tx_armed=False, key="mirror-hardware") is False
 
 
-RUNNABLE = {DRIVE, "policy-drive"}
+RUNNABLE = {DRIVE, "policy-drive", "mirror-hardware"}
 """The setups that can actually be reached today. `policy-drive` joined on 2026-09-08, once
 the policy-driving path existed (TxState.configure's allow_policy); before that it would have
-been a button that could not do what it said."""
+been a button that could not do what it said.
+
+`mirror-hardware` joined on 2026-09-12. Both halves it was waiting on now exist and were
+checked before this line was edited, which is the whole point of pinning the set here:
+
+* the robot-side program - `System_ID/joint_web.py` with no `--command`, which reports all 12
+  joints at ~50 Hz and sends only the zero-gain frame, so torque cannot leave it. It was
+  written as a bench page for a human, not as the `obs_streamer` this scenario originally
+  named, but it is the same thing by behaviour, and behaviour is what the scenario needs.
+* the viewer-side mode - `real_replay` in `sim_core.py`, which drives the sim joints
+  kinematically from received angles with the base forced fixed, and never transmits.
+
+Neither half arms torque, so `test_every_hardware_reaching_combination_is_marked_as_one`
+below still pins the arming set to two."""
 
 
 def test_combinations_we_cannot_run_yet_say_why_instead_of_offering_themselves():
