@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import math
 import os
 import socket
@@ -282,7 +283,15 @@ class CamWatch:
       self._stop.wait(self.period)
 
 
-NEEDS_LIMIT = ("L_knee_joint", "R_knee_joint")
+NEEDS_LIMIT = ("L_knee_joint", "R_knee_joint",
+               "L_hip_pitch_joint", "R_hip_pitch_joint",
+               "L_hip_roll_joint", "R_hip_roll_joint")
+"""절대 한계 없이는 열지 않는 관절.
+
+무릎은 **0도가 곧 하드스톱**이라 상대 구간만으로는 스톱 너머로 갈 수 있습니다
+(2026-09-11 에 실제로 9.5도 넘겼습니다). 엉덩이 앞뒤·좌우는 **다리 전체를 드는**
+관절이라 약한 세기로는 처지고, 처지다가 스톱에 부딪히는 것을 막을 방법이
+한계뿐입니다."""
 """한쪽 끝이 하드스톱이라 **상대 구간만으로는 열 수 없는** 관절.
 
 무릎은 완전히 편 자세가 곧 끝이고 그 너머는 없습니다. "지금 자리에서 ±N도" 만
@@ -290,13 +299,23 @@ NEEDS_LIMIT = ("L_knee_joint", "R_knee_joint")
 하드스톱 쪽으로 9.5도까지 밀 수 있는 상태였습니다."""
 
 
+def _split_pairs(text: str):
+  """`이름=값` 을 **쉼표로든 공백으로든** 나눈다.
+
+  2026-09-12: 실행 스크립트에서 공백으로 적었다가 값이 통째로 하나로 읽혀
+  `float("8 R_hip_pitch_joint=8 ...")` 로 죽었다. 어느 쪽으로 적어도 되게 한다 --
+  구분자를 기억하게 만드는 것은 사람 몫이 아니다.
+  """
+  for part in re.split(r"[,\s]+", (text or "").strip()):
+    part = part.strip()
+    if part:
+      yield part
+
+
 def _kv2(text: str) -> dict:
   """`이름=낮은쪽:높은쪽` 을 사전으로."""
   out = {}
-  for part in (text or "").split(","):
-    part = part.strip()
-    if not part:
-      continue
+  for part in _split_pairs(text):
     name, _, rng = part.partition("=")
     a, _, b = rng.partition(":")
     out[name.strip()] = (float(a), float(b))
@@ -306,10 +325,7 @@ def _kv2(text: str) -> dict:
 def _kv(text: str) -> dict:
   """`이름=값,이름=값` 을 사전으로. 비어 있으면 빈 사전."""
   out = {}
-  for part in (text or "").split(","):
-    part = part.strip()
-    if not part:
-      continue
+  for part in _split_pairs(text):
     name, _, val = part.partition("=")
     out[name.strip()] = float(val)
   return out
@@ -371,8 +387,8 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
  #banner.on{display:block}
 </style>
 <header>
-  <h1>실물 관절 확인 &mdash; 읽기 전용</h1>
-  <span class="dim">이 화면은 모터를 움직일 수 없습니다 (세기 0 &middot; 토크 0 인 프레임만 보냄)</span>
+  <h1 id="title">실물 관절 확인</h1>
+  <span class="dim" id="subtitle">불러오는 중…</span>
   <span class="dim" id="rate"></span>
   <button onclick="zeroAll()">지금 자세를 0으로</button>
   <button onclick="clearZero()">기준 지우기</button>
@@ -499,6 +515,11 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
         단추를 켜면 움직이고, 끄면 멈춥니다. <b>화면을 닫거나 다른 앱으로 가면
         0.3초 안에 힘이 빠집니다.</b>
       </div>
+      <div style="margin-bottom:10px">
+        <button id="allzero" style="font-weight:700">전부 0\u00B0 로</button>
+        <button id="allstop">전부 멈춤</button>
+        <span class="dim" id="allnote" style="margin-left:8px"></span>
+      </div>
       <div id="ctl"></div>
       <div id="ctlstat" class="dim" style="margin-top:8px"></div>
     </div>
@@ -590,6 +611,12 @@ async function tick(){{
   if (K){{
     document.getElementById('ctlcard').style.display = '';
     document.getElementById('tokrow').style.display = K.needs_token ? '' : 'none';
+    document.getElementById('title').textContent = K.dry_run
+      ? '\uC2E4\uBB3C \uAD00\uC808 \u2014 \uC2DC\uD5D8 \uBAA8\uB4DC'
+      : '\uC2E4\uBB3C \uAD00\uC808 \u2014 \u26A0 \uC9C4\uC9DC\uB85C \uC6C0\uC9C1\uC785\uB2C8\uB2E4';
+    document.getElementById('subtitle').textContent = K.dry_run
+      ? '\uBA85\uB839\uC744 \uACC4\uC0B0\uB9CC \uD558\uACE0 \uBCF4\uB0B4\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4'
+      : '\uB2E8\uCD94\uB97C \uB204\uB974\uBA74 \uBAA8\uD130\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC11\uB2C8\uB2E4';
     document.getElementById('ctlmode').innerHTML = K.dry_run
       ? '<span class="pill warn">시험 모드 &mdash; 힘이 안 들어감</span>'
       : '<span class="pill bad">힘이 들어갑니다</span>';
@@ -601,13 +628,28 @@ async function tick(){{
           `<div style="margin:7px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap">`
           + `<b style="min-width:104px">${{m.ko}}</b>`
           + `<span class="dim">${{mid}}번</span>`
-          + `<input type="range" id="s${{mid}}" min="${{-K.span_deg}}" max="${{K.span_deg}}"`
-          + ` step="0.5" value="0" style="width:210px">`
+          + `<input type="range" id="s${{mid}}" min="${{m.lo}}" max="${{m.hi}}"`
+          + ` step="0.5" value="${{m.home}}" style="width:210px">`
           + `<span id="v${{mid}}" class="big" style="min-width:62px">+0.0&deg;</span>`
+          + `<button id="z${{mid}}" title="이 관절을 영자세로">0\u00B0 \uB85C</button>`
           + `<button id="b${{mid}}">움직이기</button>`
           + `<span id="n${{mid}}" class="dim"></span></div>`);
       }}
+      window.__HOME = {{}};
+      for (const [mid, m] of Object.entries(K.motors)) window.__HOME[mid] = m.home;
+      window.__HOOKS = {{}};
       for (const mid of Object.keys(K.motors)) hookToggle(mid);
+      // 전부 한꺼번에. 관절 하나짜리 단추와 **같은 길**을 부른다 -- 따로 만들면
+      // 한쪽만 고쳐지는 일이 생긴다.
+      document.getElementById('allzero').addEventListener('click', () => {{
+        for (const h of Object.values(window.__HOOKS)) h.toZero();
+        document.getElementById('allnote').textContent =
+          '\uC804\uBD80 \uC601\uC790\uC138\uB85C \uAC00\uB294 \uC911';
+      }});
+      document.getElementById('allstop').addEventListener('click', () => {{
+        for (const h of Object.values(window.__HOOKS)) h.stop('\uC804\uBD80 \uBA48\uCDA4');
+        document.getElementById('allnote').textContent = '';
+      }});
     }}
     const rows = Object.entries(K.motors).map(([mid, m]) =>
       `${{m.ko}}: ${{m.torque_on ? '<span class="pill bad">힘 켜짐</span>' : '<span class="pill ok">힘 꺼짐</span>'}}`
@@ -618,6 +660,15 @@ async function tick(){{
       + ` · 마지막 명령 ${{K.rx_age_s == null ? '없음' : K.rx_age_s + '초 전'}}`
       + ` · 잘림 ${{K.stats.clipped}} · 암호틀림 ${{K.stats.bad_token}}`;
     for (const [mid, m] of Object.entries(K.motors)) if (m.torque_on) hot.push(`${{m.ko}} 힘 켜짐`);
+  }}
+
+  else {{
+    document.getElementById('title').textContent =
+      '\uC2E4\uBB3C \uAD00\uC808 \uD655\uC778 \u2014 \uC77D\uAE30 \uC804\uC6A9';
+    document.getElementById('subtitle').textContent =
+      '\uC774 \uD654\uBA74\uC740 \uBAA8\uD130\uB97C \uC6C0\uC9C1\uC77C \uC218 '
+      + '\uC5C6\uC2B5\uB2C8\uB2E4 (\uC138\uAE30 0 \u00B7 \uD1A0\uD06C 0 \uC778 '
+      + '\uD504\uB808\uC784\uB9CC \uBCF4\uB0C4)';
   }}
 
   const bt = document.getElementById('bus');
@@ -632,36 +683,45 @@ async function tick(){{
 }}
 function hookToggle(mid){{
   const sl = document.getElementById('s'+mid), vv = document.getElementById('v'+mid),
-        bt2 = document.getElementById('b'+mid), nn = document.getElementById('n'+mid);
+        bt2 = document.getElementById('b'+mid), nn = document.getElementById('n'+mid),
+        zb = document.getElementById('z'+mid);
   const NAME = {{}};
   for (const r of ROWS) NAME[r.id] = r.sim;
-  let timer = null, base = 0, until = 0;
+  const HOME = window.__HOME || {{}};
+  let timer = null, base = 0, until = 0, started = false;
   const AUTO_OFF_S = 120;   // 켜 둔 채 잊어도 스스로 꺼진다
   const show = () => vv.textContent = (sl.value >= 0 ? '+' : '') + (+sl.value).toFixed(1) + '\u00B0';
   sl.addEventListener('input', show); show();
 
   async function beat(){{
+    if (!timer && started) return;        // 이미 멈췄으면 아무것도 쓰지 않는다
     if (Date.now() > until){{ stop('시간이 다 되어 꺼짐'); return; }}
     const el = document.getElementById('tok');
     try{{
       const r = await fetch('/cmd', {{method:'POST', headers:{{'Content-Type':'application/json'}},
-        body: JSON.stringify({{name: NAME[mid], deg: base + (+sl.value),
+        body: JSON.stringify({{name: NAME[mid], deg: (+sl.value),
                                token: el ? el.value : ''}})}});
       const j2 = await r.json();
-      nn.textContent = j2.ok
-        ? `움직이는 중 \u00B7 ${{Math.ceil((until-Date.now())/1000)}}초 뒤 자동 꺼짐`
-        : ('거부: ' + (j2.why||''));
+      // 기다리는 동안 멈췄을 수 있다. 늦게 온 답이 멈춘 관절을 "도는 중" 으로
+      // 되돌려 쓰면 화면이 거짓말을 한다.
+      if (!timer) return;
+      nn.textContent = !j2.ok ? ('거부: ' + (j2.why||''))
+        : j2.homing
+          ? `\uC601\uC790\uC138\uB85C \uB3CC\uC544\uAC00\uB294 \uC911 \u00B7 `
+            + `${{Math.ceil((until-Date.now())/1000)}}\uCD08 \uB4A4 \uC790\uB3D9 \uAEBC\uC9D0`
+          : `\uBAA9\uD45C ${{(+sl.value).toFixed(1)}}\u00B0 \uC720\uC9C0 \u00B7 `
+            + `${{Math.ceil((until-Date.now())/1000)}}\uCD08 \uB4A4 \uC790\uB3D9 \uAEBC\uC9D0`;
       if (!j2.ok) stop('거부됨');
     }}catch(e){{ stop('연결 끊김'); }}
   }}
   function start(){{
+    // 켜는 순간의 자리를 기준으로 삼지 않는다 -- 로봇 쪽 가드가 **먼저 영자세로**
+    // 데려가고, 도착한 뒤에야 슬라이더 값을 쓴다. 그래서 여기서 읽을 것이 없다.
     if (timer) return;
-    fetch('/joints.json', {{cache:'no-store'}}).then(r=>r.json()).then(j2=>{{
-      base = (j2.motors[mid] || {{deg:0}}).deg;     // 켜는 순간의 자리를 기준으로
-      until = Date.now() + AUTO_OFF_S*1000;
-      beat(); timer = setInterval(beat, 100);
-      bt2.classList.add('on'); bt2.textContent = '멈추기';
-    }});
+    until = Date.now() + AUTO_OFF_S*1000;
+    started = true;
+    timer = setInterval(beat, 100); beat();
+    bt2.classList.add('on'); bt2.textContent = '멈추기';
   }}
   function stop(why){{
     if (!timer) return;
@@ -670,6 +730,14 @@ function hookToggle(mid){{
     nn.textContent = (why || '멈춤') + ' \u2014 힘이 빠집니다';
   }}
   bt2.addEventListener('click', () => timer ? stop('멈춤') : start());
+  // 영자세로. 슬라이더를 그 관절의 영자세에 놓고 켠다 -- 켜면 가드가 어차피 먼저
+  // 영자세로 데려가므로, 이 단추는 **그 뒤에 어디로도 가지 않게** 하는 것이다.
+  function toZero(){{
+    sl.value = HOME[mid]; show();
+    if (!timer) start();
+  }}
+  zb.addEventListener('click', toZero);
+  window.__HOOKS[mid] = {{toZero, stop, start}};
   // ★ 화면이 사라지면 반드시 멈춘다. 모바일에서 앱을 바꾸거나 화면이 꺼지는 것도 여기 걸린다.
   document.addEventListener('visibilitychange', () => {{ if (document.hidden) stop('화면이 가려짐'); }});
   window.addEventListener('pagehide', () => stop('화면이 닫힘'));

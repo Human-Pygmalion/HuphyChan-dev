@@ -112,6 +112,21 @@ ALLOWED = {
   # 처지므로, 세기와 구간을 관절마다 따로 줄 수 있게 해 두고 여기는 낮게 잡는다.
   "L_knee_joint": dict(motor=4,  iface="can0", enc=ENC_RS04, ko="왼 무릎"),
   "R_knee_joint": dict(motor=10, iface="can1", enc=ENC_RS04, ko="오른 무릎"),
+  # 엉덩이 앞뒤·좌우. 2026-09-12 추가 (사용자 지시: "다른 모터들도 제어시 위치
+  # 타겟줬으면 홀드하도록"). **여기가 사람이 다시 생각해 보는 자리이므로 적어 둔다.**
+  #
+  # 이 둘은 **다리 전체를 든다.** 매달린 다리 한 짝이 약 7.6 kg 이고 무게중심이
+  # 관절에서 약 0.30 m 떨어져 있으므로, 수평으로 드는 최악에서 22 N·m 가 걸린다
+  # (무릎의 10.3 N·m 보다 두 배 이상). 세기 10 으로는 **들어 올리지 못하고
+  # 처집니다** -- 그것이 정상이고, 세기를 올려 억지로 들면 안 됩니다. 낮은 세기로
+  # 처지는 것을 보고 한계를 아는 것이 이 단계의 목적입니다.
+  #
+  # 그래서 절대 한계 없이는 열지 않습니다 (`NEEDS_LIMIT`). 처지다가 하드스톱에
+  # 부딪히는 것을 막을 방법이 한계뿐이기 때문입니다.
+  "L_hip_pitch_joint": dict(motor=1, iface="can0", enc=ENC_RS04, ko="왼 엉덩이앞뒤"),
+  "R_hip_pitch_joint": dict(motor=7, iface="can1", enc=ENC_RS04, ko="오른 엉덩이앞뒤"),
+  "L_hip_roll_joint":  dict(motor=2, iface="can0", enc=ENC_RS04, ko="왼 엉덩이좌우"),
+  "R_hip_roll_joint":  dict(motor=8, iface="can1", enc=ENC_RS04, ko="오른 엉덩이좌우"),
 }
 
 PAIR = {5: 6, 6: 5, 11: 12, 12: 11}
@@ -135,7 +150,8 @@ class CommandGuard:
   def __init__(self, *, allow, arm_token, port=9872, kp=10.0, kd=1.0,
                kp_cap=20.0, kd_cap=5.0, span_deg=10.0, max_vel_deg_s=20.0,
                deadman_s=0.3, max_temp_c=50.0, dry_run=True, pair_mask=None,
-               kp_by=None, span_by=None, limit_by=None, needs_limit=()):
+               kp_by=None, span_by=None, limit_by=None, needs_limit=(),
+               home_margin_deg=3.0):
     bad = [n for n in allow if n not in ALLOWED]
     if bad:
       raise SystemExit(f"허락되지 않은 관절 {bad}. 가능한 것: {sorted(ALLOWED)}")
@@ -183,7 +199,25 @@ class CommandGuard:
     self.pending_ctrl = {}    # 모터 -> 다음에 보낼 켜기/끄기 프레임
     self.meas = {}            # 모터 -> 가장 최근 측정 각도 (짝을 볼 때 씀)
     self.mask = pair_mask     # 발목 크랭크 조합 지도
-    self.stats = dict(rx=0, bad_token=0, unknown=0, clipped=0, stale=0, pair_clipped=0)
+    self.margin = abs(float(home_margin_deg))
+    self.homing = {}          # ★ 모터 -> 아직 영자세로 가는 중인가
+    """왜 힘을 넣자마자 영자세부터 가는가 (사용자 지시 2026-09-12).
+
+    *"이제 어떤 하드웨어 명령을 보내더라도, 먼저 이 영점 위치로 복귀하고, 그 다음
+    관절을 움직일 수 있도록 한다."*
+
+    그전에는 힘을 넣은 **그 자리**를 0 으로 삼았다(`q0 = deg_now`). 그래서 조작할
+    수 있는 구간이 켤 때마다 다른 자리에 생겼고, 껐다 켜기를 되풀이하면 구간이
+    한쪽으로 걸어갔다 — 엉덩이회전이 0도 근처에서 ±43.4도까지 밀려난 적이 있다.
+
+    이제는 힘을 넣으면 **먼저 영자세로 돌아가고**, 도착할 때까지 화면에서 온 목표를
+    받아만 두고 쓰지 않는다. 도착한 뒤에야 슬라이더가 살아나고, 그때 구간의 기준도
+    영자세로 고정된다. 로봇 프로그램(HUPHY)의 `via_zero`/`staged` 와 같은 규칙이다.
+
+    되돌아가는 속도는 따로 두지 않는다 — 이미 있는 속도 제한(`max_vel`)이 그대로
+    걸린다. 하드스톱이 한쪽 끝인 관절은 `home_margin_deg` 만큼 안쪽까지만 간다."""
+    self.stats = dict(rx=0, bad_token=0, unknown=0, clipped=0, stale=0, pair_clipped=0,
+                      homed=0)
     self.note = "아직 명령 없음"
     self._stop = threading.Event()
 
@@ -263,8 +297,13 @@ class CommandGuard:
       self.wanted[row["motor"]] = float(deg)
       self.last_rx[row["motor"]] = time.monotonic()
       self.last_rx_any = self.last_rx[row["motor"]]
+      if self.homing.get(row["motor"]):
+        # 받아는 둔다 -- 도착하면 바로 이 값부터 쓴다.
+        self.note = f"{row['ko']} 영자세로 가는 중 (받은 목표 {deg:+.2f}도는 대기)"
+        return dict(ok=True, motor=row["motor"], homing=True,
+                    why="영자세로 돌아가는 중입니다. 도착하면 듣습니다")
       self.note = f"{row['ko']} 목표 {deg:+.2f}도"
-    return dict(ok=True, motor=row["motor"])
+    return dict(ok=True, motor=row["motor"], homing=False)
 
   # ---- 읽는 쪽이 매 주기 물어보는 것 -------------------------------------
   def frame_for(self, motor_id: int, deg_now: float, temp_c: float, dt: float):
@@ -297,6 +336,7 @@ class CommandGuard:
           self.torque_on[motor_id] = False
           self.q0.pop(motor_id, None)
           self.cmd.pop(motor_id, None)
+          self.homing.pop(motor_id, None)
           self.note = ("뜨거워서 끊음" if blocked else
                        "명령이 끊겨 힘을 뺌" if not fresh else "시험 모드")
           self.pending_ctrl[motor_id] = control_frame(CMD_STOP)
@@ -310,10 +350,12 @@ class CommandGuard:
       # -- 여기부터는 실제로 힘이 들어간다 ----------------------------
       if not self.torque_on.get(motor_id):
         self.torque_on[motor_id] = True
-        self.q0[motor_id] = deg_now           # 켜는 순간의 자리를 0 으로
-        self.cmd[motor_id] = deg_now
-        self.note = (f"힘을 넣음 (기준 {deg_now:.2f}도, "
-                     f"구간 ±{self.span_by.get(motor_id, self.span):g}도)")
+        self.homing[motor_id] = True          # ★ 슬라이더보다 영자세 복귀가 먼저
+        self.q0[motor_id] = self._home_target(motor_id)
+        self.cmd[motor_id] = deg_now          # 명령은 지금 자리에서 이어 나감
+        self.note = (f"{row['ko']} 힘을 넣음 — 먼저 영자세"
+                     f"({self.q0[motor_id]:+.2f}도)로 돌아갑니다 "
+                     f"(지금 {deg_now:+.2f}도)")
         return ("ctrl", control_frame(CMD_ENABLE))
 
       target = self._bounded(motor_id, deg_now, dt)
@@ -336,13 +378,65 @@ class CommandGuard:
       return False
     return rows[i][j] == "1"
 
+  def _inset_limit(self, motor_id):
+    """고정 한계에서 **여유만큼 안쪽**으로 물린 구간. 없으면 `None`.
+
+    한계는 하드스톱을 잰 값이라 그대로 명령하면 스톱에 대고 미는 것이 된다.
+    HUPHY 의 `command_margin_deg` 와 같은 생각이고, 영자세로 돌아갈 때만이 아니라
+    **슬라이더로 오는 목표에도 똑같이** 건다 — 2026-09-12 시험에서, 영자세에
+    도착한 뒤에는 슬라이더가 하드스톱 위로 그대로 갈 수 있는 것이 드러났다.
+    """
+    abs_lim = self.limit_by.get(motor_id)
+    if abs_lim is None:
+      return None
+    lo, hi = abs_lim
+    if hi - lo <= 2.0 * self.margin:           # 물릴 폭이 없으면 한가운데로 모은다
+      middle = 0.5 * (lo + hi)
+      return (middle, middle)
+    return (lo + self.margin, hi - self.margin)
+
+  def _slider_span(self, motor_id):
+    """화면 슬라이더가 보여 줄 범위. **가드가 실제로 허락하는 것과 같아야 한다.**
+
+    한쪽만 보여 주면 사람이 갈 수 없는 자리를 고르고, 왜 안 가는지 모른다.
+    고정 한계가 있으면 여유를 문 그 값이고, 없으면 영자세 ± 상대 구간이다.
+    """
+    span = self.span_by.get(motor_id, self.span)
+    centre = self.q0.get(motor_id, self._home_target(motor_id))
+    lo, hi = centre - span, centre + span
+    inset = self._inset_limit(motor_id)
+    if inset is not None:
+      lo, hi = max(lo, inset[0]), min(hi, inset[1])
+    return (lo, hi)
+
+  def _home_target(self, motor_id) -> float:
+    """이 관절의 **영자세**. 하드스톱이 한쪽 끝이면 그만큼 안쪽으로 물린다.
+
+    무릎처럼 0도가 곧 하드스톱인 관절이 있다. 0 을 그대로 명령하면 스톱에 대고
+    미는 것이 되므로 여유만큼 안쪽을 영자세로 삼는다. HUPHY 의
+    `command_margin_deg` 와 같은 생각이다.
+    """
+    inset = self._inset_limit(motor_id)
+    if inset is None:
+      return 0.0
+    lo, hi = inset
+    return min(hi, max(lo, 0.0))
+
   def _bounded(self, motor_id, deg_now, dt, preview=False):
-    """받은 목표를 **구간**과 **속도**로 줄이고, 발목이면 **짝까지 보고** 더 줄인다."""
+    """받은 목표를 **구간**과 **속도**로 줄이고, 발목이면 **짝까지 보고** 더 줄인다.
+
+    **영자세로 가는 중이면 화면에서 온 목표를 쓰지 않는다** — 받아만 두고, 도착한
+    뒤에 쓴다 (`self.homing`).
+    """
     q0 = self.q0.get(motor_id, deg_now)
-    want = self.wanted.get(motor_id, q0)
+    home = self._home_target(motor_id)
+    if self.homing.get(motor_id):
+      want = home
+    else:
+      want = self.wanted.get(motor_id, q0)
     span = self.span_by.get(motor_id, self.span)
     lo, hi = q0 - span, q0 + span
-    abs_lim = self.limit_by.get(motor_id)
+    abs_lim = self._inset_limit(motor_id)
     if abs_lim is not None:          # 고정 한계가 있으면 **그것이 우선**
       lo, hi = max(lo, abs_lim[0]), min(hi, abs_lim[1])
     clipped = min(hi, max(lo, want))
@@ -364,6 +458,15 @@ class CommandGuard:
       value = lo_v
       self.stats["pair_clipped"] += 1     # 시험 모드에서도 센다. 안 그러면
                                           # 걸렸는데 안 걸린 것처럼 보인다
+
+    if self.homing.get(motor_id) and not preview:
+      # **명령과 실제 자리가 둘 다** 영자세에 닿아야 끝난 것으로 본다. 명령만 보면
+      # 관절이 아직 따라오지 못했는데 슬라이더가 살아난다.
+      if abs(value - home) <= 0.05 and abs(deg_now - home) <= 1.0:
+        self.homing[motor_id] = False
+        self.stats["homed"] += 1
+        self.note = (f"{self.allow[motor_id]['ko']} 영자세 도착 — "
+                     f"이제 슬라이더가 듣습니다")
     return value
 
   def release(self, motor_id: int):
@@ -391,6 +494,10 @@ class CommandGuard:
                              age_s=(round(now - self.last_rx[m], 2)
                                     if self.last_rx.get(m) else None),
                              q0=self.q0.get(m), cmd=self.cmd.get(m),
+                             homing=self.homing.get(m, False),
+                             home=round(self._home_target(m), 2),
+                             lo=round(self._slider_span(m)[0], 2),
+                             hi=round(self._slider_span(m)[1], 2),
                              temp_cut=self.cut_temp.get(m, False))
                 for m, r in self.allow.items()},
       )
