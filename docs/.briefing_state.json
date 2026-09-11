@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2단계 2시간 45분 경과: 5,924/18,100회, 보상 103.8로 상승, 넘어짐 0. 발열 지표도 소폭 진정",
+  "title": "legonly_ab_v4_motorparams 2단계 3시간 46분 경과: 6,624/18,100회, 보상 104.9로 계속 상승, 넘어짐 0",
   "detail": "",
-  "since": "2026-09-11 10:30"
+  "since": "2026-09-11 11:31"
  },
  "items": {
   "shouldermesh": {
@@ -2403,5 +2403,5 @@
   "ankle-envelope",
   "handoff-training"
  ],
- "updated": "2026-09-11 10:30"
+ "updated": "2026-09-11 11:31"
 }
