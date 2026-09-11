@@ -116,7 +116,16 @@ class CommandGuard:
 
     self.lock = threading.Lock()
     self.wanted = {}          # 모터 -> 받은 목표(도, 이미 부호/영점 적용)
-    self.last_rx = 0.0
+    self.last_rx = {}         # ★ 모터별 마지막 명령 시각
+    """왜 모터별인가 (2026-09-11 실측으로 드러난 결함).
+
+    처음에는 시각을 **하나만** 들고 있었다. 그랬더니 9번에 명령이 오는 동안 3번도
+    '명령이 살아 있다' 고 판단해 **켜진 채 제자리를 붙잡았다.** 움직이지는 않았지만
+    시키지도 않은 관절에 힘이 들어간 것이고, 쉬고 있어야 할 모터가 토크 0.25 N·m 를
+    보고한 것으로 드러났다(쉴 때 정상값은 0.01).
+
+    손을 뗀다는 것은 **그 관절에서** 손을 뗀다는 뜻이므로 시각도 관절마다 따로 센다."""
+    self.last_rx_any = 0.0    # 화면 표시용(가장 최근 아무 명령)
     self.q0 = {}              # 모터 -> 힘을 넣은 순간의 각도
     self.cmd = {}             # 모터 -> 지금 실제로 보내는 목표
     self.torque_on = {}       # 모터 -> 힘이 켜져 있다고 우리가 아는가
@@ -174,7 +183,12 @@ class CommandGuard:
         self.wanted[row["motor"]] = math.degrees(float(val))
         took += 1
       if took:
-        self.last_rx = time.monotonic()
+        now = time.monotonic()
+        for name, _ in zip(names, q):
+          row = ALLOWED.get(name)
+          if row is not None and row["motor"] in self.allow:
+            self.last_rx[row["motor"]] = now
+        self.last_rx_any = now
         self.note = f"{took}개 관절 목표 받음"
 
   def local_target(self, name: str, deg: float, token: str) -> dict:
@@ -195,7 +209,8 @@ class CommandGuard:
     with self.lock:
       self.stats["rx"] += 1
       self.wanted[row["motor"]] = float(deg)
-      self.last_rx = time.monotonic()
+      self.last_rx[row["motor"]] = time.monotonic()
+      self.last_rx_any = self.last_rx[row["motor"]]
       self.note = f"{row['ko']} 목표 {deg:+.2f}도"
     return dict(ok=True, motor=row["motor"])
 
@@ -214,7 +229,8 @@ class CommandGuard:
       if pend is not None:
         return ("ctrl", pend)
 
-      fresh = (time.monotonic() - self.last_rx) <= self.deadman if self.last_rx else False
+      seen = self.last_rx.get(motor_id)
+      fresh = (time.monotonic() - seen) <= self.deadman if seen else False
       hot = temp_c >= self.max_temp
       if hot:
         self.cut_temp[motor_id] = True
@@ -271,7 +287,8 @@ class CommandGuard:
 
   def status(self):
     with self.lock:
-      age = (time.monotonic() - self.last_rx) if self.last_rx else None
+      now = time.monotonic()
+      age = (now - self.last_rx_any) if self.last_rx_any else None
       return dict(
         dry_run=self.dry_run, kp=self.kp, kd=self.kd, span_deg=self.span,
         max_vel_deg_s=self.max_vel, deadman_s=self.deadman, max_temp_c=self.max_temp,
@@ -279,6 +296,8 @@ class CommandGuard:
         stats=dict(self.stats), port=self.port,
         motors={str(m): dict(ko=r["ko"], sim=r["sim"], iface=r["iface"],
                              torque_on=self.torque_on.get(m, False),
+                             age_s=(round(now - self.last_rx[m], 2)
+                                    if self.last_rx.get(m) else None),
                              q0=self.q0.get(m), cmd=self.cmd.get(m),
                              temp_cut=self.cut_temp.get(m, False))
                 for m, r in self.allow.items()},
