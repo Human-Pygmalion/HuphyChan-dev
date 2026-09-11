@@ -192,6 +192,18 @@ class Poller:
     sock.close()
 
 
+PROG_READ_ONLY = 4
+PROG_SLIDER_DRY = 5
+PROG_SLIDER_LIVE = 6
+"""이 프로그램이 뷰어에 대는 이름표. `pygviewer/scenario.py` 의 `PROGRAMS` 와
+**같은 번호여야 합니다** -- 한쪽만 고치면 뷰어가 조용히 `unknown` 으로 돌아갑니다.
+
+  4  읽기 전용        세기 0 프레임만. 힘이 **나갈 수 없음**
+  5  슬라이더 시험    명령을 계산만 하고 보내지 않음. 힘이 **안 나감**
+  6  슬라이더 실행    단추를 누르면 힘이 **나감**
+"""
+
+
 class TelemetrySender:
   """읽은 값을 HUPHY 형식 UDP 로 내보낸다. **보내기만 한다.**
 
@@ -203,10 +215,19 @@ class TelemetrySender:
   움직임은 **전부 사람이 손으로 만든 것**입니다.
   """
 
-  def __init__(self, poller, target: str, hz: float = 50.0):
+  def __init__(self, poller, target: str, hz: float = 50.0, guard=None):
     host, _, port = target.partition(":")
     self.addr = (host, int(port or 9871))
     self.poller, self.period = poller, 1.0 / hz
+    self.guard = guard
+    """무엇이 돌고 있는지 뷰어에 알려 주려고 들고 있는다 (아래 `prog`).
+
+    뷰어(`pygviewer/scenario.py`)는 "지금 로봇에서 무엇이 도는가"를 **추측하지
+    않습니다** -- 로봇이 스스로 말해 주지 않으면 `unknown` 으로 두고, 이름이 붙는
+    조합도 만들지 않습니다. 그래서 이 프로그램도 자기 이름을 말해야 합니다.
+
+    셋 중 하나입니다. 힘이 나가는지 안 나가는지가 갈리므로 **번호를 따로 씁니다** --
+    한 번호에 묶으면 뷰어가 "힘 꺼짐" 이라고 적어 둔 채 실제로는 나갈 수 있습니다."""
     self.sent = 0
     self._stop = threading.Event()
     self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -225,6 +246,9 @@ class TelemetrySender:
       state, _ = self.poller.snapshot()
       pkt = {"t": round(now - t0, 4), "loop_dt": round((now - last) * 1000.0, 3)}
       last = now
+      prog = PROG_READ_ONLY
+      if self.guard is not None:
+        prog = PROG_SLIDER_DRY if self.guard.dry_run else PROG_SLIDER_LIVE
       for mid, (leg, motor, _m, _ko, _sim) in LAYOUT.items():
         v = state.get(mid)
         if v is None:
@@ -239,6 +263,7 @@ class TelemetrySender:
         pkt[f"{k}/age"] = round(v["age_s"] * 1000.0, 1)
         pkt[f"{k}/ack"] = 1.0 if v["age_s"] < 0.5 else 0.0
         pkt[f"{k}/miss"] = 0.0
+        pkt[f"{k}/prog"] = prog
       try:
         self.sock.sendto(json.dumps(pkt).encode(), self.addr)
         self.sent += 1
@@ -823,7 +848,7 @@ def main(argv=None) -> int:
   poller = Poller(buses, hz=a.hz, guard=guard).start()
   sender = None
   if a.telemetry:
-    sender = TelemetrySender(poller, a.telemetry).start()
+    sender = TelemetrySender(poller, a.telemetry, guard=guard).start()
     print(f"  뷰어로도 보냅니다 -> {a.telemetry} (보내기만 함)", flush=True)
 
   cam_status = a.cam_status or a.cam.rsplit("/", 1)[0] + "/status.json"
