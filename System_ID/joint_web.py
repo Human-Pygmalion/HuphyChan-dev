@@ -319,9 +319,16 @@ PAGE_HEAD = """<!doctype html><meta charset="utf-8"><title>관절 확인</title>
  .pill.bad{background:#3a1414;color:#ff9c8f}
  .pill.warn{background:#3a2d10;color:#ffcf70}
  img{display:block;width:100%;background:#000}
- button{background:#2a2e37;color:var(--tx);border:1px solid #3a3f4a;border-radius:6px;
-        padding:5px 10px;cursor:pointer;font:inherit}
+ button{background:#2a2e37;color:var(--tx);border:1px solid #3a3f4a;border-radius:8px;
+        padding:9px 14px;cursor:pointer;font:inherit;min-height:44px;touch-action:manipulation}
  button:hover{background:#333844}
+ button.on{background:#7f1d1d;border-color:#a33;color:#fff;font-weight:700}
+ input[type=range]{height:38px;accent-color:var(--acc);touch-action:manipulation}
+ @media(max-width:700px){
+   header{gap:8px} h1{font-size:14px}
+   .wrap{padding:8px;gap:8px}
+   th,td{padding:4px 5px;font-size:12px}
+ }
  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#444;
       margin-left:6px;vertical-align:middle}
  .dot.beat{background:#7fd6a0;box-shadow:0 0 0 0 rgba(127,214,160,.7);animation:b .45s ease-out}
@@ -450,11 +457,14 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
   <div class="card" id="ctlcard" style="display:none;margin-bottom:12px">
     <h2>관절 움직이기 <span id="ctlmode"></span></h2>
     <div style="padding:10px 12px">
-      <div style="margin-bottom:8px">
+      <div id="tokrow" style="margin-bottom:8px;display:none">
         <label class="dim">암호</label>
         <input id="tok" type="password" style="width:170px;background:#12141a;color:#e8e8e8;
-          border:1px solid #3a3f4a;border-radius:6px;padding:4px 7px" placeholder="arm token">
-        <span class="dim">&nbsp;누르고 있는 동안만 움직입니다. 떼면 0.3초 안에 힘이 빠집니다.</span>
+          border:1px solid #3a3f4a;border-radius:6px;padding:8px 9px" placeholder="arm token">
+      </div>
+      <div class="dim" style="margin-bottom:8px">
+        단추를 켜면 움직이고, 끄면 멈춥니다. <b>화면을 닫거나 다른 앱으로 가면
+        0.3초 안에 힘이 빠집니다.</b>
       </div>
       <div id="ctl"></div>
       <div id="ctlstat" class="dim" style="margin-top:8px"></div>
@@ -546,6 +556,7 @@ async function tick(){{
   const K = j.cmd;
   if (K){{
     document.getElementById('ctlcard').style.display = '';
+    document.getElementById('tokrow').style.display = K.needs_token ? '' : 'none';
     document.getElementById('ctlmode').innerHTML = K.dry_run
       ? '<span class="pill warn">시험 모드 &mdash; 힘이 안 들어감</span>'
       : '<span class="pill bad">힘이 들어갑니다</span>';
@@ -560,10 +571,10 @@ async function tick(){{
           + `<input type="range" id="s${{mid}}" min="${{-K.span_deg}}" max="${{K.span_deg}}"`
           + ` step="0.5" value="0" style="width:210px">`
           + `<span id="v${{mid}}" class="big" style="min-width:62px">+0.0&deg;</span>`
-          + `<button id="b${{mid}}">누르고 있는 동안 움직임</button>`
+          + `<button id="b${{mid}}">움직이기</button>`
           + `<span id="n${{mid}}" class="dim"></span></div>`);
       }}
-      for (const mid of Object.keys(K.motors)) hookHold(mid);
+      for (const mid of Object.keys(K.motors)) hookToggle(mid);
     }}
     const rows = Object.entries(K.motors).map(([mid, m]) =>
       `${{m.ko}}: ${{m.torque_on ? '<span class="pill bad">힘 켜짐</span>' : '<span class="pill ok">힘 꺼짐</span>'}}`
@@ -586,42 +597,50 @@ async function tick(){{
   if (hot.length){{ B.className='on'; B.textContent='\\u2716 ' + hot.join(' \\u00B7 '); }}
   else B.className='';
 }}
-function hookHold(mid){{
+function hookToggle(mid){{
   const sl = document.getElementById('s'+mid), vv = document.getElementById('v'+mid),
         bt2 = document.getElementById('b'+mid), nn = document.getElementById('n'+mid);
-  const NAME = {{}};  // 모터번호 -> 시뮬 관절 이름
+  const NAME = {{}};
   for (const r of ROWS) NAME[r.id] = r.sim;
-  let timer = null, base = 0;
+  let timer = null, base = 0, until = 0;
+  const AUTO_OFF_S = 120;   // 켜 둔 채 잊어도 스스로 꺼진다
   const show = () => vv.textContent = (sl.value >= 0 ? '+' : '') + (+sl.value).toFixed(1) + '\u00B0';
   sl.addEventListener('input', show); show();
+
   async function beat(){{
-    const tok = document.getElementById('tok').value;
+    if (Date.now() > until){{ stop('시간이 다 되어 꺼짐'); return; }}
+    const el = document.getElementById('tok');
     try{{
       const r = await fetch('/cmd', {{method:'POST', headers:{{'Content-Type':'application/json'}},
-        body: JSON.stringify({{name: NAME[mid], deg: base + (+sl.value), token: tok}})}});
+        body: JSON.stringify({{name: NAME[mid], deg: base + (+sl.value),
+                               token: el ? el.value : ''}})}});
       const j2 = await r.json();
-      nn.textContent = j2.ok ? '보내는 중' : ('거부: ' + (j2.why||''));
-    }}catch(e){{ nn.textContent = '못 보냄'; }}
+      nn.textContent = j2.ok
+        ? `움직이는 중 \u00B7 ${{Math.ceil((until-Date.now())/1000)}}초 뒤 자동 꺼짐`
+        : ('거부: ' + (j2.why||''));
+      if (!j2.ok) stop('거부됨');
+    }}catch(e){{ stop('연결 끊김'); }}
   }}
-  function start(ev){{
-    ev.preventDefault();
+  function start(){{
     if (timer) return;
-    // 누르는 순간의 실제 각도를 기준으로 잡는다. 가드도 같은 자리를 기준으로 잡는다.
     fetch('/joints.json', {{cache:'no-store'}}).then(r=>r.json()).then(j2=>{{
-      base = (j2.motors[mid] || {{deg:0}}).deg;
+      base = (j2.motors[mid] || {{deg:0}}).deg;     // 켜는 순간의 자리를 기준으로
+      until = Date.now() + AUTO_OFF_S*1000;
       beat(); timer = setInterval(beat, 100);
-      bt2.style.background = '#7f1d1d';
+      bt2.classList.add('on'); bt2.textContent = '멈추기';
     }});
   }}
-  function stop(){{
+  function stop(why){{
     if (!timer) return;
     clearInterval(timer); timer = null;
-    bt2.style.background = ''; nn.textContent = '뗌 \u2014 힘이 빠집니다';
+    bt2.classList.remove('on'); bt2.textContent = '움직이기';
+    nn.textContent = (why || '멈춤') + ' \u2014 힘이 빠집니다';
   }}
-  bt2.addEventListener('pointerdown', start);
-  for (const e of ['pointerup','pointerleave','pointercancel','blur']) bt2.addEventListener(e, stop);
-  window.addEventListener('blur', stop);
-  document.addEventListener('visibilitychange', () => {{ if (document.hidden) stop(); }});
+  bt2.addEventListener('click', () => timer ? stop('멈춤') : start());
+  // ★ 화면이 사라지면 반드시 멈춘다. 모바일에서 앱을 바꾸거나 화면이 꺼지는 것도 여기 걸린다.
+  document.addEventListener('visibilitychange', () => {{ if (document.hidden) stop('화면이 가려짐'); }});
+  window.addEventListener('pagehide', () => stop('화면이 닫힘'));
+  window.addEventListener('blur', () => stop('화면이 뒤로 감'));
 }}
 tick(); setInterval(tick, 200);
 </script>"""
@@ -672,8 +691,8 @@ def main(argv=None) -> int:
   if a.command:
     from cmd_guard import CommandGuard
     if not a.arm_token:
-      raise SystemExit("--command 를 쓰려면 --arm-token 이 있어야 합니다 "
-                       "(암호 없이 열어 두면 누구나 움직일 수 있음)")
+      print("  ** 암호 없이 돕니다 — 이 화면에 닿는 사람은 누구나 움직일 수 있습니다. **")
+      print("     바깥에 열어 둔 주소(터널 등)가 있으면 먼저 닫을 것.", flush=True)
     guard = CommandGuard(
       allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
       kp=a.kp, kd=a.kd, span_deg=a.span_deg, max_vel_deg_s=a.max_vel_deg_s,

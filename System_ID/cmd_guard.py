@@ -30,7 +30,9 @@
 5. **손 떼면 멈춤**   `deadman_s` 안에 새 명령이 없으면 자세를 붙잡고 힘을 끊습니다.
                       화면이 닫히거나 인터넷이 끊겨도 그렇게 됩니다.
 6. **뜨거우면 끊음**  `max_temp_c` 를 넘으면 힘을 끊고, 5도 내려가야 다시 받습니다.
-7. **암호**           `arm_token` 이 다르면 그 꾸러미는 버립니다.
+7. **암호(선택)**     `arm_token` 을 주면 다른 꾸러미는 버립니다. **비워 두면 검사하지
+                      않습니다** — 화면에 닿을 수 있는 사람은 누구나 움직일 수 있다는
+                      뜻이므로, 바깥에 열지 않은 망 안에서만 그렇게 쓸 것.
 
 그리고 `dry_run=True` 면 **힘을 아예 넣지 않습니다** — 받은 명령을 해석해 무엇을
 보낼지 계산하고 기록만 합니다. 길이 제대로 뚫렸는지 확인할 때 씁니다.
@@ -168,7 +170,7 @@ class CommandGuard:
       return
     with self.lock:
       self.stats["rx"] += 1
-      if str(m.get("arm_token", "")) != self.arm_token or not self.arm_token:
+      if self.arm_token and str(m.get("arm_token", "")) != self.arm_token:
         self.stats["bad_token"] += 1
         self.note = "암호가 달라 버림"
         return
@@ -197,7 +199,7 @@ class CommandGuard:
     화면이 인터넷에 열려 있으므로 암호를 반드시 본다. 암호가 없으면 이 길은 닫힌
     것과 같다.
     """
-    if not self.arm_token or str(token) != self.arm_token:
+    if self.arm_token and str(token) != self.arm_token:
       with self.lock:
         self.stats["bad_token"] += 1
       return dict(ok=False, why="암호가 다릅니다")
@@ -293,6 +295,7 @@ class CommandGuard:
         dry_run=self.dry_run, kp=self.kp, kd=self.kd, span_deg=self.span,
         max_vel_deg_s=self.max_vel, deadman_s=self.deadman, max_temp_c=self.max_temp,
         note=self.note, rx_age_s=round(age, 2) if age is not None else None,
+        needs_token=bool(self.arm_token),
         stats=dict(self.stats), port=self.port,
         motors={str(m): dict(ko=r["ko"], sim=r["sim"], iface=r["iface"],
                              torque_on=self.torque_on.get(m, False),
