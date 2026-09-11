@@ -17,6 +17,22 @@
 디스크에 아무것도 쓰지 않습니다. 2026-09-10 에 SD 카드가 초당 124 메가바이트를 못 받아
 촬영이 조용히 멈춘 적이 있어서, 이번에는 저장 자체를 하지 않습니다.
 
+★ 멎으면 멎었다고 말한다 (2026-09-11 실패에서 배운 것)
+------------------------------------------------------
+USB 어댑터를 하나 더 꽂자 **허브가 다시 잡히면서 카메라가 새 장치 번호**를 받았습니다.
+이 프로그램은 옛 장치를 붙잡은 채여서 프레임이 끊겼는데, **마지막 장면을 계속 보여
+주고 있었습니다.** 보는 사람은 멎은 줄 모릅니다 — 손이 치워졌는지 확인하는 화면에서
+이것은 가장 나쁜 실패입니다.
+
+그래서 셋을 넣었습니다.
+
+  1. **번호 대신 고유 이름**으로 엽니다 (`/dev/v4l/by-id/...`). 꽂는 순서나 다시
+     잡히는 것에 흔들리지 않습니다.
+  2. 프레임을 기다릴 때 **무한정 기다리지 않습니다.** 정해진 시간 안에 안 오면
+     장치를 닫고 **스스로 다시 엽니다.**
+  3. 화면과 `status.json` 에 **마지막 장면이 몇 초 전 것인지**를 항상 같이 냅니다.
+     멎으면 화면에 빨간 띠가 뜹니다.
+
     cam_stream.py                          # 1280x720, 초당 15장, 8099 번
     cam_stream.py --width 1920 --height 1080 --fps 10
     cam_stream.py --probe                  # 무엇이 되는지만 보고 끝
@@ -35,6 +51,7 @@ import argparse
 import fcntl
 import mmap
 import os
+import select
 import struct
 import sys
 import threading
@@ -123,45 +140,70 @@ def set_format(fd, w, h, fps):
   return got[0], got[1]
 
 
+def resolve_device(path: str) -> str:
+  """번호(`/dev/video0`) 대신 **고유 이름**을 쓰도록 바꿔 준다.
+
+  `/dev/video0` 은 꽂는 순서와 허브가 다시 잡히는 것에 따라 다른 카메라를 가리킬 수
+  있습니다. `/dev/v4l/by-id/` 밑의 이름은 그 카메라 고유의 것이라 흔들리지 않습니다.
+  """
+  if path.startswith("/dev/v4l/by-id/") or not path.startswith("/dev/video"):
+    return path
+  import glob
+  want = os.path.realpath(path)
+  for link in sorted(glob.glob("/dev/v4l/by-id/*-video-index0")):
+    if os.path.realpath(link) == want:
+      return link
+  return path
+
+
 class Grabber:
   """카메라에서 계속 한 장씩 받아 **가장 최근 것 하나만** 들고 있는다.
 
   보는 사람이 여럿이어도 카메라는 하나만 읽습니다. 늦게 들어온 사람은 밀린 옛 장면이
   아니라 **지금 장면**부터 봅니다 — 손이 치워졌는지 확인하는 용도라 그게 맞습니다.
+
+  **끊기면 스스로 다시 엽니다.** 그리고 다시 열릴 때까지 '몇 초 전 장면인지'를
+  계속 밖으로 내보냅니다.
   """
 
-  def __init__(self, device, width, height, fps, nbuf=4):
-    self.device, self.want = device, (width, height, fps)
-    self.nbuf = nbuf
+  def __init__(self, device, width, height, fps, nbuf=4, stall_s=3.0):
+    self.device = resolve_device(device)
+    self.want = (width, height, fps)
+    self.nbuf, self.stall_s = nbuf, float(stall_s)
     self.frame = None            # 가장 최근 JPEG
-    self.stamp = 0.0             # 커널이 그 장을 잡은 시각 (time.monotonic 과 같은 시계)
+    self.stamp = 0.0             # 커널이 그 장을 잡은 시각
+    self.recv_at = 0.0           # 우리가 받은 시각 (time.monotonic)
     self.seq = -1
     self.count = 0
-    self.dropped = 0             # 커널이 센 놓친 장수 (순번이 건너뛴 만큼)
+    self.dropped = 0
+    self.restarts = 0
     self.started = time.monotonic()
-    self.error = None
+    self.error = None            # 마지막 실패 사유. 다시 열리면 지움
     self._cond = threading.Condition()
     self._stop = threading.Event()
     self.width = self.height = 0
 
   def start(self):
-    t = threading.Thread(target=self._run, daemon=True)
-    t.start()
-    # 첫 장이 올 때까지 잠깐 기다린다. 여기서 실패하면 웹을 띄우기 전에 알 수 있다.
+    threading.Thread(target=self._supervise, daemon=True).start()
     with self._cond:
-      self._cond.wait_for(lambda: self.frame is not None or self.error is not None,
-                          timeout=8.0)
-    if self.error:
-      raise SystemExit(f"카메라를 열지 못했습니다: {self.error}")
+      self._cond.wait_for(lambda: self.frame is not None, timeout=10.0)
     if self.frame is None:
-      raise SystemExit("카메라가 8초 안에 한 장도 안 줬습니다")
+      raise SystemExit(f"카메라가 10초 안에 한 장도 안 줬습니다 ({self.error or '이유 없음'})")
     return self
 
   def stop(self):
     self._stop.set()
 
+  @property
+  def age(self) -> float:
+    """마지막 장면이 몇 초 전 것인지."""
+    return time.monotonic() - self.recv_at if self.recv_at else float("inf")
+
+  @property
+  def stalled(self) -> bool:
+    return self.age > self.stall_s
+
   def latest(self, after_seq=-1, timeout=5.0):
-    """가장 최근 장. `after_seq` 를 주면 그보다 새 장이 올 때까지 기다린다."""
     with self._cond:
       ok = self._cond.wait_for(lambda: self.frame is not None and self.seq != after_seq,
                                timeout=timeout)
@@ -169,15 +211,41 @@ class Grabber:
 
   def status(self):
     up = max(1e-6, time.monotonic() - self.started)
+    age = self.age
     return dict(width=self.width, height=self.height, frames=self.count,
                 dropped=self.dropped, fps=round(self.count / up, 2),
-                uptime_s=round(up, 1),
+                uptime_s=round(up, 1), restarts=self.restarts,
+                age_s=round(age, 2) if age != float("inf") else None,
+                stalled=self.stalled, error=self.error,
+                device=self.device,
                 bytes_last=len(self.frame) if self.frame else 0)
 
-  def _run(self):
+  # ---- 감시: 끊기면 다시 연다 -------------------------------------------
+  def _supervise(self):
+    backoff = 0.5
+    while not self._stop.is_set():
+      try:
+        self._session()                      # 정상이면 여기서 계속 돈다
+        why = "프레임이 끊김"
+      except Exception as exc:                                  # noqa: BLE001
+        why = f"{type(exc).__name__}: {exc}"
+      if self._stop.is_set():
+        break
+      with self._cond:
+        self.error = why
+        self.restarts += 1
+      print(f"[{time.strftime('%H:%M:%S')}] 카메라 끊김 ({why}) — "
+            f"{backoff:.1f}초 뒤 다시 엽니다 (재시작 {self.restarts}회)", flush=True)
+      self._stop.wait(backoff)
+      backoff = min(backoff * 2, 5.0)        # 계속 실패하면 덜 조급하게
+      if self.recv_at and time.monotonic() - self.recv_at < 10.0:
+        backoff = 0.5                        # 방금까지 잘 되던 것이면 빨리 재시도
+
+  def _session(self):
+    """장치를 열고 프레임을 받는다. 끊기면 그냥 돌아온다 (감시자가 다시 부른다)."""
     fd = maps = None
     try:
-      fd = os.open(self.device, os.O_RDWR)
+      fd = os.open(self.device, os.O_RDWR | os.O_NONBLOCK)
       w, h, fps = self.want
       self.width, self.height = set_format(fd, w, h, fps)
 
@@ -190,20 +258,30 @@ class Grabber:
                               mmap.PROT_READ, offset=b[_B_OFFSET]))
         fcntl.ioctl(fd, VIDIOC_QBUF, pack_buf(i))
       fcntl.ioctl(fd, VIDIOC_STREAMON, struct.pack("=I", BUF_TYPE_VIDEO_CAPTURE))
+      with self._cond:
+        self.error = None
+      print(f"[{time.strftime('%H:%M:%S')}] 카메라 열림 {self.device} "
+            f"{self.width}x{self.height}", flush=True)
 
       last_seq = None
       while not self._stop.is_set():
+        # ★ 무한정 기다리지 않는다. 정해진 시간 안에 안 오면 끊긴 것으로 본다.
+        ready, _, bad = select.select([fd], [], [fd], self.stall_s)
+        if bad:
+          return
+        if not ready:
+          return                                     # 조용히 멎음 = 끊김
         b = struct.unpack(BUF_FMT, fcntl.ioctl(fd, VIDIOC_DQBUF, pack_buf()))
-        idx, used = b[_B_INDEX], b[_B_BYTESUSED]
-        seq = b[_B_SEQUENCE]
+        idx, used, seq = b[_B_INDEX], b[_B_BYTESUSED], b[_B_SEQUENCE]
         stamp = b[_B_TV_SEC] + b[_B_TV_USEC] / 1e6
         data = maps[idx][:used]
         fcntl.ioctl(fd, VIDIOC_QBUF, pack_buf(idx))
 
-        # 어떤 카메라는 JPEG 끝 표시 뒤에 쓰레기를 붙여 보낸다. 잘라 둔다.
-        end = data.rfind(JPEG_EOI)
+        end = data.rfind(JPEG_EOI)                   # 뒤에 붙은 쓰레기 자르기
         if end != -1:
           data = data[:end + 2]
+        if len(data) < 4 or not data.startswith(b"\xff\xd8"):
+          continue                                   # 반쪽짜리 장면은 버린다
 
         if last_seq is not None and seq > last_seq + 1:
           self.dropped += seq - last_seq - 1
@@ -211,12 +289,9 @@ class Grabber:
 
         with self._cond:
           self.frame, self.seq, self.stamp = data, seq, stamp
+          self.recv_at = time.monotonic()
           self.count += 1
           self._cond.notify_all()
-    except Exception as exc:                                    # noqa: BLE001
-      with self._cond:
-        self.error = f"{type(exc).__name__}: {exc}"
-        self._cond.notify_all()
     finally:
       try:
         if fd is not None:
@@ -236,27 +311,49 @@ PAGE = """<!doctype html><meta charset="utf-8"><title>벤치 카메라</title>
         flex-wrap:wrap;border-bottom:1px solid #2a2e37}
  h1{font-size:15px;margin:0;font-weight:600}
  .n{color:#8ea9c9;font-variant-numeric:tabular-nums}
+ #warn{display:none;padding:10px 14px;background:#7f1d1d;color:#fff;font-weight:600}
+ #warn.on{display:block}
  img{display:block;width:100%;height:auto;background:#000}
+ .stale img{filter:grayscale(1) brightness(.55)}
  footer{padding:8px 14px;color:#7b8494;font-size:12px}
 </style>
 <header>
   <h1>벤치 카메라 &mdash; 실시간</h1>
   <span class="n" id="s">연결 중&hellip;</span>
 </header>
-<img src="/stream.mjpg" alt="벤치 실시간 화면">
+<div id="warn"></div>
+<div id="wrap"><img id="v" src="/stream.mjpg" alt="벤치 실시간 화면"></div>
 <footer>이 화면은 저장되지 않습니다. 한 장만 받으려면
   <code>/snapshot.jpg</code>, 숫자만 보려면 <code>/status.json</code>.</footer>
 <script>
+ const S = document.getElementById('s'), W = document.getElementById('warn'),
+       WRAP = document.getElementById('wrap'), V = document.getElementById('v');
+ let stalledSince = 0;
  async function tick(){
    try{
-     const r = await fetch('/status.json', {cache:'no-store'});
-     const j = await r.json();
-     document.getElementById('s').textContent =
-       `${j.width}\\u00d7${j.height} \\u00b7 \\ucd08\\ub2f9 ${j.fps}\\uc7a5 \\u00b7 ` +
-       `\\ubc1b\\uc740 ${j.frames}\\uc7a5 \\u00b7 \\ub193\\uce5c ${j.dropped}\\uc7a5`;
-   }catch(e){ document.getElementById('s').textContent = '\\uc0c1\\ud0dc\\ub97c \\ubabb \\uc77d\\uc74c'; }
+     const j = await (await fetch('/status.json', {cache:'no-store'})).json();
+     S.textContent = `${j.width}\u00d7${j.height} \u00b7 \ucd08\ub2f9 ${j.fps}\uc7a5`
+       + ` \u00b7 \ubc1b\uc740 ${j.frames}\uc7a5 \u00b7 \ub193\uce5c ${j.dropped}\uc7a5`
+       + (j.restarts ? ` \u00b7 \uc7ac\uc2dc\uc791 ${j.restarts}\ud68c` : '');
+     if (j.stalled){
+       WRAP.className = 'stale';
+       W.className = 'on';
+       W.textContent = `\u2716 \ud654\uba74\uc774 \uba48\uc5c8\uc2b5\ub2c8\ub2e4 \u2014 `
+         + `\ub9c8\uc9c0\ub9c9 \uc7a5\uba74\uc740 ${j.age_s}\ucd08 \uc804 \uac83\uc785\ub2c8\ub2e4`
+         + (j.error ? ` (${j.error})` : '') + `. \uc774 \ud654\uba74\uc73c\ub85c `
+         + `\uc190\uc774 \uce58\uc6cc\uc84c\ub294\uc9c0 \ud310\ub2e8\ud558\uc9c0 \ub9c8\uc138\uc694.`;
+       if (!stalledSince) stalledSince = Date.now();
+       // 스스로 다시 열렸는데도 그림이 안 붙어 있으면, 보던 연결을 새로 맺는다.
+       if (Date.now() - stalledSince > 6000){ V.src = '/stream.mjpg?t=' + Date.now(); stalledSince = 0; }
+     } else {
+       WRAP.className = ''; W.className = ''; stalledSince = 0;
+     }
+   }catch(e){
+     W.className = 'on';
+     W.textContent = '\u2716 \uc11c\ubc84\uc5d0 \uc5f0\uacb0\ub418\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4';
+   }
  }
- tick(); setInterval(tick, 2000);
+ tick(); setInterval(tick, 1000);
 </script>
 """
 
