@@ -158,7 +158,8 @@ class Poller:
             v = self.state.get(mid)
           got = self.guard.frame_for(
             mid, v["deg"] if v else 0.0, v["temp"] if v else 0.0,
-            now_t - last if last else self.period)
+            now_t - last if last else self.period,
+            mode=v["mode"] if v else None)
           if isinstance(got, tuple):
             data = got[1]
           elif got is not None:

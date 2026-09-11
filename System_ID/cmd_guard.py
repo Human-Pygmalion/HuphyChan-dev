@@ -129,6 +129,13 @@ ALLOWED = {
   "R_hip_roll_joint":  dict(motor=8, iface="can1", enc=ENC_RS04, ko="오른 엉덩이좌우"),
 }
 
+REENABLE_GAP_S = 0.4
+"""켜기를 다시 보내기까지 최소한 이만큼 둔다.
+
+매 주기 보내면 켜기 프레임이 상태 응답 자리를 밀어내서, 모터가 켜졌는지 볼 수조차
+없게 된다. 사이를 두면 몇 주기 안에 붙는다."""
+
+
 HOME_SETTLE_S = 1.5
 """영자세를 명령한 채 이만큼 기다리면, 관절이 못 따라왔어도 끝난 것으로 본다.
 
@@ -210,6 +217,7 @@ class CommandGuard:
     self.margin = abs(float(home_margin_deg))
     self.homing = {}          # ★ 모터 -> 아직 영자세로 가는 중인가
     self._home_since = {}     # 모터 -> 명령이 영자세에 닿은 시각
+    self._reenable_at = {}    # 모터 -> 마지막으로 켜기를 다시 보낸 시각
     """왜 힘을 넣자마자 영자세부터 가는가 (사용자 지시 2026-09-12).
 
     *"이제 어떤 하드웨어 명령을 보내더라도, 먼저 이 영점 위치로 복귀하고, 그 다음
@@ -226,7 +234,7 @@ class CommandGuard:
     되돌아가는 속도는 따로 두지 않는다 — 이미 있는 속도 제한(`max_vel`)이 그대로
     걸린다. 하드스톱이 한쪽 끝인 관절은 `home_margin_deg` 만큼 안쪽까지만 간다."""
     self.stats = dict(rx=0, bad_token=0, unknown=0, clipped=0, stale=0, pair_clipped=0,
-                      homed=0)
+                      homed=0, reenabled=0)
     self.note = "아직 명령 없음"
     self._stop = threading.Event()
 
@@ -315,10 +323,14 @@ class CommandGuard:
     return dict(ok=True, motor=row["motor"], homing=False)
 
   # ---- 읽는 쪽이 매 주기 물어보는 것 -------------------------------------
-  def frame_for(self, motor_id: int, deg_now: float, temp_c: float, dt: float):
+  def frame_for(self, motor_id: int, deg_now: float, temp_c: float, dt: float,
+                mode: int | None = None):
     """이 모터로 이번 주기에 보낼 8바이트. `None` 이면 세기 0 프레임을 보내라는 뜻.
 
     켜기/끄기 프레임이 먼저 나가야 하면 `("ctrl", 바이트)` 를 돌려준다.
+
+    `mode` 는 **모터가 스스로 보고한 동작 상태**다 (0 꺼짐 · 2 켜짐). 이걸 받는
+    이유는 아래 `_believe_vs_measure` 에 적어 두었다.
     """
     row = self.allow.get(motor_id)
     if row is None:
@@ -371,6 +383,25 @@ class CommandGuard:
           # 보내지는 않지만 **무엇을 보낼지는 계산해 둔다** — 길이 뚫렸는지 보려고.
           self.cmd[motor_id] = self._bounded(motor_id, deg_now, dt, preview=True)
         return None
+
+      # -- 믿음과 실제를 맞춘다 ---------------------------------------
+      # ★ 2026-09-12. "전부 0도로" 를 눌렀는데 열둘 중 다섯만 켜졌다. 가드는 열둘
+      # 전부 `torque_on=True` 라고 **믿고** 있었고, 모터 일곱은 `힘 꺼짐` 이라고
+      # **보고**하고 있었다. 원인은 하나다 -- 켜기 프레임을 **한 번 보내고 끝**이라,
+      # 그 한 장이 흘려지거나 모터가 그 순간 못 받으면 아무도 몰랐다. 그 뒤로는
+      # 꺼진 모터에 계속 명령을 보내고 있었다.
+      #
+      # 보내고 믿는 대신 **모터가 뭐라고 하는지 보고 맞춘다.** 켜져 있다고 믿는데
+      # 모터가 꺼졌다고 하면 다시 켠다. 너무 자주 보내면 정상 응답까지 밀어내므로
+      # 사이를 둔다.
+      if (self.torque_on.get(motor_id) and mode == 0
+          and not self.dry_run and not blocked):
+        last_try = self._reenable_at.get(motor_id, 0.0)
+        if time.monotonic() - last_try >= REENABLE_GAP_S:
+          self._reenable_at[motor_id] = time.monotonic()
+          self.stats["reenabled"] += 1
+          self.note = (f"{row['ko']} 켜짐이라고 믿었는데 모터는 꺼져 있음 — 다시 켬")
+          return ("ctrl", control_frame(CMD_ENABLE))
 
       # -- 여기부터는 실제로 힘이 들어간다 ----------------------------
       if not self.torque_on.get(motor_id):
