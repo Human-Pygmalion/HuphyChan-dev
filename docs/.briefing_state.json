@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "legonly_ab_v4_motorparams 2단계 6시간 45분 경과: 8,624/18,100회, 보상 107.2, 넘어짐 0",
+  "title": "legonly_ab_v4_motorparams 2단계 7시간 46분 경과: 9,299/18,100회, 보상 107.1, 넘어짐 0",
   "detail": "",
-  "since": "2026-09-11 14:30"
+  "since": "2026-09-11 15:31"
  },
  "items": {
   "shouldermesh": {
@@ -2413,5 +2413,5 @@
   "bench-remaining",
   "huphy_safety_audit"
  ],
- "updated": "2026-09-11 14:30"
+ "updated": "2026-09-11 15:31"
 }
