@@ -87,6 +87,7 @@ def mit_frame(pos_deg: float, kp: float, kd: float, enc: dict) -> bytes:
 
 
 ENC_RS03 = dict(pmax=12.57, vmax=20.0, tmax=60.0, kp_max=5000.0, kd_max=100.0)
+ENC_RS04 = dict(pmax=12.57, vmax=15.0, tmax=120.0, kp_max=5000.0, kd_max=100.0)
 
 # 허락할 수 있는 관절. **엉덩이 회전 둘뿐입니다.** 다른 관절을 움직이려면 여기에
 # 적어야 하고, 그 순간이 사람이 다시 생각해 보는 자리입니다.
@@ -98,6 +99,12 @@ ALLOWED = {
   "L_crank_B_joint": dict(motor=6,  iface="can0", enc=ENC_RS03, ko="왼 발목 B", leg="left"),
   "R_crank_A_joint": dict(motor=11, iface="can1", enc=ENC_RS03, ko="오른 발목 A", leg="right"),
   "R_crank_B_joint": dict(motor=12, iface="can1", enc=ENC_RS03, ko="오른 발목 B", leg="right"),
+  # 무릎. **중력이 걸리는 유일한 관절이다** — 다른 것들은 세로축이거나 발끝이라
+  # 거의 안 걸린다. 매달린 다리에서 무릎 아래 3.80 kg 이 만드는 토크가 0도에서
+  # 0.88, 30도에서 6.45, 60도에서 10.29 N·m 다. 약한 세기로는 들어 올리지 못하고
+  # 처지므로, 세기와 구간을 관절마다 따로 줄 수 있게 해 두고 여기는 낮게 잡는다.
+  "L_knee_joint": dict(motor=4,  iface="can0", enc=ENC_RS04, ko="왼 무릎"),
+  "R_knee_joint": dict(motor=10, iface="can1", enc=ENC_RS04, ko="오른 무릎"),
 }
 
 PAIR = {5: 6, 6: 5, 11: 12, 12: 11}
@@ -120,7 +127,8 @@ class CommandGuard:
 
   def __init__(self, *, allow, arm_token, port=9872, kp=10.0, kd=1.0,
                kp_cap=20.0, kd_cap=5.0, span_deg=10.0, max_vel_deg_s=20.0,
-               deadman_s=0.3, max_temp_c=50.0, dry_run=True, pair_mask=None):
+               deadman_s=0.3, max_temp_c=50.0, dry_run=True, pair_mask=None,
+               kp_by=None, span_by=None):
     bad = [n for n in allow if n not in ALLOWED]
     if bad:
       raise SystemExit(f"허락되지 않은 관절 {bad}. 가능한 것: {sorted(ALLOWED)}")
@@ -130,6 +138,11 @@ class CommandGuard:
     self.kp = min(float(kp), float(kp_cap))
     self.kd = min(float(kd), float(kd_cap))
     self.span = abs(float(span_deg))
+    # 관절마다 다르게 줄 수 있다. 무릎처럼 중력이 걸리는 곳은 낮게 잡는다.
+    self.kp_by = {ALLOWED[n]["motor"]: min(float(v), float(kp_cap))
+                  for n, v in (kp_by or {}).items() if n in ALLOWED}
+    self.span_by = {ALLOWED[n]["motor"]: abs(float(v))
+                    for n, v in (span_by or {}).items() if n in ALLOWED}
     self.max_vel = abs(float(max_vel_deg_s))
     self.deadman = float(deadman_s)
     self.max_temp = float(max_temp_c)
@@ -283,12 +296,13 @@ class CommandGuard:
         self.torque_on[motor_id] = True
         self.q0[motor_id] = deg_now           # 켜는 순간의 자리를 0 으로
         self.cmd[motor_id] = deg_now
-        self.note = f"힘을 넣음 (기준 {deg_now:.2f}도, 구간 ±{self.span:g}도)"
+        self.note = (f"힘을 넣음 (기준 {deg_now:.2f}도, "
+                     f"구간 ±{self.span_by.get(motor_id, self.span):g}도)")
         return ("ctrl", control_frame(CMD_ENABLE))
 
       target = self._bounded(motor_id, deg_now, dt)
       self.cmd[motor_id] = target
-      return mit_frame(target, self.kp, self.kd, row["enc"])
+      return mit_frame(target, self.kp_by.get(motor_id, self.kp), self.kd, row["enc"])
 
   def _pair_ok(self, motor_id, value) -> bool:
     """이 값과 짝의 지금 값이 **같이 갈 수 있는 조합인가.**"""
@@ -310,7 +324,8 @@ class CommandGuard:
     """받은 목표를 **구간**과 **속도**로 줄이고, 발목이면 **짝까지 보고** 더 줄인다."""
     q0 = self.q0.get(motor_id, deg_now)
     want = self.wanted.get(motor_id, q0)
-    lo, hi = q0 - self.span, q0 + self.span
+    span = self.span_by.get(motor_id, self.span)
+    lo, hi = q0 - span, q0 + span
     clipped = min(hi, max(lo, want))
     if clipped != want:
       self.stats["clipped"] += 1
@@ -351,6 +366,8 @@ class CommandGuard:
         stats=dict(self.stats), port=self.port,
         has_pair_mask=self.mask is not None,
         motors={str(m): dict(ko=r["ko"], sim=r["sim"], iface=r["iface"],
+                             kp=self.kp_by.get(m, self.kp),
+                             span=self.span_by.get(m, self.span),
                              torque_on=self.torque_on.get(m, False),
                              age_s=(round(now - self.last_rx[m], 2)
                                     if self.last_rx.get(m) else None),

@@ -282,6 +282,18 @@ class CamWatch:
       self._stop.wait(self.period)
 
 
+def _kv(text: str) -> dict:
+  """`이름=값,이름=값` 을 사전으로. 비어 있으면 빈 사전."""
+  out = {}
+  for part in (text or "").split(","):
+    part = part.strip()
+    if not part:
+      continue
+    name, _, val = part.partition("=")
+    out[name.strip()] = float(val)
+  return out
+
+
 def build_rows(conv):
   rows = []
   for mid, (leg, motor, model, ko, sim) in sorted(LAYOUT.items()):
@@ -672,6 +684,10 @@ def main(argv=None) -> int:
   ap.add_argument("--max-vel-deg-s", type=float, default=20.0)
   ap.add_argument("--deadman-s", type=float, default=0.3)
   ap.add_argument("--max-temp-c", type=float, default=50.0)
+  ap.add_argument("--kp-map", default="",
+                  help="관절마다 다른 세기. 예: L_knee_joint=12,R_knee_joint=12")
+  ap.add_argument("--span-map", default="",
+                  help="관절마다 다른 구간(도). 예: L_knee_joint=15,R_knee_joint=15")
   ap.add_argument("--live", action="store_true",
                   help="**정말로 힘을 넣음.** 없으면 계산만 하고 힘은 안 넣음(시험)")
   ap.add_argument("--telemetry", default=None,
@@ -702,7 +718,8 @@ def main(argv=None) -> int:
       allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
       kp=a.kp, kd=a.kd, span_deg=a.span_deg, max_vel_deg_s=a.max_vel_deg_s,
       deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live,
-      pair_mask=pair_mask).start()
+      pair_mask=pair_mask,
+      kp_by=_kv(a.kp_map), span_by=_kv(a.span_map)).start()
     st = guard.status()
     print(f"  ** 움직이는 명령 {'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
     print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "

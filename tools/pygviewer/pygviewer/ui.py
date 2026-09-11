@@ -108,12 +108,56 @@ def build_ui(core, host: str, port: int, freshness: dict, base: str = "free") ->
 
 
 # --------------------------------------------------------------------------- panel
+_PANEL_RESIZE_JS = (
+  "if(window.__pygGrip)return;window.__pygGrip=1;"
+  "var K='pygPanelWidth';function find(el){var n=el,b=null;while(n&&n.parentElement){var r=n.getBou"
+  'ndingClientRect();if(r.width>150&&r.height>window.innerHeight*0.5&&r.right>window.innerWidth-80)'
+  'b=n;n=n.parentElement;}return b;}var panel=find(this);if(!panel)return;var g=document.createElem'
+  "ent('div');g.title='\\uB04C\\uC5B4\\uC11C \\uB108\\uBE44 \\uC870\\uC808';g.style.cssText='position:fixe"
+  "d;top:0;bottom:0;width:10px;z-index:10000;cursor:col-resize;background:rgba(128,128,128,.25)';g."
+  "onmouseenter=function(){g.style.background='rgba(90,150,210,.55)'};g.onmouseleave=function(){g.s"
+  "tyle.background='rgba(128,128,128,.25)'};document.body.appendChild(g);function put(w){w=Math.max"
+  "(240,Math.min(window.innerWidth-120,w));panel.style.width=w+'px';panel.style.maxWidth='none';g.s"
+  "tyle.right=w+'px';try{localStorage.setItem(K,String(w))}catch(e){}}var drag=false;g.addEventList"
+  "ener('pointerdown',function(e){drag=true;g.setPointerCapture(e.pointerId);e.preventDefault()});g"
+  ".addEventListener('pointermove',function(e){if(drag)put(window.innerWidth-e.clientX)});g.addEven"
+  "tListener('pointerup',function(){drag=false});g.addEventListener('pointercancel',function(){drag"
+  "=false});g.addEventListener('dblclick',function(){put(420)});window.addEventListener('resize',fu"
+  'nction(){put(panel.getBoundingClientRect().width)});var w0=420;try{w0=parseInt(localStorage.getI'
+  "tem(K)||'420',10)||420}catch(e){}put(w0);"
+)
+"""조작판 왼쪽에 끌기 손잡이를 붙이는 코드. 브라우저에서 실행된다."""
+
+
 def _mount(server: viser.ViserServer, state: dict) -> None:
   core = state["core"]
   c = core.c
   gui = server.gui
   state["scene"] = ViserMujocoScene(server, core.m, num_envs=1)
   state["scene"].update_from_mjdata(core.d)
+
+  # --------------------------------------------------------- Panel width
+  # 2026-09-12, user: "viser 우측 창 내가 크기 슬라이드가능하게 못하나? 너무작아".
+  # viser's own theme only offers three fixed widths, so ``large`` is the new baseline and
+  # the block below adds a drag handle on top of it.  Everything else in ``configure_theme``
+  # keeps its default, which is what this app was already getting.
+  gui.configure_theme(control_width="large")
+
+  # The handle is built in the browser, because only the browser knows where the panel is.
+  # It walks UP from this element - the panel is whatever ancestor is right-anchored and
+  # full-height - instead of matching a CSS class, because Mantine's class names carry a
+  # build hash that changes when viser is upgraded.  Width is remembered per browser;
+  # double-click resets it.
+  #
+  # ★ The code rides on an ``onerror`` attribute, not a ``<script>`` tag: HTML inserted
+  # through ``innerHTML`` (which is what ``add_html`` ends up doing) never executes script
+  # tags, so the first attempt here silently did nothing - confirmed by driving the page
+  # with a real browser, which is the only way this class of bug shows up.
+  gui.add_html(
+    '<img src="data:," style="display:none" alt="" onerror="'
+    + _PANEL_RESIZE_JS.replace('"', '&quot;')
+    + '">'
+  )
 
   # ------------------------------------------------------------- Bench camera
   # 2026-09-12, user: "viser Wrapper 뷰어에 카메라 화면뜨게 할수있나? 지연 최대한 적게".
