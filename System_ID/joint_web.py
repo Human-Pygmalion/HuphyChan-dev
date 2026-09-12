@@ -900,7 +900,13 @@ async function tick(){{
                  : m.mode===0 ? '<span class="pill ok">힘 꺼짐</span>'
                  : m.mode===1 ? '<span class="pill warn">보정중</span>'
                  : '<span class="dim">힘 여부 모름</span>';
-      st = mode + (m.fault?' <span class="pill bad">고장</span>':'')
+      // ★ 힘이 들어갔는지 **정말로** 아는 값은 토크뿐입니다. 모드 비트는 거짓말을
+      // 합니다 (2026-09-12 실측: 8번 RS04 가 모드 0 을 보고하면서 3도 오차에
+      // 0.44 N·m 를 냄). 다만 목표와 지금 자리가 같으면 켜져 있어도 0 이라,
+      // **"켜짐" 만 증명되고 "꺼짐" 은 증명되지 않습니다.**
+      const nm = (m.nm==null) ? '' :
+        ` <span class="${{Math.abs(m.nm)>=0.2?'pill bad':'dim'}}">${{(+m.nm).toFixed(2)}} N\u00B7m</span>`;
+      st = mode + nm + (m.fault?' <span class="pill bad">고장</span>':'')
                 + (m.warning?' <span class="pill warn">경고</span>':'')
                 + (m.age_s>1 ? ` <span class="pill warn">${{m.age_s}}초 전</span>` : '')
                 + ` <span class="dim">${{m.temp}}\\uB3C4</span>`;
