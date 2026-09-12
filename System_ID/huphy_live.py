@@ -613,7 +613,9 @@ def trim_limits(machine, trim_deg: float) -> Dict[str, Any]:
       else:
         new_span = (lo + trim_deg, hi - trim_deg)
       narrowed[name] = replace(entry, limits_deg=new_span)
-      out[f"{getattr(part.config, 'name', '')}/{name}".lstrip("/")] = new_span
+      key = name if not getattr(machine, "limbs", None) else \
+        f"{getattr(part.config, 'name', '')}/{name}"
+      out[key] = new_span
     setter = getattr(part, "_set_calibration", None)
     if setter is None:
       raise SystemExit("이 판의 HUPHY 에는 _set_calibration 이 없습니다 — "
@@ -670,6 +672,10 @@ def build(args):
   from huphy.config import load_robot
   from huphy.control import ControlLoop, Mode
   from huphy.scripts.bringup import build_biped, build_leg
+  # `build_leg` 은 이름이 아니라 **설정 객체**를 받습니다. 고르는 일은 HUPHY 자신의
+  # 함수에 맡깁니다 — 오타를 스택 트레이스 대신 사람 말로 알려 주고, "팔다리마다
+  # CAN 채널이 달라 잘못 고르면 엉뚱한 쪽이 움직인다" 는 경고도 그쪽에 있습니다.
+  from huphy.scripts.commission import _pick_limb
 
   robot_cfg = load_robot(args.config)
   drain_s = None if args.drain_ms is None else args.drain_ms / 1000.0
@@ -677,7 +683,7 @@ def build(args):
     machine = build_biped(robot_cfg, allow_uncalibrated=args.allow_uncalibrated,
                           drain_s=drain_s)
   else:
-    machine = build_leg(robot_cfg, args.limb,
+    machine = build_leg(robot_cfg, _pick_limb(robot_cfg, args.limb),
                         allow_uncalibrated=args.allow_uncalibrated,
                         drain_s=drain_s)
   hz = args.hz or getattr(machine, "control_hz", 100.0)

@@ -1357,6 +1357,15 @@
    "width": 580,
    "height": 360,
    "text": "**실물 제어 경로를 HUPHY 것으로 (2026-09-12)**\n[[2026-09-12_ankle_ab_clipping]]\n\n명령 경로 = HUPHY ControlLoop 의 Motion 계약\n화면/제어루프 두 프로세스 UDP, 통신선 읽는 곳은 하나\n\n우리 쪽에 남긴 것 = HUPHY 에 없는 것만\n  · 권선 과열 차단\n  · 발목 AB 쌍 클리핑 (축 ±22.75 **AND** 발판 ROM)\n\n★**기구학은 필터가 아님** — AB 사각형 6,561칸 100% 풀림\n  거르는 건 발판 자세 한계(숙임 −50~+30·기울임 ±20)뿐\n\n대기창 2ms→5ms (최악 연속 무응답 40→4, 초당 199.9 유지)\n\nE2E 29개: 지킴 26 · 주의 3 · 구멍 0\n사용자 요구가 잡은 진짜 결함 2건:\n  패킷 동일성 320조합 → span 제거 필요성 확정\n  과열 차단이 키 오타로 영원히 안 걸리던 것"
+  },
+  {
+   "id": "n_safe_joints_both_legs_2026_09_12",
+   "type": "text",
+   "x": -40,
+   "y": 14480,
+   "width": 560,
+   "height": 300,
+   "text": "**실물: 안전관절을 로봇 프로그램 경로로 구동 (2026-09-12)**\n[[2026-09-12_safe_joints_both_legs]]\n\n명령 경로를 우리 코드 -> HUPHY ControlLoop 로 옮김\n우리 쪽에 남은 것: 과열 차단 · 발목 쌍 검사\n\n**주기 99.9Hz · 밀림 0 · 무응답 4/2499**\n(직전 82.8Hz · 97.2% 무응답) — 대기창 2ms->5ms\n\n왼 엉덩이회전 +11.26->+3.33 · 오른 −2.38->+7.75\n잔차 2~3도 = 정지마찰(kp 10)\n안 연 관절 3개 명령 0회, 제자리\n\n★실물 전 가짜모터 검사 35개가 결함 4건 차단"
   }
  ],
  "edges": [
@@ -2553,6 +2562,14 @@
    "toNode": "n_real_control_path_2026_09_12",
    "toSide": "top",
    "label": "모터는 멀쩡 → 경로를 제대로"
+  },
+  {
+   "id": "e_enablerefusal_to_safejoints",
+   "fromNode": "n_motor_enable_refusal_2026_09_12",
+   "fromSide": "bottom",
+   "toNode": "n_safe_joints_both_legs_2026_09_12",
+   "toSide": "top",
+   "label": "기준을 고친 뒤 실제로 돌림"
   }
  ]
 }
