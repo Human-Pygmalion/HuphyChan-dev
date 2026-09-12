@@ -1385,6 +1385,16 @@
       "width": 560,
       "height": 320,
       "text": "**실물: 슬라이더로 12관절 전부 구동 (2026-09-12)**\n[[2026-09-12_slider_all12]]\n\n화면 -> UDP -> HUPHY 루프 -> 통신선, 관절마다 ±6도 왕복\n161초 · 3052줄 · 주기 68Hz\n\n★**중력이 갈림** (kp 10)\n  중력 큼(앞뒤·좌우·무릎)  따라간 비율 **24%**\n  중력 작음(회전·발목)     **75%**\n최대토크 1.32Nm = 정격의 1%대 -> 모터가 아니라 kp 문제\n오른 무릎 1% = 허용구간 밖(−0.03 vs [−117,−3])\n\n★내 오류 2건 정정: 정착오차 산정 · 대기창(90초 소크로 0ms 사망 발견)"
+    },
+    {
+      "id": "n_legonly_v5_heading",
+      "type": "file",
+      "file": "experiments/2026-09-13_legonly_ab_v5_heading.md",
+      "x": 22400,
+      "y": 580,
+      "width": 420,
+      "height": 170,
+      "color": "6"
     }
   ],
   "edges": [
@@ -2637,6 +2647,22 @@
       "toNode": "n_limp_root_cause_mirror",
       "toSide": "left",
       "label": "§3c: 무작위화가 꺼진 1단계에서 가장 빠르게 표류(+0.0134/1000회)"
+    },
+    {
+      "id": "e_v4_to_v5heading",
+      "fromNode": "n_legonly_v4_motorparams",
+      "fromSide": "right",
+      "toNode": "n_legonly_v5_heading",
+      "toSide": "left",
+      "label": "유일 변인: 방향 유지 비율 0.3 → 0.8"
+    },
+    {
+      "id": "e_limp_to_v5heading",
+      "fromNode": "n_limp_root_cause_mirror",
+      "fromSide": "right",
+      "toNode": "n_legonly_v5_heading",
+      "toSide": "bottom",
+      "label": "§3d 비틀기 5.32° vs 걸음 6.02°, §2b 벌점 두 항 합쳐 0.8 % → 변인 근거"
     }
   ]
 }
