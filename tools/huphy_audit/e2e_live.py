@@ -897,6 +897,89 @@ def e29(f):
 
 
 # ===========================================================================
+# 자 · 여는 관절만 열기 · 한계 좁히기
+# ===========================================================================
+@check("E30", "관절 고르기", "고르지 않은 관절에는 **아무것도 안 나가는가**")
+def e30(f):
+  """이게 이번 실물 시험의 핵심 안전장치다. 안전 관절만 열고 나머지는 꺼진 채 둔다.
+
+  특히 무릎은 0도가 곧 하드스톱이라, 실수로 목표 표에 들어가면 그대로 밀어붙인다.
+  """
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build()
+  spin(loop, motion_all, 3)
+
+  chosen = HL.pick_joints(leg, set(SAFE_JOINTS))
+  live = HL.LiveTargets(chosen)
+  motion = HL.AnklePairGuard(HL.ThermalCutoff(live, 50.0), leg)
+  motors.sent.clear()
+  for k in range(80):
+    loop.step(motion, t=5.0 + k * 0.01)
+
+  opened = {n: count_sent(motors, MOTOR_OF[n]) for n in SAFE_JOINTS}
+  shut = {n: count_sent(motors, MOTOR_OF[n])
+          for n in MOTOR_OF if n not in SAFE_JOINTS}
+  if all(v > 0 for v in opened.values()) and all(v == 0 for v in shut.values()):
+    f.hold(f"연 관절 {sorted(opened)} 은 명령을 받고({list(opened.values())}주기), "
+           f"안 연 관절 {sorted(shut)} 에는 **한 번도 안 나갔습니다**. "
+           f"무릎이 하드스톱(0도)으로 끌려가지 않습니다.")
+  else:
+    f.leak(f"샜습니다 — 연 것 {opened} / 안 연 것 {shut}")
+
+
+@check("E31", "관절 고르기", "없는 관절 이름을 주면 시작 전에 멈추는가")
+def e31(f):
+  import huphy_live as HL
+  leg, loop, *_ = build()
+  try:
+    HL.pick_joints(leg, {"hip_yaw", "존재하지_않는_관절"})
+  except SystemExit as exc:
+    f.hold(f"시작 전에 멈춥니다: {str(exc)[:80]}. 오타로 엉뚱한 관절만 열린 채 "
+           f"도는 것보다 안 뜨는 편이 낫습니다.")
+    return
+  f.leak("오타를 그냥 지나쳤습니다.")
+
+
+@check("E32", "한계 좁히기", "--trim-deg 가 실제 한계를 양쪽으로 좁히는가")
+def e32(f):
+  import huphy_live as HL
+  leg, loop, live, motion, motors = build(trim=False)     # MJCF 원래 한계로
+  before = {n: tuple(leg.calibration[n].limits_deg) for n in SAFE_JOINTS}
+  HL.trim_limits(leg, RANGE_TRIM_DEG)
+  after = {n: tuple(leg.calibration[n].limits_deg) for n in SAFE_JOINTS}
+  ok = all(abs(after[n][0] - (before[n][0] + RANGE_TRIM_DEG)) < 1e-9
+           and abs(after[n][1] - (before[n][1] - RANGE_TRIM_DEG)) < 1e-9
+           for n in SAFE_JOINTS)
+  detail = " · ".join(f"{n} {before[n][0]:+.1f}~{before[n][1]:+.1f} -> "
+                      f"{after[n][0]:+.1f}~{after[n][1]:+.1f}" for n in SAFE_JOINTS)
+  (f.hold if ok else f.leak)(detail)
+
+
+@check("E33", "한계 좁히기", "좁힌 한계가 **실제로 통신선에서** 지켜지는가")
+def e33(f):
+  """설정만 바꾸고 끝내면 안 되고, 나가는 바이트가 그 안이어야 합니다."""
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build(trim=False)
+  HL.trim_limits(leg, RANGE_TRIM_DEG)
+  spin(loop, motion_all, 3)
+  chosen = HL.pick_joints(leg, {"hip_yaw"})
+  live = HL.LiveTargets(chosen)
+  motion = HL.ThermalCutoff(live, 50.0)
+  live.update({"hip_yaw": 900.0})
+  motors.sent.clear()
+  for k in range(400):
+    loop.step(motion, t=9.0 + k * 0.01)
+  hit = sent_to(motors, MOTOR_OF["hip_yaw"])
+  lo, hi = leg.calibration["hip_yaw"].limits_deg
+  ceiling = hi - SAFETY["command_margin_deg"]
+  if hit and hit["pos"] <= ceiling + 0.05:
+    f.hold(f"목표 900도 -> 나간 값 {hit['pos']:+.2f}도. 좁힌 상한 {hi:+.2f}도에서 "
+           f"여유 {SAFETY['command_margin_deg']:g}도 안({ceiling:+.2f}도)입니다.")
+  else:
+    f.leak(f"넘었습니다: {hit['pos'] if hit else None} (상한 {ceiling:+.2f})")
+
+
+# ===========================================================================
 # 실행
 # ===========================================================================
 def main(argv=None) -> int:

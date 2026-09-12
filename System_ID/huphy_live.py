@@ -546,6 +546,92 @@ def report_modes(robot) -> Dict[int, Any]:
 # ===========================================================================
 # 진입점
 # ===========================================================================
+def trim_limits(machine, trim_deg: float) -> Dict[str, Any]:
+  """실측 한계를 **양쪽으로** `trim_deg` 만큼 좁힌다. 설정 파일은 안 건드린다.
+
+  사용자 지시(2026-09-12): *"최대/최소 범위는 ±15도 줄이고"* -> "한계에서 양쪽으로
+  15도씩 안으로". 시험하는 동안만 좁히는 것이라 파일을 고치지 않고 여기서 바꿉니다
+  — 파일을 고치면 되돌리는 것을 잊습니다.
+
+  ★ **`calibration` 만 고치면 아무 일도 안 일어납니다.** 한계를 자르는 가드는
+  `calibration` 이 아니라 **`config.motors[이름].limits_deg`** 를 봅니다
+  (`robots/leg.py:241`, `:546`). `Leg._set_calibration` 이 둘을 잇는 자리라,
+  여기서도 그것을 다시 불러 값을 내려보냅니다.
+
+  2026-09-12 에 `calibration` 만 고쳤다가 좁히기 전 한계(45도)가 그대로 나가는 것을
+  검사 E33 이 잡았습니다 — 설정이 중간에서 증발하는 전형적인 모양입니다.
+  """
+  from dataclasses import replace
+  out = {}
+  for part in getattr(machine, "limbs", None) or [machine]:
+    cal = getattr(part, "calibration", None)
+    if not cal:
+      continue
+    narrowed = {}
+    for name, entry in cal.items():
+      span = getattr(entry, "limits_deg", None)
+      if not span:
+        narrowed[name] = entry
+        continue
+      lo, hi = float(span[0]), float(span[1])
+      if hi - lo <= 2.0 * trim_deg:
+        mid = 0.5 * (lo + hi)
+        new_span = (mid, mid)
+      else:
+        new_span = (lo + trim_deg, hi - trim_deg)
+      narrowed[name] = replace(entry, limits_deg=new_span)
+      out[f"{getattr(part.config, 'name', '')}/{name}".lstrip("/")] = new_span
+    setter = getattr(part, "_set_calibration", None)
+    if setter is None:
+      raise SystemExit("이 판의 HUPHY 에는 _set_calibration 이 없습니다 — "
+                       "한계를 좁히는 길이 달라졌을 수 있으니 확인하십시오")
+    setter(narrowed)
+  return out
+
+
+def pick_joints(machine, wanted) -> list:
+  """명령할 관절만 고른다. **고르지 않은 관절에는 아무것도 안 나간다.**
+
+  ★ 왜 중요한가: `Leg._motor_targets` 는 **넘어온 키만** 순회합니다
+  (`robots/leg.py:475`). 목표 표에 없는 관절은 그 주기에 명령을 안 받고, 한 번도
+  힘을 넣은 적이 없으면 **꺼진 채로 남습니다.** 그래서 여는 관절을 고르는 일이
+  곧 안전장치입니다.
+
+  이게 없으면 다리의 관절 **전부**가 매 주기 0도를 받습니다 — 무릎은 0도가 곧
+  하드스톱이라 그대로 밀어붙이게 됩니다.
+  """
+  # ★ `joint_names` 로는 부족합니다. 그것은 **발판 공간**(ankle_pitch/ankle_roll)만
+  # 내는데, 우리는 발목을 **모터 공간**(ankle_a/ankle_b)으로 줍니다 — 지금 구현체도
+  # 학습된 정책도 그 공간이기 때문입니다(사용자 결정 2026-09-12). 받을 수 있는
+  # 이름 전부는 `robots/leg.py:87 COMMANDABLE` 입니다.
+  from huphy.robots.leg import COMMANDABLE
+  legs = getattr(machine, "limbs", None)
+  names = []
+  for part in legs or [machine]:
+    prefix = f"{getattr(part.config, 'name', '')}/" if legs else ""
+    names.extend(prefix + n for n in COMMANDABLE)
+  if not wanted:
+    # 안 고르면 **발판 공간 기본값**을 씁니다. 여덟 개를 통째로 주면 HUPHY 가
+    # "두 공간이 섞임" 으로 거부합니다 (`leg.py:443`).
+    return [n for n in names if not n.split("/")[-1] in ("ankle_a", "ankle_b")]
+  chosen = [n for n in names if n in wanted or n.split("/")[-1] in wanted]
+  missing = [w for w in wanted
+             if not any(w == n or w == n.split("/")[-1] for n in names)]
+  if missing:
+    raise SystemExit(f"그런 관절이 없습니다: {missing}. 가능한 것: {sorted(set(names))}")
+  # 두 발목 공간을 섞어 고르는 것도 여기서 막습니다 -- 제어 루프가 도는 중에
+  # ValueError 로 서는 것보다 시작 전에 안 뜨는 편이 낫습니다.
+  tails = {n.split("/")[-1] for n in chosen}
+  if tails & {"ankle_pitch", "ankle_roll"} and tails & {"ankle_a", "ankle_b"}:
+    raise SystemExit("발목을 두 공간으로 섞어 고를 수 없습니다 — "
+                     "ankle_pitch+ankle_roll 이거나 ankle_a+ankle_b 중 한 쌍만")
+  for pair in (("ankle_pitch", "ankle_roll"), ("ankle_a", "ankle_b")):
+    if tails & set(pair) and not set(pair) <= tails:
+      raise SystemExit(f"발목은 {pair[0]} 와 {pair[1]} 를 **함께** 골라야 합니다 — "
+                       f"모터 두 개가 두 자유도를 같이 만들기 때문입니다")
+  return chosen
+
+
 def build(args):
   """설정을 읽어 로봇과 제어 루프를 세운다. **HUPHY 의 도구만 쓴다.**"""
   from huphy.config import load_robot
@@ -582,6 +668,11 @@ def main(argv=None) -> int:
   ap.add_argument("--state-to", nargs="*", default=[],
                   help="상태를 보낼 자리. 예: 127.0.0.1:9873 10.8.0.16:9870")
   ap.add_argument("--state-hz", type=float, default=20.0)
+  ap.add_argument("--joints", nargs="*", default=[],
+                  help="명령할 관절만. 안 주면 **전부**. 고르지 않은 관절에는 "
+                       "아무것도 안 나갑니다 (예: hip_yaw ankle_a ankle_b)")
+  ap.add_argument("--trim-deg", type=float, default=0.0,
+                  help="한계를 양쪽으로 이만큼 안으로 좁힘. 설정 파일은 안 건드림")
   ap.add_argument("--drain-ms", type=float, default=5.0,
                   help="응답을 기다리는 창. 로봇 프로그램 기본은 2.0 인데 "
                        "실측으로 5.0 이 나았습니다 — 아래 주석 참조")
@@ -590,13 +681,29 @@ def main(argv=None) -> int:
   logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
   machine, loop, hz = build(a)
 
-  names = list(getattr(machine, "joint_names", ()))
+  if a.trim_deg > 0:
+    narrowed = trim_limits(machine, a.trim_deg)
+  else:
+    narrowed = {}
+  names = pick_joints(machine, set(a.joints))
   live = LiveTargets(names)
   motion = AnklePairGuard(ThermalCutoff(live, a.max_temp_c), machine)
   server = TargetServer(live, a.listen, a.token).start()
   state = StateSender(machine, live, a.state_to, hz=a.state_hz).start()
 
-  print(f"\n{getattr(machine, 'id', '로봇')} · 초당 {hz:.0f}회 · 관절 {len(names)}개")
+  all_names = list(getattr(machine, "joint_names", ()))
+  print(f"\n{getattr(machine, 'id', '로봇')} · 초당 {hz:.0f}회")
+  print(f"  ** 명령할 관절 {len(names)}/{len(all_names)}개: {names} **")
+  held_out = [n for n in all_names if n not in names]
+  if held_out:
+    print(f"     여는 게 아닌 관절 {len(held_out)}개에는 **아무것도 안 나갑니다**: "
+          f"{held_out}")
+  if narrowed:
+    print(f"  한계를 양쪽 {a.trim_deg:g}도 안으로 좁힘:")
+    for n in names:
+      span = narrowed.get(n)
+      if span:
+        print(f"     {n:24} {span[0]:+8.2f} ~ {span[1]:+8.2f}도")
   print(f"  목표를 받는 자리 udp:{a.listen}"
         f"{' (암호 있음)' if a.token else ' (암호 없음 — 망 안에서만 쓸 것)'}")
   print(f"  권선 {a.max_temp_c:g}도를 넘으면 그 관절 목표를 지금 자리로 묶음")
