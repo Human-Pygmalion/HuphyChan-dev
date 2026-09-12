@@ -355,6 +355,31 @@ class RemoteGuard:
       return True                      # 판단할 근거가 없으면 막지 않는다
     return self.poller.age_s() is not None and self.poller.age_s() < 1.0
 
+  def set_gain(self, name: str, kp=None, kd=None) -> dict:
+    """관절 하나의 세기·감쇠를 제어 루프로 넘긴다. **여기서 자르지 않는다.**
+
+    상한은 제어 루프가 걸고(`huphy_live.GainControl`), 잘린 결과는 상태로 돌아와
+    화면에 그대로 보입니다. 화면이 따로 자르면 두 군데에 규칙이 생겨 어긋납니다.
+    """
+    if not self.loop_alive():
+      return dict(ok=False, why="제어 루프가 응답하지 않습니다")
+    huphy_name = self.TO_HUPHY.get(name)
+    if huphy_name is None:
+      return dict(ok=False, why=f"제어 루프 쪽 이름을 모릅니다: {name}")
+    body = {}
+    if kp is not None:
+      body["kp"] = float(kp)
+    if kd is not None:
+      body["kd"] = float(kd)
+    if not body:
+      return dict(ok=False, why="바꿀 값이 없습니다")
+    try:
+      self.sock.sendto(json.dumps({"gains": {huphy_name: body}}).encode(), self.addr)
+    except OSError:
+      return dict(ok=False, why="제어 루프로 못 보냈습니다")
+    self.stats["gain"] = self.stats.get("gain", 0) + 1
+    return dict(ok=True, joint=huphy_name, **body)
+
   def release_by_name(self, name: str, token: str) -> dict:
     """화면의 '힘 빼기'. 제어 루프에 알린다 — 여기서 직접 끄지 않는다."""
     del token
@@ -381,6 +406,7 @@ class RemoteGuard:
         lo, hi = float(live["lo"]), float(live["hi"])
         rows[str(mid)] = dict(
           ko=ko, sim=name, iface="",
+          kp=live.get("kp"), kd=live.get("kd"), kp_wire=live.get("kp_wire"),
           lo=round(lo, 2), hi=round(hi, 2),
           home=round(min(hi, max(lo, 0.0)), 2),
           cmd=live.get("tgt"), q0=None, homing=False,
@@ -678,6 +704,21 @@ def make_handler(poller, rows, cam_url, cam_watch, viser_url, guard=None):
       화면을 닫든 인터넷이 끊기든 같은 일이 일어난다 - 원격에서 쓰기에 이 편이
       '무장해 두면 계속 나가는' 방식보다 안전하다.
       """
+      if self.path.split("?")[0] == "/gain" and guard is not None:
+        try:
+          n = int(self.headers.get("Content-Length", 0))
+          body = json.loads(self.rfile.read(n) or b"{}")
+        except (ValueError, TypeError):
+          body = {}
+        setter = getattr(guard, "set_gain", None)
+        if setter is None:
+          r = dict(ok=False, why="이 방식에서는 세기를 못 바꿉니다 "
+                                 "(제어 루프와 나눠 쓸 때만 됩니다)")
+        else:
+          r = setter(str(body.get("name", "")), kp=body.get("kp"), kd=body.get("kd"))
+        self._send(200 if r.get("ok") else 403, "application/json",
+                   json.dumps(r, ensure_ascii=False).encode())
+        return
       if self.path.split("?")[0] == "/release" and guard is not None:
         # 사람이 멈춤을 눌렀다. **데드맨을 기다리지 않고 바로 끊는다.**
         try:
@@ -814,6 +855,9 @@ function setLocked(on, why){{
   }}
   for (const el of document.querySelectorAll('#ctlbody input[type=range]'))
     el.disabled = LOCKED;
+  // 세기·감쇠 칸도 같이 잠근다 — 잠긴 화면에서 힘만 바꿀 수 있으면 잠금이 아니다.
+  for (const el of document.querySelectorAll('#ctlbody input[type=number]'))
+    el.disabled = LOCKED;
   if (LOCKED && window.__HOOKS)
     for (const h of Object.values(window.__HOOKS))
       h.stop('\uC7A0\uAE08');   // 잠그면 보내기만 멈춘다. 힘은 그대로 -- 목표 위치를 잡고 있어야 한다
@@ -922,6 +966,14 @@ async function tick(){{
           + `<input type="range" id="s${{mid}}" min="${{m.lo}}" max="${{m.hi}}"`
           + ` step="0.5" value="${{m.cmd!=null ? m.cmd : m.home}}" style="width:210px">`
           + `<span id="v${{mid}}" class="big" style="min-width:62px">+0.0&deg;</span>`
+          + `<label class="dim" style="margin-left:4px">\uC138\uAE30</label>`
+          + `<input id="kp${{mid}}" type="number" step="0.5" min="0"`
+          + ` value="${{m.kp!=null ? m.kp : ''}}" style="width:64px;background:#12141a;`
+          + `color:#e8e8e8;border:1px solid #3a3f4a;border-radius:6px;padding:6px 7px">`
+          + `<label class="dim">\uAC10\uC1E0</label>`
+          + `<input id="kd${{mid}}" type="number" step="0.1" min="0"`
+          + ` value="${{m.kd!=null ? m.kd : ''}}" style="width:60px;background:#12141a;`
+          + `color:#e8e8e8;border:1px solid #3a3f4a;border-radius:6px;padding:6px 7px">`
           + `<button id="z${{mid}}" title="이 관절을 영자세로">0\u00B0 \uB85C</button>`
           + `<button id="b${{mid}}">움직이기</button>`
           + `<span id="n${{mid}}" class="dim"></span></div>`);
@@ -953,6 +1005,22 @@ async function tick(){{
         lb.addEventListener('click', () => setLocked(!LOCKED));
       }}
       setLocked(LOCKED);        // 새로 만든 단추·슬라이더에도 지금 상태를 입힌다
+    }}
+    // ★ 숫자 칸은 **제어 루프에 실제로 걸린 값**을 보여 준다. 보낸 값을 그대로
+    // 적으면, 상한에 잘렸는데도 사람은 자기가 넣은 숫자가 걸렸다고 믿는다
+    // (2026-09-12: 상한 15 인데 18 이 그대로 남아 있었다).
+    // 사람이 그 칸을 만지고 있는 중이면 건드리지 않는다.
+    for (const [mid, m] of Object.entries(K.motors)) {{
+      // 눈금 때문에 통신선에 0 이 나가면 **힘이 아예 안 들어갑니다.** 사람은
+      // "약하게 해 뒀다" 고 믿고 있을 수 있으니 붉은 띠에 올립니다.
+      if (m.kp != null && m.kp > 0 && m.kp_wire === 0)
+        hot.push(`${{m.ko}} \uC138\uAE30 ${{m.kp}} \u2192 `
+                 + `\uD1B5\uC2E0\uC120\uC5D0\uB294 0 (\uD798\uC774 \uC548 \uB4E4\uC5B4\uAC10)`);
+      for (const [pre, v] of [['kp', m.kp], ['kd', m.kd]]) {{
+        const el = document.getElementById(pre + mid);
+        if (el && v != null && document.activeElement !== el
+            && parseFloat(el.value) !== v) el.value = v;
+      }}
     }}
     const rows = Object.entries(K.motors).map(([mid, m]) =>
       `${{m.ko}}: ${{m.torque_on ? '<span class="pill bad">힘 켜짐</span>' : '<span class="pill ok">힘 꺼짐</span>'}}`
@@ -1078,6 +1146,28 @@ function hookToggle(mid){{
   bt2.addEventListener('click', () => timer ? stop('멈춤') : start());
   // 영자세로. 슬라이더를 그 관절의 영자세에 놓고 켠다 -- 켜면 가드가 어차피 먼저
   // 영자세로 데려가므로, 이 단추는 **그 뒤에 어디로도 가지 않게** 하는 것이다.
+  // 세기·감쇠를 숫자로. **바꾸면 바로 나갑니다** — 돌고 있는 중에도 다음 주기부터
+  // 적용됩니다. 상한은 제어 루프가 걸고, 잘리면 돌아온 값이 칸에 다시 적힙니다.
+  const kpBox = document.getElementById('kp'+mid), kdBox = document.getElementById('kd'+mid);
+  async function sendGain(){{
+    const el = document.getElementById('tok');
+    const body = {{name: NAME[mid], token: el ? el.value : ''}};
+    if (kpBox.value !== '') body.kp = parseFloat(kpBox.value);
+    if (kdBox.value !== '') body.kd = parseFloat(kdBox.value);
+    try{{
+      const r = await fetch('/gain', {{method:'POST',
+        headers:{{'Content-Type':'application/json'}}, body: JSON.stringify(body)}});
+      const j2 = await r.json();
+      // 보낸 값이지 걸린 값이 아니다 — 걸린 값은 상태로 돌아와 위에서 칸에 적힌다.
+      nn.textContent = j2.ok
+        ? `\uC138\uAE30\uB97C \uBCF4\uB0C8\uC2B5\uB2C8\uB2E4 \u2014 `
+          + `\uC704 \uCE78\uC5D0 **\uC2E4\uC81C \uAC78\uB9B0 \uAC12**\uC774 \uC801\uD798\uB2C8\uB2E4`
+        : ('\uAC70\uBD80: ' + (j2.why||''));
+    }}catch(e){{ nn.textContent = '\uC138\uAE30\uB97C \uBABB \uBCF4\uB0C8\uC2B5\uB2C8\uB2E4'; }}
+  }}
+  kpBox.addEventListener('change', sendGain);
+  kdBox.addEventListener('change', sendGain);
+
   function toZero(){{
     sl.value = HOME[mid]; show();
     if (!timer) start();

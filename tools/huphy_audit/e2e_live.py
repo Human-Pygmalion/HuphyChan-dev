@@ -617,10 +617,15 @@ def e19(f):
   ui = RemoteGuard(f"127.0.0.1:{port}", arm_token="", allow={"L_hip_yaw_joint"})
 
   goal = trimmed("hip_yaw")[1] - SAFETY["command_margin_deg"]
+  # UDP 는 한 장이 흘려질 수 있습니다. 실제 화면도 초당 열 번 되풀이해 보내므로,
+  # 시험도 그렇게 합니다 — 한 번 보내고 기다리기만 하면 **간헐적으로 실패**하고,
+  # 간헐적으로 실패하는 시험은 사람이 실패를 무시하게 만듭니다.
+  _t = __import__("time")
   reply = ui.local_target("L_hip_yaw_joint", goal, "")
-  deadline = __import__("time").monotonic() + 2.0
-  while live.rx == 0 and __import__("time").monotonic() < deadline:
-    __import__("time").sleep(0.01)
+  deadline = _t.monotonic() + 5.0
+  while live.rx == 0 and _t.monotonic() < deadline:
+    ui.local_target("L_hip_yaw_joint", goal, "")
+    _t.sleep(0.05)
   spin(loop, motion, 400, t0=1.0)
   server.stop()
   hit = sent_to(motors, MOTOR_OF["hip_yaw"])
@@ -1322,9 +1327,10 @@ def e44(f):
   server = HL.TargetServer(live, port, token="").start()
   ui = RemoteGuard(f"127.0.0.1:{port}", arm_token="", allow={"L_hip_yaw_joint"})
   reply = ui.local_target("L_hip_yaw_joint", 12.0, "")
-  end = _t.monotonic() + 2.0
+  end = _t.monotonic() + 5.0
   while live.rx == 0 and _t.monotonic() < end:
-    _t.sleep(0.01)
+    ui.local_target("L_hip_yaw_joint", 12.0, "")   # UDP 는 흘려질 수 있다
+    _t.sleep(0.05)
   motors.sent.clear()
   for k in range(400):
     loop.step(motion, t=1.0 + k * 0.01)
@@ -1406,6 +1412,110 @@ def e47(f):
            "거절 1회를 셌습니다.")
   else:
     f.leak(f"예상과 다릅니다: {alive} / {ui.stats}")
+
+
+# ===========================================================================
+# 파 · 관절마다 세기·감쇠를 숫자로
+# ===========================================================================
+@check("E48", "세기", "관절 하나의 세기를 바꾸면 **다음 주기부터** 통신선에 반영되는가")
+def e48(f):
+  """로봇 프로그램은 매 주기 `motor.gains.kp` 를 읽습니다(`robots/leg.py:562`).
+  그래서 루프를 세우지 않고 바꿀 수 있어야 합니다."""
+  import huphy_live as HL
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 5)
+  before = sent_to(motors, MOTOR_OF["hip_yaw"])
+  g = HL.GainControl(leg, kp_cap=20.0, kd_cap=5.0)
+  r = g.set("hip_yaw", kp=18.0, kd=2.0)
+  motors.sent.clear()
+  spin(loop, motion, 5, t0=1.0)
+  after = sent_to(motors, MOTOR_OF["hip_yaw"])
+  other = sent_to(motors, MOTOR_OF["knee"])
+  if not r.get("ok"):
+    f.leak(f"못 바꿨습니다: {r}")
+  elif abs(after["kp"] - r["kp_on_wire"]) < 0.02 \
+       and abs(after["kd"] - r["kd_on_wire"]) < 0.02 \
+       and abs(other["kp"] - before["kp"]) < 0.02:
+    f.hold(f"엉덩이회전만 세기 {before['kp']:.2f}->{after['kp']:.2f}, "
+           f"감쇠 {after['kd']:.2f} 로 바뀌었고 **무릎은 그대로**"
+           f"({other['kp']:.2f}) 입니다. 루프를 안 세웠습니다. "
+           f"(18.0 을 넣으면 눈금 때문에 {r['kp_on_wire']:.2f} 로 나갑니다)")
+  else:
+    f.leak(f"예상과 다릅니다: {before} -> {after}, 무릎 {other}")
+
+
+@check("E49", "세기", "상한을 넘겨 주면 **잘라서 넣고 알리는가**")
+def e49(f):
+  import huphy_live as HL
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  g = HL.GainControl(leg, kp_cap=15.0, kd_cap=5.0)
+  r = g.set("hip_yaw", kp=500.0, kd=99.0)
+  motors.sent.clear()
+  spin(loop, motion, 5, t0=1.0)
+  hit = sent_to(motors, MOTOR_OF["hip_yaw"])
+  if r.get("kp") == 15.0 and r.get("kd") == 5.0 and r.get("notes") \
+     and abs(hit["kp"] - r["kp_on_wire"]) < 0.02:
+    f.hold(f"세기 500 -> {r['kp']:g}, 감쇠 99 -> {r['kd']:g} 로 자르고 "
+           f"'{r['notes'][0]}' 라고 알립니다. 통신선에 실제로 나간 값은 "
+           f"눈금 때문에 {hit['kp']:.2f} 입니다 — 그것도 같이 알립니다.")
+  else:
+    f.leak(f"예상과 다릅니다: {r} / 나간 값 {hit}")
+
+
+@check("E50", "세기", "눈금보다 작은 세기를 주면 **0이 된다고 알리는가**")
+def e50(f):
+  """세기는 12비트로 0~5000 을 나눠 담아 눈금이 1.2210 입니다. 그보다 작으면
+  **0으로 나가 힘이 아예 안 들어갑니다.** '약하게 해 뒀다' 고 믿는데 실은 0인
+  반대 방향의 위험이라, 사람에게 알려야 합니다."""
+  import huphy_live as HL
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  g = HL.GainControl(leg, kp_cap=15.0, kd_cap=5.0)
+  r = g.set("hip_yaw", kp=1.0)
+  motors.sent.clear()
+  spin(loop, motion, 5, t0=1.0)
+  hit = sent_to(motors, MOTOR_OF["hip_yaw"])
+  warned = any("0으로" in n for n in r.get("notes", []))
+  if warned and hit["kp_raw"] == 0:
+    f.hold(f"세기 1.0 을 넣으면 통신선에는 **0** 이 나갑니다(눈금 "
+           f"{HL.GainControl.QUANTUM:.4f}). 그 사실을 알립니다: "
+           f"{r['notes'][-1][:60]}")
+  elif hit["kp_raw"] == 0:
+    f.leak(f"0으로 나가는데 **안 알립니다**: {r}")
+  else:
+    f.leak(f"예상과 다릅니다: 나간 눈금값 {hit['kp_raw']}")
+
+
+@check("E51", "세기", "화면이 **지금 걸린 값**을 받아 보여 주는가")
+def e51(f):
+  """화면이 따로 기억하면 둘이 어긋나고, 사람은 자기가 넣은 숫자가 걸렸다고
+  믿습니다. 잘린 결과가 화면에 돌아와야 합니다."""
+  import huphy_live as HL
+  robot, motors = build_biped_fake()
+  live = HL.LiveTargets(HL.pick_joints(robot, {"hip_yaw"}))
+  g = HL.GainControl(robot, kp_cap=15.0, kd_cap=5.0)
+  g.set("left_leg/hip_yaw", kp=500.0)      # 잘림
+  sender = HL.StateSender(robot, live, [], gains=g)
+  rows = sender.rows()
+  row = rows.get("3")
+  if row and abs(row.get("kp", -1) - 15.0) < 0.02:
+    f.hold(f"상태에 실려 나가는 세기가 **잘린 뒤 값 {row['kp']:g}** 입니다 — "
+           f"사람이 넣은 500 이 아닙니다.")
+  else:
+    f.leak(f"상태에 지금 값이 안 실립니다: {row}")
+
+
+@check("E52", "세기", "잠긴 화면에서는 세기 칸도 잠기는가")
+def e52(f):
+  """잠긴 화면에서 힘만 바꿀 수 있으면 잠금이 아닙니다. 화면 코드에서 확인합니다."""
+  import re as _re
+  src = open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                          "System_ID", "joint_web.py"), encoding="utf-8").read()
+  if _re.search(r"input\[type=number\]'\)\)\s*\n\s*el\.disabled = LOCKED", src):
+    f.hold("`setLocked` 이 숫자 칸도 잠급니다.")
+  else:
+    f.leak("숫자 칸이 잠금에서 빠져 있습니다.")
 
 
 # ===========================================================================

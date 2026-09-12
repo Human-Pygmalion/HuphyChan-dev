@@ -512,9 +512,12 @@ class StateSender:
   같은 내용을 여러 곳에 보낼 수 있습니다 — 화면(관절 페이지)과 3차원 뷰어.
   """
 
-  def __init__(self, robot, targets, targets_to, hz: float = 20.0):
+  def __init__(self, robot, targets, targets_to, hz: float = 20.0, gains=None):
     self.robot = robot
     self.targets = targets
+    self.gains = gains
+    """화면이 **지금 걸린 값**을 보여 줘야 합니다. 화면이 따로 기억하면 둘이
+    어긋나고, 사람은 자기가 넣은 숫자가 걸렸다고 믿습니다."""
     self.addrs = []
     for one in targets_to:
       host, _, port = str(one).partition(":")
@@ -563,8 +566,16 @@ class StateSender:
             lo = hi = 0.5 * (lo + hi)
         else:
           lo = hi = None
+        g = getattr(motor, "gains", None)
         out[str(motor.id)] = dict(
           joint=full, model=getattr(motor, "model", ""),
+          kp=None if g is None else round(float(g.kp), 3),
+          kd=None if g is None else round(float(g.kd), 3),
+          # ★ 12비트 눈금으로 잘린 **실제로 나가는 값**. 15 를 넣어도 14.65 가
+          # 나가고, 눈금(1.2210)보다 작으면 **0** 이 나갑니다 — 화면이 "약하게
+          # 해 뒀다" 와 "힘이 아예 안 들어간다" 를 구분해 보여 줘야 합니다.
+          kp_wire=None if g is None else round(
+            math.floor(float(g.kp) / GainControl.QUANTUM) * GainControl.QUANTUM, 2),
           lo=None if lo is None else round(lo, 2),
           hi=None if hi is None else round(hi, 2),
           deg=round(float(getattr(st, "position_deg", 0.0)), 2),
@@ -596,13 +607,114 @@ class StateSender:
 
 
 # ===========================================================================
+# 관절마다 세기(kp)와 감쇠(kd)를 숫자로
+# ===========================================================================
+class GainControl:
+  """관절마다 세기·감쇠를 바꾼다. **돌아가는 중에도 바뀐다.**
+
+  로봇 프로그램은 매 주기 `motor.gains.kp` 를 읽어 프레임에 싣습니다
+  (`robots/leg.py:562`). 그래서 설정의 `Motor` 를 갈아 끼우면 **다음 주기부터**
+  적용됩니다. 루프를 세웠다 다시 띄울 필요가 없습니다.
+
+  `Motor` 는 얼린 자료형이라 `motor.gains = ...` 로는 못 바꿉니다 — 통째로 새
+  `Motor` 를 만들어 사전의 그 자리에 넣습니다. 사전 항목 하나를 바꾸는 것은
+  가리키는 곳을 옮기는 한 번의 동작이라, 제어 루프가 그 사이에 반쪽짜리 값을
+  읽지 않습니다.
+
+  ## 상한을 두는 이유
+
+  세기를 크게 주면 **같은 오차에 토크가 그만큼 커집니다.** 세기 10에 오차 6도면
+  약 1뉴턴미터인데, 100이면 10뉴턴미터입니다. 숫자를 잘못 한 자리 더 치는 것으로
+  그렇게 됩니다. 그래서 상한을 두고, 넘으면 **상한으로 자르고 그 사실을 알립니다.**
+
+  ★ 프로토콜 눈금도 같이 봅니다. 세기는 12비트로 0~5000 을 나눠 담으므로 눈금이
+  1.2210 입니다. 그보다 작은 값은 **0으로 나가** 힘이 아예 안 들어갑니다 —
+  "약하게 해 뒀다" 고 믿는데 실은 0인 반대 방향의 위험이라, 여기서 걸러 알립니다.
+  """
+
+  QUANTUM = 5000.0 / 4095.0            # 세기 눈금, 약 1.2210
+  KD_QUANTUM = 100.0 / 4095.0          # 감쇠 눈금, 약 0.02442
+
+  def __init__(self, machine, *, kp_cap: float, kd_cap: float):
+    self.machine = machine
+    self.kp_cap = float(kp_cap)
+    self.kd_cap = float(kd_cap)
+    self._lock = threading.Lock()
+    self.changes = 0
+    self.clipped = 0
+    self.note = ""
+    # 관절 이름 -> (팔다리, 모터 이름)
+    self._where = {}
+    for part in limbs_of(machine) or [machine]:
+      cfg = getattr(part, "config", None)
+      if cfg is None:
+        continue
+      for joint in cfg.motors:
+        self._where[joint_prefix(machine, part) + joint] = (part, joint)
+
+  def current(self) -> Dict[str, Dict[str, float]]:
+    out = {}
+    for full, (part, joint) in self._where.items():
+      g = part.config.motors[joint].gains
+      out[full] = dict(kp=round(float(g.kp), 3), kd=round(float(g.kd), 3))
+    return out
+
+  def set(self, joint: str, kp=None, kd=None) -> Dict[str, Any]:
+    """한 관절의 세기·감쇠를 바꾼다. 상한 밖이면 잘라서 넣고 알린다."""
+    from dataclasses import replace
+    from huphy.motors.base import Gains
+    where = self._where.get(joint)
+    if where is None:
+      tail = joint.split("/")[-1]
+      hits = [k for k in self._where if k.split("/")[-1] == tail]
+      if len(hits) != 1:
+        return dict(ok=False, why=f"모르거나 모호한 관절입니다: {joint}")
+      where = self._where[hits[0]]
+      joint = hits[0]
+    part, name = where
+    with self._lock:
+      old = part.config.motors[name].gains
+      want_kp = float(old.kp if kp is None else kp)
+      want_kd = float(old.kd if kd is None else kd)
+      if not (math.isfinite(want_kp) and math.isfinite(want_kd)):
+        return dict(ok=False, why="숫자가 아닙니다")
+      new_kp = max(0.0, min(self.kp_cap, want_kp))
+      new_kd = max(0.0, min(self.kd_cap, want_kd))
+      notes = []
+      if new_kp != want_kp or new_kd != want_kd:
+        self.clipped += 1
+        notes.append(f"상한({self.kp_cap:g}/{self.kd_cap:g})으로 자름")
+      if 0.0 < new_kp < self.QUANTUM:
+        notes.append(f"세기 {new_kp:.3f} 는 눈금 {self.QUANTUM:.4f} 보다 작아 "
+                     f"**0으로 나갑니다** — 힘이 아예 안 들어갑니다")
+      part.config.motors[name] = replace(
+        part.config.motors[name], gains=Gains(kp=new_kp, kd=new_kd))
+      self.changes += 1
+      # ★ 통신선에 실제로 실리는 값은 **눈금으로 잘립니다.** 세기를 15 로 넣으면
+      # 모터는 14.65 를 받습니다. 사람이 넣은 숫자와 다르므로 같이 알립니다.
+      eff_kp = math.floor(new_kp / self.QUANTUM) * self.QUANTUM
+      eff_kd = math.floor(new_kd / self.KD_QUANTUM) * self.KD_QUANTUM
+      if abs(eff_kp - new_kp) > 1e-6:
+        notes.append(f"통신선에는 {eff_kp:.2f} 로 나갑니다 (눈금 {self.QUANTUM:.4f})")
+      self.note = f"{joint} 세기 {new_kp:g} 감쇠 {new_kd:g}" + (
+        " (" + " · ".join(notes) + ")" if notes else "")
+    logger.info("%s", self.note)
+    return dict(ok=True, joint=joint, kp=new_kp, kd=new_kd,
+                kp_on_wire=round(eff_kp, 3), kd_on_wire=round(eff_kd, 3),
+                notes=notes)
+
+
+# ===========================================================================
 # 명령을 받는 통로
 # ===========================================================================
 class TargetServer:
   """한 줄 JSON 을 UDP 로 받아 `LiveTargets` 에 넣는다. 보내지는 않는다."""
 
-  def __init__(self, targets: LiveTargets, port: int, token: str = ""):
+  def __init__(self, targets: LiveTargets, port: int, token: str = "", gains=None):
     self.targets, self.port, self.token = targets, int(port), str(token)
+    self.gains = gains
+    """세기·감쇠를 바꾸는 길. 목표와 **같은 통로**로 받습니다 — 화면이 통로를
+    둘 들고 있으면 하나만 살아 있는 상태를 못 알아챕니다."""
     self._stop = threading.Event()
     self.bad_token = 0
 
@@ -632,7 +744,11 @@ class TargetServer:
       if self.token and str(msg.get("token", "")) != self.token:
         self.bad_token += 1
         continue
-      if "release" in msg:
+      if "gains" in msg and isinstance(msg["gains"], dict) and self.gains:
+        for joint, g in msg["gains"].items():
+          if isinstance(g, dict):
+            self.gains.set(str(joint), kp=g.get("kp"), kd=g.get("kd"))
+      elif "release" in msg:
         # 화면의 '힘 빼기'. 목표를 **지금 자리로** 옮겨 더 일하지 않게 한다.
         # 토크를 끊지 않는 이유는 ThermalCutoff 머리말과 같다 — 목표 위치 제어에서
         # 힘을 끊으면 중력이 관절을 끌어내려 화면과 실물이 어긋난다.
@@ -811,6 +927,10 @@ def main(argv=None) -> int:
                        "아무것도 안 나갑니다 (예: hip_yaw ankle_a ankle_b)")
   ap.add_argument("--trim-deg", type=float, default=0.0,
                   help="한계를 양쪽으로 이만큼 안으로 좁힘. 설정 파일은 안 건드림")
+  ap.add_argument("--kp-cap", type=float, default=15.0,
+                  help="세기 상한. 사용자 지시(2026-09-12)로 15. 무릎을 정지마찰에서 "
+                       "풀려면 벤치 실측 20 이 필요하므로, 올릴 때는 **일부러** 올릴 것")
+  ap.add_argument("--kd-cap", type=float, default=5.0, help="감쇠 상한")
   ap.add_argument("--reader", dest="reader", action="store_true", default=True,
                   help="채널마다 수신 스레드를 붙임 (기본 켬)")
   ap.add_argument("--no-reader", dest="reader", action="store_false")
@@ -832,8 +952,9 @@ def main(argv=None) -> int:
   names = pick_joints(machine, set(a.joints))
   live = LiveTargets(names)
   motion = AnklePairGuard(ThermalCutoff(live, a.max_temp_c), machine)
-  server = TargetServer(live, a.listen, a.token).start()
-  state = StateSender(machine, live, a.state_to, hz=a.state_hz).start()
+  gains = GainControl(machine, kp_cap=a.kp_cap, kd_cap=a.kd_cap)
+  server = TargetServer(live, a.listen, a.token, gains=gains).start()
+  state = StateSender(machine, live, a.state_to, hz=a.state_hz, gains=gains).start()
 
   all_names = list(getattr(machine, "joint_names", ()))
   print(f"\n{getattr(machine, 'id', '로봇')} · 초당 {hz:.0f}회")
@@ -854,6 +975,8 @@ def main(argv=None) -> int:
     print("  ** 세기 0 — 계산은 다 하지만 힘이 나가지 않습니다 (주기 재기용) **")
   elif a.gain_scale != 1.0:
     print(f"  세기에 {a.gain_scale:g} 를 곱합니다")
+  print(f"  세기 상한 {a.kp_cap:g} · 감쇠 상한 {a.kd_cap:g} "
+        f"(관절마다 화면에서 숫자로 바꿀 수 있습니다)")
   print(f"  권선 {a.max_temp_c:g}도를 넘으면 그 관절 목표를 지금 자리로 묶음")
   print(f"  발목은 축마다 \u00b1{ANKLE_AXIS_DEG:g}도 **그리고** 조합이 "
         f"숙임 {ANKLE_ROM_PITCH} 기울임 {ANKLE_ROM_ROLL} 안일 때만 나갑니다")
@@ -886,6 +1009,7 @@ def main(argv=None) -> int:
         f"· 과열로 묶음 {motion.inner.events}회")
   print(f"  발목: 축으로 자름 {motion.axis_clipped}회 · 조합으로 물러남 "
         f"{motion.pair_clipped}회")
+  print(f"  세기 바꿈 {gains.changes}회 · 상한으로 자름 {gains.clipped}회")
   if stats is not None and getattr(stats, "link_loss", None):
     print(f"\n  ** 통신 두절로 멈춤: {stats.link_loss} **")
     return 1
