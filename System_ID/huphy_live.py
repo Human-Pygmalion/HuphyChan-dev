@@ -105,6 +105,7 @@ import socket
 import sys
 import threading
 import time
+from collections import deque
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger("huphy_live")
@@ -502,6 +503,127 @@ class AnklePairGuard:
 # ===========================================================================
 # 상태를 내보내는 통로 — **버스를 읽는 곳은 여기 하나뿐이다**
 # ===========================================================================
+class LinkProbe:
+  """새 두절 판정을 **실물 위에서 흉내만 내 본다.** 아무것도 멈추지 않는다.
+
+  ## 왜 이게 필요한가
+
+  두절 판정 방식을 바꿨습니다 (`docs/132`). 예전에는 **연속** 무응답 주기를 셌고,
+  새 방식은 **최근 열 번의 명령 중 몇 번 답이 없었나**를 셉니다. 책상 위 가짜
+  모터로는 다 통과했지만, 실물 배선이 얼마나 자주 답을 빠뜨리는지는 **재 보기
+  전에는 모릅니다.**
+
+  새 규칙이 지금 배선에서 헛되이 걸린다면, 그것을 로봇에 올리는 순간 멀쩡한
+  로봇이 몇 분마다 섭니다. 그래서 **먼저 흉내만 내 봅니다** — 로봇 프로그램은
+  예전 규칙 그대로 돌고, 여기서는 "새 규칙이었다면 걸렸을까" 만 세어 기록합니다.
+
+  ## 무엇을 세는가
+
+  매 주기 `link_status()` 를 읽습니다. `ack` 가 1 이면 답한 것, 0 이면 이번 주기에
+  명령했는데 답이 없는 것, -1 이면 명령하지 않은 것(세지 않음)입니다.
+
+      lost      최근 `window` 번 명령 중 답이 없었던 횟수  <- 새 규칙이 보는 값
+      lost_max  그 값이 이번 운용에서 도달한 최대
+      miss_max  연속 무응답이 도달한 최대                  <- 예전 규칙이 보는 값
+      asked     명령한 주기 수
+      missed    그중 답이 없던 주기 수
+
+  `lost_max` 가 문턱(기본 5)에 가까우면 **올리면 안 됩니다.**
+  """
+
+  WINDOW = 20
+  """연속 문턱의 네 배. `Leg._link_window` 와 같은 값이어야 뜻이 같습니다."""
+
+  THRESHOLD = 15
+  """창 안에서 이만큼 잃으면 "샘" 으로 봅니다 = 75%.
+
+  실측으로 고른 값입니다 (2026-09-12, 12개 모터 60초 6001주기). 지금 배선은
+  모터마다 응답의 17.8~27.5% 를 잃고, 창 20 안에서 최악 12번입니다. 절반(10번)
+  기준이면 전체 주기의 15.5% 에서 두절로 판정해 **로봇이 못 돕니다.**
+  자세한 표는 HUPHY `safety/link.py` 문서에 있습니다."""
+
+  def __init__(self, inner, robot, *, window: int = WINDOW):
+    self.inner = inner
+    self.robot = robot
+    self.window = int(window)
+    self.recent: Dict[str, deque] = {}
+    self.lost_max: Dict[str, int] = {}
+    self.miss_max: Dict[str, int] = {}
+    self.asked: Dict[str, int] = {}
+    self.missed: Dict[str, int] = {}
+    self.cycles = 0
+    self.would_trip = 0
+    """새 규칙이었다면 두절로 판정했을 주기 수. **0 이어야 올릴 수 있습니다.**"""
+
+  def _status(self) -> Dict[str, Any]:
+    getter = getattr(self.robot, "link_status", None)
+    if getter is None:
+      return {}
+    try:
+      return getter() or {}
+    except Exception:                                       # noqa: BLE001
+      return {}
+
+  def sample(self) -> None:
+    self.cycles += 1
+    tripped = False
+    for name, row in self._status().items():
+      ack = float(row.get("ack", -1.0))
+      if ack < 0.0:
+        continue                                   # 명령 안 한 모터는 안 셈
+      silent = ack == 0.0
+      buf = self.recent.setdefault(name, deque(maxlen=self.window))
+      buf.append(silent)
+      self.asked[name] = self.asked.get(name, 0) + 1
+      if silent:
+        self.missed[name] = self.missed.get(name, 0) + 1
+      # 0 이어도 **자리를 만들어 둡니다.** 안 그러면 "한 번도 안 샜다" 와
+      # "그 모터를 아예 못 봤다" 가 둘 다 빈칸이라 구분이 안 됩니다.
+      lost = sum(buf)
+      self.lost_max[name] = max(self.lost_max.get(name, 0), lost)
+      self.miss_max[name] = max(self.miss_max.get(name, 0), int(row.get("miss", 0)))
+      if lost >= self.THRESHOLD:
+        tripped = True
+    if tripped:
+      self.would_trip += 1
+
+  def rows(self) -> Dict[str, Dict[str, int]]:
+    """관절 이름 -> 지금 값. 상태 전송에 실어 화면·기록으로 보냅니다."""
+    return {
+      name: dict(lost=int(sum(buf)), lost_max=int(self.lost_max.get(name, 0)),
+                 miss_max=int(self.miss_max.get(name, 0)),
+                 asked=int(self.asked.get(name, 0)),
+                 missed=int(self.missed.get(name, 0)))
+      for name, buf in self.recent.items()
+    }
+
+  def report(self) -> str:
+    if not self.recent:
+      return "  통신 흉내내기: 잰 것이 없습니다 (link_status 를 못 읽었습니다)"
+    lines = [f"  '샘' 규칙 흉내내기 — {self.cycles}주기 "
+             f"(최근 {self.window}번 중 {self.THRESHOLD}번 무응답이면 두절)"]
+    lines.append(f"    {'관절':<22}{'명령':>8}{'무응답':>8}{'손실률':>8}"
+                 f"{'창최대':>8}{'연속최대':>9}")
+    for name in sorted(self.recent):
+      asked = max(1, self.asked.get(name, 0))
+      lines.append(f"    {name:<22}{self.asked.get(name, 0):>8}"
+                   f"{self.missed.get(name, 0):>8}"
+                   f"{100.0 * self.missed.get(name, 0) / asked:>7.1f}%"
+                   f"{self.lost_max.get(name, 0):>8}{self.miss_max.get(name, 0):>9}")
+    worst = max(self.lost_max.values()) if self.lost_max else 0
+    if self.would_trip:
+      lines.append(f"    ★ '샘' 규칙이었다면 {self.would_trip}주기에서 두절로 "
+                   f"판정했습니다 (창 최대 {worst}). **올리면 안 됩니다.**")
+    else:
+      lines.append(f"    '샘' 규칙으로는 한 번도 안 걸렸습니다 (창 최대 {worst} "
+                   f"< 문턱 {self.THRESHOLD}). 여유 {self.THRESHOLD - worst}번.")
+    return "\n".join(lines)
+
+  def __call__(self, t: float, observation: Dict[str, Any]) -> Dict[str, float]:
+    self.sample()
+    return self.inner(t, observation)
+
+
 class StateSender:
   """모터 상태를 JSON 한 줄로 UDP 에 뿌린다. 받지는 않는다.
 
@@ -512,10 +634,13 @@ class StateSender:
   같은 내용을 여러 곳에 보낼 수 있습니다 — 화면(관절 페이지)과 3차원 뷰어.
   """
 
-  def __init__(self, robot, targets, targets_to, hz: float = 20.0, gains=None):
+  def __init__(self, robot, targets, targets_to, hz: float = 20.0, gains=None,
+               probe=None):
     self.robot = robot
     self.targets = targets
     self.gains = gains
+    self.probe = probe
+    """새 두절 규칙 흉내내기(`LinkProbe`). 값이 기록에 남아야 나중에 따집니다."""
     """화면이 **지금 걸린 값**을 보여 줘야 합니다. 화면이 따로 기억하면 둘이
     어긋나고, 사람은 자기가 넣은 숫자가 걸렸다고 믿습니다."""
     self.addrs = []
@@ -589,6 +714,8 @@ class StateSender:
           tgt=round(float(wanted.get(full, 0.0)), 2),
           age_ms=round((now - float(getattr(st, "stamp", 0.0) or now)) * 1000.0, 1),
         )
+        if self.probe is not None:
+          out[str(motor.id)].update(self.probe.rows().get(full, {}))
     return out
 
   def _run(self):
@@ -927,6 +1054,9 @@ def main(argv=None) -> int:
                        "아무것도 안 나갑니다 (예: hip_yaw ankle_a ankle_b)")
   ap.add_argument("--trim-deg", type=float, default=0.0,
                   help="한계를 양쪽으로 이만큼 안으로 좁힘. 설정 파일은 안 건드림")
+  ap.add_argument("--link-probe", action="store_true",
+                  help="'샘' 판정(최근 20번 중 15번 무응답)을 **흉내만** 내 "
+                       "보고 끝에 표로 냅니다. 아무것도 멈추지 않습니다")
   ap.add_argument("--kp-cap", type=float, default=15.0,
                   help="세기 상한. 사용자 지시(2026-09-12)로 15. 무릎을 정지마찰에서 "
                        "풀려면 벤치 실측 20 이 필요하므로, 올릴 때는 **일부러** 올릴 것")
@@ -952,9 +1082,13 @@ def main(argv=None) -> int:
   names = pick_joints(machine, set(a.joints))
   live = LiveTargets(names)
   motion = AnklePairGuard(ThermalCutoff(live, a.max_temp_c), machine)
+  probe = LinkProbe(motion, machine) if a.link_probe else None
+  if probe is not None:
+    motion = probe                      # 흉내만 냅니다. 아무것도 안 멈춥니다.
   gains = GainControl(machine, kp_cap=a.kp_cap, kd_cap=a.kd_cap)
   server = TargetServer(live, a.listen, a.token, gains=gains).start()
-  state = StateSender(machine, live, a.state_to, hz=a.state_hz, gains=gains).start()
+  state = StateSender(machine, live, a.state_to, hz=a.state_hz, gains=gains,
+                      probe=probe).start()
 
   all_names = list(getattr(machine, "joint_names", ()))
   print(f"\n{getattr(machine, 'id', '로봇')} · 초당 {hz:.0f}회")
@@ -1004,12 +1138,16 @@ def main(argv=None) -> int:
           f"({live._blocked}주기). 통신을 확인하십시오. **")
   elif live._blocked:
     print(f"  시작 자세를 읽기까지 {live._blocked}주기 동안 아무것도 안 보냈습니다")
+  # 감싼 순서: LinkProbe(있으면) -> AnklePairGuard -> ThermalCutoff -> LiveTargets
+  ankle = motion.inner if isinstance(motion, LinkProbe) else motion
   print(f"  받은 목표 {live.rx}개 · 모르는 이름 {live.rejected_unknown}개 "
         f"· 숫자가 아님 {live.rejected_not_finite}개 "
-        f"· 과열로 묶음 {motion.inner.events}회")
-  print(f"  발목: 축으로 자름 {motion.axis_clipped}회 · 조합으로 물러남 "
-        f"{motion.pair_clipped}회")
+        f"· 과열로 묶음 {ankle.inner.events}회")
+  print(f"  발목: 축으로 자름 {ankle.axis_clipped}회 · 조합으로 물러남 "
+        f"{ankle.pair_clipped}회")
   print(f"  세기 바꿈 {gains.changes}회 · 상한으로 자름 {gains.clipped}회")
+  if probe is not None:
+    print(probe.report())
   if stats is not None and getattr(stats, "link_loss", None):
     print(f"\n  ** 통신 두절로 멈춤: {stats.link_loss} **")
     return 1

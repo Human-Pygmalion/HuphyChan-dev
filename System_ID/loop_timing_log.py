@@ -123,7 +123,8 @@ class Bus:
         got += 1
 
 
-def run(buses, *, hz: float, seconds: float, drain_s: float, out: Path):
+def run(buses, *, hz: float, seconds: float, drain_s: float, out: Path,
+        like_huphy: bool = False):
   period = 1.0 / hz
   every = [m for b in buses for m in b.ids]
   header = (["cycle", "t_start_us", "late_us", "send_us", "drain_us", "cycle_us",
@@ -144,7 +145,11 @@ def run(buses, *, hz: float, seconds: float, drain_s: float, out: Path):
     start = time.perf_counter()
     late_us = (start - deadline) * 1e6
 
-    stale = sum(b.flush() for b in buses)
+    # ★ `--like-huphy` 면 **버리지 않습니다.** HUPHY 는 큐에 남아 있던 답도
+    # 이번 주기의 답으로 셉니다 (프레임에 일련번호가 없어 어느 명령에 대한
+    # 답인지 모릅니다). 그래서 "답이 한 주기 늦는" 모터는 HUPHY 눈에는 **매 주기
+    # 답하는** 것으로 보입니다. 두절 판정 문턱을 고르려면 그쪽 셈이 필요합니다.
+    stale = 0 if like_huphy else sum(b.flush() for b in buses)
 
     sent_at, rtt = {}, {}
     for b in buses:
@@ -239,6 +244,10 @@ def main(argv=None) -> int:
   ap.add_argument("--seconds", type=float, default=20.0)
   ap.add_argument("--drain-ms", type=float, default=2.0,
                   help="응답을 기다리는 창. HUPHY 기본이 2.0 입니다")
+  ap.add_argument("--like-huphy", action="store_true",
+                  help="HUPHY 와 **같은 셈**으로 답을 셉니다 — 주기 시작에 큐를 "
+                       "비우지 않아, 늦게 온 답도 이번 주기의 답으로 칩니다. "
+                       "두절 판정 문턱을 고를 때 씁니다")
   ap.add_argument("--out", default="", help="주기별 csv 를 쓸 자리")
   ap.add_argument("--tag", default="", help="파일 이름에 붙일 말")
   a = ap.parse_args(argv)
@@ -265,7 +274,8 @@ def main(argv=None) -> int:
   print(f"  주기별 기록 -> {out}\n")
 
   rows, header, every = run(buses, hz=a.hz, seconds=a.seconds,
-                            drain_s=a.drain_ms / 1000.0, out=out)
+                            drain_s=a.drain_ms / 1000.0, out=out,
+                            like_huphy=a.like_huphy)
   if not rows:
     print("한 주기도 못 돌았습니다.", file=sys.stderr)
     return 1

@@ -1519,6 +1519,230 @@ def e52(f):
 
 
 # ===========================================================================
+# 라 · 통신 끊김 판정 — **잃은 명령 수**로 셀 때
+# ===========================================================================
+#
+# 2026-09-12 에 판정 기준을 바꿨습니다. 예전에는 **연속** 무응답 주기를 셌고,
+# 지금은 **답을 못 받은 명령 수**를 셉니다 (보낼 때 +1, 답이 오면 -1).
+# 설계는 `docs/132_link_health_design.md` 에 있습니다.
+#
+# 아래 검사는 "바꾼 게 실제로 두 경우를 갈라 주는가" 를 봅니다.
+#   L3  다섯에 한 번만 답하는 모터 -> 예전 규칙으로는 **절대** 안 걸렸음
+#   L4  한 주기 늦게 오는 답       -> 예전 규칙으로는 위상에 따라 걸렸다 말았음
+
+def _lost(leg, joint: str) -> float:
+  """그 관절이 **최근 창 안에서** 답하지 않은 횟수. 판정이 보는 값."""
+  return float(leg.link_status()[joint].get("lost", -1.0))
+
+
+def _worst_lost(leg) -> float:
+  return max(float(v.get("lost", -1.0)) for v in leg.link_status().values())
+
+
+@check("L1", "통신", "다 잘 답하면 잃은 명령이 안 쌓이는가")
+def l1(f):
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  live.update({"hip_yaw": 5.0})
+  spin(loop, motion, 60)
+  worst = _worst_lost(leg)
+  if not getattr(loop, "_stop", False) and worst <= 1.0:
+    f.hold(f"60주기 도는 동안 잃은 명령이 최대 {worst:g}개였고 루프는 계속 돕니다.")
+  else:
+    f.leak(f"멀쩡한데 쌓였습니다: 최대 {worst:g}개, 멈춤={getattr(loop, '_stop', False)}")
+
+
+@check("L2", "통신", "선을 뽑으면 정해진 개수에서 멈추는가")
+def l2(f):
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  motors.answer = False                       # 선 뽑기
+  stopped_at = None
+  for k in range(SAFETY["link_loss_cycles"] + 5):
+    loop.step(motion, t=0.1 + k * 0.01)
+    if getattr(loop, "_stop", False) and stopped_at is None:
+      stopped_at = k + 1
+  if stopped_at is not None and stopped_at <= SAFETY["link_loss_cycles"] + 1:
+    f.hold(f"{stopped_at}주기째에 멈췄습니다 (문턱 {SAFETY['link_loss_cycles']}).")
+  else:
+    f.leak(f"안 멈추거나 너무 늦게 멈췄습니다: {stopped_at}")
+
+
+@check("L3", "통신", "다섯에 한 번만 답하는 모터를 잡는가 ★새로 넣은 이유")
+def l3(f):
+  """**예전 규칙으로는 절대 못 잡던 경우입니다.**
+
+  답할 때마다 연속 무응답이 0 으로 초기화돼서, 명령의 80% 를 잃는데도 끊긴
+  것으로 판정되지 않았습니다. 잃은 횟수는 다섯 주기마다 4 씩 늘어 곧 문턱을
+  넘습니다.
+  """
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  motors.answer_every[MOTOR_OF["hip_yaw"]] = 5
+  motors.commands[MOTOR_OF["hip_yaw"]] = 0
+  worst_streak = 0.0
+  stopped_at = None
+  for k in range(80):
+    loop.step(motion, t=0.1 + k * 0.01)
+    worst_streak = max(worst_streak,
+                       float(leg.link_status()["hip_yaw"].get("miss", 0.0)))
+    if getattr(loop, "_stop", False):
+      stopped_at = k + 1
+      break
+  if stopped_at is not None:
+    f.hold(f"{stopped_at}주기째에 멈췄습니다. 이때 **연속 무응답은 최대 "
+           f"{worst_streak:g}주기**라 예전 문턱 {SAFETY['link_loss_cycles']} 을 "
+           f"한 번도 못 넘었습니다 — 예전 규칙이면 영영 안 걸렸을 상황입니다.")
+  else:
+    f.leak(f"80주기 동안 80% 를 잃었는데 안 멈췄습니다 "
+           f"(잃은 명령 {_lost(leg, 'hip_yaw'):g}개)")
+
+
+@check("L4", "통신", "답이 한 주기 늦기만 하면 안 멈추는가")
+def l4(f):
+  """수거 창이 짧아 이번 답을 다음 주기에 받는 상황입니다. 통신은 멀쩡합니다.
+
+  예전 규칙은 위상에 따라 연속 무응답이 0 이 되기도 5 가 되기도 해서, **같은
+  통신 상태에서 판정이 뒤집혔습니다.** 잃은 횟수는 1 에 머뭅니다.
+  """
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  for mid in MOTOR_OF.values():
+    motors.delay_cycles[mid] = 1
+  for k in range(60):
+    loop.step(motion, t=0.1 + k * 0.01)
+    if getattr(loop, "_stop", False):
+      break
+  owed = _lost(leg, "hip_yaw")
+  if not getattr(loop, "_stop", False) and owed <= 1.0:
+    f.hold(f"60주기 내내 답이 한 주기씩 늦었지만 잃은 명령은 {owed:g}개로 "
+           f"머물렀고 루프는 계속 돕니다.")
+  else:
+    f.leak(f"멀쩡한 지연에 멈췄습니다: 멈춤={getattr(loop, '_stop', False)}, "
+           f"잃은 명령 {owed:g}개")
+
+
+@check("L5", "통신", "명령하지 않은 모터가 잃은 것으로 잡히지 않는가")
+def l5(f):
+  """무릎에 명령을 안 보내면 무릎은 답할 이유가 없습니다. 그걸 세면 멀쩡한
+  로봇이 멈춥니다."""
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  live.update({"hip_yaw": 5.0})
+  spin(loop, motion, 60)
+  # LiveTargets 가 모든 관절을 늘 들고 있어 실제로는 전부 명령됩니다.
+  # 그래서 여기서는 다리에 직접 한 관절만 보내 봅니다.
+  leg.send(leg.build_commands({"hip_yaw": 5.0}))
+  leg.collect()
+  owed = _lost(leg, "knee")
+  if owed == 0.0:
+    f.hold("무릎에 명령을 안 보낸 주기에서 무릎의 잃은 명령은 0개입니다.")
+  else:
+    f.leak(f"명령 안 한 무릎이 {owed:g}개 잃은 것으로 잡힙니다.")
+
+
+@check("L6", "통신", "다시 답하기 시작하면 잃은 것이 풀리는가")
+def l6(f):
+  """문턱 직전까지 갔다가 통신이 돌아오는 경우입니다. 안 풀리면 멀쩡해진 뒤에도
+  곧 멈춥니다."""
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  motors.answer = False
+  for k in range(SAFETY["link_loss_cycles"] - 1):       # 문턱 바로 아래까지
+    loop.step(motion, t=0.1 + k * 0.01)
+  peak = _lost(leg, "hip_yaw")
+  motors.answer = True
+  for k in range(20):
+    loop.step(motion, t=0.2 + k * 0.01)
+  owed = _lost(leg, "hip_yaw")
+  if not getattr(loop, "_stop", False) and peak >= 3.0 and owed == 0.0:
+    f.hold(f"{peak:g}개까지 밀렸다가 통신이 돌아오자 {owed:g}개로 풀렸고 "
+           f"루프는 안 멈췄습니다.")
+  else:
+    f.leak(f"안 풀립니다: 최대 {peak:g}개 -> 지금 {owed:g}개, "
+           f"멈춤={getattr(loop, '_stop', False)}")
+
+
+@check("L7", "통신", "오래 돌려도 잃은 횟수가 새지 않는가")
+def l7(f):
+  """창이 제대로 흘러가지 않으면 멀쩡한 로봇이 시간이 갈수록 문턱에 가까워집니다.
+  200주기를 잘 답하게 돌려 봅니다."""
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 200)
+  vals = [float(v.get("lost", -1.0)) for v in leg.link_status().values()]
+  if vals and max(vals) == 0.0:
+    f.hold("200주기를 돌려도 모든 모터의 잃은 명령이 0개입니다 (창이 흘러갑니다).")
+  else:
+    f.leak(f"조금씩 샙니다: 최대 {max(vals):g}개")
+
+
+@check("L8", "통신", "RS03 이 운전모드를 0 으로 답해도 고장으로 안 치는가")
+def l8(f):
+  """실측입니다 — RS03 은 힘이 들어가 있어도 운전모드 자리를 0 으로 냅니다
+  (RS04 는 2). 이걸 근거로 판정하면 멀쩡한 모터 일곱 개를 죽었다고 하게 됩니다.
+  실제로 한 번 그랬고 철회했습니다 (커밋 60c8069).
+
+  `hip_yaw` 가 3번 모터이고 RS03 입니다 — 사용자가 정한 안전 관절이기도 합니다.
+  """
+  leg, loop, live, motion, motors = build()
+  for mid, model in MODELS.items():
+    if model == T.Model.RS03:
+      motors.mode[mid] = 0                     # 힘은 들어가 있지만 0 으로 답함
+  spin(loop, motion, 3)
+  reply = live.update({"hip_yaw": 5.0})
+  spin(loop, motion, 60)
+  moved = sent_to(motors, MOTOR_OF["hip_yaw"])
+  owed = _worst_lost(leg)
+  ok = (not getattr(loop, "_stop", False) and moved
+        and abs(moved["pos"] - 5.0) < 0.5 and owed == 0.0)
+  if ok:
+    f.hold(f"운전모드를 0 으로 답하는 RS03(3번 {list(MOTOR_OF)[2]})이 "
+           f"{moved['pos']:+.2f}도까지 따라왔고 잃은 명령은 {owed:g}개입니다. "
+           f"판정은 응답 유무로만 합니다.")
+  else:
+    f.leak(f"모드 비트로 판정하거나 명령이 안 나갑니다: "
+           f"멈춤={getattr(loop, '_stop', False)}, 잃은 명령 {owed:g}개, "
+           f"받은 목표 {reply}, 마지막 프레임 {moved}")
+
+
+@check("L9", "통신", "흉내내기가 새는 선을 알아보는가")
+def l9(f):
+  """실물에 올리기 전에 **흉내만 내 보는** 도구(`LinkProbe`)가 있습니다. 그
+  도구가 못 알아보면 재 봐야 아무 말도 못 합니다. 다섯에 한 번만 답하는 선을
+  물려 봅니다."""
+  import huphy_live as HL
+  leg, loop, live, motion, motors = build()
+  probe = HL.LinkProbe(motion, leg)
+  spin(loop, probe, 3)
+  motors.answer_every[MOTOR_OF["hip_yaw"]] = 5
+  motors.commands[MOTOR_OF["hip_yaw"]] = 0
+  for k in range(60):
+    try:
+      loop.step(probe, t=0.1 + k * 0.01)
+    except Exception:                                       # noqa: BLE001
+      break
+  if probe.would_trip > 0 and probe.lost_max.get("hip_yaw", 0) >= HL.LinkProbe.THRESHOLD:
+    f.hold(f"창 최대 {probe.lost_max['hip_yaw']}번, "
+           f"{probe.would_trip}주기에서 '새 규칙이면 걸렸다' 고 셉니다.")
+  else:
+    f.leak(f"못 알아봅니다: 창 최대 {probe.lost_max}, 걸린 주기 {probe.would_trip}")
+
+
+@check("L10", "통신", "흉내내기가 멀쩡한 선을 걸었다고 하지 않는가")
+def l10(f):
+  """헛경보가 나면 실물에서 "올리면 안 된다" 는 잘못된 결론을 냅니다."""
+  import huphy_live as HL
+  leg, loop, live, motion, motors = build()
+  probe = HL.LinkProbe(motion, leg)
+  spin(loop, probe, 200)
+  worst = max(probe.lost_max.values()) if probe.lost_max else -1
+  if probe.would_trip == 0 and worst == 0:
+    f.hold(f"200주기 동안 창 최대 {worst}번, 걸린 주기 0번입니다.")
+  else:
+    f.leak(f"헛경보: 창 최대 {worst}, 걸린 주기 {probe.would_trip}")
+
+
+# ===========================================================================
 # 실행
 # ===========================================================================
 def main(argv=None) -> int:
