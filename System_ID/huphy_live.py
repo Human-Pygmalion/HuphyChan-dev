@@ -1054,6 +1054,8 @@ def main(argv=None) -> int:
                        "아무것도 안 나갑니다 (예: hip_yaw ankle_a ankle_b)")
   ap.add_argument("--trim-deg", type=float, default=0.0,
                   help="한계를 양쪽으로 이만큼 안으로 좁힘. 설정 파일은 안 건드림")
+  ap.add_argument("--enable-tries", type=int, default=3,
+                  help="켜기(0xFC)를 몇 번 보낼지. 한 방이 안 먹는 일이 있습니다")
   ap.add_argument("--link-probe", action="store_true",
                   help="'샘' 판정(최근 20번 중 15번 무응답)을 **흉내만** 내 "
                        "보고 끝에 표로 냅니다. 아무것도 멈추지 않습니다")
@@ -1121,6 +1123,31 @@ def main(argv=None) -> int:
   if a.state_to:
     print(f"  상태를 내보내는 자리 {', '.join(a.state_to)} (초당 {a.state_hz:g}번, 보내기만)")
     print("  ** 통신선을 읽는 것은 이 프로그램 하나입니다 — 화면은 여기서 받아 그립니다. **")
+
+  # ---- 켜기를 **여러 번** 보낸다 -----------------------------------------
+  #
+  # 2026-09-12 실측: 제어 루프가 시작하며 보내는 켜기(0xFC) 한 방이 **안 먹는
+  # 일이 있습니다.** 그날 화면에는 관절이 다 보이고 명령도 매 주기 나가는데
+  # (`asked` 11,389회) 토크가 0.03뉴턴미터에 머물렀습니다 -- 모터가 꺼져 있으면
+  # MIT 명령은 아무 일도 하지 않습니다. 손으로 켜기를 한 번 더 보내자 같은 루프가
+  # 곧바로 힘을 냈습니다.
+  #
+  # HUPHY 는 켜기를 보내고 `_torque_on[mid] = True` 로 **믿기만** 합니다
+  # (`motors/robstride/bus.py:175`). 모터에 물어보지 않습니다. 그래서 여기서
+  # 여러 번 보냅니다 -- 한 프레임이 흘려져도 다음 것이 갑니다.
+  #
+  # ★ 모드 비트로 확인하지 않는 이유: **거짓말을 합니다.** 같은 날 8번(RS04)이
+  # 모드 0 을 보고하면서도 3도 오차에 0.44뉴턴미터를 냈습니다. 켜졌는지 알려면
+  # 토크를 봐야 하고, 토크를 보려면 관절을 밀어야 하므로 여기서는 안 합니다.
+  for attempt in range(max(1, a.enable_tries)):
+    try:
+      machine.enable()
+    except Exception as e:                                  # noqa: BLE001
+      print(f"  ** 켜기 실패 ({attempt + 1}번째): {e} **")
+      break
+    time.sleep(0.05)
+  print(f"  켜기(0xFC)를 {max(1, a.enable_tries)}번 보냈습니다 "
+        f"(한 방이 안 먹는 일이 있어 여러 번 보냅니다)")
   print("  멈추려면 Ctrl-C.\n")
 
   try:
