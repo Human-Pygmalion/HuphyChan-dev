@@ -1067,9 +1067,12 @@ def main(argv=None) -> int:
   ap.add_argument("--gain-scale", type=float, default=1.0,
                   help="설정의 세기에 곱함. **0 이면 계산은 다 하고 힘은 안 나감** — "
                        "주기를 재거나 길이 뚫렸는지 볼 때 씁니다")
-  ap.add_argument("--drain-ms", type=float, default=3.0,
+  ap.add_argument("--drain-ms", type=float, default=5.0,
                   help="응답을 기다리는 창. **0 으로 두면 20초 만에 통신두절로 "
-                       "죽습니다** — 머리말의 실측 표 참조")
+                       "죽습니다.** 기본 5.0 은 실측으로 고른 값입니다 "
+                       "(2026-09-12, 힘이 들어간 채 120초씩): 3 -> 5 로 늘리면 "
+                       "응답 손실이 평균 16.8% -> 7.8% 로 줄고, 제어 주기는 "
+                       "초당 87.4 -> 80.7회로 8% 느려집니다. docs/133 참조")
   a = ap.parse_args(argv)
 
   logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
