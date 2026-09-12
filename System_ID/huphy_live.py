@@ -38,8 +38,11 @@ HUPHY 의 제어 루프가 매 주기 부르는 것은 **딱 한 줄**입니다.
     7  통신 두절 감시       safety/link.py          연속 무응답이면 루프 정지
     8  정지 완충           control/loop.py:377     자세를 붙잡은 5주기 뒤 토크 차단
 
-HUPHY 가 **안 해 주는 것**은 이 파일이 합니다 — 권선 과열 차단, 그리고 켜기 명령이
-실제로 먹혔는지 확인하는 것. 둘 다 HUPHY 에 대응물이 없습니다.
+HUPHY 가 **안 해 주는 것**은 이 파일이 합니다 — 권선 과열 차단 하나입니다.
+
+~~그리고 켜기 명령이 실제로 먹혔는지 확인하는 것~~ **철회 (2026-09-12)**: 모터가
+보고하는 동작모드 비트는 **모델에 따라 안 올라옵니다**. 그걸 근거로 삼았다가 멀쩡한
+모터 일곱 개를 고장으로 몰았습니다. 아래 `MODE_IS_REPORTED` 참조.
 
 
 ## 목표를 부분만 갱신하는 이유
@@ -250,22 +253,34 @@ class TargetServer:
 # ===========================================================================
 # 켜기가 실제로 먹혔는지 확인 — HUPHY 에 대응물 없음
 # ===========================================================================
-def report_enable(robot) -> Dict[str, Any]:
-  """모터가 **스스로 보고한 동작 모드**를 모아 돌려준다.
+MODE_IS_REPORTED = {"RS04": True, "RS03": False}
+"""상태 프레임의 동작모드 비트를 그 모델이 **실제로 올려 주는가.**
 
-  HUPHY 의 `enable_torque()` 는 켜기를 보내고 `_torque_on[mid] = True` 로
-  **믿기만** 합니다 (`motors/robstride/bus.py:175-180`). 2026-09-12 에 열두 중
-  일곱이 켜기를 거부하는데 아무도 모르는 상태를 만들었습니다. 여기서 대조합니다.
-  """
-  out: Dict[str, Any] = {}
-  for part in getattr(robot, "limbs", None) or [robot]:
-    bus = getattr(part, "bus", None)
-    if bus is None:
-      continue
-    for motor_id, state in getattr(bus, "_states", {}).items():
-      mode = getattr(state, "mode", None)
-      out[motor_id] = dict(mode=mode, on=(mode == 2))
-  return out
+2026-09-12 실측. RS04 는 힘이 들어가면 곧바로 2로 바뀝니다. **RS03 은 명령을
+따라 움직이는 동안에도 끝까지 0입니다** — 3번(RS03)을 10도 몰았더니 실제 각도가
+10.40도 움직였는데 6,543주기 전부 0이었고, 같은 시험에서 4번(RS04)은 5,811주기
+전부 2였습니다.
+"""
+
+
+def report_modes(robot) -> Dict[int, Any]:
+    """모터가 보고한 동작모드를 **판단 없이** 모아 돌려준다.
+
+    ★ 이 값으로 "켜졌는가" 를 판단하지 마십시오. 위 `MODE_IS_REPORTED` 참조 —
+    모델에 따라 안 올라옵니다. 2026-09-12 에 그걸 판단 근거로 썼다가 멀쩡한 모터
+    일곱 개를 고장으로 몰았습니다.
+
+    켜졌는지 정말 알고 싶으면 **관절이 명령을 따라가는지** 보십시오 — 목표와 측정
+    위치의 차이가 줄어들면 힘이 들어간 것입니다.
+    """
+    out: Dict[int, Any] = {}
+    for part in getattr(robot, "limbs", None) or [robot]:
+        bus = getattr(part, "bus", None)
+        if bus is None:
+            continue
+        for motor_id, state in getattr(bus, "_states", {}).items():
+            out[motor_id] = getattr(state, "mode", None)
+    return out
 
 
 # ===========================================================================
@@ -326,11 +341,10 @@ def main(argv=None) -> int:
   finally:
     server.stop()
 
-  modes = report_enable(machine)
-  off = [m for m, r in modes.items() if not r["on"]]
+  modes = report_modes(machine)
   if modes:
-    print(f"\n  모터가 보고한 상태: 켜짐 {len(modes)-len(off)}개"
-          + (f" · **안 켜짐 {off}**" if off else ""))
+    print(f"\n  모터가 보고한 동작모드: {modes}")
+    print("  (RS03 은 힘이 들어가도 0으로 보고합니다 — 이 값으로 판단하지 마십시오)")
   print(f"  받은 목표 {live.rx}개 · 모르는 이름 {live.rejected_unknown}개 "
         f"· 숫자가 아님 {live.rejected_not_finite}개 · 과열로 묶음 {motion.events}회")
   if stats is not None and getattr(stats, "link_loss", None):

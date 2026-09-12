@@ -129,11 +129,12 @@ ALLOWED = {
   "R_hip_roll_joint":  dict(motor=8, iface="can1", enc=ENC_RS04, ko="오른 엉덩이좌우"),
 }
 
-REENABLE_GAP_S = 0.4
-"""켜기를 다시 보내기까지 최소한 이만큼 둔다.
+MODE_IS_REPORTED = {"RS04": True, "RS03": False}
+"""상태 프레임의 동작모드 비트를 그 모델이 **실제로 올려 주는가.**
 
-매 주기 보내면 켜기 프레임이 상태 응답 자리를 밀어내서, 모터가 켜졌는지 볼 수조차
-없게 된다. 사이를 두면 몇 주기 안에 붙는다."""
+2026-09-12 실측: RS04 는 힘이 들어가면 즉시 2로 바뀐다. **RS03 은 명령을 따라
+움직이는 동안에도 끝까지 0이다.** 그러므로 이 비트로 "켜졌는가" 를 판단하면 안 된다.
+화면에 보여 줄 때도 RS03 은 "모델이 안 알려 줌" 으로 적어야 한다."""
 
 
 HOME_SETTLE_S = 1.5
@@ -216,7 +217,6 @@ class CommandGuard:
     self.margin = abs(float(home_margin_deg))
     self.homing = {}          # ★ 모터 -> 아직 영자세로 가는 중인가
     self._home_since = {}     # 모터 -> 명령이 영자세에 닿은 시각
-    self._reenable_at = {}    # 모터 -> 마지막으로 켜기를 다시 보낸 시각
     """왜 힘을 넣자마자 영자세부터 가는가 (사용자 지시 2026-09-12).
 
     *"이제 어떤 하드웨어 명령을 보내더라도, 먼저 이 영점 위치로 복귀하고, 그 다음
@@ -233,7 +233,7 @@ class CommandGuard:
     되돌아가는 속도는 따로 두지 않는다 — 이미 있는 속도 제한(`max_vel`)이 그대로
     걸린다. 하드스톱이 한쪽 끝인 관절은 `home_margin_deg` 만큼 안쪽까지만 간다."""
     self.stats = dict(rx=0, bad_token=0, unknown=0, clipped=0, stale=0, pair_clipped=0,
-                      homed=0, reenabled=0)
+                      homed=0)
     self.note = "아직 명령 없음"
     self._stop = threading.Event()
 
@@ -383,25 +383,22 @@ class CommandGuard:
           self.cmd[motor_id] = self._bounded(motor_id, deg_now, dt, preview=True)
         return None
 
-      # -- 믿음과 실제를 맞춘다 ---------------------------------------
-      # ★ 2026-09-12. "전부 0도로" 를 눌렀는데 열둘 중 다섯만 켜졌다. 가드는 열둘
-      # 전부 `torque_on=True` 라고 **믿고** 있었고, 모터 일곱은 `힘 꺼짐` 이라고
-      # **보고**하고 있었다. 원인은 하나다 -- 켜기 프레임을 **한 번 보내고 끝**이라,
-      # 그 한 장이 흘려지거나 모터가 그 순간 못 받으면 아무도 몰랐다. 그 뒤로는
-      # 꺼진 모터에 계속 명령을 보내고 있었다.
+      # -- ~~믿음과 실제를 맞춘다~~ **철회 (2026-09-12)** ------------------
+      # 여기서 "동작모드가 0이면 안 켜진 것이니 다시 켠다" 를 하고 있었다.
+      # **전제가 틀렸다.**
       #
-      # 보내고 믿는 대신 **모터가 뭐라고 하는지 보고 맞춘다.** 켜져 있다고 믿는데
-      # 모터가 꺼졌다고 하면 다시 켠다. 너무 자주 보내면 정상 응답까지 밀어내므로
-      # 사이를 둔다.
-      if (self.torque_on.get(motor_id) and mode == 0
-          and not self.dry_run and not blocked):
-        last_try = self._reenable_at.get(motor_id, 0.0)
-        if time.monotonic() - last_try >= REENABLE_GAP_S:
-          self._reenable_at[motor_id] = time.monotonic()
-          self.stats["reenabled"] += 1
-          self.note = (f"{row['ko']} 켜짐이라고 믿었는데 모터는 꺼져 있음 — 다시 켬")
-          return ("ctrl", control_frame(CMD_ENABLE))
-
+      # RS03 모터는 힘이 들어가 명령을 따라가는 동안에도 상태 프레임의 동작모드
+      # 비트를 **끝까지 0으로 보고한다.** 실물로 확인했다 — 3번(RS03)에 목표를
+      # 10도 떨어뜨려 주니 **실제 각도가 10.40도 움직였고**(명령 +11.22 -> 실제
+      # +11.33, 최대 토크 0.98 N·m), 그 6,543주기 내내 동작모드는 0이었다.
+      # 같은 시험에서 4번(RS04)은 5,811주기 전부 2로 보고했다.
+      #
+      # 즉 이 비트는 **모델에 따라 안 올라온다.** 그걸 "안 켜졌다"로 읽은 탓에
+      # 멀쩡한 모터 일곱 개를 고장으로 몰았고, 0.4초마다 켜기 프레임을 영원히
+      # 다시 쏘아 통신선을 갉아먹고 있었다.
+      #
+      # 그래서 **이 비트로는 아무 판단도 하지 않는다.** 화면에 그대로 보여 주되,
+      # 켜졌는지 확인하려면 **관절이 명령을 따라가는지**를 봐야 한다.
       # -- 여기부터는 실제로 힘이 들어간다 ----------------------------
       if not self.torque_on.get(motor_id):
         self.torque_on[motor_id] = True
