@@ -2654,7 +2654,7 @@
       "fromSide": "right",
       "toNode": "n_legonly_v5_heading",
       "toSide": "left",
-      "label": "유일 변인: 방향 유지 비율 0.3 → 0.8"
+      "label": "유일 변인: 방향 유지 비율 0.3 → 0.8 | 근거 둘 — 회전 추종 24~104 %(전진은 80~118 %), 대칭 명령에서 엉덩이회전 좌우차 −81.5 %"
     },
     {
       "id": "e_limp_to_v5heading",
