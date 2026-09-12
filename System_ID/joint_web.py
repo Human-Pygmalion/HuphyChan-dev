@@ -966,6 +966,13 @@ async function tick(){{
           + `<input type="range" id="s${{mid}}" min="${{m.lo}}" max="${{m.hi}}"`
           + ` step="0.5" value="${{m.cmd!=null ? m.cmd : m.home}}" style="width:210px">`
           + `<span id="v${{mid}}" class="big" style="min-width:62px">+0.0&deg;</span>`
+          // 사용자 지시(2026-09-12): 세기뿐 아니라 **목표 각도도 숫자로** 넣게.
+          // 슬라이더는 0.5도 눈금이라 "정확히 -12.5도" 같은 값을 못 만듭니다.
+          + `<label class="dim">\uBAA9\uD45C</label>`
+          + `<input id="t${{mid}}" type="number" step="0.1" min="${{m.lo}}" max="${{m.hi}}"`
+          + ` title="목표 각도를 숫자로 (구간 ${{m.lo}} ~ ${{m.hi}}도)"`
+          + ` value="${{(m.cmd!=null ? m.cmd : m.home)}}" style="width:78px;background:#12141a;`
+          + `color:#e8e8e8;border:1px solid #3a3f4a;border-radius:6px;padding:6px 7px">`
           + `<label class="dim" style="margin-left:4px">\uC138\uAE30</label>`
           + `<input id="kp${{mid}}" type="number" step="0.5" min="0"`
           + ` value="${{m.kp!=null ? m.kp : ''}}" style="width:64px;background:#12141a;`
@@ -1088,8 +1095,30 @@ function hookToggle(mid){{
   //   * 화면이 실제로 닫힘(pagehide) -> 같은 길
   //   * 화면이 죽어 명령이 끊김       -> 데드맨. 이건 꺼야 한다 -- 안 그러면 아무도
   //     안 보는 로봇에 힘이 계속 들어가 있다
-  const show = () => vv.textContent = (sl.value >= 0 ? '+' : '') + (+sl.value).toFixed(1) + '\u00B0';
+  const tb = document.getElementById('t'+mid);
+  const show = () => {{
+    vv.textContent = (sl.value >= 0 ? '+' : '') + (+sl.value).toFixed(1) + '\u00B0';
+    // 숫자 칸은 **사람이 그 칸을 쓰고 있는 동안에는** 안 건드립니다.
+    if (tb && document.activeElement !== tb) tb.value = (+sl.value).toFixed(1);
+  }};
   sl.addEventListener('input', show); show();
+  if (tb){{
+    // 숫자를 넣으면 구간 안으로 잘라 슬라이더에 옮깁니다. 구간 밖 숫자는 로봇이
+    // 어차피 자르므로, 화면에서 먼저 잘라 **사람이 무엇이 나갔는지 보게** 합니다.
+    const take = () => {{
+      let v = parseFloat(tb.value);
+      if (!isFinite(v)) {{ tb.value = (+sl.value).toFixed(1); return; }}
+      const lo = parseFloat(sl.min), hi = parseFloat(sl.max);
+      const c = Math.min(hi, Math.max(lo, v));
+      sl.value = c; show();
+      tb.value = c.toFixed(1);
+      nn.textContent = (c !== v)
+        ? `\uAD6C\uAC04 \uBC16\uC774\uB77C ${{c.toFixed(1)}}\u00B0 \uB85C \uC798\uB790\uC2B5\uB2C8\uB2E4`
+        : nn.textContent;
+    }};
+    tb.addEventListener('change', take);
+    tb.addEventListener('keydown', (e) => {{ if (e.key === 'Enter') {{ take(); tb.blur(); }} }});
+  }}
 
   async function beat(){{
     if (!timer && started) return;        // 이미 멈췄으면 아무것도 쓰지 않는다
