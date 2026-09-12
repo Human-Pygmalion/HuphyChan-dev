@@ -20,10 +20,10 @@
 막아 둔 것 일곱 가지
 --------------------
 1. **관절 하나만**    허락한 모터 번호 말고는 어떤 이름이 와도 무시합니다.
-2. **좁은 구간**      힘을 넣는 순간의 각도를 0으로 잡고 거기서 ±`span_deg` 안에서만
-                      움직입니다. 실측 가동범위가 아직 비어 있어(`limits_deg` 가 전부
-                      null) 로봇 프로그램의 범위 검사는 통과만 합니다 — 그래서 이
-                      구간이 **사실상 유일한 각도 보호**입니다.
+2. ~~**좁은 구간**~~  **제거됨 (2026-09-12 사용자 지시).** 영자세 기준 ±span 이라는
+                      상대 구간을 함께 걸었는데, HUPHY 에는 대응물이 없어서 같은
+                      입력에도 두 경로의 패킷이 달라졌습니다. 이제 아래 6b 의
+                      **절대 한계 하나만** 씁니다.
 3. **느린 속도**      한 주기에 갈 수 있는 거리를 `max_vel_deg_s` 로 묶습니다.
 4. **약한 세기**      `kp`/`kd` 에 상한이 있습니다. 세기 10 이면 구간 끝(10도)에서도
                       토크가 1.75 N·m 입니다 (RS03 정격 20 N·m 의 9%).
@@ -163,9 +163,9 @@ class CommandGuard:
   """받은 명령을 경계 안으로 줄여, 읽는 쪽이 보낼 바이트를 알려 준다."""
 
   def __init__(self, *, allow, arm_token, port=9872, kp=10.0, kd=1.0,
-               kp_cap=20.0, kd_cap=5.0, span_deg=10.0, max_vel_deg_s=20.0,
+               kp_cap=15.0, kd_cap=5.0, max_vel_deg_s=20.0,
                deadman_s=0.3, max_temp_c=50.0, dry_run=True, pair_mask=None,
-               kp_by=None, span_by=None, limit_by=None, needs_limit=(),
+               kp_by=None, limit_by=None, needs_limit=(),
                home_margin_deg=3.0):
     bad = [n for n in allow if n not in ALLOWED]
     if bad:
@@ -175,12 +175,11 @@ class CommandGuard:
     self.port = int(port)
     self.kp = min(float(kp), float(kp_cap))
     self.kd = min(float(kd), float(kd_cap))
-    self.span = abs(float(span_deg))
+
     # 관절마다 다르게 줄 수 있다. 무릎처럼 중력이 걸리는 곳은 낮게 잡는다.
     self.kp_by = {ALLOWED[n]["motor"]: min(float(v), float(kp_cap))
                   for n, v in (kp_by or {}).items() if n in ALLOWED}
-    self.span_by = {ALLOWED[n]["motor"]: abs(float(v))
-                    for n, v in (span_by or {}).items() if n in ALLOWED}
+
     # 모터 각도 기준의 **고정** 구간. 상대 구간과 달리 자리가 옮겨 다니지 않는다.
     self.limit_by = {ALLOWED[n]["motor"]: (float(a), float(b))
                      for n, (a, b) in (limit_by or {}).items() if n in ALLOWED}
@@ -451,19 +450,23 @@ class CommandGuard:
       return (middle, middle)
     return (lo + self.margin, hi - self.margin)
 
-  def _slider_span(self, motor_id):
-    """화면 슬라이더가 보여 줄 범위. **가드가 실제로 허락하는 것과 같아야 한다.**
+  def _window(self, motor_id):
+    """이 관절이 갈 수 있는 구간. **절대 한계에서 여유를 문 것뿐이다.**
 
-    한쪽만 보여 주면 사람이 갈 수 없는 자리를 고르고, 왜 안 가는지 모른다.
-    고정 한계가 있으면 여유를 문 그 값이고, 없으면 영자세 ± 상대 구간이다.
+    2026-09-12 사용자 지시로 **상대 구간(span)을 통째로 없앴다.** 그전에는 영자세
+    기준 ±span 을 함께 걸었는데, HUPHY 에는 대응물이 없어서 **같은 입력에도 두
+    경로의 패킷이 달라졌다.** 사용자 지적: *"너랑 HUPHY 둘 다 코드를 정상적으로
+    짰으면, 동일 제약조건·입력에 대해 동일한 패킷이 나와야 한다."* 맞는 말이고,
+    비교가 성립하려면 우리만 갖고 있던 제약이 없어야 한다.
+
+    한계가 아예 없는 관절은 여기서 열 수 없다 (`NEEDS_LIMIT`).
     """
-    span = self.span_by.get(motor_id, self.span)
-    centre = self.q0.get(motor_id, self._home_target(motor_id))
-    lo, hi = centre - span, centre + span
     inset = self._inset_limit(motor_id)
-    if inset is not None:
-      lo, hi = max(lo, inset[0]), min(hi, inset[1])
-    return (lo, hi)
+    if inset is None:
+      raise SystemExit(
+        f"{self.allow[motor_id]['ko']} 에 절대 한계가 없습니다. "
+        f"상대 구간을 없앴으므로 한계 없이는 열 수 없습니다.")
+    return inset
 
   def _home_target(self, motor_id) -> float:
     """이 관절의 **영자세**. 하드스톱이 한쪽 끝이면 그만큼 안쪽으로 물린다.
@@ -490,11 +493,7 @@ class CommandGuard:
       want = home
     else:
       want = self.wanted.get(motor_id, q0)
-    span = self.span_by.get(motor_id, self.span)
-    lo, hi = q0 - span, q0 + span
-    abs_lim = self._inset_limit(motor_id)
-    if abs_lim is not None:          # 고정 한계가 있으면 **그것이 우선**
-      lo, hi = max(lo, abs_lim[0]), min(hi, abs_lim[1])
+    lo, hi = self._window(motor_id)   # 절대 한계 - 여유. 이것뿐이다.
     clipped = min(hi, max(lo, want))
     if clipped != want:
       self.stats["clipped"] += 1
@@ -587,7 +586,7 @@ class CommandGuard:
       now = time.monotonic()
       age = (now - self.last_rx_any) if self.last_rx_any else None
       return dict(
-        dry_run=self.dry_run, kp=self.kp, kd=self.kd, span_deg=self.span,
+        dry_run=self.dry_run, kp=self.kp, kd=self.kd,
         max_vel_deg_s=self.max_vel, deadman_s=self.deadman, max_temp_c=self.max_temp,
         note=self.note, rx_age_s=round(age, 2) if age is not None else None,
         needs_token=bool(self.arm_token),
@@ -595,15 +594,15 @@ class CommandGuard:
         has_pair_mask=self.mask is not None,
         motors={str(m): dict(ko=r["ko"], sim=r["sim"], iface=r["iface"],
                              kp=self.kp_by.get(m, self.kp),
-                             span=self.span_by.get(m, self.span),
+
                              torque_on=self.torque_on.get(m, False),
                              age_s=(round(now - self.last_rx[m], 2)
                                     if self.last_rx.get(m) else None),
                              q0=self.q0.get(m), cmd=self.cmd.get(m),
                              homing=self.homing.get(m, False),
                              home=round(self._home_target(m), 2),
-                             lo=round(self._slider_span(m)[0], 2),
-                             hi=round(self._slider_span(m)[1], 2),
+                             lo=round(self._window(m)[0], 2),
+                             hi=round(self._window(m)[1], 2),
                              temp_cut=self.cut_temp.get(m, False))
                 for m, r in self.allow.items()},
       )

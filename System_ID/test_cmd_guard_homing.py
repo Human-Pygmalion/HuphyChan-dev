@@ -44,8 +44,11 @@ def arm(guard, deg_now, *, target=0.0):
 
 
 def make_guard(**kw):
+  # 2026-09-12: 상대 구간(span)을 없앴으므로 **절대 한계가 필수**다.
+  # 시험 기본값은 넉넉히 두고, 한계를 보는 시험만 따로 좁힌다.
   opts = dict(allow=[JOINT], arm_token="", dry_run=False,
-              max_vel_deg_s=20.0, deadman_s=0.3, kp=10.0, kd=1.0)
+              max_vel_deg_s=20.0, deadman_s=0.3, kp=10.0, kd=1.0,
+              limit_by={JOINT: (-200.0, 200.0)})
   opts.update(kw)
   return cg.CommandGuard(**opts)
 
@@ -72,7 +75,7 @@ def drive(guard, *, deg_now, targets_deg=None, cycles=200, dt=0.02):
 class TestHomesBeforeItListens:
   def test_arming_goes_to_zero_not_to_the_slider(self):
     """30도에 있는 관절에 +40도를 달라고 해도, 먼저 0도로 간다."""
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     g.local_target(JOINT, 40.0, "")
     arm(g, 30.0, target=40.0)                     # 켜기 프레임
     assert g.homing[MOTOR] is True
@@ -84,7 +87,7 @@ class TestHomesBeforeItListens:
 
   def test_it_actually_arrives_at_zero(self):
     """+40도를 계속 조르는 동안에도 **먼저 0도를 찍고** 나서야 40도로 간다."""
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 30.0)
     at, where_it_stopped_homing = 30.0, None
     for _ in range(600):
@@ -99,7 +102,7 @@ class TestHomesBeforeItListens:
     assert at == pytest.approx(40.0, abs=0.1)     # 그 뒤에야 슬라이더로 감
 
   def test_the_slider_works_after_it_arrives(self):
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 30.0)
     drive(g, deg_now=30.0, targets_deg=0.0, cycles=300)
     assert g.homing[MOTOR] is False
@@ -108,29 +111,34 @@ class TestHomesBeforeItListens:
 
   def test_the_window_is_anchored_at_zero_not_where_it_was_switched_on(self):
     """이전 결함: 켠 자리를 기준으로 구간이 잡혀 켤 때마다 구간이 걸어갔다."""
-    g = make_guard(span_deg=10.0)
+    g = make_guard()
     arm(g, 30.0)
     assert g.q0[MOTOR] == pytest.approx(0.0)      # 켠 자리(30도)가 아니라 0
 
   def test_turning_it_off_and_on_does_not_ratchet(self):
-    """껐다 켜기를 되풀이해도 갈 수 있는 구간이 밀려나지 않는다."""
-    g = make_guard(span_deg=10.0)
+    """껐다 켜기를 되풀이해도 갈 수 있는 구간이 밀려나지 않는다.
+
+    이것이 상대 구간을 없앤 이유다 — 예전에는 **켠 자리**를 기준으로 구간이
+    잡혀서, 껐다 켤 때마다 구간이 한쪽으로 걸어갔다(엉덩이회전이 0도 근처에서
+    ±43.4도까지 밀림). 이제 기준은 절대 한계뿐이라 켠 자리와 무관하다.
+    """
+    g = make_guard(limit_by={JOINT: (-45.0, 45.0)}, home_margin_deg=3.0)
+    ceiling = 45.0 - 3.0
     reached = []
     at = 25.0
     for _ in range(3):
       arm(g, at)
-      at = drive(g, deg_now=at, targets_deg=60.0, cycles=400)
+      at = drive(g, deg_now=at, targets_deg=200.0, cycles=2000)
       reached.append(at)
-      g.last_rx[MOTOR] = 0.0                       # 손을 뗌
-      g.frame_for(MOTOR, at, 30.0, 0.02)           # 끄기 프레임
-    # 매번 같은 자리에서 멈춰야 한다 (0 + span).
-    assert reached == pytest.approx([10.0, 10.0, 10.0], abs=0.2)
+      g.release_by_name(JOINT, "")                 # 사람이 힘 뺌
+      g.frame_for(MOTOR, at, 30.0, 0.02)
+    assert reached == pytest.approx([ceiling] * 3, abs=0.2)
 
 
 class TestHardStopMargin:
   def test_a_joint_whose_zero_is_the_hard_stop_stops_short(self):
     """무릎처럼 0도가 곧 하드스톱이면 여유만큼 안쪽을 영자세로 삼는다."""
-    g = make_guard(span_deg=50.0, limit_by={JOINT: (0.0, 120.0)},
+    g = make_guard(limit_by={JOINT: (0.0, 120.0)},
                    home_margin_deg=3.0)
     assert g._home_target(MOTOR) == pytest.approx(3.0)
     arm(g, 40.0)
@@ -144,7 +152,7 @@ class TestHardStopMargin:
     걸려 있어서, 도착한 뒤 0도를 달라고 하면 그대로 하드스톱까지 갔다.
     """
     # 상대 구간을 넓게 둬서 **고정 한계가 자르는 것**만 보이게 한다.
-    g = make_guard(span_deg=200.0, limit_by={JOINT: (0.0, 120.0)},
+    g = make_guard(limit_by={JOINT: (0.0, 120.0)},
                    home_margin_deg=3.0)
     arm(g, 40.0)
     drive(g, deg_now=40.0, targets_deg=0.0, cycles=800)
@@ -155,12 +163,12 @@ class TestHardStopMargin:
     assert end == pytest.approx(117.0, abs=0.1)
 
   def test_the_other_sign_stops_short_too(self):
-    g = make_guard(span_deg=50.0, limit_by={JOINT: (-120.0, 0.0)},
+    g = make_guard(limit_by={JOINT: (-120.0, 0.0)},
                    home_margin_deg=3.0)
     assert g._home_target(MOTOR) == pytest.approx(-3.0)
 
   def test_a_span_too_narrow_for_a_margin_goes_to_the_middle(self):
-    g = make_guard(span_deg=50.0, limit_by={JOINT: (10.0, 14.0)},
+    g = make_guard(limit_by={JOINT: (10.0, 14.0)},
                    home_margin_deg=3.0)
     assert g._home_target(MOTOR) == pytest.approx(12.0)
 
@@ -168,7 +176,7 @@ class TestHardStopMargin:
 class TestItStillObeysTheOtherGuards:
   def test_the_return_obeys_the_speed_limit(self):
     """영자세로 돌아가는 것도 속도 제한을 그대로 받는다."""
-    g = make_guard(span_deg=90.0, max_vel_deg_s=20.0)
+    g = make_guard(max_vel_deg_s=20.0)
     arm(g, 80.0)
     g.local_target(JOINT, 0.0, "")
     frame = g.frame_for(MOTOR, 80.0, 30.0, 0.02)
@@ -187,7 +195,7 @@ class TestItStillObeysTheOtherGuards:
     슬라이더는 목표 위치다. 힘을 빼면 중력이 관절을 끌어내리고, 화면이 말하는
     각도와 실물이 어긋난다. 손을 뗀 것은 **잡은 채로 두라**는 뜻이다.
     """
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 30.0)
     assert g.torque_on[MOTOR] is True
     g.last_rx[MOTOR] = 0.0                         # 아주 오래된 명령
@@ -197,7 +205,7 @@ class TestItStillObeysTheOtherGuards:
     assert g.stats["stale"] > 0, "끊긴 것은 세되, 끊지는 않는다"
 
   def test_only_an_explicit_release_cuts_torque(self):
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 30.0)
     g.release_by_name(JOINT, "")
     g.frame_for(MOTOR, 30.0, 30.0, 0.02)           # 끄기 프레임이 나감
@@ -206,7 +214,7 @@ class TestItStillObeysTheOtherGuards:
 
   def test_it_does_not_switch_itself_back_on_after_a_release(self):
     """놓은 뒤에 남은 명령이 있다고 혼자 다시 켜지면 안 된다."""
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 30.0)
     g.release_by_name(JOINT, "")
     for _ in range(50):
@@ -214,7 +222,7 @@ class TestItStillObeysTheOtherGuards:
     assert g.torque_on.get(MOTOR) is not True
 
   def test_too_hot_during_the_return_cuts_torque(self):
-    g = make_guard(span_deg=50.0, max_temp_c=50.0)
+    g = make_guard(max_temp_c=50.0)
     arm(g, 30.0)
     g.last_rx[MOTOR] = time.monotonic()
     g.frame_for(MOTOR, 30.0, 55.0, 0.02)
@@ -227,19 +235,18 @@ class TestTheScreenShowsWhatTheGuardAllows:
   다르면 사람이 갈 수 없는 자리를 고르고, 왜 안 가는지 모른다.
   """
 
-  @pytest.mark.parametrize("limit,span", [
-    (None, 10.0), ((0.0, 120.0), 50.0), ((-120.0, 0.0), 50.0),
-    ((0.0, 120.0), 200.0), ((-40.0, 40.0), 10.0),
+  @pytest.mark.parametrize("limit", [
+    (0.0, 120.0), (-120.0, 0.0), (-40.0, 40.0),
+    (-45.0, 45.0),      # 엉덩이회전의 시뮬레이터 모델(MJCF) 한계
+    (-68.75, 68.75),    # 발목 크랭크의 MJCF 한계
   ])
-  def test_the_slider_ends_are_reachable_and_nothing_beyond(self, limit, span):
-    kw = dict(span_deg=span, home_margin_deg=3.0)
-    if limit is not None:
-      kw["limit_by"] = {JOINT: limit}
-    g = make_guard(**kw)
+  def test_the_ends_are_reachable_and_nothing_beyond(self, limit):
+    """2026-09-12: 상대 구간(span)을 없앴으므로 **절대 한계 하나뿐**이다."""
+    g = make_guard(home_margin_deg=3.0, limit_by={JOINT: limit})
     arm(g, g._home_target(MOTOR))
     drive(g, deg_now=g._home_target(MOTOR), targets_deg=g._home_target(MOTOR),
           cycles=200)
-    lo, hi = g._slider_span(MOTOR)
+    lo, hi = g._window(MOTOR)
     at = g._home_target(MOTOR)
     assert drive(g, deg_now=at, targets_deg=hi, cycles=4000) == pytest.approx(hi, abs=0.1)
     assert drive(g, deg_now=hi, targets_deg=lo, cycles=8000) == pytest.approx(lo, abs=0.1)
@@ -249,13 +256,13 @@ class TestTheScreenShowsWhatTheGuardAllows:
 
 class TestWhatTheScreenIsTold:
   def test_a_target_sent_while_homing_is_accepted_but_marked_waiting(self):
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 30.0)
     reply = g.local_target(JOINT, 40.0, "")
     assert reply["ok"] is True and reply["homing"] is True
 
   def test_status_says_where_zero_is(self):
-    g = make_guard(span_deg=50.0, limit_by={JOINT: (0.0, 120.0)})
+    g = make_guard(limit_by={JOINT: (0.0, 120.0)})
     arm(g, 40.0)
     row = g.status()["motors"][str(MOTOR)]
     assert row["homing"] is True and row["home"] == pytest.approx(3.0)
@@ -269,7 +276,7 @@ class TestASaggingJointStillOpensTheSlider:
   """
 
   def test_it_gives_up_waiting_and_opens(self, monkeypatch):
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 10.0)
     # 관절이 **전혀 안 움직이는** 극단. 명령만 0 으로 간다.
     for _ in range(400):
@@ -286,7 +293,7 @@ class TestASaggingJointStillOpensTheSlider:
 
   def test_a_joint_that_does_follow_opens_without_waiting(self):
     """따라오는 관절은 기다릴 것 없이 바로 열린다."""
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 10.0)
     drive(g, deg_now=10.0, targets_deg=0.0, cycles=300)
     assert g.homing[MOTOR] is False
@@ -296,7 +303,7 @@ class TestASaggingJointStillOpensTheSlider:
 
   def test_drifting_back_out_restarts_the_wait(self):
     """영자세를 명령하다 딴 데로 가면, 기다린 시간은 없던 일이 된다."""
-    g = make_guard(span_deg=50.0)
+    g = make_guard()
     arm(g, 40.0)
     g.local_target(JOINT, 0.0, "")
     g.frame_for(MOTOR, 40.0, 30.0, 0.02)      # 아직 0 근처가 아님

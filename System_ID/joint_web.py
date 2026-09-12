@@ -751,7 +751,7 @@ async function tick(){{
       + (m.q0 != null ? ` 기준 ${{m.q0.toFixed(2)}}\u00B0` : '')
       + (m.cmd != null ? ` \u2192 목표 ${{m.cmd.toFixed(2)}}\u00B0` : '')).join(' &nbsp;|&nbsp; ');
     document.getElementById('ctlstat').innerHTML = rows
-      + `<br>세기 ${{K.kp}}/${{K.kd}} · 구간 \u00B1${{K.span_deg}}\u00B0 · 속도 ${{K.max_vel_deg_s}}\u00B0/s`
+      + `<br>세기 ${{K.kp}}/${{K.kd}} · 속도 ${{K.max_vel_deg_s}}\u00B0/s`
       + ` · 마지막 명령 ${{K.rx_age_s == null ? '없음' : K.rx_age_s + '초 전'}}`
       + ` · 잘림 ${{K.stats.clipped}} · 암호틀림 ${{K.stats.bad_token}}`;
     // 힘이 켜진 것은 **경고가 아니다** -- 사람이 그렇게 시킨 것이고, 단추가 이미
@@ -896,15 +896,11 @@ def main(argv=None) -> int:
   ap.add_argument("--cmd-port", type=int, default=9872)
   ap.add_argument("--kp", type=float, default=10.0)
   ap.add_argument("--kd", type=float, default=1.0)
-  ap.add_argument("--span-deg", type=float, default=10.0,
-                  help="힘을 넣은 자리에서 좌우로 이만큼까지만 움직임")
   ap.add_argument("--max-vel-deg-s", type=float, default=20.0)
   ap.add_argument("--deadman-s", type=float, default=0.3)
   ap.add_argument("--max-temp-c", type=float, default=50.0)
   ap.add_argument("--kp-map", default="",
                   help="관절마다 다른 세기. 예: L_knee_joint=12,R_knee_joint=12")
-  ap.add_argument("--span-map", default="",
-                  help="관절마다 다른 구간(도). 예: L_knee_joint=15,R_knee_joint=15")
   ap.add_argument("--limit-map", default="",
                   help="모터 각도 기준의 고정 한계. 예: L_knee_joint=0:120 "
                        "(한쪽 끝이 하드스톱인 관절은 이것 없이는 못 엶)")
@@ -936,15 +932,15 @@ def main(argv=None) -> int:
       print("     바깥에 열어 둔 주소(터널 등)가 있으면 먼저 닫을 것.", flush=True)
     guard = CommandGuard(
       allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
-      kp=a.kp, kd=a.kd, span_deg=a.span_deg, max_vel_deg_s=a.max_vel_deg_s,
+      kp=a.kp, kd=a.kd, max_vel_deg_s=a.max_vel_deg_s,
       deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live,
       pair_mask=pair_mask,
-      kp_by=_kv(a.kp_map), span_by=_kv(a.span_map),
+      kp_by=_kv(a.kp_map),
       limit_by=_kv2(a.limit_map), needs_limit=NEEDS_LIMIT).start()
     st = guard.status()
     print(f"  ** 움직이는 명령 {'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
     print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "
-          f"구간 ±{st['span_deg']:g}도 · 속도 {st['max_vel_deg_s']:g}도/초")
+          f"속도 {st['max_vel_deg_s']:g}도/초")
     print(f"     손 떼면 {st['deadman_s']:g}초 안에 멈춤 · {st['max_temp_c']:g}도에서 끊음 · "
           f"받는 포트 {st['port']}", flush=True)
 

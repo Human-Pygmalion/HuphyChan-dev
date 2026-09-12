@@ -54,4 +54,4 @@ esac
 
 exec python3 joint_web.py --port 8098 --telemetry 10.8.0.16:9870 \
   $MODE --allow $ALLOW --limit-map "$MAP" --kp-map "$KP" \
-  --span-deg 25 --max-vel-deg-s 15 --deadman-s 3.0 --max-temp-c 50
+  --max-vel-deg-s 15 --deadman-s 3.0 --max-temp-c 50
