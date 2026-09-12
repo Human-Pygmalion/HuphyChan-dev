@@ -1,0 +1,548 @@
+<?xml version="1.0"?>
+<!-- 2026-09-12: 좌우 이름표를 맞바꿨습니다 (tools/robot_model/swap_leg_names.py).
+     그 전까지 `L_` 이 붙은 사슬이 **물리적으로는 오른다리**였습니다 (L_hip_pitch_link
+     가 -y 에 있었음). 앞은 +x 이고(무릎을 굽히면 발이 -x 로 감), z 가 위인 오른손
+     좌표계라 +y 가 왼쪽입니다. 자세한 것은 docs/136.
+     기하·질량·관성·축·범위는 한 글자도 안 바꿨습니다. 이름과 그 참조만 바꿨습니다.
+     ★ STL 파일 이름은 그대로 둬서, 지금은 `<mesh name="L_..." file="R_....stl">` 처럼
+     어긋나 보입니다. **자산 이름(name)이 기준**이고 파일 이름의 글자는 뜻이 없습니다. -->
+<robot name="FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop">
+  <!-- RS03 mass 0.9195 kg; source: physical scale measurement supplied by user (0.9195 kg; catalogue 0.880 kg); RS04 mass 1.5140 kg; source: physical scale measurement supplied by user (1.514 kg) -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.000705855 -0.0011081 0.0263623" rpy="0 0 0"/>
+      <mass value="5.4216"/>
+      <inertia ixx="0.0219289" ixy="2.45344e-05" ixz="2.8587e-06" iyy="0.0219903" iyz="-0.000202989" izz="0.0123367"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/pelvis.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/pelvis_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_hip_pitch_link">
+    <inertial>
+      <origin xyz="0.00154376 0.00538733 0.000525268" rpy="0 0 0"/>
+      <mass value="1.8417"/>
+      <inertia ixx="0.00411465" ixy="9.91708e-06" ixz="6.31569e-06" iyy="0.00262779" iyz="7.62039e-06" izz="0.00285458"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/hip_pitch_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/hip_pitch_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_hip_roll_link">
+    <inertial>
+      <origin xyz="0.000912268 -0.00135613 -0.121662" rpy="0 0 0"/>
+      <mass value="1.373"/>
+      <inertia ixx="0.00340192" ixy="-2.6909e-06" ixz="-0.000151014" iyy="0.00347541" iyz="9.2076e-05" izz="0.002068"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/hip_roll_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/hip_roll_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_thigh_link">
+    <inertial>
+      <origin xyz="-0.0367184 -0.00147556 -0.339418" rpy="0 0 0"/>
+      <mass value="2.1176"/>
+      <inertia ixx="0.0114407" ixy="-8.34427e-06" ixz="-0.00210864" iyy="0.0135125" iyz="-7.39365e-05" izz="0.00382553"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/thigh.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/thigh_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_shin_link">
+    <inertial>
+      <origin xyz="-0.0275899 -0.000127367 -0.232073" rpy="0 0 0"/>
+      <mass value="2.7018"/>
+      <inertia ixx="0.0211235" ixy="1.81622e-05" ixz="-0.00113853" iyy="0.0221923" iyz="0.000144791" izz="0.00343319"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/shin.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/shin_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_ankle_pitch_link">
+    <inertial>
+      <origin xyz="0 1.42109e-17 0" rpy="0 0 0"/>
+      <mass value="0.040016"/>
+      <inertia ixx="1.43238e-05" ixy="-2.21684e-10" ixz="-1.31465e-09" iyy="3.69795e-06" iyz="-1.14375e-09" izz="1.42313e-05"/>
+    </inertial>
+  </link>
+  <link name="R_foot_link">
+    <inertial>
+      <origin xyz="0.0326641 4.26326e-17 -0.0312039" rpy="0 0 0"/>
+      <mass value="0.84518"/>
+      <inertia ixx="0.00109062" ixy="1.60551e-07" ixz="0.000280046" iyy="0.00456268" iyz="7.88778e-07" izz="0.00503462"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/foot.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/foot_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_hip_pitch_link">
+    <inertial>
+      <origin xyz="0.00154376 -0.00538733 0.000525268" rpy="0 0 0"/>
+      <mass value="1.8417"/>
+      <inertia ixx="0.00411465" ixy="-9.91708e-06" ixz="6.31569e-06" iyy="0.00262779" iyz="-7.62039e-06" izz="0.00285458"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_hip_pitch_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_hip_pitch_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_hip_roll_link">
+    <inertial>
+      <origin xyz="0.000912268 0.00135613 -0.121662" rpy="0 0 0"/>
+      <mass value="1.373"/>
+      <inertia ixx="0.00340192" ixy="2.6909e-06" ixz="-0.000151014" iyy="0.00347541" iyz="-9.2076e-05" izz="0.002068"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_hip_roll_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_hip_roll_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_thigh_link">
+    <inertial>
+      <origin xyz="-0.0367184 0.00147556 -0.339418" rpy="0 0 0"/>
+      <mass value="2.1176"/>
+      <inertia ixx="0.0114407" ixy="8.34427e-06" ixz="-0.00210864" iyy="0.0135125" iyz="7.39365e-05" izz="0.00382553"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_thigh.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_thigh_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_shin_link">
+    <inertial>
+      <origin xyz="-0.0275899 0.000127367 -0.232073" rpy="0 0 0"/>
+      <mass value="2.7018"/>
+      <inertia ixx="0.0211235" ixy="-1.81622e-05" ixz="-0.00113853" iyy="0.0221923" iyz="-0.000144791" izz="0.00343319"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_shin.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_shin_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_ankle_pitch_link">
+    <inertial>
+      <origin xyz="0 -1.42109e-17 0" rpy="0 0 0"/>
+      <mass value="0.040016"/>
+      <inertia ixx="1.43238e-05" ixy="2.21684e-10" ixz="-1.31465e-09" iyy="3.69795e-06" iyz="1.14375e-09" izz="1.42313e-05"/>
+    </inertial>
+  </link>
+  <link name="L_foot_link">
+    <inertial>
+      <origin xyz="0.0326641 -4.26326e-17 -0.0312039" rpy="0 0 0"/>
+      <mass value="0.84518"/>
+      <inertia ixx="0.00109062" ixy="-1.60551e-07" ixz="0.000280046" iyy="0.00456268" iyz="-7.88778e-07" izz="0.00503462"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_foot.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_foot_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="R_hip_pitch_joint" type="revolute">
+    <origin xyz="0 -0.1237 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="R_hip_pitch_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.0943951023931953" upper="0.4363323129985824" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_hip_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_hip_pitch_link"/>
+    <child link="R_hip_roll_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.4363323129985824" upper="1.4835298641951802" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_hip_yaw_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_hip_roll_link"/>
+    <child link="R_thigh_link"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="60" velocity="20"/>
+  </joint>
+  <joint name="R_knee_joint" type="revolute">
+    <origin xyz="-0.045 0 -0.37" rpy="0 0 0"/>
+    <parent link="R_thigh_link"/>
+    <child link="R_shin_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0.0" upper="2.0943951023931953" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_ankle_pitch_joint" type="revolute">
+    <origin xyz="-0.03 0 -0.49" rpy="0 0 0"/>
+    <parent link="R_shin_link"/>
+    <child link="R_ankle_pitch_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.8726646259971648" upper="0.5235987755982988" effort="90" velocity="20"/>
+  </joint>
+  <joint name="R_ankle_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_ankle_pitch_link"/>
+    <child link="R_foot_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.3490658503988659" upper="0.3490658503988659" effort="50" velocity="20"/>
+  </joint>
+  <joint name="L_hip_pitch_joint" type="revolute">
+    <origin xyz="0 0.1237 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="L_hip_pitch_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.4363323129985824" upper="2.0943951023931953" effort="120" velocity="20"/>
+  </joint>
+  <joint name="L_hip_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_hip_pitch_link"/>
+    <child link="L_hip_roll_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-1.4835298641951802" upper="0.4363323129985824" effort="120" velocity="20"/>
+  </joint>
+  <joint name="L_hip_yaw_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_hip_roll_link"/>
+    <child link="L_thigh_link"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="60" velocity="20"/>
+  </joint>
+  <joint name="L_knee_joint" type="revolute">
+    <origin xyz="-0.045 0 -0.37" rpy="0 0 0"/>
+    <parent link="L_thigh_link"/>
+    <child link="L_shin_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-2.0943951023931953" upper="0.0" effort="120" velocity="20"/>
+  </joint>
+  <joint name="L_ankle_pitch_joint" type="revolute">
+    <origin xyz="-0.03 0 -0.49" rpy="0 0 0"/>
+    <parent link="L_shin_link"/>
+    <child link="L_ankle_pitch_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.8726646259971648" upper="0.5235987755982988" effort="90" velocity="20"/>
+  </joint>
+  <joint name="L_ankle_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_ankle_pitch_link"/>
+    <child link="L_foot_link"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.3490658503988659" upper="0.3490658503988659" effort="50" velocity="20"/>
+  </joint>
+  <link name="R_crank_A">
+    <inertial>
+      <origin xyz="-0.0198018 0.0360067 -0.0062147" rpy="0 0 0"/>
+      <mass value="0.034678"/>
+      <inertia ixx="7.59307e-06" ixy="1.99617e-06" ixz="-3.64097e-06" iyy="1.97976e-05" iyz="6.55228e-07" izz="1.66148e-05"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/crank_A.stl"/></geometry>
+    </visual>
+  </link>
+  <link name="R_rod_A_u">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.001"/>
+      <inertia ixx="1e-07" ixy="0" ixz="0" iyy="1e-07" iyz="0" izz="1e-07"/>
+    </inertial>
+  </link>
+  <link name="R_rod_A">
+    <inertial>
+      <origin xyz="0.00548356 0.00130335 -0.144762" rpy="0 0 0"/>
+      <mass value="0.080611"/>
+      <inertia ixx="0.00100139" ixy="-3.27114e-07" ixz="3.79761e-05" iyy="0.00100427" iyz="9.05816e-06" izz="3.7271e-06"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/rod_A.stl"/></geometry>
+    </visual>
+  </link>
+  <link name="R_crank_B">
+    <inertial>
+      <origin xyz="-0.0191695 -0.0360218 -0.00484967" rpy="0 0 0"/>
+      <mass value="0.033884"/>
+      <inertia ixx="6.87121e-06" ixy="-1.92757e-06" ixz="-2.43116e-06" iyy="1.8195e-05" iyz="-4.59121e-07" izz="1.5733e-05"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/crank_B.stl"/></geometry>
+    </visual>
+  </link>
+  <link name="R_rod_B_u">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.001"/>
+      <inertia ixx="1e-07" ixy="0" ixz="0" iyy="1e-07" iyz="0" izz="1e-07"/>
+    </inertial>
+  </link>
+  <link name="R_rod_B">
+    <inertial>
+      <origin xyz="0.00482552 -0.00130776 -0.0979551" rpy="0 0 0"/>
+      <mass value="0.067401"/>
+      <inertia ixx="0.000417838" ixy="3.10384e-07" ixz="2.06779e-05" iyy="0.000420171" iyz="-5.43715e-06" izz="3.00405e-06"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/rod_B.stl"/></geometry>
+    </visual>
+  </link>
+  <joint name="R_crank_A_joint" type="revolute">
+    <origin xyz="-0.029945 -0.001718 -0.190034" rpy="0 0 0"/>
+    <parent link="R_shin_link"/>
+    <child link="R_crank_A"/>
+    <axis xyz="-0.0000 -1.0000 -0.0000"/>
+    <limit lower="-1.2" upper="1.2" effort="60.0" velocity="20"/>
+  </joint>
+  <joint name="R_rod_A_u1" type="revolute">
+    <origin xyz="-0.061494 0.042718 -0.021185" rpy="0 0 0"/>
+    <parent link="R_crank_A"/>
+    <child link="R_rod_A_u"/>
+    <axis xyz="-0.0000 -1.0000 -0.0000"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <joint name="R_rod_A_u2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_rod_A_u"/>
+    <child link="R_rod_A"/>
+    <axis xyz="0.9993 -0.0000 0.0379"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <!-- loop closure, not expressible in URDF: the far end of L_rod_A at xyz="0.010939 0.0026 -0.288781" (rod frame) is a ball joint on L_foot_link - see the <equality><connect> in the MJCF -->
+  <joint name="R_crank_B_joint" type="revolute">
+    <origin xyz="-0.030055 0.001717 -0.290034" rpy="0 0 0"/>
+    <parent link="R_shin_link"/>
+    <child link="R_crank_B"/>
+    <axis xyz="0.0000 1.0000 0.0000"/>
+    <limit lower="-1.2" upper="1.2" effort="60.0" velocity="20"/>
+  </joint>
+  <joint name="R_rod_B_u1" type="revolute">
+    <origin xyz="-0.060039 -0.042717 -0.01522" rpy="0 0 0"/>
+    <parent link="R_crank_B"/>
+    <child link="R_rod_B_u"/>
+    <axis xyz="0.0000 1.0000 0.0000"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <joint name="R_rod_B_u2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_rod_B_u"/>
+    <child link="R_rod_B"/>
+    <axis xyz="-0.9988 0.0000 -0.0492"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <!-- loop closure, not expressible in URDF: the far end of L_rod_B at xyz="0.009594 -0.0026 -0.194746" (rod frame) is a ball joint on L_foot_link - see the <equality><connect> in the MJCF -->
+  <link name="L_crank_A">
+    <inertial>
+      <origin xyz="-0.0198018 -0.0360067 -0.0062147" rpy="0 0 0"/>
+      <mass value="0.034678"/>
+      <inertia ixx="7.59307e-06" ixy="-1.99617e-06" ixz="-3.64097e-06" iyy="1.97976e-05" iyz="-6.55228e-07" izz="1.66148e-05"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_crank_A.stl"/></geometry>
+    </visual>
+  </link>
+  <link name="L_rod_A_u">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.001"/>
+      <inertia ixx="1e-07" ixy="0" ixz="0" iyy="1e-07" iyz="0" izz="1e-07"/>
+    </inertial>
+  </link>
+  <link name="L_rod_A">
+    <inertial>
+      <origin xyz="0.00548356 -0.00130335 -0.144762" rpy="0 0 0"/>
+      <mass value="0.080611"/>
+      <inertia ixx="0.00100139" ixy="3.27114e-07" ixz="3.79761e-05" iyy="0.00100427" iyz="-9.05816e-06" izz="3.7271e-06"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_rod_A.stl"/></geometry>
+    </visual>
+  </link>
+  <link name="L_crank_B">
+    <inertial>
+      <origin xyz="-0.0191695 0.0360218 -0.00484967" rpy="0 0 0"/>
+      <mass value="0.033884"/>
+      <inertia ixx="6.87121e-06" ixy="1.92757e-06" ixz="-2.43116e-06" iyy="1.8195e-05" iyz="4.59121e-07" izz="1.5733e-05"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_crank_B.stl"/></geometry>
+    </visual>
+  </link>
+  <link name="L_rod_B_u">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.001"/>
+      <inertia ixx="1e-07" ixy="0" ixz="0" iyy="1e-07" iyz="0" izz="1e-07"/>
+    </inertial>
+  </link>
+  <link name="L_rod_B">
+    <inertial>
+      <origin xyz="0.00482552 0.00130776 -0.0979551" rpy="0 0 0"/>
+      <mass value="0.067401"/>
+      <inertia ixx="0.000417838" ixy="-3.10384e-07" ixz="2.06779e-05" iyy="0.000420171" iyz="5.43715e-06" izz="3.00405e-06"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_rod_B.stl"/></geometry>
+    </visual>
+  </link>
+  <joint name="L_crank_A_joint" type="revolute">
+    <origin xyz="-0.029945 0.001718 -0.190034" rpy="0 0 0"/>
+    <parent link="L_shin_link"/>
+    <child link="L_crank_A"/>
+    <axis xyz="0.0000 1.0000 0.0000"/>
+    <limit lower="-1.2" upper="1.2" effort="60.0" velocity="20"/>
+  </joint>
+  <joint name="L_rod_A_u1" type="revolute">
+    <origin xyz="-0.061494 -0.042718 -0.021185" rpy="0 0 0"/>
+    <parent link="L_crank_A"/>
+    <child link="L_rod_A_u"/>
+    <axis xyz="0.0000 1.0000 0.0000"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <joint name="L_rod_A_u2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_rod_A_u"/>
+    <child link="L_rod_A"/>
+    <axis xyz="-0.9993 0.0000 -0.0379"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <!-- loop closure, not expressible in URDF: the far end of R_rod_A at xyz="0.010939 -0.0026 -0.288781" (rod frame) is a ball joint on R_foot_link - see the <equality><connect> in the MJCF -->
+  <joint name="L_crank_B_joint" type="revolute">
+    <origin xyz="-0.030055 -0.001717 -0.290034" rpy="0 0 0"/>
+    <parent link="L_shin_link"/>
+    <child link="L_crank_B"/>
+    <axis xyz="-0.0000 -1.0000 -0.0000"/>
+    <limit lower="-1.2" upper="1.2" effort="60.0" velocity="20"/>
+  </joint>
+  <joint name="L_rod_B_u1" type="revolute">
+    <origin xyz="-0.060039 0.042717 -0.01522" rpy="0 0 0"/>
+    <parent link="L_crank_B"/>
+    <child link="L_rod_B_u"/>
+    <axis xyz="-0.0000 -1.0000 -0.0000"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <joint name="L_rod_B_u2" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_rod_B_u"/>
+    <child link="L_rod_B"/>
+    <axis xyz="0.9988 -0.0000 0.0492"/>
+    <limit lower="-3.1416" upper="3.1416" effort="0" velocity="50"/>
+  </joint>
+  <!-- loop closure, not expressible in URDF: the far end of R_rod_B at xyz="0.009594 0.0026 -0.194746" (rod frame) is a ball joint on R_foot_link - see the <equality><connect> in the MJCF -->
+  <link name="torso_link">
+    <inertial>
+      <origin xyz="-0.0119047 -0.00143824 0.314936" rpy="0 0 0"/>
+      <mass value="8.0571"/>
+      <inertia ixx="0.201316" ixy="6.12602e-05" ixz="-0.00455516" iyy="0.170994" iyz="0.00242388" izz="0.0468112"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/torso.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/torso_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_shoulder_pitch_link">
+    <inertial>
+      <origin xyz="-0.00266306 0.00267537 -6.71701e-06" rpy="0 0 0"/>
+      <mass value="1.0501"/>
+      <inertia ixx="0.00150543" ixy="-3.8436e-06" ixz="8.19572e-06" iyy="0.00109348" iyz="2.3077e-06" izz="0.001154"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/shoulder_pitch_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/shoulder_pitch_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_arm_link">
+    <inertial>
+      <origin xyz="-0.00572834 0.00024795 -0.215243" rpy="0 0 0"/>
+      <mass value="0.91188"/>
+      <inertia ixx="0.0506023" ixy="-7.14255e-05" ixz="0.0011582" iyy="0.0505763" iyz="0.000167374" izz="0.00107624"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/arm.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/arm_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_shoulder_pitch_link">
+    <inertial>
+      <origin xyz="-0.00266306 -0.00267537 -6.71701e-06" rpy="0 0 0"/>
+      <mass value="1.0501"/>
+      <inertia ixx="0.00150543" ixy="3.8436e-06" ixz="8.19572e-06" iyy="0.00109348" iyz="-2.3077e-06" izz="0.001154"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_shoulder_pitch_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_shoulder_pitch_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_arm_link">
+    <inertial>
+      <origin xyz="-0.00572834 -0.00024795 -0.215243" rpy="0 0 0"/>
+      <mass value="0.91188"/>
+      <inertia ixx="0.0506023" ixy="7.14255e-05" ixz="0.0011582" iyy="0.0505763" iyz="-0.000167374" izz="0.00107624"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes_v30_armfix/R_arm.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes_v30_armfix/R_arm_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="waist_yaw_joint" type="revolute">
+    <origin xyz="0 0 0.1175" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="torso_link"/>
+    <axis xyz="0 0 -1"/>
+    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_shoulder_pitch_joint" type="revolute">
+    <origin xyz="-0.015 -0.2 0.3625" rpy="0 0 0"/>
+    <parent link="torso_link"/>
+    <child link="R_shoulder_pitch_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.9670597283903604" upper="1.0471975511965976" effort="60" velocity="20"/>
+  </joint>
+  <joint name="R_shoulder_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_shoulder_pitch_link"/>
+    <child link="R_arm_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.2617993877991494" upper="2.2689280275926285" effort="60" velocity="20"/>
+  </joint>
+  <joint name="L_shoulder_pitch_joint" type="revolute">
+    <origin xyz="-0.015 0.2 0.3625" rpy="0 0 0"/>
+    <parent link="torso_link"/>
+    <child link="L_shoulder_pitch_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-1.0471975511965976" upper="2.9670597283903604" effort="60" velocity="20"/>
+  </joint>
+  <joint name="L_shoulder_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_shoulder_pitch_link"/>
+    <child link="L_arm_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-2.2689280275926285" upper="0.2617993877991494" effort="60" velocity="20"/>
+  </joint>
+</robot>

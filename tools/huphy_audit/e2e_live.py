@@ -80,13 +80,16 @@ MODELS = {1: T.Model.RS04, 2: T.Model.RS04, 3: T.Model.RS03,
 MODEL_NAME = {i: m.value for i, m in MODELS.items()}
 
 # ★ 한계의 출처는 **시뮬레이터 모델(MJCF)** 입니다 (사용자 확정 2026-09-12).
+# ★★ 2026-09-12 밤: 모델의 좌우 이름이 물리적 좌우와 반대여서 여기 왼다리 자리에
+# **오른다리 한계**가 들어가 있었습니다 (docs/136). 모델 이름을 바로잡고 다시 읽었습니다 --
+# 왼 무릎이 [0,+120] 에서 **[-120,0]** 으로 바뀐 것이 그 결과입니다.
 # 예전 실측값(v0.5)은 모터를 갈아서 무효이고, 파이의 HUPHY 설정에 들어가 있는
 # 것도 이 MJCF 값입니다. `System_ID/mjcf_limits.json` 의 왼다리 몫입니다.
 MJCF_LIMITS = {
-  "hip_pitch": (-120.0, 25.0),
-  "hip_roll": (-25.0, 85.0),
+  "hip_pitch": (-25.0, 120.0),
+  "hip_roll": (-85.0, 25.0),
   "hip_yaw": (-45.0, 45.0),
-  "knee": (0.0, 120.0),
+  "knee": (-120.0, 0.0),
   "ankle_a": (-68.75, 68.75),
   "ankle_b": (-68.75, 68.75),
 }
@@ -730,18 +733,22 @@ def e24(f):
 
   ☆ 같은 날 5.0 -> 0.0 -> 3.0 으로 두 번 뒤집혔습니다. 두 번 다 **짧게 재고**
   결론 낸 것이 원인이었습니다. 10초로는 0이 최선처럼 보입니다.
+
+  ★ 2026-09-12 저녁, **힘이 들어간 채** 120초씩 다시 재고 **5.0** 으로 정했습니다
+  (docs/133). 창 3 에서는 응답 손실이 평균 16.8%, 창 5 에서는 7.8% 이고 주기는
+  초당 87.4 -> 80.7 회입니다. 위 표는 토크 없이 잰 것이라 주기가 다릅니다.
   """
   import inspect, re as _re
   import huphy_live
   src = inspect.getsource(huphy_live.main)
   m = _re.search(r'"--drain-ms".*?default=([\d.]+)', src, _re.S)
   got = float(m.group(1)) if m else -1.0
-  if abs(got - 3.0) < 1e-9:
-    f.hold("기본값이 3.0 입니다. 0 은 20초 만에 죽고, 5 는 더 느립니다.")
+  if abs(got - 5.0) < 1e-9:
+    f.hold("기본값이 5.0 입니다 — 힘이 들어간 채 잰 손실률 7.8% (창 3 은 16.8%).")
   elif got == 0.0:
     f.leak("기본값이 0 입니다 — 90초 소크에서 통신두절로 죽는 값입니다.")
   else:
-    f.leak(f"기본값이 3.0 이 아닙니다: {got}")
+    f.leak(f"기본값이 5.0 이 아닙니다: {got}")
 
 
 def _ankle():
@@ -1054,9 +1061,10 @@ def e36(f):
   """사용자 질문(2026-09-12): *"0도에서 하드스탑쪽으로 가는 명령 주는 건 HUPHY
   안전필터 클리핑이 막아주지?"*
 
-  무릎은 왼쪽이 `0~+120`, 오른쪽이 `-120~0` 이라 **0도가 곧 하드스톱**입니다.
-  지금까지 검사한 것은 엉덩이회전(양쪽이 다 열린 관절)이었으므로, 한쪽 끝이
-  막힌 관절로 직접 확인합니다.
+  무릎은 한쪽 끝이 **0도**입니다 — 곧게 편 자세가 기구의 끝입니다. 어느 쪽 끝이
+  0인지는 다리마다 다르므로(왼 `-120~0`, 오른 `0~+120`; 2026-09-12 좌우 이름
+  바로잡기 뒤) **한계에서 읽어** 정합니다. 지금까지 검사한 것은 엉덩이회전(양쪽이
+  다 열린 관절)이었으므로, 한쪽 끝이 막힌 관절로 직접 확인합니다.
   """
   import huphy_live as HL
   leg, loop, live_all, motion_all, motors = build(trim=False)   # 모델 한계 그대로
@@ -1069,15 +1077,17 @@ def e36(f):
     loop.step(motion, t=9.0 + k * 0.01)
   hit = sent_to(motors, MOTOR_OF["knee"])
   lo, hi = leg.calibration["knee"].limits_deg
-  floor = lo + SAFETY["command_margin_deg"]
+  # 0 이 하한이면 그 위로, 0 이 상한이면 그 아래로 여유만큼 떨어져야 합니다.
+  stop_at_lo = abs(lo) < abs(hi)
+  edge = (lo + SAFETY["command_margin_deg"]) if stop_at_lo else (hi - SAFETY["command_margin_deg"])
   if hit is None:
     f.leak("아무것도 안 나갔습니다.")
-  elif abs(hit["pos"] - floor) < 0.1:
+  elif abs(hit["pos"] - edge) < 0.1:
     f.hold(f"한계 {lo:+.1f}~{hi:+.1f}도에서 0도를 달라고 했더니 "
            f"**{hit['pos']:+.2f}도**가 나갔습니다 — 하드스톱에서 "
            f"{SAFETY['command_margin_deg']:g}도 떨어져 섭니다.")
   else:
-    f.leak(f"{hit['pos']:+.2f}도가 나갔습니다 (하한 {floor:+.2f}도).")
+    f.leak(f"{hit['pos']:+.2f}도가 나갔습니다 (기대 {edge:+.2f}도).")
 
 
 @check("E37", "하드스톱", "하드스톱 **너머**를 달라고 해도 같은 자리에 서는가")
@@ -1088,9 +1098,13 @@ def e37(f):
   live = HL.LiveTargets(HL.pick_joints(leg, {"knee"}))
   motion = HL.ThermalCutoff(live, 50.0)
   lo, hi = leg.calibration["knee"].limits_deg
-  floor = lo + SAFETY["command_margin_deg"]
+  # 0 이 막힌 끝입니다. 그 **너머**가 어느 부호인지는 한계에서 읽습니다 --
+  # 왼 무릎은 [-120, 0] 이라 +쪽이, 오른 무릎은 [0, +120] 이라 -쪽이 벽 너머입니다.
+  stop_at_lo = abs(lo) < abs(hi)
+  floor = (lo + SAFETY["command_margin_deg"]) if stop_at_lo else (hi - SAFETY["command_margin_deg"])
+  beyond = -1.0 if stop_at_lo else +1.0
   seen = []
-  for want in (-5.0, -50.0, -500.0):
+  for want in (beyond * 5.0, beyond * 50.0, beyond * 500.0):
     live.update({"knee": want})
     motors.sent.clear()
     for k in range(400):
@@ -1101,7 +1115,7 @@ def e37(f):
   (f.hold if ok else f.leak)(
     "한계 너머로 얼마를 달라고 하든 같은 자리에 섭니다: "
     + " · ".join(f"{w:+.0f}도 -> {p:+.2f}도" for w, p in seen)
-    + f" (하한 {lo:+.1f} + 여유 {SAFETY['command_margin_deg']:g} = {floor:+.2f}도)")
+    + f" (막힌 끝 0도에서 여유 {SAFETY['command_margin_deg']:g}도 = {floor:+.2f}도)")
 
 
 @check("E38", "하드스톱", "이미 한계 밖에 있으면 **한 주기씩** 돌아오는가")

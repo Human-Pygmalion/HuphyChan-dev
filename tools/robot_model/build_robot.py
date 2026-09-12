@@ -526,6 +526,47 @@ def urdf_inertia(I):
             f'iyy="{I[1,1]:.6g}" iyz="{I[1,2]:.6g}" izz="{I[2,2]:.6g}"/>')
 
 
+def assert_left_is_plus_y(text: str, what: str) -> None:
+    """`L_` 이 붙은 사슬이 **+y(물리적 왼쪽)** 에 있는지 확인하고, 아니면 멈춘다.
+
+    2026-09-12 에 이것 때문에 실물에서 하루를 썼습니다. 이 빌더는 `sign = -1 if
+    s == 'L'` 로 **왼다리를 -y 에** 놓는데(옛 pygmalion.xml 규약), 앞이 +x 이고
+    z 가 위인 오른손 좌표계에서 **+y 가 왼쪽**입니다. 그래서 `L_` 사슬이
+    물리적으로는 오른다리였고, 실물 왼 무릎에 오른 무릎 한계가 들어가
+    **안전 클리핑이 무릎을 하드스톱으로 밀었습니다** (docs/134, docs/136).
+
+    이미 만들어진 모델 파일들은 `tools/robot_model/swap_leg_names.py` 로 이름만
+    맞바꿔 고쳤습니다. **이 빌더 자체는 아직 안 고쳤습니다** -- 고치려면 세 군데를
+    함께 뒤집어야 하는데, 마지막 하나가 메시 파일 선택이라 STL 내보내기까지
+    건드려야 합니다:
+
+        1) `sign = -1.0 if s == 'L' else 1.0`  (746, 829, 966행) -> 부호 반대로
+        2) 크랭크 축 예외 `(s=='L' and tag=='A') or (s=='R' and tag=='B')`
+           (400, 441행) 과 `-15.0 if s_ == 'L'` (862행) -> 글자 반대로
+        3) **메시**: 지금은 s=='R' 일 때만 `R_*.stl` 을 쓰고 왼쪽은 접두사 없는
+           파일을 씁니다. 1) 을 뒤집으면 +y 다리가 접두사 없는(=거울 반대) 메시를
+           받습니다. STL 내보내기에서 좌우를 같이 바꿔야 맞습니다.
+
+    그때까지는 이 확인이 **조용한 재발을 막습니다.**
+    """
+    import re as _re
+    m = _re.search(r'name="L_hip_pitch_(?:link|joint)"', text)
+    if not m:
+        return
+    for pat in (r'<body name="L_hip_pitch_link"[^>]*pos="[-\d.eE]+ ([-\d.eE]+)',
+                r'<joint name="L_hip_pitch_joint".*?xyz="[-\d.eE]+ ([-\d.eE]+)'):
+        hit = _re.search(pat, text, _re.S)
+        if hit:
+            y = float(hit.group(1))
+            if y < 0:
+                raise SystemExit(
+                    f"{what}: L_ 사슬이 y={y:+.4f} (오른쪽)에 있습니다. +y 가 왼쪽입니다.\n"
+                    f"  이 빌더의 좌우 배정이 뒤집혀 있습니다 -- 위 함수의 설명을 보고\n"
+                    f"  1)2)3) 을 함께 고치거나, 만든 뒤 swap_leg_names.py 를 돌리십시오."
+                )
+            return
+
+
 def main():
     if '--help' in sys.argv or '-h' in sys.argv:
         print(__doc__)
@@ -931,6 +972,7 @@ def main():
 </mujoco>
 ''')
     mjcf = ''.join(X)
+    assert_left_is_plus_y(mjcf, f'{tag}.xml')
     open(f'{OUT_MJCF}/{tag}.xml', 'w').write(mjcf)
     # The overlap resolver compiles the just-written MJCF, so its mesh link must exist
     # before that compile.  The legacy output directory already had the link and hid this
@@ -1042,6 +1084,7 @@ def main():
                              f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n  </joint>\n')
                 parent = f'{s_}_{BNAME[b]}'
     U.append('</robot>\n')
+    assert_left_is_plus_y(''.join(U), f'{tag}.urdf')
     open(f'{OUT_URDF}/{tag}.urdf', 'w').write(''.join(U))
 
     # ---- compile check ----
