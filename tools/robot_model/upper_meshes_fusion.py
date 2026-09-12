@@ -66,15 +66,18 @@ BACKUP_ROOT = os.path.expanduser('~/pyg_fea')
 R_SIM = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])   # cad -> sim
 # rigid body -> (origin in CAD mm, occurrence filters that belong to it)
 GROUPS = {
-    'torso': (np.array([0.0, 70.0, 177.5]), ['Torso:1', 'Neck:1']),
-    # the CAD has ONE arm, so the shoulder-pitch motor is fetched on its own and drawn
-    # twice - once as measured, once y-mirrored - to match the two-armed mass properties
-    'torso_shpitch': (np.array([0.0, 70.0, 177.5]),
-                      ['Actuator:1/Robstride RS03 - Shoulder_Pitch']),
+    # 2026-08-27 rescope: only what the shoulder rework changed (printed parts). Motors are
+    # unchanged catalog items (drawn as cylinders per the standing rule) and the torso is out
+    # of scope per the user. Filters are PATH SUBSTRINGS checked per occurrence:
+    #  - the original 'Arm_R:1/Shoulder-Pitch2Roll' could never match (the real path runs
+    #    through ArmR_Dummy:1) and was simply dead - the motor crash earlier in the dict
+    #    meant this was never reached, so it shipped untested;
+    #  - 'arm' needs a BLOCK list, or the substring match swallows the pitch link subtree
+    #    and double-draws it. Shoulder-Roll2Yaw-dummy is excluded by its own light=False.
     'shoulder_pitch_link': (np.array([-200.0, 85.0, 540.0]),
-                            ['Arm_R:1/Shoulder-Pitch2Roll',
-                             'Actuator:1/Robstride RS03 - Shoulder_Roll']),
-    'arm': (np.array([-200.0, 85.0, 540.0]), ['Arm_R:1/ArmR_Dummy']),
+                            ['ArmR_Dummy:1/Shoulder-Pitch2Roll'], ()),
+    'arm': (np.array([-200.0, 85.0, 540.0]),
+            ['Arm_R:1/ArmR_Dummy'], ('Shoulder-Pitch2Roll',)),
 }
 
 # An occurrence walk with an explicit stack - see the module docstring on why recursion here
@@ -92,7 +95,7 @@ def run(_context: str):
         o, path, live = stack.pop()
         live = live and o.isLightBulbOn
         p = path + "/" + o.name
-        if live and any(w in p for w in WANT):
+        if live and any(w in p for w in WANT) and not any(b in p for b in BLOCK):
             for i in range(o.bRepBodies.count):
                 b = o.bRepBodies.item(i)
                 if b.isLightBulbOn:
@@ -113,7 +116,10 @@ def run(_context: str):
     app = adsk.core.Application.get()
     root = adsk.fusion.Design.cast(app.activeProduct).rootComponent
     occ = None
-    stack = [(root.occurrences.itemByName("Joints_UpperBody:1"), "")]
+    # Search from every root occurrence.  The same safe fetcher is reused by the full-robot
+    # exporter, which also targets Joints_UnderBody.  This remains an explicit stack: never
+    # re-introduce recursion here (see the module-level host-wedge post-mortem).
+    stack = [(root.occurrences.item(i), "") for i in range(root.occurrences.count)]
     while stack:
         c, p = stack.pop()
         q = p + "/" + c.name
@@ -163,12 +169,26 @@ class Fetcher:
         self.min_failed = None      # smallest base64 payload that came back short, bytes
 
     def _run(self, src):
-        txt = M.printed(src).strip()
+        # stdout occasionally comes back empty even though Fusion ran the script. Retry only
+        # that normal-return channel.  Do NOT fall back to the exception/traceback channel:
+        # the adapter's recursive ``__getattr__`` wrapper accumulates stack pressure there
+        # and previously wedged the Fusion host after body 77/89.  An incomplete run is cheap
+        # (the per-body cache resumes it); restarting Fusion is not.
+        txt = ''
+        for _ in range(3):
+            txt = M.printed(src).strip()
+            if txt:
+                break
+        if not txt:
+            raise RuntimeError(
+                'Fusion returned empty stdout three times; stopped safely without using '
+                'the traceback payload channel. Cached bodies remain reusable.')
         self.max_payload = max(self.max_payload, len(txt))
         return txt
 
-    def list_bodies(self, want):
-        return json.loads(self._run(LIST_SCRIPT.replace('WANT', json.dumps(want))))
+    def list_bodies(self, want, block=()):
+        return json.loads(self._run(LIST_SCRIPT.replace('WANT', json.dumps(want))
+                                    .replace('BLOCK', json.dumps(block))))
 
     def _slice(self, path, idx, what, start=0, count=0):
         if count:
@@ -188,7 +208,7 @@ class Fetcher:
         needs no guessed floor - only a sanity floor below which the connector is not what
         is wrong.
         """
-        buf, start, chunk = [], 0, self.chunk
+        buf, start, chunk, transient_retries = [], 0, self.chunk, 0
         while start < n:
             count = min(chunk, n - start)
             txt = self._slice(path, idx, what, start, count)
@@ -197,6 +217,17 @@ class Fetcher:
             except Exception:                                      # noqa: BLE001
                 raw = b''                                          # cut mid-quantum
             if len(raw) != 4 * count:
+                # The adapter occasionally returns a tiny, otherwise base64-looking status
+                # string instead of stdout.  It is not the measured payload ceiling: retry the
+                # identical read a bounded number of times before adapting the chunk size.
+                # Without this distinction one 34-byte hiccup collapses a 5k-value request to
+                # five values and falsely reports that the connector is not the problem.
+                tiny = len(raw) < min(1024, max(64, 4 * count // 10))
+                if tiny and transient_retries < 3:
+                    transient_retries += 1
+                    print(f'      transient short {what} payload ({len(raw)} B); '
+                          f'retry {transient_retries}/3', flush=True)
+                    continue
                 self.min_failed = min(self.min_failed or 10 ** 9, len(txt) or 10 ** 9)
                 fits = int(len(txt) * 3 / 16 * 0.9)
                 nxt = min(chunk // 2, fits) if fits else chunk // 2
@@ -210,6 +241,7 @@ class Fetcher:
                 continue
             buf.append(np.frombuffer(raw, dtype=dtype))
             start += count
+            transient_retries = 0
         self.chunk = chunk          # remember the size that worked, for the next body
         return np.concatenate(buf) if buf else np.zeros(0, dtype=dtype)
 
@@ -220,9 +252,9 @@ class Fetcher:
         return v, f
 
 
-def fetch(fx, want):
+def fetch(fx, want, block=()):
     """Every body of a group, or an exception. No body is allowed to go missing quietly."""
-    bodies = fx.list_bodies(want)
+    bodies = fx.list_bodies(want, block)
     out, failed = [], []
     for path, idx, name in bodies:
         try:
@@ -404,9 +436,9 @@ def main():
     fx = Fetcher(quality=args.quality, chunk=args.chunk)
     stats = {}
     try:
-        for body, (origin, want) in GROUPS.items():
+        for body, (origin, want, block) in GROUPS.items():
             print(f'{body}:', flush=True)
-            stats[body] = build_group(body, origin, fetch(fx, want), stage)
+            stats[body] = build_group(body, origin, fetch(fx, want, block), stage)
             s = stats[body]
             print(f"  -> {s['parts']:3d} parts · {s['faces']:7d} tris · bbox {s['bbox']} m",
                   flush=True)

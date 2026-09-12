@@ -1,0 +1,106 @@
+{
+  "schema": "pygmalion-huphy-ab-deploy-contract-v2",
+  "status": "SIMULATION_PASS_HARDWARE_NO_GO",
+  "model_tag": "FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop",
+  "source_model": "mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/FullDoF_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+  "huphy_source": {
+    "repository": "https://github.com/chanhue/HUPHY",
+    "audited_commit": "00153a37ca2875515ec7c54146509f6af674eda2",
+    "robot_config": "config/robot_v1.0.yaml"
+  },
+  "robstride_codec_gate": {
+    "status": "P0_NO_GO",
+    "official_source": "RobStride/Product_Information manuals 260713, Command 3 MIT Dynamic Parameters",
+    "required_11bit_mit_ranges": {
+      "RS03": {"pmax_rad": 12.57, "vmax_rad_s": 20.0, "tmax_nm": 60.0, "kp_max": 5000.0, "kd_max": 100.0},
+      "RS04": {"pmax_rad": 12.57, "vmax_rad_s": 15.0, "tmax_nm": 120.0, "kp_max": 5000.0, "kd_max": 100.0}
+    },
+    "current_huphy_mismatch": "MIT_ENCODING uses vmax=33 and kp/kd max=500/5 for both, plus RS04 pmax=15",
+    "release_condition": "record per-motor firmware and protocol, correct tables, pass golden-vector and low-gain echo/nudge tests"
+  },
+  "coordinate_contract": {
+    "motor_raw_positive": "CW when viewing the output/rotor flange face-on from outside; outward surface normal points toward viewer",
+    "raw_rotor_vs_stator_positive_axis": "-outward_surface_normal (the view ray into the scene)",
+    "model_sign_formula": "raw_to_model_sign = sign(dot(q_axis, attachment_parity * -outward_surface_normal)); attachment_parity=+1 for child-on-rotor, -1 for child-on-stator",
+    "attachment_gate": "one physical lower-body side is proved child-on-rotor by Fusion contact; the opposite side and final side assignment remain NO-GO",
+    "calibration_equation": "q_cal = sign * q_raw + offset",
+    "units_at_actor_boundary": "rad and rad/s",
+    "units_inside_current_huphy": "deg and deg/s",
+    "right_motor_install_assumption": "none; do not mirror or copy a purchased motor normal",
+    "side_semantics_status": "P0_NO_GO: active Fusion LegR is emitted as model L_* at y=-0.1237, while this contract maps L_* to CAN-left",
+    "side_release_condition": "choose one canonical physical L/R convention and prove CAD occurrence -> model joint -> CAN bus/motor ID for all 12 actions"
+  },
+  "timing": {
+    "policy_hz": 50,
+    "policy_period_s": 0.02,
+    "recommended_io_control_hz": 100,
+    "action_hold": "zero-order hold between policy ticks"
+  },
+  "actor": {
+    "observation_dim": 45,
+    "terms": [
+      {"name": "base_ang_vel", "dim": 3, "source": "EBIMU gyro transformed sensor-frame to base-frame", "unit": "rad/s"},
+      {"name": "projected_gravity", "dim": 3, "source": "EBIMU attitude transformed to base-frame", "unit": "unit vector"},
+      {"name": "motor_pos_history", "dim": 24, "source": "q(t-1), q(t) in action_order", "unit": "rad"},
+      {"name": "actions", "dim": 12, "source": "previous unclipped policy output after the simulator-defined action convention", "unit": "dimensionless"},
+      {"name": "command", "dim": 3, "source": "vx, vy, yaw-rate command", "unit": "m/s, m/s, rad/s"}
+    ],
+    "forbidden": "teacher/critic privileged observation (68D) must never enter the deployed actor"
+  },
+  "output": {
+    "action_dim": 12,
+    "equation": "q_target_rad = q_default_rad + 0.25 * raw_policy_action",
+    "raw_action_clip": null,
+    "status": "NO_GO until a finite per-joint clip is identical in simulation and deployment"
+  },
+  "action_order": [
+    {"index": 0, "joint": "L_hip_pitch_joint", "can": "can0", "huphy_name": "hip_pitch", "motor_id": 1, "model": "RS04", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model L is built from physical Fusion LegR but runtime calls it CAN-left", "hardware_sign": null},
+    {"index": 1, "joint": "L_hip_roll_joint",  "can": "can0", "huphy_name": "hip_roll",  "motor_id": 2, "model": "RS04", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model L is built from physical Fusion LegR but runtime calls it CAN-left", "hardware_sign": null},
+    {"index": 2, "joint": "L_hip_yaw_joint",   "can": "can0", "huphy_name": "hip_yaw",   "motor_id": 3, "model": "RS03", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model L is built from physical Fusion LegR but runtime calls it CAN-left", "hardware_sign": null},
+    {"index": 3, "joint": "L_knee_joint",      "can": "can0", "huphy_name": "knee",      "motor_id": 4, "model": "RS04", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model L is built from physical Fusion LegR but runtime calls it CAN-left", "hardware_sign": null},
+    {"index": 4, "joint": "L_crank_A_joint",   "can": "can0", "huphy_name": "ankle_a",   "motor_id": 5, "model": "RS03", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: A=upper and child-on-rotor proved; physical-side mapping conflicts", "hardware_sign": null},
+    {"index": 5, "joint": "L_crank_B_joint",   "can": "can0", "huphy_name": "ankle_b",   "motor_id": 6, "model": "RS03", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: B=lower and child-on-rotor proved; physical-side mapping conflicts", "hardware_sign": null},
+    {"index": 6, "joint": "R_hip_pitch_joint", "can": "can1", "huphy_name": "hip_pitch", "motor_id": 7, "model": "RS04", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model R is a mirrored solid, not a direct purchased-motor occurrence", "hardware_sign": null},
+    {"index": 7, "joint": "R_hip_roll_joint",  "can": "can1", "huphy_name": "hip_roll",  "motor_id": 8, "model": "RS04", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model R is a mirrored solid, not a direct purchased-motor occurrence", "hardware_sign": null},
+    {"index": 8, "joint": "R_hip_yaw_joint",   "can": "can1", "huphy_name": "hip_yaw",   "motor_id": 9, "model": "RS03", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model R is a mirrored solid, not a direct purchased-motor occurrence", "hardware_sign": null},
+    {"index": 9, "joint": "R_knee_joint",      "can": "can1", "huphy_name": "knee",      "motor_id": 10, "model": "RS04", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: model R is a mirrored solid, not a direct purchased-motor occurrence", "hardware_sign": null},
+    {"index": 10, "joint": "R_crank_A_joint",  "can": "can1", "huphy_name": "ankle_a",   "motor_id": 11, "model": "RS03", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: A=upper valid; model R motor orientation was mirrored", "hardware_sign": null},
+    {"index": 11, "joint": "R_crank_B_joint",  "can": "can1", "huphy_name": "ankle_b",   "motor_id": 12, "model": "RS03", "raw_to_model_sign_candidate": null, "sign_evidence": "UNKNOWN: B=lower valid; model R motor orientation was mirrored", "hardware_sign": null}
+  ],
+  "hardware_calibration": {
+    "sign": "UNMEASURED",
+    "zero_reference": "UNMEASURED",
+    "offset_deg": "UNMEASURED",
+    "limits_deg": "UNMEASURED",
+    "source_files": [
+      "config/calibration/left_leg_v1.0.json",
+      "config/calibration/right_leg_v1.0.json"
+    ],
+    "rule": "never run policy with --allow-uncalibrated"
+  },
+  "mandatory_runtime_gates": [
+    "single whole-robot loop with a synchronization barrier across can0 and can1",
+    "apply sign to position and velocity; apply consistent sign to any torque used by safety or telemetry",
+    "reject invalid, stale, non-finite, or frame-mismatched IMU data",
+    "check model hash, normalizer hash, obs_dim=45, action_dim=12, term order, units, and action order before torque enable",
+    "finite raw-action clip followed by target ROM margin, slew/qdot, torque/current, temperature, voltage, CAN fault, and communication-age clamps",
+    "DISABLED -> CALIBRATED -> HOLD -> POLICY -> FAULT state machine with E-stop and deterministic torque ramp-down",
+    "monotonic timestamp logging of raw packets, actor vector, raw action, clamped target, clamp reason, and fault state"
+  ],
+  "known_huphy_gaps": [
+    "P0: commit 00153a37 MIT_ENCODING uses RS03/RS04 vmax=33, kpmax=500, kdmax=5 and RS04 pmax=15; official 260713 Command 3 says RS03 12.57/20/60/5000/100 and RS04 12.57/15/120/5000/100. Pin firmware/protocol and fix codec before torque enable",
+    "current policy path controls one selected 6-DOF leg, not both 12 motor outputs synchronously",
+    "current policy observation is 24/26D joint-space, not the required 45D motor-history actor input",
+    "current ankle command path performs joint-space FK/torque control instead of direct AB motor-space targets",
+    "Leg.get_observation applies calibration sign to position but not velocity_deg_s or torque_nm",
+    "current policy path does not fail closed on invalid or stale IMU",
+    "raw actor output has no explicit clip and the runner states that it has no state machine or torque guard"
+  ],
+  "corrections_2026_09_02": [
+    "A/B crossing removed: upper A is ankle_a (IDs 5/11); lower ankle-side B is ankle_b (IDs 6/12)",
+    "CW algebra corrected: face-on outward normal points out of screen, so CW motor-positive angular axis is -normal",
+    "all raw_to_model sign candidates invalidated because rotor/stator-to-child/parent attachment parity was omitted",
+    "physical-side mismatch found: Fusion LegR -> model L_* (y<0) -> runtime CAN-left; no sign may be released until this mapping is corrected",
+    "the 2026-09-01 sign grid and its right-side inferred normals are superseded and must not be used for deployment"
+  ]
+}

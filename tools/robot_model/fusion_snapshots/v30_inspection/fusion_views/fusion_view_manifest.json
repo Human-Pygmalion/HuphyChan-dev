@@ -1,0 +1,33 @@
+{
+  "status": "Fusion viewport baseline; read-only",
+  "views": {
+    "front": {
+      "file": "fusion_front.png",
+      "bytes": 278014
+    },
+    "back": {
+      "file": "fusion_back.png",
+      "bytes": 271704
+    },
+    "left": {
+      "file": "fusion_left.png",
+      "bytes": 202565
+    },
+    "right": {
+      "file": "fusion_right.png",
+      "bytes": 200458
+    },
+    "top": {
+      "file": "fusion_top.png",
+      "bytes": 126304
+    },
+    "iso-top-left": {
+      "file": "fusion_iso-top-left.png",
+      "bytes": 358179
+    },
+    "iso-top-right": {
+      "file": "fusion_iso-top-right.png",
+      "bytes": 355758
+    }
+  }
+}

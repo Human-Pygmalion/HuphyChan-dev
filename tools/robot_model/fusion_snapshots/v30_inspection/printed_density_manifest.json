@@ -1,0 +1,436 @@
+{
+  "tag": "printed-density-snapshot",
+  "status": "offline; Fusion CAD unmodified",
+  "source_dump": "tools/robot_model/fusion_snapshots/v30_inspection/bodies.json",
+  "output_dump": "tools/robot_model/fusion_snapshots/v30_inspection/bodies_printed_density.json",
+  "survey": "docs/89; same scope/rules as tools/fusion/set_printed_density.py",
+  "mean_ratio": 0.3286635344399572,
+  "changed_body_count": 53,
+  "changes": [
+    {
+      "path": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Arm_Connector_MIDCOnnect",
+      "body": "Arm_Connector_MIDCOnnect",
+      "old_mass_kg": 0.378877,
+      "new_mass_kg": 0.04282950912653875,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Roll2Yaw-dummy:1::Body1",
+      "body": "Body1",
+      "old_mass_kg": 0.76072,
+      "new_mass_kg": 0.08599445225632692,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Roll2Yaw-dummy:1::Body2",
+      "body": "Body2",
+      "old_mass_kg": 1.021072,
+      "new_mass_kg": 0.11542559143190881,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::KneeB2AnkleA",
+      "body": "KneeB2AnkleA",
+      "old_mass_kg": 0.168516,
+      "new_mass_kg": 0.0572328053612358,
+      "density_g_cm3": 0.916996943940407,
+      "ratio_source": "measured-high"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleBraceA",
+      "body": "AnkleBraceA",
+      "old_mass_kg": 0.040545,
+      "new_mass_kg": 0.01332551510527757,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleBraceB",
+      "body": "AnkleBraceB",
+      "old_mass_kg": 0.040874,
+      "new_mass_kg": 0.01343386561267639,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowAB",
+      "body": "AnkleFeetPillowAB",
+      "old_mass_kg": 0.105165,
+      "new_mass_kg": 0.034563723121069506,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowA",
+      "body": "AnkleFeetPillowA",
+      "old_mass_kg": 0.040875,
+      "new_mass_kg": 0.013434043090984988,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowB",
+      "body": "AnkleFeetPillowB",
+      "old_mass_kg": 0.040875,
+      "new_mass_kg": 0.013434043090984988,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::KneeB2AnkleB",
+      "body": "KneeB2AnkleB",
+      "old_mass_kg": 0.171836,
+      "new_mass_kg": 0.056476348709532234,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleUniversalJointCore",
+      "body": "AnkleUniversalJointCore",
+      "old_mass_kg": 0.066987,
+      "new_mass_kg": 0.022016184181529414,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::FEET",
+      "body": "FEET",
+      "old_mass_kg": 0.616531,
+      "new_mass_kg": 0.18154935510958006,
+      "density_g_cm3": 0.7950663890876479,
+      "ratio_source": "measured-high"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_A",
+      "body": "Crank_A",
+      "old_mass_kg": 0.073885,
+      "new_mass_kg": 0.024283203356400565,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_B",
+      "body": "Crank_B",
+      "old_mass_kg": 0.072172,
+      "new_mass_kg": 0.023720419639837648,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_B_Cover",
+      "body": "Crank_B_Cover",
+      "old_mass_kg": 0.030923,
+      "new_mass_kg": 0.010163117863531645,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_A_Cover",
+      "body": "Crank_A_Cover",
+      "old_mass_kg": 0.031628,
+      "new_mass_kg": 0.010395170752022976,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Ankle_Stopper_Pitch",
+      "body": "Ankle_Stopper_Pitch",
+      "old_mass_kg": 0.020544,
+      "new_mass_kg": 0.006751984772286216,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Ankle_Stopper_Roll",
+      "body": "Ankle_Stopper_Roll",
+      "old_mass_kg": 0.026548,
+      "new_mass_kg": 0.008725366085582673,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-B:1/Flange(Mirror):1::20deg_flangeA",
+      "body": "20deg_flangeA",
+      "old_mass_kg": 0.000316,
+      "new_mass_kg": 0.0001037360713752837,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-B:1/Flange(Mirror):1::20deg_flangeB",
+      "body": "20deg_flangeB",
+      "old_mass_kg": 0.000316,
+      "new_mass_kg": 0.0001037360713752837,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-A:1/Flange:1::20deg_flangeA",
+      "body": "20deg_flangeA",
+      "old_mass_kg": 0.000316,
+      "new_mass_kg": 0.0001037360713752837,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-A:1/Flange:1::20deg_flangeB",
+      "body": "20deg_flangeB",
+      "old_mass_kg": 0.000316,
+      "new_mass_kg": 0.0001037360713752837,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_RotorSide_1",
+      "body": "Knee2Ankle_RotorSide_1",
+      "old_mass_kg": 0.159329,
+      "new_mass_kg": 0.0552456447498881,
+      "density_g_cm3": 0.936198661763956,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_IdleSide_1",
+      "body": "Knee2Ankle_IdleSide_1",
+      "old_mass_kg": 0.130528,
+      "new_mass_kg": 0.042899879275897695,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_IdleSide_2",
+      "body": "Knee2Ankle_IdleSide_2",
+      "old_mass_kg": 0.123633,
+      "new_mass_kg": 0.040633836231723834,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_RotorSide_2",
+      "body": "Knee2Ankle_RotorSide_2",
+      "old_mass_kg": 0.128762,
+      "new_mass_kg": 0.039255544003733094,
+      "density_g_cm3": 0.8231451236584229,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_Connector_A",
+      "body": "Knee2Ankle_Connector_A",
+      "old_mass_kg": 0.04462,
+      "new_mass_kg": 0.01466503263941778,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_Connector_B",
+      "body": "Knee2Ankle_Connector_B",
+      "old_mass_kg": 0.04462,
+      "new_mass_kg": 0.01466503263941778,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R",
+      "body": "AnkleA2B_A_R",
+      "old_mass_kg": 0.039372,
+      "new_mass_kg": 0.012940032219003632,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support",
+      "body": "AnkleA2B_A_Support",
+      "old_mass_kg": 0.040823,
+      "new_mass_kg": 0.012700059108835704,
+      "density_g_cm3": 0.8399676652867256,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L",
+      "body": "AnkleA2B_A_L",
+      "old_mass_kg": 0.035223,
+      "new_mass_kg": 0.011576555113202748,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R (1)",
+      "body": "AnkleA2B_A_R (1)",
+      "old_mass_kg": 0.032189,
+      "new_mass_kg": 0.010873112274938798,
+      "density_g_cm3": 0.9120208249403453,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support (1)",
+      "body": "AnkleA2B_A_Support (1)",
+      "old_mass_kg": 0.040823,
+      "new_mass_kg": 0.013417093912513918,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L (1)",
+      "body": "AnkleA2B_A_L (1)",
+      "old_mass_kg": 0.032189,
+      "new_mass_kg": 0.01057948197550156,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipYaw2Knee:1::HipYaw2Knee_outer",
+      "body": "HipYaw2Knee_outer",
+      "old_mass_kg": 0.139879,
+      "new_mass_kg": 0.04674241299906561,
+      "density_g_cm3": 0.9022377777425843,
+      "ratio_source": "measured-high"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipYaw2Knee:1::HipYaw2Knee_Rotor",
+      "body": "HipYaw2Knee_Rotor",
+      "old_mass_kg": 0.317186,
+      "new_mass_kg": 0.10424756386066193,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipYaw2Knee:1::Yaw2KneePlateA",
+      "body": "Yaw2KneePlateA",
+      "old_mass_kg": 0.32195,
+      "new_mass_kg": 0.09810004875291196,
+      "density_g_cm3": 0.8227053890355647,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipYaw2Knee:1::Yaw2KneePlateB",
+      "body": "Yaw2KneePlateB",
+      "old_mass_kg": 0.29674,
+      "new_mass_kg": 0.09752752518392327,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipYaw2Knee:1::SupportB",
+      "body": "SupportB",
+      "old_mass_kg": 0.087067,
+      "new_mass_kg": 0.028615892565038912,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipYaw2Knee:1::SupportA",
+      "body": "SupportA",
+      "old_mass_kg": 0.10636,
+      "new_mass_kg": 0.03495666009630455,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2YawA",
+      "body": "HipRoll2YawA",
+      "old_mass_kg": 0.165463,
+      "new_mass_kg": 0.0485778292682927,
+      "density_g_cm3": 0.7926829268292684,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2YawB",
+      "body": "HipRoll2YawB",
+      "old_mass_kg": 0.1355,
+      "new_mass_kg": 0.04453392206315559,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2Yaw_Mount",
+      "body": "HipRoll2Yaw_Mount",
+      "old_mass_kg": 0.164612,
+      "new_mass_kg": 0.06699999185964572,
+      "density_g_cm3": 1.098947828833864,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipRoll2Yaw:1::Body4",
+      "body": "Body4",
+      "old_mass_kg": 0.039269,
+      "new_mass_kg": 0.013399931752782096,
+      "density_g_cm3": 0.9213374417479437,
+      "ratio_source": "measured-med"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitchFlange",
+      "body": "HipPitchFlange",
+      "old_mass_kg": 0.106966,
+      "new_mass_kg": 0.035155702019396724,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitchRotor",
+      "body": "HipPitchRotor",
+      "old_mass_kg": 0.1992,
+      "new_mass_kg": 0.06546988451940586,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitch2Roll_A",
+      "body": "HipPitch2Roll_A",
+      "old_mass_kg": 0.128164,
+      "new_mass_kg": 0.0421229679800118,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitch2Roll_B",
+      "body": "HipPitch2Roll_B",
+      "old_mass_kg": 0.147978,
+      "new_mass_kg": 0.04863500207907409,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/CenterParts:1::BaseLink_Bottom_A",
+      "body": "BaseLink_Bottom_A",
+      "old_mass_kg": 0.195786,
+      "new_mass_kg": 0.06434768917414337,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/CenterParts:1::BaseLink_Bottom_B",
+      "body": "BaseLink_Bottom_B",
+      "old_mass_kg": 0.195276,
+      "new_mass_kg": 0.06418023838998155,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/CenterParts:1::Baselink_Connect_Fr",
+      "body": "Baselink_Connect_Fr",
+      "old_mass_kg": 0.100215,
+      "new_mass_kg": 0.032936956944464114,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/CenterParts:1::Baselink_Connect_Ba",
+      "body": "Baselink_Connect_Ba",
+      "old_mass_kg": 0.100215,
+      "new_mass_kg": 0.032936956944464114,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    },
+    {
+      "path": "/Joints_UnderBody:1/CenterParts:1::Baselink_toWaistYaw",
+      "body": "Baselink_toWaistYaw",
+      "old_mass_kg": 0.192393,
+      "new_mass_kg": 0.06323259296122478,
+      "density_g_cm3": 0.8873915429878846,
+      "ratio_source": "confident-mean"
+    }
+  ],
+  "next_stage": "prototype_tempmass.py overrides the known aluminium hardware"
+}

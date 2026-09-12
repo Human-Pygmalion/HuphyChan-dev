@@ -1,7 +1,7 @@
 {
  "L_hip_roll_joint": {
-  "matches": true,
-  "dot": 1.0,
+  "matches": null,
+  "dot": null,
   "axis": [
    1.0,
    0.0,
@@ -18,11 +18,21 @@
    0.0
   ],
   "motor": "RS04 Hip_P (drives HIP ROLL - CAD name is swapped)",
-  "note": "rotor face plane y=+43.25 mm, 3 dowel pins protruding to y=+40.25"
+  "note": "rotor face plane y=+43.25 mm, 3 dowel pins protruding to y=+40.25",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   -1.0,
+   -0.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
  },
  "L_hip_pitch_joint": {
-  "matches": false,
-  "dot": -1.0,
+  "matches": null,
+  "dot": null,
   "axis": [
    0.0,
    1.0,
@@ -39,11 +49,21 @@
    0.0
   ],
   "motor": "RS04 Hip_R (drives HIP PITCH - CAD name is swapped)",
-  "note": "rotor face plane x=-53.20 mm, 3 dowel pins to x=-56.20, faces laterally outboard"
+  "note": "rotor face plane x=-53.20 mm, 3 dowel pins to x=-56.20, faces laterally outboard",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   1.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
  },
  "L_hip_yaw_joint": {
-  "matches": true,
-  "dot": 1.0,
+  "matches": null,
+  "dot": null,
   "axis": [
    0.0,
    0.0,
@@ -60,11 +80,21 @@
    -1.0
   ],
   "motor": "RS03 Hip_Y",
-  "note": "rotor face z=-97.00 flush, 3x d4 dowel + 6-hole circle r=15.18, 5 mm running clearance; occurrence flipped 180 deg about Y so the part is installed rotor-down"
+  "note": "rotor face z=-97.00 flush, 3x d4 dowel + 6-hole circle r=15.18, 5 mm running clearance; occurrence flipped 180 deg about Y so the part is installed rotor-down",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   -0.0,
+   1.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
  },
  "L_knee_joint": {
-  "matches": true,
-  "dot": 1.0,
+  "matches": null,
+  "dot": null,
   "axis": [
    0.0,
    -1.0,
@@ -81,11 +111,83 @@
    0.0
   ],
   "motor": "RS04 Knee_P",
-  "note": "rotor face x=-150.45 mm, 3 dowel pins to x=-153.45, faces laterally outboard"
+  "note": "rotor face x=-150.45 mm, 3 dowel pins to x=-153.45, faces laterally outboard",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   1.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
+ },
+ "L_crank_A_joint": {
+  "matches": null,
+  "dot": null,
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "n_base": [
+   -0.0,
+   1.0,
+   0.0
+  ],
+  "n_root": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "motor": "RS03 Ankle_A upper (crank A)",
+  "note": "user-confirmed A=upper motor (closer to knee), live Fusion occurrence Robstride RS03 - Ankle_A (1):1 at z~-500 mm; rotor face x=-101.45 flush, faces medially inboard",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   -1.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
+ },
+ "L_crank_B_joint": {
+  "matches": null,
+  "dot": null,
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "n_base": [
+   -0.0,
+   -1.0,
+   0.0
+  ],
+  "n_root": [
+   -1.0,
+   0.0,
+   0.0
+  ],
+  "motor": "RS03 Ankle_B lower (crank B)",
+  "note": "user-confirmed B=lower motor (closer to ankle), live Fusion occurrence Robstride RS03 - Ankle_A:3 at z~-600 mm; rotor face x=-145.95 flush, faces laterally outboard; CAD component name is stale",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   1.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
  },
  "waist_yaw_joint": {
-  "matches": true,
-  "dot": 1.0,
+  "matches": false,
+  "dot": -1.0,
   "axis": [
    0.0,
    0.0,
@@ -102,11 +204,25 @@
    1.0
   ],
   "motor": "RS04 Waist_Yaw",
-  "note": "rotor face z=+177.50, 3 dowel pins protruding up to z=+180.50, faces up"
+  "note": "rotor face z=+177.50, 3 dowel pins protruding up to z=+180.50, faces up",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": true,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   -0.0,
+   -1.0
+  ],
+  "required_child_vs_parent_axis": [
+   0.0,
+   -0.0,
+   -1.0
+  ],
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
  },
  "L_shoulder_pitch_joint": {
-  "matches": false,
-  "dot": -1.0,
+  "matches": null,
+  "dot": null,
   "axis": [
    0.0,
    1.0,
@@ -123,11 +239,21 @@
    0.0
   ],
   "motor": "RS03 Shoulder_Pitch",
-  "note": "rotor face x=-140.00 flush, faces laterally outboard; occurrence flipped 180 deg about X"
+  "note": "rotor face x=-140.00 flush, faces laterally outboard; occurrence flipped 180 deg about X",
+  "evidence_level": "CAD rotor face + attachment mapping",
+  "attachment_parity": 1,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   0.0,
+   1.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
  },
  "L_shoulder_roll_joint": {
-  "matches": true,
-  "dot": 1.0,
+  "matches": null,
+  "dot": null,
   "axis": [
    1.0,
    0.0,
@@ -144,6 +270,25 @@
    0.0
   ],
   "motor": "RS03 Shoulder_Roll",
-  "note": "rotor face y=+62.75 flush"
+  "note": "rotor face y=+62.75 flush",
+  "evidence_level": "CAD rotor face only; attachment UNKNOWN",
+  "attachment_parity": null,
+  "side_mapping_verified": false,
+  "raw_rotor_vs_stator_axis": [
+   -1.0,
+   -0.0,
+   -0.0
+  ],
+  "required_child_vs_parent_axis": null,
+  "convention": "face-on from outside: outward normal points toward viewer; raw rotor-vs-stator CW axis = -normal; URDF sign additionally requires attachment parity"
+ },
+ "_meta": {
+  "model": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/prototype-tempmass-motormeasured-armfix_v30_loop.xml",
+  "faces": "/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/rotor_faces.json",
+  "right_side": "not synthesized; requires right-side CAD/photo or low-current hardware evidence",
+  "supersedes": "2026-09-01 grid that viewed the flange from its back side",
+  "convention": "raw motor positive = rotor CW face-on from outside, so rotor-vs-stator axis=-normal; model sign requires explicit rotor/stator-to-child/parent attachment parity",
+  "attachment_gate": "missing attachment_parity must produce UNKNOWN; never assume child=rotor",
+  "side_gate": "CAD physical side, simulator L/R name, and CAN side must agree; missing verification must produce UNKNOWN"
  }
 }

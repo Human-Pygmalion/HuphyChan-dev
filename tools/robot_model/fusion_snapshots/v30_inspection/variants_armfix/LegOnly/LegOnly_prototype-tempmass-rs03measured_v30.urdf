@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<robot name="LegOnly_prototype-tempmass-rs03measured_v30">
+  <!-- RS03 mass 0.9195 kg; source: physical scale measurement supplied by user (0.9195 kg; catalogue 0.880 kg) -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.000605961 -0.00217081 0.00330043" rpy="0 0 0"/>
+      <mass value="3.3573"/>
+      <inertia ixx="0.00793647" ixy="-4.65699e-06" ixz="-6.47469e-05" iyy="0.00815181" iyz="-2.77563e-05" izz="0.00820962"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/pelvis.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/pelvis_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_hip_pitch_link">
+    <inertial>
+      <origin xyz="0.00137371 0.0068612 0.000902729" rpy="0 0 0"/>
+      <mass value="1.7829"/>
+      <inertia ixx="0.00411424" ixy="1.83174e-05" ixz="5.9865e-06" iyy="0.00262775" iyz="-3.35374e-05" izz="0.0029298"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/hip_pitch_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/hip_pitch_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_hip_roll_link">
+    <inertial>
+      <origin xyz="0.000943657 -0.00140392 -0.120315" rpy="0 0 0"/>
+      <mass value="1.3263"/>
+      <inertia ixx="0.00326798" ixy="-2.74819e-06" ixz="-0.00014936" iyy="0.00334012" iyz="8.95682e-05" izz="0.00194174"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/hip_roll_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/hip_roll_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_thigh_link">
+    <inertial>
+      <origin xyz="-0.0355152 -0.00136506 -0.334013" rpy="0 0 0"/>
+      <mass value="2.0704"/>
+      <inertia ixx="0.0127467" ixy="-1.0032e-05" ixz="-0.00238251" iyy="0.0148052" iyz="-8.03439e-05" izz="0.00388311"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/thigh.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/thigh_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_shin_link">
+    <inertial>
+      <origin xyz="-0.030074 -0.000320098 -0.236277" rpy="0 0 0"/>
+      <mass value="2.8649"/>
+      <inertia ixx="0.0236238" ixy="-1.13181e-05" ixz="-0.00176489" iyy="0.0248211" iyz="-0.000173903" izz="0.00406507"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/shin.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/shin_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="L_ankle_pitch_link">
+    <inertial>
+      <origin xyz="0 1.42109e-17 0" rpy="0 0 0"/>
+      <mass value="0.040016"/>
+      <inertia ixx="1.43238e-05" ixy="-2.21684e-10" ixz="-1.31465e-09" iyy="3.69795e-06" iyz="-1.14375e-09" izz="1.42313e-05"/>
+    </inertial>
+  </link>
+  <link name="L_foot_link">
+    <inertial>
+      <origin xyz="0.0275519 0.00128883 -0.0255435" rpy="0 0 0"/>
+      <mass value="0.89862"/>
+      <inertia ixx="0.00215226" ixy="9.68461e-05" ixz="0.000710783" iyy="0.00590039" iyz="-0.000182229" izz="0.00550524"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/foot.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/foot_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_hip_pitch_link">
+    <inertial>
+      <origin xyz="0.00137371 -0.0068612 0.000902729" rpy="0 0 0"/>
+      <mass value="1.7829"/>
+      <inertia ixx="0.00411424" ixy="-1.83174e-05" ixz="5.9865e-06" iyy="0.00262775" iyz="3.35374e-05" izz="0.0029298"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_hip_pitch_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/R_hip_pitch_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_hip_roll_link">
+    <inertial>
+      <origin xyz="0.000943657 0.00140392 -0.120315" rpy="0 0 0"/>
+      <mass value="1.3263"/>
+      <inertia ixx="0.00326798" ixy="2.74819e-06" ixz="-0.00014936" iyy="0.00334012" iyz="-8.95682e-05" izz="0.00194174"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_hip_roll_link.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/R_hip_roll_link_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_thigh_link">
+    <inertial>
+      <origin xyz="-0.0355152 0.00136506 -0.334013" rpy="0 0 0"/>
+      <mass value="2.0704"/>
+      <inertia ixx="0.0127467" ixy="1.0032e-05" ixz="-0.00238251" iyy="0.0148052" iyz="8.03439e-05" izz="0.00388311"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_thigh.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/R_thigh_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_shin_link">
+    <inertial>
+      <origin xyz="-0.030074 0.000320098 -0.236277" rpy="0 0 0"/>
+      <mass value="2.8649"/>
+      <inertia ixx="0.0236238" ixy="1.13181e-05" ixz="-0.00176489" iyy="0.0248211" iyz="0.000173903" izz="0.00406507"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_shin.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/R_shin_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <link name="R_ankle_pitch_link">
+    <inertial>
+      <origin xyz="0 -1.42109e-17 0" rpy="0 0 0"/>
+      <mass value="0.040016"/>
+      <inertia ixx="1.43238e-05" ixy="2.21684e-10" ixz="-1.31465e-09" iyy="3.69795e-06" iyz="1.14375e-09" izz="1.42313e-05"/>
+    </inertial>
+  </link>
+  <link name="R_foot_link">
+    <inertial>
+      <origin xyz="0.0275519 -0.00128883 -0.0255435" rpy="0 0 0"/>
+      <mass value="0.89862"/>
+      <inertia ixx="0.00215226" ixy="-9.68461e-05" ixz="0.000710783" iyy="0.00590039" iyz="0.000182229" izz="0.00550524"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/R_foot.stl"/></geometry>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/R_foot_hull.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="L_hip_pitch_joint" type="revolute">
+    <origin xyz="0 -0.1237 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="L_hip_pitch_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.0943951023931953" upper="0.4363323129985824" effort="120" velocity="20"/>
+  </joint>
+  <joint name="L_hip_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_hip_pitch_link"/>
+    <child link="L_hip_roll_link"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-1.4835298641951802" upper="0.4363323129985824" effort="120" velocity="20"/>
+  </joint>
+  <joint name="L_hip_yaw_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_hip_roll_link"/>
+    <child link="L_thigh_link"/>
+    <axis xyz="0 0 -1"/>
+    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="60" velocity="20"/>
+  </joint>
+  <joint name="L_knee_joint" type="revolute">
+    <origin xyz="-0.045 0 -0.37" rpy="0 0 0"/>
+    <parent link="L_thigh_link"/>
+    <child link="L_shin_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-2.0943951023931953" upper="0.0" effort="120" velocity="20"/>
+  </joint>
+  <joint name="L_ankle_pitch_joint" type="revolute">
+    <origin xyz="-0.03 0 -0.49" rpy="0 0 0"/>
+    <parent link="L_shin_link"/>
+    <child link="L_ankle_pitch_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.8726646259971648" upper="0.5235987755982988" effort="90" velocity="20"/>
+  </joint>
+  <joint name="L_ankle_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="L_ankle_pitch_link"/>
+    <child link="L_foot_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.3490658503988659" upper="0.3490658503988659" effort="50" velocity="20"/>
+  </joint>
+  <joint name="R_hip_pitch_joint" type="revolute">
+    <origin xyz="0 0.1237 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="R_hip_pitch_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.0943951023931953" upper="0.4363323129985824" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_hip_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_hip_pitch_link"/>
+    <child link="R_hip_roll_link"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-1.4835298641951802" upper="0.4363323129985824" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_hip_yaw_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_hip_roll_link"/>
+    <child link="R_thigh_link"/>
+    <axis xyz="0 0 -1"/>
+    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="60" velocity="20"/>
+  </joint>
+  <joint name="R_knee_joint" type="revolute">
+    <origin xyz="-0.045 0 -0.37" rpy="0 0 0"/>
+    <parent link="R_thigh_link"/>
+    <child link="R_shin_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-2.0943951023931953" upper="0.0" effort="120" velocity="20"/>
+  </joint>
+  <joint name="R_ankle_pitch_joint" type="revolute">
+    <origin xyz="-0.03 0 -0.49" rpy="0 0 0"/>
+    <parent link="R_shin_link"/>
+    <child link="R_ankle_pitch_link"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-0.8726646259971648" upper="0.5235987755982988" effort="90" velocity="20"/>
+  </joint>
+  <joint name="R_ankle_roll_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="R_ankle_pitch_link"/>
+    <child link="R_foot_link"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.3490658503988659" upper="0.3490658503988659" effort="50" velocity="20"/>
+  </joint>
+</robot>

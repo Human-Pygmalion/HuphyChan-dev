@@ -35,6 +35,7 @@ if str(HERE) not in sys.path:
   sys.path.insert(0, str(HERE))
 
 from ankle_clip import AnkleClipper, ClipResult  # noqa: E402
+import ankle_clip_strategies as S  # noqa: E402
 
 XML = ("mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/"
        "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml")
@@ -184,7 +185,9 @@ def run(host: str, port: int, leg: str) -> int:
   # 여기서는 다리가 매달린 채 가만히 있으므로 따라다닐 이유가 없습니다.
   scene.camera_tracking_enabled = False
 
-  state = dict(a=0.0, b=0.0, bypass=False, last=None)
+  # 방식을 골라 끼울 수 있게 미리 다 만들어 둡니다 (`ankle_clip_strategies`).
+  ways = {k: S.make(k, clipper) for k in S.ORDER}
+  state = dict(a=0.0, b=0.0, bypass=False, last=None, way="ours_pocs")
 
   def settle(a_deg: float, b_deg: float) -> None:
     """크랭크를 그 각으로 몰아넣고 닫힌 고리를 풀어 준다.
@@ -206,15 +209,20 @@ def run(host: str, port: int, leg: str) -> int:
     mujoco.mj_forward(model, data)
 
   def apply() -> None:
-    r = clipper.clip(state["a"], state["b"])
+    way = ways[state["way"]]
+    r = way.clip(state["a"], state["b"])
     if state["bypass"]:
       out_a, out_b = state["a"], state["b"]
     else:
       out_a, out_b = r.a_out, r.b_out
+    # Booster 방식은 "지금 모터가 어디 있나" 를 알아야 다음 주기를 계산합니다.
+    if isinstance(way, S.BoosterTorque):
+      way.accept(out_a, out_b)
     settle(out_a, out_b)
     scene.update_from_mjdata(data)
     state["last"] = r
-    status.content = status_markdown(r) + (
+    status.content = (f"**방식:** {S.NAMES[state['way']]}\n\n"
+                      + status_markdown(r)) + (
       "\n\n> ⚠ **클리핑을 꺼 둔 상태입니다** — 화면의 3차원은 명령 그대로입니다."
       if state["bypass"] else "")
     image.image = region_png(clipper, r)
@@ -238,6 +246,12 @@ def run(host: str, port: int, leg: str) -> int:
     sa = server.gui.add_slider("크랭크 A [도]", min=-90.0, max=90.0, step=0.25, initial_value=0.0)
     sb = server.gui.add_slider("크랭크 B [도]", min=-90.0, max=90.0, step=0.25, initial_value=0.0)
     bypass = server.gui.add_checkbox("클리핑 끄기 (막는 것을 눈으로 확인)", False)
+
+  with server.gui.add_folder("자르는 방식"):
+    # 남의 로봇 배포 코드에서 읽어 온 방식들입니다. 근거는 `docs/142`.
+    picker = server.gui.add_dropdown("방식", tuple(S.NAMES[k] for k in S.ORDER),
+                                     initial_value=S.NAMES["ours_pocs"])
+    ways_note = server.gui.add_markdown(" ")
     reset = server.gui.add_button("0, 0 으로")
     look = server.gui.add_button("발목으로 화면 맞추기")
 
@@ -256,6 +270,29 @@ def run(host: str, port: int, leg: str) -> int:
   @sb.on_update
   def _(_):
     state["b"] = float(sb.value); apply()
+
+  _label2key = {v: k for k, v in S.NAMES.items()}
+
+  WHY = {
+    "ours_pocs": "두 상자(모터 한계 / 발판 ROM)를 **번갈아** 투영합니다. 실측으로 두 번이면 "
+                 "수렴하고, 표로 마무리해 빠져나가는 명령이 없습니다.",
+    "unitree_pr": "Unitree G1 배포 코드에는 **자르는 코드가 없습니다.** 대신 정책이 발판의 "
+                  "숙임·기울임을 명령하고 (`mode_pr = PR`) 크랭크 변환은 펌웨어가 합니다. "
+                  "여기서는 같은 뜻이 되게 자세 공간에서 **한 번만** 자르고 되돌립니다. "
+                  "되풀이가 없어 구석에서 빠져나갑니다.",
+    "booster_torque": "Booster T1 배포 코드는 평행기구 관절만 따로 다룹니다 — 위치 목표를 "
+                      "안 보내고 `tau = clip((target-now)*stiffness, ±torque_limit)`, `kp=0`. "
+                      "**각도가 아니라 힘을 자릅니다.** 그래서 발판이 ROM 밖으로 나갈 수 "
+                      "있습니다. 그것이 이 방식의 성질이지 고장이 아닙니다.",
+    "none": "아무것도 안 합니다. 다른 방식이 무엇을 막고 있었는지 보려고 둡니다.",
+  }
+
+  @picker.on_update
+  def _(_):
+    state["way"] = _label2key[picker.value]
+    ways[state["way"]].reset()
+    ways_note.content = WHY[state["way"]]
+    apply()
 
   @bypass.on_update
   def _(_):
@@ -293,6 +330,7 @@ def run(host: str, port: int, leg: str) -> int:
   def _(event) -> None:
     frame_ankle(event.client)
 
+  ways_note.content = WHY[state["way"]]
   apply()
   print(f"  화면: http://{host}:{port}/   (모터로 나가는 길 없음)")
   while True:

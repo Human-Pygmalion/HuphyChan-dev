@@ -1,0 +1,972 @@
+{
+  "tag": "fusion-v30-inspection",
+  "status": "STAGED; not promoted to training assets",
+  "document": "260819_HumanMesh_wUpper_URDFexport_v30 v1",
+  "quality": "Low",
+  "chunk_values": 16000,
+  "cad_to_sim": "sim=(-cad_y,cad_x,cad_z); CAD cm -> link-frame m",
+  "include_fasteners": false,
+  "include_torso_rework": true,
+  "leg_only": false,
+  "leg_only_cut": "all Joints_UpperBody plus Baselink_toWaistYaw and Waist_Yaw motor",
+  "omission_contract": "catalogue motors, bearings, and fasteners are inertial-only; motors render as analytic cylinders",
+  "skipped": {
+    "alternative": 0,
+    "motor": 0,
+    "fastener_or_bearing": 0,
+    "unclassified": 3,
+    "leg_only_cut": 0
+  },
+  "fetched_bodies": [
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleBraceA",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.040544610548841134,
+      "volume": 15.016522425496717,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleBraceB",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.04087421393646475,
+      "volume": 15.138597754246206,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowA",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.04087470016324271,
+      "volume": 15.138777838238042,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowAB",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.10516456540272896,
+      "volume": 38.94983903804777,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowB",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.0408747001632427,
+      "volume": 15.138777838238038,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::AnkleUniversalJointCore",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.0669870310629021,
+      "volume": 24.810011504778558,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Ankle_Stopper_Pitch",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.020543652538082897,
+      "volume": 7.6087601992899625,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Ankle_Stopper_Roll",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.026548137854904143,
+      "volume": 9.8326436499645,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Arm_A",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.054759402080829266,
+      "volume": 20.281260029936767,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Arm_B",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.03877510334547957,
+      "volume": 14.361149387214656,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_A",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.07388479519571171,
+      "volume": 27.364738961374712,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_A_Cover",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.031628484743147056,
+      "volume": 11.714253608572985,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_B",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.07217236333031783,
+      "volume": 26.730504937154755,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::Crank_B_Cover",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.030922632598465553,
+      "volume": 11.452826888320576,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::FEET",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.6165313245995985,
+      "volume": 228.34493503688836,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::KneeB2AnkleA",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.16851585779238007,
+      "volume": 62.41328066384448,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Ankle2Feet:1::KneeB2AnkleB",
+      "who": "ANKLE_SPLIT",
+      "mass": 0.17183643471284998,
+      "volume": 63.643123967722225,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/CenterParts:1::BaseLink_Bottom_A",
+      "who": "pelvis",
+      "mass": 0.19578585971212853,
+      "volume": 72.51328137486243,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/CenterParts:1::BaseLink_Bottom_B",
+      "who": "pelvis",
+      "mass": 0.19527642060824427,
+      "volume": 72.32460022527566,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/CenterParts:1::Baselink_Connect_Ba",
+      "who": "pelvis",
+      "mass": 0.1002148192475484,
+      "volume": 37.11659972131422,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/CenterParts:1::Baselink_Connect_Fr",
+      "who": "pelvis",
+      "mass": 0.10021481924754841,
+      "volume": 37.11659972131423,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/CenterParts:1::Baselink_toWaistYaw",
+      "who": "pelvis",
+      "mass": 0.19239302474462253,
+      "volume": 71.25667583134168,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitch2Roll_A",
+      "who": "hip_pitch_link",
+      "mass": 0.1281644956584871,
+      "volume": 47.468331725365594,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitch2Roll_B",
+      "who": "hip_pitch_link",
+      "mass": 0.14797801687542236,
+      "volume": 54.8066729168231,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitchFlange",
+      "who": "hip_pitch_link",
+      "mass": 0.10696560528504351,
+      "volume": 39.616890846312415,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipPitch2Roll:1::HipPitchRotor",
+      "who": "hip_pitch_link",
+      "mass": 0.19920028282807542,
+      "volume": 73.77788252891683,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipRoll2Yaw:1::Body4",
+      "who": "hip_roll_link",
+      "mass": 0.03926876239717793,
+      "volume": 14.543986073028865,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2YawA",
+      "who": "hip_roll_link",
+      "mass": 0.16546345968469892,
+      "volume": 61.282762846184795,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2YawB",
+      "who": "hip_roll_link",
+      "mass": 0.13550009149098938,
+      "volume": 50.18521907073681,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2Yaw_Mount",
+      "who": "hip_roll_link",
+      "mass": 0.1646118545795864,
+      "volume": 60.967353547994975,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1/CenterPin_RS03:1::4PI-12mm",
+      "who": "thigh",
+      "mass": 0.0003974805857174678,
+      "volume": 0.14721503174721032,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1/CenterPin_RS03:1::4PI-12mm (1)",
+      "who": "thigh",
+      "mass": 0.0003974805857174749,
+      "volume": 0.14721503174721295,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1/CenterPin_RS03:1::4PI-12mm (2)",
+      "who": "thigh",
+      "mass": 0.0003974805857174678,
+      "volume": 0.14721503174721032,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1::HipYaw2Knee_Rotor",
+      "who": "thigh",
+      "mass": 0.3171861914064835,
+      "volume": 117.4763671875865,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1::HipYaw2Knee_outer",
+      "who": "thigh",
+      "mass": 0.13987942103739695,
+      "volume": 51.807192976813695,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1::SupportA",
+      "who": "thigh",
+      "mass": 0.10635997846622343,
+      "volume": 39.392584617119795,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1::SupportB",
+      "who": "thigh",
+      "mass": 0.08706742014766906,
+      "volume": 32.24719264728484,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1::Yaw2KneePlateA",
+      "who": "thigh",
+      "mass": 0.32195016411188676,
+      "volume": 119.24080152292103,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/HipYaw2Knee:1::Yaw2KneePlateB",
+      "who": "thigh",
+      "mass": 0.2967397252731424,
+      "volume": 109.90360195301572,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L",
+      "who": "shin",
+      "mass": 0.035223230953755506,
+      "volume": 13.045641093983521,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L (1)",
+      "who": "shin",
+      "mass": 0.032189272124200294,
+      "volume": 11.921952638592703,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R",
+      "who": "shin",
+      "mass": 0.03937170330466224,
+      "volume": 14.58211233506009,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R (1)",
+      "who": "shin",
+      "mass": 0.032189272124200294,
+      "volume": 11.921952638592703,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support",
+      "who": "shin",
+      "mass": 0.04082316358305516,
+      "volume": 15.119690215946358,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support (1)",
+      "who": "shin",
+      "mass": 0.04082316358305481,
+      "volume": 15.119690215946227,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_Connector_A",
+      "who": "shin",
+      "mass": 0.04462032066921714,
+      "volume": 16.526044692302644,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_Connector_B",
+      "who": "shin",
+      "mass": 0.044620320670184455,
+      "volume": 16.52604469266091,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_IdleSide_1",
+      "who": "shin",
+      "mass": 0.13052831542731158,
+      "volume": 48.34382052863393,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_IdleSide_2",
+      "who": "shin",
+      "mass": 0.12363343135990282,
+      "volume": 45.790159762926976,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_RotorSide_1",
+      "who": "shin",
+      "mass": 0.15932859842683222,
+      "volume": 59.01059200993787,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_RotorSide_2",
+      "who": "shin",
+      "mass": 0.12876230720044576,
+      "volume": 47.68974340757251,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/DR2020-375L-ArmR:1::DR2020-375L (1)",
+      "who": "arm",
+      "mass": 0.30036070917517516,
+      "volume": 111.24470710191675,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/DummyHand:1::Body1",
+      "who": "arm",
+      "mass": 0.10223835930694843,
+      "volume": 96.45128236504569,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Arm_ConnectorA",
+      "who": "shoulder_pitch_link",
+      "mass": 0.10235762063041683,
+      "volume": 96.56379304756305,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Arm_ConnectorB",
+      "who": "shoulder_pitch_link",
+      "mass": 0.0870829875024857,
+      "volume": 82.15376179479784,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Arm_ConnectorB_alpha",
+      "who": "shoulder_pitch_link",
+      "mass": 0.029974828274839754,
+      "volume": 28.278139881924297,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Arm_Connector_MIDCOnnect",
+      "who": "shoulder_pitch_link",
+      "mass": 0.37887669300776294,
+      "volume": 48.26454687996981,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Shoulder-Pitch2Roll-BearingCap",
+      "who": "shoulder_pitch_link",
+      "mass": 0.004215908573344045,
+      "volume": 3.977272239003816,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::ShoulderP2R",
+      "who": "shoulder_pitch_link",
+      "mass": 0.040603122052314845,
+      "volume": 38.304832124825325,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::ShoulderR_holderA",
+      "who": "shoulder_pitch_link",
+      "mass": 0.0610653744358487,
+      "volume": 57.60884380740444,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::ShoulderR_holderB",
+      "who": "shoulder_pitch_link",
+      "mass": 0.02897737986010519,
+      "volume": 27.337150811419992,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Shoulder_Stopper_P",
+      "who": "shoulder_pitch_link",
+      "mass": 0.00485600013025808,
+      "volume": 4.581132198356679,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Roll2Yaw-dummy:1::Body1",
+      "who": "arm",
+      "mass": 0.7607201066856532,
+      "volume": 96.90701995995582,
+      "material": "Steel",
+      "live": false
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Roll2Yaw-dummy:1::Body2",
+      "who": "arm",
+      "mass": 1.0210723083752287,
+      "volume": 130.07290552550685,
+      "material": "Steel",
+      "live": false
+    },
+    {
+      "key": "/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Torso2ShoulderP:1::Body1",
+      "who": "torso",
+      "mass": 0.07328261633421806,
+      "volume": 69.13454371152648,
+      "material": "ABS Plastic",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::BearingStop",
+      "who": "torso",
+      "mass": 0.023242874070610865,
+      "volume": 2.960875677784824,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::MotorFlange",
+      "who": "torso",
+      "mass": 0.09964225867778143,
+      "volume": 12.693281360226933,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::Neck Stopper",
+      "who": "torso",
+      "mass": 0.02161373521200022,
+      "volume": 2.7533420652229585,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::Neck2PitchA_Main",
+      "who": "torso",
+      "mass": 0.4084081104568669,
+      "volume": 52.02651088622509,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::Neck2PitchB_Cap",
+      "who": "torso",
+      "mass": 0.22906312159798736,
+      "volume": 29.180015490189476,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::NeckFlange",
+      "who": "torso",
+      "mass": 0.11216012219105993,
+      "volume": 14.287913654912094,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/NeckYaw2Pitch:1::Pitch2Head",
+      "who": "torso",
+      "mass": 0.13634876512541635,
+      "volume": 17.3692694427282,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Neck:1/Torso2NeckYaw:1::Torso2NeckYaw",
+      "who": "torso",
+      "mass": 0.7239681552894188,
+      "volume": 92.22524271202788,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/2020 Profile Handle A:1::2020 Profile Handle",
+      "who": "torso",
+      "mass": 0.0395120439456115,
+      "volume": 14.634090350226485,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-160L_1 (1):1::DF2020-160L_1",
+      "who": "torso",
+      "mass": 0.06402004458440638,
+      "volume": 23.711127623854217,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-160L_1:1::DF2020-160L_1",
+      "who": "torso",
+      "mass": 0.0853600594458748,
+      "volume": 31.614836831805484,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-160L_2 (1):1::DF2020-160L_2",
+      "who": "torso",
+      "mass": 0.06402004458440623,
+      "volume": 23.71112762385416,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-160L_2:1::DF2020-160L_2",
+      "who": "torso",
+      "mass": 0.08536005944587512,
+      "volume": 31.6148368318056,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-85L_1:1::DF2020-85L_1",
+      "who": "torso",
+      "mass": 0.04534753158062135,
+      "volume": 16.7953820668968,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-85L_2 (1):1::DF2020-85L_2",
+      "who": "torso",
+      "mass": 0.04534753158062164,
+      "volume": 16.795382066896906,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-85L_2:1::DF2020-85L_2",
+      "who": "torso",
+      "mass": 0.045347531580621436,
+      "volume": 16.79538206689683,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DF2020-85L_3:1::DF2020-85L_1",
+      "who": "torso",
+      "mass": 0.0453475315806212,
+      "volume": 16.795382066896742,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DR2020-375L (1):1::DR2020-375L (1)",
+      "who": "torso",
+      "mass": 0.20006263932627125,
+      "volume": 74.09727382454491,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DR2020-375L (2):1::DR2020-375L (2)",
+      "who": "torso",
+      "mass": 0.20006263932627064,
+      "volume": 74.09727382454469,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DR2020-375L (3):1::DR2020-375L (3)",
+      "who": "torso",
+      "mass": 0.20006263932627028,
+      "volume": 74.09727382454456,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Frame:1/DR2020-375L:1::DR2020-375L",
+      "who": "torso",
+      "mass": 0.20006263932627058,
+      "volume": 74.09727382454467,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Power:1/PSU-RSP-2000-48 (1):1::PSU-RSP-2000-48",
+      "who": "torso",
+      "mass": 1.677251411939,
+      "volume": 213.6626002470064,
+      "material": "Steel",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Waist2Torso:1::WaistYaw-Assist",
+      "who": "torso",
+      "mass": 0.014627890720212035,
+      "volume": 5.417737303782236,
+      "material": "Aluminum 6061",
+      "live": true
+    },
+    {
+      "key": "/Joints_UpperBody:1/Torso:1/Waist2Torso:1::WaistYaw2based",
+      "who": "torso",
+      "mass": 0.1371094841633115,
+      "volume": 115.41202370649117,
+      "material": "PMMA Plastic",
+      "live": true
+    }
+  ],
+  "groups": {
+    "pelvis": {
+      "parts": 5,
+      "vertices": 8498,
+      "faces": 7866,
+      "bbox_m": [
+        0.137,
+        0.1214,
+        0.14521
+      ],
+      "files_sha256": {
+        "pelvis.stl": "1bca71aed301fb148d3ce63c9e9b14cbaa87cc360376412f36b20e9d0615bafc",
+        "pelvis_hull.stl": "6080a2cff8b954f6abfd7e851f8ebaa13db9f3e8a8b48d98893be47caee0b916"
+      }
+    },
+    "hip_pitch_link": {
+      "parts": 4,
+      "vertices": 6274,
+      "faces": 5744,
+      "bbox_m": [
+        0.125,
+        0.13039,
+        0.12
+      ],
+      "files_sha256": {
+        "hip_pitch_link.stl": "b48342f180c1bcd43673f30366059c639ccce243943517f54c477dfc8e722e2a",
+        "hip_pitch_link_hull.stl": "3f03245b24797bf7b973c2a7c7f81fb1cc807715584c1b8936594ef61798416a",
+        "R_hip_pitch_link.stl": "b09c4b42fc1c8cad55cd97add31f8b3952c13717928c7dce9375d33ffed7fde7",
+        "R_hip_pitch_link_hull.stl": "e8c6fcc2cd3abf4aed08036b1c42c697d33eed240734cfcece9f624a0810bc61"
+      }
+    },
+    "hip_roll_link": {
+      "parts": 4,
+      "vertices": 4620,
+      "faces": 4168,
+      "bbox_m": [
+        0.09854,
+        0.09854,
+        0.14467
+      ],
+      "files_sha256": {
+        "hip_roll_link.stl": "ab391857cc83fe18ece8d668a9b801f0d9799dd661fdabce781afad5ee33d8a4",
+        "hip_roll_link_hull.stl": "faba4b4144bf8bebe6d076d0c906fe1d5737e99f4524875cba1adfda50651f68",
+        "R_hip_roll_link.stl": "c31504a371428b4f732e0d73785a090424c8b5f7b5340a9bee83e017bf37f7f9",
+        "R_hip_roll_link_hull.stl": "025873d039599305d8477dc82a4c21f79de43fd1350e333d728f6eed2be9d95e"
+      }
+    },
+    "thigh": {
+      "parts": 9,
+      "vertices": 10436,
+      "faces": 9526,
+      "bbox_m": [
+        0.16967,
+        0.11459,
+        0.27925
+      ],
+      "files_sha256": {
+        "thigh.stl": "f77b96a0c2cdd32d6aa2dfad045e83d8346faf4a68dcb64db719170abd8d38bb",
+        "thigh_hull.stl": "78dd60202446d1705405a7a4d16af44b490eca3decd7cdf547bfb06be202500c",
+        "R_thigh.stl": "cb3c583d60ef8ec76a8da0171af5e271c40eafe9bed5c5f5a70d26611403f116",
+        "R_thigh_hull.stl": "9497408911936246839d5580b1f1ab94b20951f2a6267544ef25d5bdfc9566a6"
+      }
+    },
+    "shin": {
+      "parts": 23,
+      "vertices": 18526,
+      "faces": 16898,
+      "bbox_m": [
+        0.14267,
+        0.101,
+        0.55715
+      ],
+      "files_sha256": {
+        "shin.stl": "c74f2d403283390c689321c5d496005ed07628d77a39870c5b47e251643727f5",
+        "shin_hull.stl": "1082c9f8ffc18d1ab5162df9f63acbc05bfa12c712a328d566a64a47d539fffd",
+        "R_shin.stl": "036e8ffc3650574545100e54f989418bc39f0d41eede952a04b0362b5ba1bff6",
+        "R_shin_hull.stl": "b37dff1310f32561762a9e28df8a400c31e85f6656e3ebd68d1df85535bbaa75"
+      }
+    },
+    "foot": {
+      "parts": 5,
+      "vertices": 3122,
+      "faces": 3006,
+      "bbox_m": [
+        0.26,
+        0.115,
+        0.05777
+      ],
+      "files_sha256": {
+        "foot.stl": "4f908669b28e30ed873f6027b6ca9c2c735016d625ef140a30b7072b7903ab6f",
+        "foot_hull.stl": "aca4176b8ffaa5644dd71e81217b0a1fcfe3f1b45d0761d071305b385bb786b2",
+        "R_foot.stl": "eb90cb923bf51c0f2c10f9ab8b73d1da0a99963d4b0e0125ec20950d3165e4be",
+        "R_foot_hull.stl": "3a8f9d346b0ae5e1e7e0d8277fd327bfac1955404b1efd27d6e9002777cdf94a"
+      }
+    },
+    "torso": {
+      "parts": 25,
+      "vertices": 21886,
+      "faces": 19268,
+      "bbox_m": [
+        0.15532,
+        0.178,
+        0.52862
+      ],
+      "files_sha256": {
+        "torso.stl": "586c74cf3df16e3c95782ede388218e8449d6ded12efcf0732d4c3e0c0802bce",
+        "torso_hull.stl": "b2650bb0b76bf74bc0ac0b5a5221f8cc0c6097db808cba00b054d2a7ef4b06c9"
+      }
+    },
+    "shoulder_pitch_link": {
+      "parts": 9,
+      "vertices": 16493,
+      "faces": 14950,
+      "bbox_m": [
+        0.0855,
+        0.12135,
+        0.19551
+      ],
+      "files_sha256": {
+        "shoulder_pitch_link.stl": "bba81166534666f31507d3c85c7bb5cda3c26c435a26b601d7087022bb043411",
+        "shoulder_pitch_link_hull.stl": "abbf917419c315ea4a50c1ad669eee3227295f6f01b7c924b7c3984765760298",
+        "R_shoulder_pitch_link.stl": "1b891581ae5800504afffceb101b3e72bad35fb7f8283f79fd54f045b88dcb3e",
+        "R_shoulder_pitch_link_hull.stl": "58d55e48f458327b1df864b52c899d7587e615c8cf8a640597607ce9453325d4"
+      }
+    },
+    "arm": {
+      "parts": 4,
+      "vertices": 2186,
+      "faces": 2288,
+      "bbox_m": [
+        0.088,
+        0.05996,
+        0.687
+      ],
+      "files_sha256": {
+        "arm.stl": "9cdbb247ce3f68708e7e823af0ee9c48dad88f80fd2574e02e20d420f760884f",
+        "arm_hull.stl": "3331d5fbaae6efddc3f260a05199937ec72680582b7bd8976d79a0a185a8119f",
+        "R_arm.stl": "bf5cedd8066bfea0d5f079d711a2eaf9bdb7db7f66160d53b068269c4ba3d42a",
+        "R_arm_hull.stl": "b502d74c168240518321fdea58c56dfdb3b84c337d88627092195193f008de92"
+      }
+    },
+    "crank_A": {
+      "parts": 2,
+      "vertices": 1270,
+      "faces": 1178,
+      "bbox_m": [
+        0.08989,
+        0.02825,
+        0.05116
+      ],
+      "files_sha256": {
+        "crank_A.stl": "3dd77c3bbe8565b9f1427b6de3a9d95b21d23df94d69f0f43a934524843c7a51",
+        "crank_A_hull.stl": "29300a9a23b61c1ae88c4db3fb312eab2d1e88369eb7f4ba0af5d98af8bfd6fc",
+        "R_crank_A.stl": "527e2ac65cd07ccb3f19f8a8103ef6cd80ede8f7d4dff00e01c634ab9712d6cf",
+        "R_crank_A_hull.stl": "1489e8db9b40dc1e4b52ed5c2b283cc6b2ac6d020d94d102ef6a56cac1ac61d8"
+      }
+    },
+    "crank_B": {
+      "parts": 2,
+      "vertices": 1288,
+      "faces": 1192,
+      "bbox_m": [
+        0.08841,
+        0.02825,
+        0.0488
+      ],
+      "files_sha256": {
+        "crank_B.stl": "703c92205f802a38ac51223dc9aeeb571df59cd726c4843ff42d2419e1cc935d",
+        "crank_B_hull.stl": "139f1e59e8f933bfdd5775fed38d01411445c54aa37e04d38e9c512181cb6217",
+        "R_crank_B.stl": "c36227b1229c3a17085a891e9c20a5d65d37f8bc5ce5eef5178091d10a317741",
+        "R_crank_B_hull.stl": "a4d8f9b0229e97a452d51d881c07fc6118f249a43a660c67df893e7fedd19f07"
+      }
+    },
+    "rod_A": {
+      "parts": 1,
+      "vertices": 492,
+      "faces": 444,
+      "bbox_m": [
+        0.0334,
+        0.0098,
+        0.31146
+      ],
+      "files_sha256": {
+        "rod_A.stl": "88995df9f5f8956cbb489bdd1ec4ac8fb38ca51791e3d3dec4e3afe14ea7c220",
+        "rod_A_hull.stl": "25808816891b45388fcc44d5b2e19a4fef4adc324dd096f774b718021819f5b6",
+        "R_rod_A.stl": "4074b07ed3cb0ec9a990ba7bff4a1889a0ebfcb95b7c5934eb6c084298ee08dc",
+        "R_rod_A_hull.stl": "cbf762542f84be3e5a76b51d2d0ad570ee8bf0b9763b775d1a90c6c1394e9a35"
+      }
+    },
+    "rod_B": {
+      "parts": 1,
+      "vertices": 420,
+      "faces": 380,
+      "bbox_m": [
+        0.03196,
+        0.0099,
+        0.21755
+      ],
+      "files_sha256": {
+        "rod_B.stl": "bdde16f9f44941cd3b46aeca7e00c341c078cb85d566092cdd935a00e447dfe2",
+        "rod_B_hull.stl": "223aaab236402196c682dc24a43031a40ad36566479533578b5c2db2e75510e0",
+        "R_rod_B.stl": "c9e0563bd661aa2375549f5ab0137339b39866cb39e32a8bbb14fe714f105c9b",
+        "R_rod_B_hull.stl": "57fa1326f76333bb25e56a6f5ceabf2062d27b7e7bd2ef97d503681b095a242f"
+      }
+    },
+    "shin_noloop": {
+      "parts": 17,
+      "vertices": 15056,
+      "faces": 13704,
+      "bbox_m": [
+        0.12021,
+        0.083,
+        0.54955
+      ],
+      "files_sha256": {
+        "shin_noloop.stl": "5376c0685407b18d74a9e010eb0f4418325c788302f548b24c781bf67d1c66ca",
+        "shin_noloop_hull.stl": "22c46fda8162d91cc5c1cceb43554b4a359394edfcff9492d2874e595e5aa984",
+        "R_shin_noloop.stl": "d4917452634fc076b9f835bf6657fb35a0b585fcf22a7303d82ce6d36c767cc7",
+        "R_shin_noloop_hull.stl": "e115f375b02d8121772bca4706191be9157f2c566d574dafe0ba6c7980d27879"
+      }
+    },
+    "foot_noloop": {
+      "parts": 5,
+      "vertices": 3122,
+      "faces": 3006,
+      "bbox_m": [
+        0.26,
+        0.115,
+        0.05777
+      ],
+      "files_sha256": {
+        "foot_noloop.stl": "4f908669b28e30ed873f6027b6ca9c2c735016d625ef140a30b7072b7903ab6f",
+        "foot_noloop_hull.stl": "aca4176b8ffaa5644dd71e81217b0a1fcfe3f1b45d0761d071305b385bb786b2",
+        "R_foot_noloop.stl": "eb90cb923bf51c0f2c10f9ab8b73d1da0a99963d4b0e0125ec20950d3165e4be",
+        "R_foot_noloop_hull.stl": "3a8f9d346b0ae5e1e7e0d8277fd327bfac1955404b1efd27d6e9002777cdf94a"
+      }
+    }
+  }
+}

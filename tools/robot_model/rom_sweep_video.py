@@ -1,14 +1,14 @@
-"""ROM sweep on every joint, rendered as an explainer video with the sign convention on screen.
+"""Per-motor ROM/sign videos for the user's physical-direction review.
 
 The user's convention (2026-08-26): the actuator ROTOR face is the one carrying 6 M4 threaded
 holes and 3 alignment pins. Looking straight at that exposed face, along the axis protruding
-from it, CLOCKWISE is POSITIVE. In vector terms, with n the OUTWARD normal of the rotor face,
-"clockwise seen with n pointing at the viewer" is a rotation vector along MINUS n, so
+from it, CLOCKWISE is POSITIVE. With n the OUTWARD normal and the viewer looking along n
+(n points away from the viewer), clockwise is a rotation vector along PLUS n, so
 
-    required + axis = -n
+    required + axis = +n
 
-Each joint is swept neutral -> min -> max -> neutral so the direction of travel is unambiguous,
-and the caption states, per joint, whether the model's axis agrees with -n.
+Each physical motor joint is swept neutral -> positive upper -> negative lower -> neutral.
+Every transition lasts 4.0 s and each endpoint is held for 0.25 s.
 
 Playback is KINEMATIC: qpos is set and mj_forward is called, with the base pinned in the air.
 No gravity, no contacts, no controller - a ROM/sign check must show the model's own kinematics,
@@ -31,7 +31,7 @@ from PIL import Image, ImageDraw, ImageFont   # noqa: E402
 REPO = '/home/syaro/MikuchanRemote/Human-Pygmalion'
 XMLS = f'{REPO}/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls'
 SIGN_JSON = f'{REPO}/tools/robot_model/motor_sign_convention.json'
-WORK = '/home/syaro/pyg_fea/work/rom_sweep'
+WORK = '/tmp/pygmalion_rom_sweep'
 OUTDIR = f'{REPO}/docs/video'
 FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 FONT_R = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
@@ -43,7 +43,7 @@ BODY_Y = 88                                   # top of both render panels
 MAIN_W, MAIN_H = 788, 524                     # wide view
 ZOOM_X = 812                                  # left edge of the close-up column
 BAND_Y = 620                                  # bottom read-out band
-FPS = 25
+FPS = 20                                      # 0.25 s is exactly five frames
 BG = (18, 20, 26)
 FG = (238, 240, 245)
 DIM = (150, 158, 172)
@@ -60,6 +60,7 @@ ZOOM_BODY = {
     'hip_yaw': '{s}_thigh_link', 'knee': '{s}_shin_link',
     'ankle_pitch': '{s}_ankle_pitch_link', 'ankle_roll': '{s}_foot_link',
     'shoulder_pitch': '{s}_shoulder_pitch_link', 'shoulder_roll': '{s}_arm_link',
+    'crank_A': '{s}_crank_A', 'crank_B': '{s}_crank_B',
 }
 HUMAN = {
     'hip_pitch': 'Hip pitch - swings the whole leg forward and back',
@@ -71,7 +72,19 @@ HUMAN = {
     'waist_yaw': 'Waist yaw - turns the torso about the vertical axis',
     'shoulder_pitch': 'Shoulder pitch - swings the arm forward and back',
     'shoulder_roll': 'Shoulder roll - lifts the arm away from the body',
+    'crank_A': 'Ankle motor A - rotates the lower 2-RSU crank',
+    'crank_B': 'Ankle motor B - rotates the upper 2-RSU crank',
 }
+
+PHYSICAL_MOTOR_JOINTS = (
+    'waist_yaw_joint',
+    'L_shoulder_pitch_joint', 'L_shoulder_roll_joint',
+    'R_shoulder_pitch_joint', 'R_shoulder_roll_joint',
+    'L_hip_pitch_joint', 'L_hip_roll_joint', 'L_hip_yaw_joint', 'L_knee_joint',
+    'L_crank_A_joint', 'L_crank_B_joint',
+    'R_hip_pitch_joint', 'R_hip_roll_joint', 'R_hip_yaw_joint', 'R_knee_joint',
+    'R_crank_A_joint', 'R_crank_B_joint',
+)
 
 
 def ease(t):
@@ -89,21 +102,21 @@ def load_signs():
     return json.load(open(SIGN_JSON))
 
 
-HOLD_S = 1.0                      # still frames at neutral before and after each sweep
+HOLD_S = 0.25
+TRANSITION_S = 4.0
 
 
 def sweep_profile(lo, hi, n_seg):
-    """hold at neutral -> min -> max -> neutral -> hold, as (angle, phase-label) pairs.
-
-    The holds exist so the robot can actually be looked at before and after it moves; without
-    them each joint cuts straight from the section card into motion.
-    """
+    """0 -> positive upper -> negative lower -> 0, with exact endpoint holds."""
     hold = int(HOLD_S * FPS)
-    out = [(0.0, 'neutral')] * hold
-    for a, b, lab in ((0.0, lo, 'to MIN'), (lo, hi, 'to MAX'), (hi, 0.0, 'back to NEUTRAL')):
+    out = []
+    for a, b, lab in ((0.0, hi, '0 -> + UPPER'),
+                      (hi, lo, '+ UPPER -> - LOWER'),
+                      (lo, 0.0, '- LOWER -> 0')):
         for k in range(n_seg):
             out.append((a + (b - a) * ease(k / (n_seg - 1)), lab))
-    out += [(0.0, 'neutral')] * hold
+        if b in (hi, lo):
+            out += [(b, 'HOLD + UPPER' if b == hi else 'HOLD - LOWER')] * hold
     return out
 
 
@@ -134,7 +147,9 @@ def draw_frame(rgb_main, rgb_zoom, info):
     d.text((W - 320, 40), info['model_tag'], font=f_r(14), fill=DIM)
     d.text((W - 320, 58), 'blue arrows = joint axes', font=f_r(13), fill=(120, 128, 142))
 
-    d.text((22, BODY_Y + MAIN_H - 26), 'whole body', font=f_r(15), fill=DIM)
+    d.text((22, BODY_Y + MAIN_H - 46), 'whole body - target link highlighted RED',
+           font=f_b(15), fill=(255, 92, 72))
+    d.text((22, BODY_Y + MAIN_H - 25), info['location'], font=f_r(13), fill=DIM)
     d.text((ZOOM_X + 10, BODY_Y + PANEL - 26), 'close-up', font=f_r(15), fill=DIM)
 
     # ---- sign-convention badge, between the close-up and the band ----
@@ -218,10 +233,11 @@ def title_card(text_lines, seconds=3.0):
 
 def main():
     args = sys.argv[1:]
-    which = next((a.split('=')[1] for a in args if a.startswith('--model=')), 'serial')
+    which = next((a.split('=')[1] for a in args if a.startswith('--model=')), 'loop')
     only = next((a.split('=')[1].split(',') for a in args if a.startswith('--joints=')), None)
     quick = '--quick' in args
-    tag = next((a.split('=')[1] for a in args if a.startswith('--tag=')), 'pygmalion_v4_printed')
+    tag = next((a.split('=')[1] for a in args if a.startswith('--tag=')),
+               'prototype-tempmass-motormeasured-armfix_v30')
     xml = f'{XMLS}/{tag}{"_loop" if which == "loop" else ""}.xml'
     # A floor and a couple of lights: the raw robot XML renders as a grey object in a void,
     # which makes it genuinely hard to tell which way a limb is swinging. Added through MjSpec
@@ -250,16 +266,13 @@ def main():
     signs = load_signs()
 
     os.makedirs(WORK, exist_ok=True)
-    os.makedirs(OUTDIR, exist_ok=True)
-    for f in os.listdir(WORK):
-        os.remove(f'{WORK}/{f}')
+    outdir = f'{OUTDIR}/rom_sign_{tag}_{which}'
+    os.makedirs(outdir, exist_ok=True)
 
-    hinges = [m.joint(j).name for j in range(m.njnt)
-              if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE
-              and not any(t in m.joint(j).name for t in ('_rod_', '_crank_'))]
+    hinges = [j for j in PHYSICAL_MOTOR_JOINTS if j in [m.joint(k).name for k in range(m.njnt)]]
     if only:
         hinges = [h for h in hinges if any(o in h for o in only)]
-    n_seg = 24 if quick else 68                      # frames per leg; 68 @25fps = half the old speed
+    n_seg = int((1.0 if quick else TRANSITION_S) * FPS)
 
     renderer = mujoco.Renderer(m, height=768, width=1024)
     rz = mujoco.Renderer(m, height=PANEL, width=PANEL)
@@ -270,21 +283,17 @@ def main():
     opt = mujoco.MjvOption()
     opt.flags[mujoco.mjtVisFlag.mjVIS_JOINT] = True
 
-    sink = FrameSink(WORK)
-    sink.hold(*title_card([
-        'Joint ROM sweep and motor sign check',
-        f'model: {os.path.basename(xml)}    {len(hinges)} joints',
-        '',
-        'Every joint is driven  NEUTRAL -> MINIMUM -> MAXIMUM -> NEUTRAL,',
-        'one at a time, with the base held still.',
-        '',
-        'Sign convention: look straight at the actuator rotor face',
-        ' (the face with 6 M4 holes and 3 alignment pins).',
-        ' CLOCKWISE from that view is POSITIVE.',
-    ], 4.0))
-
-    log = {}
-    for jn in hinges:
+    log = {'_meta': dict(model=os.path.abspath(xml), model_tag=tag, ankle_mode=which,
+                         fps=FPS, transition_s=(1.0 if quick else TRANSITION_S),
+                         endpoint_hold_s=HOLD_S,
+                         sequence='neutral(0) -> positive upper -> negative lower -> neutral(0)',
+                         convention='positive = CW looking along outward rotor-flange normal',
+                         scope='17 physical motor joints; passive ankle and rod joints excluded')}
+    rgba0 = m.geom_rgba.copy()
+    for index, jn in enumerate(hinges, 1):
+        for f in os.listdir(WORK):
+            os.remove(f'{WORK}/{f}')
+        sink = FrameSink(WORK)
         jid = m.joint(jn).id
         lo, hi = np.degrees(m.jnt_range[jid])
         kind = joint_kind(jn)
@@ -305,8 +314,11 @@ def main():
         else:
             detail = ''
 
-        sink.hold(*title_card([f'{jn}', f'range {lo:+.0f} to {hi:+.0f} deg',
-                               '', HUMAN.get(kind, '')], 1.6))
+        # Highlight the joint's directly driven child body in red in both overview and close-up.
+        child_bid = int(m.jnt_bodyid[jid])
+        child_geoms = np.flatnonzero(m.geom_bodyid == child_bid)
+        m.geom_rgba[:] = rgba0
+        m.geom_rgba[child_geoms] = np.array([1.0, 0.12, 0.05, 1.0])
         prof = sweep_profile(lo, hi, n_seg)
         prev = 0.0
         rec = []
@@ -325,21 +337,30 @@ def main():
             sink.add(draw_frame(main_rgb, zoom_rgb, dict(
                 title=jn, human=HUMAN.get(kind, ''), ang=ang, lo=lo, hi=hi, phase=phase,
                 model_tag=os.path.basename(xml), dir=ang - prev,
-                sign_state=state, sign_detail=detail)))
+                sign_state=state, sign_detail=detail,
+                location=(f'joint anchor [base frame] = '
+                          f'({dta.xanchor[jid][0]:+.3f}, {dta.xanchor[jid][1]:+.3f}, '
+                          f'{dta.xanchor[jid][2]:+.3f}) m; child = {m.body(child_bid).name}'))))
             rec.append(ang)
             prev = ang
-        log[jn] = dict(lo=float(lo), hi=float(hi), n_frames=len(prof),
+        filename = f'{index:02d}_{jn}.mp4'
+        out = f'{outdir}/{filename}'
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(FPS),
+                        '-i', f'{WORK}/f%05d.png', '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+                        '-crf', '20', out], check=True)
+        log[jn] = dict(order=index, video=filename, lower_deg=float(lo), upper_deg=float(hi),
+                       n_frames=len(prof), duration_s=len(prof) / FPS,
                        reached_min=float(min(rec)), reached_max=float(max(rec)),
-                       returned_to=float(rec[-1]))
-
-    out = f'{OUTDIR}/rom_sweep_{tag.replace("pygmalion_", "")}_{which}.mp4'
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(FPS),
-                    '-i', f'{WORK}/f%05d.png', '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
-                    '-crf', '20', out], check=True)
-    json.dump(log, open(out.replace('.mp4', '.json'), 'w'), indent=1)
-    print(f'wrote {out}  ({sink.n} frames, {sink.n/FPS:.1f} s, {len(hinges)} joints)')
-    for jn, r in log.items():
-        print(f"  {jn:26s} {r['lo']:+7.1f} .. {r['hi']:+7.1f}  reached "
+                       returned_to=float(rec[-1]), sign_state=state,
+                       sign_dot=None if not sg else sg.get('dot'),
+                       highlighted_body=m.body(child_bid).name)
+        print(f'[{index:02d}/{len(hinges):02d}] wrote {out} ({len(prof)/FPS:.2f} s)')
+    m.geom_rgba[:] = rgba0
+    manifest = f'{outdir}/manifest.json'
+    json.dump(log, open(manifest, 'w'), indent=1)
+    print(f'wrote manifest {manifest} ({len(hinges)} physical motor joints)')
+    for jn, r in [(k, v) for k, v in log.items() if not k.startswith('_')]:
+        print(f"  {jn:26s} {r['lower_deg']:+7.1f} .. {r['upper_deg']:+7.1f}  reached "
               f"{r['reached_min']:+7.1f} / {r['reached_max']:+7.1f}  back to {r['returned_to']:+.1f}")
 
 

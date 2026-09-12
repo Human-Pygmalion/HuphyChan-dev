@@ -1,0 +1,30 @@
+{
+  "full": {
+    "path": "tools/robot_model/fusion_snapshots/v30_inspection/variants_armfix/FullDoF/FullDoF_prototype-tempmass-rs03measured-armfix_v30.urdf",
+    "links": 18,
+    "joints": 17,
+    "movable": 17,
+    "fixed": 0,
+    "root": "base_link",
+    "verdict": "PASS"
+  },
+  "semi": {
+    "path": "tools/robot_model/fusion_snapshots/v30_inspection/variants_armfix/SemiFullDoF/SemiFullDoF_prototype-tempmass-rs03measured-armfix_v30.urdf",
+    "links": 18,
+    "joints": 17,
+    "movable": 13,
+    "fixed": 4,
+    "root": "base_link",
+    "verdict": "PASS"
+  },
+  "leg": {
+    "path": "tools/robot_model/fusion_snapshots/v30_inspection/variants_armfix/LegOnly/LegOnly_prototype-tempmass-rs03measured_v30.urdf",
+    "links": 13,
+    "joints": 12,
+    "movable": 12,
+    "fixed": 0,
+    "root": "base_link",
+    "verdict": "PASS"
+  },
+  "verdict": "PASS"
+}

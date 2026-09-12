@@ -1,0 +1,84 @@
+{
+  "tag": "prototype-tempmass",
+  "status": "CONDITIONAL prototype only; not final Sim2Real mass evidence",
+  "source_dump": "tools/robot_model/fusion_snapshots/v30_inspection/bodies_printed_density.json",
+  "source_workbook": "/home/syaro/MikuchanRemote/Human-Pygmalion/docs/aluminium_parts_3dprint_masses.xlsx",
+  "source_column": "D: 질량 (알루 6061, g)",
+  "important_evidence_note": "Column D is CAD geometry at 6061 density, not a new physical aluminium weighing. Arm_A/Arm_B are marked existing aluminium/CAD-mass in the sheet.",
+  "scope_assumption": "Latest user wildcard AnkleA2B_*_* is interpreted as all six matching CAD bodies, plus FEET/Arm_A/Arm_B. The build mirrors the one-leg CAD.",
+  "output_bodies": "tools/robot_model/fusion_snapshots/v30_inspection/bodies_printed_prototype_tempmass.json",
+  "changes": [
+    {
+      "body": "AnkleA2B_A_L",
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L",
+      "workbook_row": 44,
+      "old_mass_kg": 0.011576555113202748,
+      "prototype_mass_kg": 0.03203,
+      "tensor_scale": 2.766798904060039
+    },
+    {
+      "body": "AnkleA2B_A_L (1)",
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L (1)",
+      "workbook_row": 43,
+      "old_mass_kg": 0.01057948197550156,
+      "prototype_mass_kg": 0.03227,
+      "tensor_scale": 3.0502438658836244
+    },
+    {
+      "body": "AnkleA2B_A_R",
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R",
+      "workbook_row": 46,
+      "old_mass_kg": 0.012940032219003632,
+      "prototype_mass_kg": 0.03184,
+      "tensor_scale": 2.460581199576924
+    },
+    {
+      "body": "AnkleA2B_A_R (1)",
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R (1)",
+      "workbook_row": 42,
+      "old_mass_kg": 0.010873112274938798,
+      "prototype_mass_kg": 0.03227,
+      "tensor_scale": 2.967871496588739
+    },
+    {
+      "body": "AnkleA2B_A_Support",
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support",
+      "workbook_row": 40,
+      "old_mass_kg": 0.012700059108835704,
+      "prototype_mass_kg": 0.04082,
+      "tensor_scale": 3.2141582688855874
+    },
+    {
+      "body": "AnkleA2B_A_Support (1)",
+      "path": "/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support (1)",
+      "workbook_row": 41,
+      "old_mass_kg": 0.013417093912513918,
+      "prototype_mass_kg": 0.04082,
+      "tensor_scale": 3.042387589008959
+    },
+    {
+      "body": "Arm_A",
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Arm_A",
+      "workbook_row": 26,
+      "old_mass_kg": 0.054759,
+      "prototype_mass_kg": 0.054759999999999996,
+      "tensor_scale": 1.0000182618382365
+    },
+    {
+      "body": "Arm_B",
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::Arm_B",
+      "workbook_row": 27,
+      "old_mass_kg": 0.038775,
+      "prototype_mass_kg": 0.04155,
+      "tensor_scale": 1.0715667311411992
+    },
+    {
+      "body": "FEET",
+      "path": "/Joints_UnderBody:1/Ankle2Feet:1::FEET",
+      "workbook_row": 14,
+      "old_mass_kg": 0.18154935510958006,
+      "prototype_mass_kg": 0.61772,
+      "tensor_scale": 3.4024907421299013
+    }
+  ]
+}

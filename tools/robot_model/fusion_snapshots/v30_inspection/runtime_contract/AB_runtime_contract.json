@@ -1,0 +1,124 @@
+{
+  "schema": "pygmalion-runtime-contract-v1",
+  "ankle_mode": "AB",
+  "model_selector": "prototype-tempmass-rs03measured-armfix_v30",
+  "total_mass_kg": 35.0491,
+  "upper_retained_mass_kg": 12.24226,
+  "model_counts": {
+    "body": 28,
+    "joint": 25,
+    "actuator": 12,
+    "equality": 4
+  },
+  "action_names": [
+    "L_hip_pitch_joint",
+    "L_hip_roll_joint",
+    "L_hip_yaw_joint",
+    "L_knee_joint",
+    "L_crank_A_joint",
+    "L_crank_B_joint",
+    "R_hip_pitch_joint",
+    "R_hip_roll_joint",
+    "R_hip_yaw_joint",
+    "R_knee_joint",
+    "R_crank_A_joint",
+    "R_crank_B_joint"
+  ],
+  "expected_action_names": [
+    "L_hip_pitch_joint",
+    "L_hip_roll_joint",
+    "L_hip_yaw_joint",
+    "L_knee_joint",
+    "L_crank_A_joint",
+    "L_crank_B_joint",
+    "R_hip_pitch_joint",
+    "R_hip_roll_joint",
+    "R_hip_yaw_joint",
+    "R_knee_joint",
+    "R_crank_A_joint",
+    "R_crank_B_joint"
+  ],
+  "actor": {
+    "terms": [
+      "base_ang_vel",
+      "projected_gravity",
+      "motor_pos_history",
+      "actions",
+      "command"
+    ],
+    "term_dims": [
+      [
+        3
+      ],
+      [
+        3
+      ],
+      [
+        24
+      ],
+      [
+        12
+      ],
+      [
+        3
+      ]
+    ],
+    "group_dim": [
+      45
+    ],
+    "meaning": {
+      "base_ang_vel": "raw-deployable EBIMU gyro, 3",
+      "projected_gravity": "derived from EBIMU attitude, 3",
+      "motor_pos_history": "q(t-1), q(t) for exactly 12 motor encoders, 24",
+      "actions": "previous 12 motor commands",
+      "command": "vx, vy, yaw-rate command, 3"
+    }
+  },
+  "critic_dim": [
+    68
+  ],
+  "entity_joint_names": [
+    "L_hip_pitch_joint",
+    "L_hip_roll_joint",
+    "L_hip_yaw_joint",
+    "L_knee_joint",
+    "L_crank_A_joint",
+    "L_rod_A_u1",
+    "L_rod_A_u2",
+    "L_crank_B_joint",
+    "L_rod_B_u1",
+    "L_rod_B_u2",
+    "L_ankle_pitch_joint",
+    "L_ankle_roll_joint",
+    "R_hip_pitch_joint",
+    "R_hip_roll_joint",
+    "R_hip_yaw_joint",
+    "R_knee_joint",
+    "R_crank_A_joint",
+    "R_rod_A_u1",
+    "R_rod_A_u2",
+    "R_crank_B_joint",
+    "R_rod_B_u1",
+    "R_rod_B_u2",
+    "R_ankle_pitch_joint",
+    "R_ankle_roll_joint"
+  ],
+  "equality_names": [
+    "robot/L_loop_A",
+    "robot/L_loop_B",
+    "robot/R_loop_A",
+    "robot/R_loop_B"
+  ],
+  "checks": {
+    "action_dim_12": true,
+    "action_order_exact": true,
+    "upper_not_actuated": true,
+    "upper_joints_welded": true,
+    "upper_mass_retained": true,
+    "actor_terms_exact": true,
+    "actor_dim_45": true,
+    "closed_loop_equalities_4": true,
+    "total_mass_35_049kg": true
+  },
+  "verdict": "PASS"
+}

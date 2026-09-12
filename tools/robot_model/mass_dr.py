@@ -24,7 +24,8 @@ Output: mass_dr.json with, per link, the 2.5/97.5 percentiles of mass scale, COM
 axis (body frame, m) and inertia scale, plus the mjlab `dr.pseudo_inertia` parameters that
 cover them (alpha = ln(mass_scale)/2, t = COM shift), and a figure.
 
-Usage: mass_dr.py [--bodies=...] [--samples=4000]   (mjlab .venv python)
+Usage: mass_dr.py [--bodies=...] [--samples=4000] [--out=...] [--out-png=...]
+       (mjlab .venv python)
 """
 import json
 import os
@@ -42,6 +43,7 @@ OUT_JSON = f'{REPO}/tools/robot_model/mass_dr.json'
 OUT_PNG = f'{REPO}/docs/img/mass_dr_ranges.png'
 SIGMA = dict(printed_measured=0.03, printed_mean=0.10, printed_common=0.03,
              motor=0.02, bearing=0.02, fastener=0.02, aluminium=0.02)
+FASTENER_COMPLETENESS_MIN = float(os.environ.get('PYG_FASTENER_COMPLETENESS_MIN', '1.0'))
 LINKS = ['pelvis', 'hip_pitch_link', 'hip_roll_link', 'thigh', 'shin', 'ankle_pitch_link',
          'foot', 'torso', 'shoulder_pitch_link', 'arm']
 # What the measurement does NOT cover, and the randomizer still has to: cable harnesses and
@@ -73,10 +75,21 @@ def body_class(item, measured_ok):
     return 'fastener'
 
 
+def is_fastener_item(item):
+    p = item['path'].lower()
+    return any(token in p for token in ('screw', 'bolt', 'nut', 'washer'))
+
+
 def main():
+    if not 0.0 < FASTENER_COMPLETENESS_MIN <= 1.0:
+        raise ValueError('PYG_FASTENER_COMPLETENESS_MIN must be in (0, 1]')
     bodies_file = next((a.split('=')[1] for a in sys.argv if a.startswith('--bodies=')),
                        '/home/syaro/pyg_fea/fusion/bodies_printed.json')
     n = int(next((a.split('=')[1] for a in sys.argv if a.startswith('--samples=')), 4000))
+    out_json = next((a.split('=', 1)[1] for a in sys.argv if a.startswith('--out=')),
+                    OUT_JSON)
+    out_png = next((a.split('=', 1)[1] for a in sys.argv if a.startswith('--out-png=')),
+                   OUT_PNG)
     rng = np.random.default_rng(7)
     B = json.load(open(bodies_file))
     links, _, _ = MP.collect(B)
@@ -85,6 +98,13 @@ def main():
 
     # one shared draw for the printed batch, independent draws for everything else
     common = rng.normal(0.0, SIGMA['printed_common'], n)
+    # One shared manufacturing-completeness event preserves the fact that a partially
+    # populated CAD BOM misses screws robot-wide, rather than independently inventing a
+    # different count for every bolt.  If only 50% were modeled, actual fastener mass may
+    # be 1/c in [1, 2] times the included screw bodies.  This is opt-in sensitivity DR;
+    # the default c=1 keeps the measured nominal unchanged.
+    completion = rng.uniform(FASTENER_COMPLETENESS_MIN, 1.0, n)
+    fastener_common = 1.0 / completion
     report, counts = {}, {}
     for link in LINKS:
         items = links[link]
@@ -99,6 +119,8 @@ def main():
                 f = 1.0 + rng.normal(0.0, SIGMA[c])
                 if c.startswith('printed'):
                     f *= 1.0 + common[k]
+                if is_fastener_item(it):
+                    f *= fastener_common[k]
                 scale[it['path']] = max(f, 0.05)
             m, c, I = MP.aggregate(items, scale)
             ms[k] = m / m0
@@ -155,10 +177,18 @@ def main():
                  'the residual inertia shape factor and ALSO stretches the COM about the '
                  'body origin, so it is capped small')
 
-    out = dict(bodies=bodies_file, samples=n, sigma=SIGMA, struct=STRUCT, links=report,
+    out = dict(bodies=bodies_file, samples=n, sigma=SIGMA, struct=STRUCT,
+               fastener_completeness=dict(
+                   modeled_fraction_range=[FASTENER_COMPLETENESS_MIN, 1.0],
+                   included_fastener_mass_scale_range=[1.0, 1.0 / FASTENER_COMPLETENESS_MIN],
+                   correlation='one shared robot-wide draw; per-fastener 2% residual remains',
+                   status=('nominal measurement DR' if FASTENER_COMPLETENESS_MIN == 1.0
+                           else 'sensitivity envelope, not a new nominal')),
+               links=report,
                mjlab_body_names={l: BNAME.get(l, l if l != 'pelvis' else 'base_link')
                                  for l in LINKS})
-    json.dump(out, open(OUT_JSON, 'w'), indent=1)
+    os.makedirs(os.path.dirname(os.path.abspath(out_json)), exist_ok=True)
+    json.dump(out, open(out_json, 'w'), indent=1)
 
     print(f"{'link':18s} {'kg':>6s} {'mass 95%':>14s} {'COM 95% x / y / z  [mm]':>34s} {'inertia 95%':>14s}")
     for l, r in report.items():
@@ -197,7 +227,8 @@ def main():
     fig.suptitle('Mass-property uncertainty propagated body-by-body through the aggregation '
                  f'({n} samples) - the ranges domain randomization has to cover', fontsize=10.5)
     fig.tight_layout()
-    fig.savefig(OUT_PNG, dpi=130)
+    os.makedirs(os.path.dirname(os.path.abspath(out_png)), exist_ok=True)
+    fig.savefig(out_png, dpi=130)
     print(f"\n{'link':18s} {'RECOMMENDED mass':>18s} {'t +- [mm] x/y/z':>17s} {'d':>7s} {'effective COM +- [mm]':>22s} {'alpha':>16s}")
     for l, r in report.items():
         rc = r['mjlab_pseudo_inertia_recommended']
@@ -205,7 +236,7 @@ def main():
         ce = rc['com_effective_m']
         eff = '/'.join(f"{max(abs(ce[k][0]), abs(ce[k][1]))*1000:.1f}" for k in ('x', 'y', 'z'))
         print(f"{l:18s} {rc['mass_scale'][0]:8.3f}..{rc['mass_scale'][1]:5.3f} {com:>17s} {rc['d_range'][1]:7.4f} {eff:>22s} {rc['alpha_range'][0]:8.4f}..{rc['alpha_range'][1]:7.4f}")
-    print(f'-> {OUT_JSON}\n-> {OUT_PNG}')
+    print(f'-> {out_json}\n-> {out_png}')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,255 @@
+{
+  "schema": "pygmalion-fastener-mass-audit-v1",
+  "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/fusion_snapshots/v30_inspection/bodies_printed_prototype_tempmass.json",
+  "model_mode": "AB loop aggregation; one-side leg/arm CAD mirrored L/R",
+  "included": {
+    "physical_count": 870,
+    "physical_mass_kg": 2.431547,
+    "by_link": {
+      "pelvis": {
+        "physical_count": 69,
+        "physical_mass_kg": 0.200874,
+        "multiplicity": 1
+      },
+      "hip_pitch_link": {
+        "physical_count": 96,
+        "physical_mass_kg": 0.24304,
+        "multiplicity": 2
+      },
+      "hip_roll_link": {
+        "physical_count": 60,
+        "physical_mass_kg": 0.198572,
+        "multiplicity": 2
+      },
+      "thigh": {
+        "physical_count": 144,
+        "physical_mass_kg": 0.37796799999999997,
+        "multiplicity": 2
+      },
+      "shin": {
+        "physical_count": 206,
+        "physical_mass_kg": 0.6230060000000001,
+        "multiplicity": 2
+      },
+      "foot": {
+        "physical_count": 54,
+        "physical_mass_kg": 0.251852,
+        "multiplicity": 2
+      },
+      "torso": {
+        "physical_count": 75,
+        "physical_mass_kg": 0.150595,
+        "multiplicity": 1
+      },
+      "shoulder_pitch_link": {
+        "physical_count": 158,
+        "physical_mass_kg": 0.358712,
+        "multiplicity": 2
+      },
+      "arm": {
+        "physical_count": 8,
+        "physical_mass_kg": 0.026928,
+        "multiplicity": 2
+      }
+    }
+  },
+  "unassigned_raw_cad": {
+    "count": 37,
+    "mass_kg": 0.062114,
+    "visible_count": 16,
+    "visible_mass_kg": 0.02504,
+    "items": [
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:19::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:18::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:17::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:16::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:15::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:14::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:13::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:12::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:11::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:10::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:9::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:8::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:7::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:6::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:5::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:4::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:3::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:2::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Hexagon Socket Countersunk Head Screw ISO 10642 - M4 x 16 Steel 8.8 Plain v1:1::Body1",
+        "mass_kg": 0.001644,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 14 Steel 4.6 Plain v1:36::Body1",
+        "mass_kg": 0.002361,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 14 Steel 4.6 Plain v1:35::Body1",
+        "mass_kg": 0.002361,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 14 Steel 4.6 Plain v1:34::Body1",
+        "mass_kg": 0.002361,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 14 Steel 4.6 Plain v1:33::Body1",
+        "mass_kg": 0.002361,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 10 Steel 4.6 Plain v1:2::Body1",
+        "mass_kg": 0.001989,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 10 Steel 4.6 Plain v1:1::Body1",
+        "mass_kg": 0.001989,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 25 Steel 4.6 Plain v1:39::Body1",
+        "mass_kg": 0.003383,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 25 Steel 4.6 Plain v1:38::Body1",
+        "mass_kg": 0.003383,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Countersunk Head Screw ISO 10642 - M3 x 8 Steel 8.8 Plain v1:6::Body1",
+        "mass_kg": 0.000471,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Countersunk Head Screw ISO 10642 - M3 x 8 Steel 8.8 Plain v1:5::Body1",
+        "mass_kg": 0.000471,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Countersunk Head Screw ISO 10642 - M3 x 8 Steel 8.8 Plain v1:4::Body1",
+        "mass_kg": 0.000471,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Countersunk Head Screw ISO 10642 - M3 x 8 Steel 8.8 Plain v1:3::Body1",
+        "mass_kg": 0.000471,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Countersunk Head Screw ISO 10642 - M3 x 8 Steel 8.8 Plain v1:2::Body1",
+        "mass_kg": 0.000471,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Countersunk Head Screw ISO 10642 - M3 x 8 Steel 8.8 Plain v1:1::Body1",
+        "mass_kg": 0.000471,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M3 x 10 Steel 4.6 Plain v1:2::Body1",
+        "mass_kg": 0.001013,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/E2Box-IMU:1/Hexagon Socket Head Cap Screw ISO 4762 - M3 x 10 Steel 4.6 Plain v1:1::Body1",
+        "mass_kg": 0.001013,
+        "visible_in_cad": true
+      },
+      {
+        "path": "/Joints_UnderBody:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 20 Steel 4.6 Plain v1:88::Body1",
+        "mass_kg": 0.002919,
+        "visible_in_cad": false
+      },
+      {
+        "path": "/Joints_UnderBody:1/Hexagon Socket Head Cap Screw ISO 4762 - M4 x 20 Steel 4.6 Plain v1:87::Body1",
+        "mass_kg": 0.002919,
+        "visible_in_cad": false
+      }
+    ]
+  },
+  "comparison_to_user_2kg": {
+    "user_value_kg": 2.0,
+    "included_minus_user_kg": 0.4315470000000001,
+    "status": "NOT A CONTRADICTION: user confirmed 2 kg was rough memory, not a scale measurement",
+    "remaining_uncertainty": "SCM/CAD screw population may be only about 50% complete; evaluate a correlated fastener-completeness event instead of forcing the nominal total to 2.000 kg"
+  }
+}

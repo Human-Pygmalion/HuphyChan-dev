@@ -1,0 +1,337 @@
+<!doctype html><meta charset="utf-8"><title>Pygmalion part inventory</title>
+<style>body{font-family:Arial,sans-serif;color:#17222d;margin:22px}h1{margin-bottom:5px}.warn{background:#fff1c8;padding:12px;border-left:6px solid #e19b24}table{border-collapse:collapse;font-size:12px;width:100%}th{position:sticky;top:0;background:#24394b;color:white;padding:8px}td{border:1px solid #bbc4cc;padding:6px;vertical-align:middle}img{width:190px;height:142px;object-fit:contain;background:white}code{font-size:11px}small{color:#576879}.al{color:#1c6798}</style>
+<h1>Pygmalion printed + prototype aluminium body inventory</h1>
+<p class="warn"><b>prototype-tempmass:</b> 질량은 임시 진행용입니다. “URDF 질량” 열은 독립 링크가 아니라 URDF 링크 질량으로 합산되는 CAD body 입력값입니다. 사용자가 파란 9개 CAD body를 확인했으며, 단일측 CAD를 좌우 대칭하면 18개 실물 배치입니다.</p>
+<p>행 55개 · 단독 렌더를 누르면 원본 이미지 · 밀도색: 출력물(노랑) → Al6061(파랑)</p>
+<p><a href="current_tempmass_mapping.png">확정 AL 매핑</a> · <a href="part_inventory.xlsx">Excel</a> · <a href="part_inventory.json">JSON</a></p>
+<table><thead><tr><th>#</th><th>파츠명 / 집계 링크</th><th>솔로 렌더</th><th>부피<br>cm³</th><th>밀도<br>g/cm³</th><th>URDF 집계 입력<br>g / AL-g</th><th>실물 수량</th><th>재질 상태</th><th>AL 매핑</th><th>비고 / 렌더 근거</th><th>CAD body path</th></tr></thead><tbody><tr><td>1</td><td><code>Arm_Connector_MIDCOnnect</code><br><small>shoulder_pitch_link</small></td>
+<td><a href="img/01_5fbea16e2d.png"><img src="img/01_5fbea16e2d.png"></a></td>
+<td>48.2645</td><td style="background:#eede8b">0.8874</td>
+<td><b>42.83</b><br><span class="al">AL-130.31</span></td>
+<td>×2<br><small>right-arm CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Pitch2Roll:1::Arm_Connector_MIDCOnnect</code></td></tr><tr><td>2</td><td><code>Body1</code><br><small>arm</small></td>
+<td><a href="img/02_e9e65c924f.png"><img src="img/02_e9e65c924f.png"></a></td>
+<td>96.9070</td><td style="background:#eede8b">0.8874</td>
+<td><b>85.99</b><br><span class="al">AL-261.65</span></td>
+<td>×2<br><small>right-arm CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Roll2Yaw-dummy:1::Body1</code></td></tr><tr><td>3</td><td><code>Body2</code><br><small>arm</small></td>
+<td><a href="img/03_c6738c4f11.png"><img src="img/03_c6738c4f11.png"></a></td>
+<td>130.0729</td><td style="background:#eede8b">0.8874</td>
+<td><b>115.43</b><br><span class="al">AL-351.20</span></td>
+<td>×2<br><small>right-arm CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UpperBody:1/Arm_R:1/ArmR_Dummy:1/Shoulder-Roll2Yaw-dummy:1::Body2</code></td></tr><tr><td>4</td><td><code>KneeB2AnkleA</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/04_62fac9ed39.png"><img src="img/04_62fac9ed39.png"></a></td>
+<td>62.4133</td><td style="background:#ecdd8d">0.9170</td>
+<td><b>57.23</b><br><span class="al">AL-168.52</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-high<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::KneeB2AnkleA</code></td></tr><tr><td>5</td><td><code>AnkleBraceA</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/05_14a884888b.png"><img src="img/05_14a884888b.png"></a></td>
+<td>15.0165</td><td style="background:#eede8b">0.8874</td>
+<td><b>13.33</b><br><span class="al">AL-40.54</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::AnkleBraceA</code></td></tr><tr><td>6</td><td><code>AnkleBraceB</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/06_e4f3f7faca.png"><img src="img/06_e4f3f7faca.png"></a></td>
+<td>15.1386</td><td style="background:#eede8b">0.8874</td>
+<td><b>13.43</b><br><span class="al">AL-40.87</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::AnkleBraceB</code></td></tr><tr><td>7</td><td><code>AnkleFeetPillowAB</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/07_75d840a91c.png"><img src="img/07_75d840a91c.png"></a></td>
+<td>38.9498</td><td style="background:#eede8b">0.8874</td>
+<td><b>34.56</b><br><span class="al">AL-105.16</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowAB</code></td></tr><tr><td>8</td><td><code>AnkleFeetPillowA</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/08_7122eae6e7.png"><img src="img/08_7122eae6e7.png"></a></td>
+<td>15.1388</td><td style="background:#eede8b">0.8874</td>
+<td><b>13.43</b><br><span class="al">AL-40.87</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowA</code></td></tr><tr><td>9</td><td><code>AnkleFeetPillowB</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/09_869628d3e6.png"><img src="img/09_869628d3e6.png"></a></td>
+<td>15.1388</td><td style="background:#eede8b">0.8874</td>
+<td><b>13.43</b><br><span class="al">AL-40.87</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::AnkleFeetPillowB</code></td></tr><tr><td>10</td><td><code>KneeB2AnkleB</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/10_e7b0f30b5b.png"><img src="img/10_e7b0f30b5b.png"></a></td>
+<td>63.6431</td><td style="background:#eede8b">0.8874</td>
+<td><b>56.48</b><br><span class="al">AL-171.84</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::KneeB2AnkleB</code></td></tr><tr><td>11</td><td><code>AnkleUniversalJointCore</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/11_38828e345f.png"><img src="img/11_38828e345f.png"></a></td>
+<td>24.8100</td><td style="background:#eede8b">0.8874</td>
+<td><b>22.02</b><br><span class="al">AL-66.99</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::AnkleUniversalJointCore</code></td></tr><tr><td>12</td><td><code>FEET</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/12_fe5f2a9b92.png"><img src="img/12_fe5f2a9b92.png"></a></td>
+<td>228.3449</td><td style="background:#8ebee8">2.7052</td>
+<td><b>617.72</b><br><span class="al">AL-616.53</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::FEET</code></td></tr><tr><td>13</td><td><code>Crank_A</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/13_a02d165b69.png"><img src="img/13_a02d165b69.png"></a></td>
+<td>27.3647</td><td style="background:#eede8b">0.8874</td>
+<td><b>24.28</b><br><span class="al">AL-73.88</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Crank_A</code></td></tr><tr><td>14</td><td><code>Crank_B</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/14_adf55fa3ba.png"><img src="img/14_adf55fa3ba.png"></a></td>
+<td>26.7305</td><td style="background:#eede8b">0.8874</td>
+<td><b>23.72</b><br><span class="al">AL-72.17</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Crank_B</code></td></tr><tr><td>15</td><td><code>Crank_B_Cover</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/15_4170f973b3.png"><img src="img/15_4170f973b3.png"></a></td>
+<td>11.4528</td><td style="background:#eede8b">0.8874</td>
+<td><b>10.16</b><br><span class="al">AL-30.92</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Crank_B_Cover</code></td></tr><tr><td>16</td><td><code>Crank_A_Cover</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/16_6ba1b95f1a.png"><img src="img/16_6ba1b95f1a.png"></a></td>
+<td>11.7143</td><td style="background:#eede8b">0.8874</td>
+<td><b>10.40</b><br><span class="al">AL-31.63</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Crank_A_Cover</code></td></tr><tr><td>17</td><td><code>Ankle_Stopper_Pitch</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/17_c8a34c144f.png"><img src="img/17_c8a34c144f.png"></a></td>
+<td>7.6088</td><td style="background:#eede8b">0.8874</td>
+<td><b>6.75</b><br><span class="al">AL-20.54</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Ankle_Stopper_Pitch</code></td></tr><tr><td>18</td><td><code>Ankle_Stopper_Roll</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/18_9945bdc6e0.png"><img src="img/18_9945bdc6e0.png"></a></td>
+<td>9.8326</td><td style="background:#eede8b">0.8874</td>
+<td><b>8.73</b><br><span class="al">AL-26.55</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Ankle_Stopper_Roll</code></td></tr><tr><td>19</td><td><code>20deg_flangeA</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/19_d5ff55a36f.png"><img src="img/19_d5ff55a36f.png"></a></td>
+<td>0.1169</td><td style="background:#eede8b">0.8874</td>
+<td><b>0.10</b><br><span class="al">AL-0.32</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>legacy exact-name render (alu_parts)</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-B:1/Flange(Mirror):1::20deg_flangeA</code></td></tr><tr><td>20</td><td><code>20deg_flangeB</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/20_7aad1c4cb4.png"><img src="img/20_7aad1c4cb4.png"></a></td>
+<td>0.1169</td><td style="background:#eede8b">0.8874</td>
+<td><b>0.10</b><br><span class="al">AL-0.32</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>legacy exact-name render (alu_parts)</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-B:1/Flange(Mirror):1::20deg_flangeB</code></td></tr><tr><td>21</td><td><code>20deg_flangeA</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/21_bf01e0aa1e.png"><img src="img/21_bf01e0aa1e.png"></a></td>
+<td>0.1169</td><td style="background:#eede8b">0.8874</td>
+<td><b>0.10</b><br><span class="al">AL-0.32</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>legacy exact-name render (alu_parts)</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-A:1/Flange:1::20deg_flangeA</code></td></tr><tr><td>22</td><td><code>20deg_flangeB</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/22_f69a5ff4c9.png"><img src="img/22_f69a5ff4c9.png"></a></td>
+<td>0.1169</td><td style="background:#eede8b">0.8874</td>
+<td><b>0.10</b><br><span class="al">AL-0.32</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>legacy exact-name render (alu_parts)</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1/JMC-JS06_FEET-A:1/Flange:1::20deg_flangeB</code></td></tr><tr><td>23</td><td><code>Knee2Ankle_RotorSide_1</code><br><small>shin</small></td>
+<td><a href="img/23_1f689a2616.png"><img src="img/23_1f689a2616.png"></a></td>
+<td>59.0106</td><td style="background:#ebdd8e">0.9362</td>
+<td><b>55.25</b><br><span class="al">AL-159.33</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-med<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_RotorSide_1</code></td></tr><tr><td>24</td><td><code>Knee2Ankle_IdleSide_1</code><br><small>shin</small></td>
+<td><a href="img/24_4c464b5478.png"><img src="img/24_4c464b5478.png"></a></td>
+<td>48.3438</td><td style="background:#eede8b">0.8874</td>
+<td><b>42.90</b><br><span class="al">AL-130.53</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_IdleSide_1</code></td></tr><tr><td>25</td><td><code>Knee2Ankle_IdleSide_2</code><br><small>shin</small></td>
+<td><a href="img/25_98cabe8110.png"><img src="img/25_98cabe8110.png"></a></td>
+<td>45.7902</td><td style="background:#eede8b">0.8874</td>
+<td><b>40.63</b><br><span class="al">AL-123.63</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_IdleSide_2</code></td></tr><tr><td>26</td><td><code>Knee2Ankle_RotorSide_2</code><br><small>shin</small></td>
+<td><a href="img/26_faae240a74.png"><img src="img/26_faae240a74.png"></a></td>
+<td>47.6897</td><td style="background:#f1df88">0.8231</td>
+<td><b>39.26</b><br><span class="al">AL-128.76</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-med<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_RotorSide_2</code></td></tr><tr><td>27</td><td><code>Knee2Ankle_Connector_A</code><br><small>shin</small></td>
+<td><a href="img/27_7346413cf9.png"><img src="img/27_7346413cf9.png"></a></td>
+<td>16.5260</td><td style="background:#eede8b">0.8874</td>
+<td><b>14.67</b><br><span class="al">AL-44.62</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_Connector_A</code></td></tr><tr><td>28</td><td><code>Knee2Ankle_Connector_B</code><br><small>shin</small></td>
+<td><a href="img/28_f325d89e1c.png"><img src="img/28_f325d89e1c.png"></a></td>
+<td>16.5260</td><td style="background:#eede8b">0.8874</td>
+<td><b>14.67</b><br><span class="al">AL-44.62</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::Knee2Ankle_Connector_B</code></td></tr><tr><td>29</td><td><code>AnkleA2B_A_R</code><br><small>shin</small></td>
+<td><a href="img/29_9df90da0be.png"><img src="img/29_9df90da0be.png"></a></td>
+<td>14.5821</td><td style="background:#a9c7ce">2.1835</td>
+<td><b>31.84</b><br><span class="al">AL-39.37</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R</code></td></tr><tr><td>30</td><td><code>AnkleA2B_A_Support</code><br><small>shin</small></td>
+<td><a href="img/30_26b95165c7.png"><img src="img/30_26b95165c7.png"></a></td>
+<td>15.1197</td><td style="background:#8ebee8">2.6998</td>
+<td><b>40.82</b><br><span class="al">AL-40.82</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support</code></td></tr><tr><td>31</td><td><code>AnkleA2B_A_L</code><br><small>shin</small></td>
+<td><a href="img/31_4c97278b1d.png"><img src="img/31_4c97278b1d.png"></a></td>
+<td>13.0456</td><td style="background:#9bc2db">2.4552</td>
+<td><b>32.03</b><br><span class="al">AL-35.22</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L</code></td></tr><tr><td>32</td><td><code>AnkleA2B_A_R (1)</code><br><small>shin</small></td>
+<td><a href="img/32_6a0fcb1626.png"><img src="img/32_6a0fcb1626.png"></a></td>
+<td>11.9220</td><td style="background:#8ebee8">2.7068</td>
+<td><b>32.27</b><br><span class="al">AL-32.19</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_R (1)</code></td></tr><tr><td>33</td><td><code>AnkleA2B_A_Support (1)</code><br><small>shin</small></td>
+<td><a href="img/33_dd2495e3e1.png"><img src="img/33_dd2495e3e1.png"></a></td>
+<td>15.1197</td><td style="background:#8ebee8">2.6998</td>
+<td><b>40.82</b><br><span class="al">AL-40.82</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_Support (1)</code></td></tr><tr><td>34</td><td><code>AnkleA2B_A_L (1)</code><br><small>shin</small></td>
+<td><a href="img/34_aca27992e8.png"><img src="img/34_aca27992e8.png"></a></td>
+<td>11.9220</td><td style="background:#8ebee8">2.7068</td>
+<td><b>32.27</b><br><span class="al">AL-32.19</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Knee2Ankle:1::AnkleA2B_A_L (1)</code></td></tr><tr><td>35</td><td><code>HipYaw2Knee_outer</code><br><small>thigh</small></td>
+<td><a href="img/35_44f7c9733a.png"><img src="img/35_44f7c9733a.png"></a></td>
+<td>51.8072</td><td style="background:#eddd8c">0.9022</td>
+<td><b>46.74</b><br><span class="al">AL-139.88</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-high<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipYaw2Knee:1::HipYaw2Knee_outer</code></td></tr><tr><td>36</td><td><code>HipYaw2Knee_Rotor</code><br><small>thigh</small></td>
+<td><a href="img/36_6851e1152a.png"><img src="img/36_6851e1152a.png"></a></td>
+<td>117.4764</td><td style="background:#eede8b">0.8874</td>
+<td><b>104.25</b><br><span class="al">AL-317.19</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipYaw2Knee:1::HipYaw2Knee_Rotor</code></td></tr><tr><td>37</td><td><code>Yaw2KneePlateA</code><br><small>thigh</small></td>
+<td><a href="img/37_bfeaefe1db.png"><img src="img/37_bfeaefe1db.png"></a></td>
+<td>119.2408</td><td style="background:#f1df88">0.8227</td>
+<td><b>98.10</b><br><span class="al">AL-321.95</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-med<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipYaw2Knee:1::Yaw2KneePlateA</code></td></tr><tr><td>38</td><td><code>Yaw2KneePlateB</code><br><small>thigh</small></td>
+<td><a href="img/38_269f43033a.png"><img src="img/38_269f43033a.png"></a></td>
+<td>109.9036</td><td style="background:#eede8b">0.8874</td>
+<td><b>97.53</b><br><span class="al">AL-296.74</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipYaw2Knee:1::Yaw2KneePlateB</code></td></tr><tr><td>39</td><td><code>SupportB</code><br><small>thigh</small></td>
+<td><a href="img/39_507966a585.png"><img src="img/39_507966a585.png"></a></td>
+<td>32.2472</td><td style="background:#eede8b">0.8874</td>
+<td><b>28.62</b><br><span class="al">AL-87.07</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipYaw2Knee:1::SupportB</code></td></tr><tr><td>40</td><td><code>SupportA</code><br><small>thigh</small></td>
+<td><a href="img/40_9d4f5bac15.png"><img src="img/40_9d4f5bac15.png"></a></td>
+<td>39.3926</td><td style="background:#eede8b">0.8874</td>
+<td><b>34.96</b><br><span class="al">AL-106.36</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipYaw2Knee:1::SupportA</code></td></tr><tr><td>41</td><td><code>HipRoll2YawA</code><br><small>hip_roll_link</small></td>
+<td><a href="img/41_bfb379bb10.png"><img src="img/41_bfb379bb10.png"></a></td>
+<td>61.2828</td><td style="background:#f3df86">0.7927</td>
+<td><b>48.58</b><br><span class="al">AL-165.46</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-med<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2YawA</code></td></tr><tr><td>42</td><td><code>HipRoll2YawB</code><br><small>hip_roll_link</small></td>
+<td><a href="img/42_e84820f8dd.png"><img src="img/42_e84820f8dd.png"></a></td>
+<td>50.1852</td><td style="background:#eede8b">0.8874</td>
+<td><b>44.53</b><br><span class="al">AL-135.50</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2YawB</code></td></tr><tr><td>43</td><td><code>HipRoll2Yaw_Mount</code><br><small>hip_roll_link</small></td>
+<td><a href="img/43_1688d3377e.png"><img src="img/43_1688d3377e.png"></a></td>
+<td>60.9674</td><td style="background:#e3da96">1.0989</td>
+<td><b>67.00</b><br><span class="al">AL-164.61</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-med<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipRoll2Yaw:1::HipRoll2Yaw_Mount</code></td></tr><tr><td>44</td><td><code>Body4</code><br><small>hip_roll_link</small></td>
+<td><a href="img/44_8354305be8.png"><img src="img/44_8354305be8.png"></a></td>
+<td>14.5440</td><td style="background:#ecdd8d">0.9213</td>
+<td><b>13.40</b><br><span class="al">AL-39.27</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>measured-med<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipRoll2Yaw:1::Body4</code></td></tr><tr><td>45</td><td><code>HipPitchFlange</code><br><small>hip_pitch_link</small></td>
+<td><a href="img/45_3f5faf58b9.png"><img src="img/45_3f5faf58b9.png"></a></td>
+<td>39.6169</td><td style="background:#eede8b">0.8874</td>
+<td><b>35.16</b><br><span class="al">AL-106.97</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipPitch2Roll:1::HipPitchFlange</code></td></tr><tr><td>46</td><td><code>HipPitchRotor</code><br><small>hip_pitch_link</small></td>
+<td><a href="img/46_e8315ff309.png"><img src="img/46_e8315ff309.png"></a></td>
+<td>73.7779</td><td style="background:#eede8b">0.8874</td>
+<td><b>65.47</b><br><span class="al">AL-199.20</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipPitch2Roll:1::HipPitchRotor</code></td></tr><tr><td>47</td><td><code>HipPitch2Roll_A</code><br><small>hip_pitch_link</small></td>
+<td><a href="img/47_5c8fd8d339.png"><img src="img/47_5c8fd8d339.png"></a></td>
+<td>47.4683</td><td style="background:#eede8b">0.8874</td>
+<td><b>42.12</b><br><span class="al">AL-128.16</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipPitch2Roll:1::HipPitch2Roll_A</code></td></tr><tr><td>48</td><td><code>HipPitch2Roll_B</code><br><small>hip_pitch_link</small></td>
+<td><a href="img/48_a2fc2b8423.png"><img src="img/48_a2fc2b8423.png"></a></td>
+<td>54.8067</td><td style="background:#eede8b">0.8874</td>
+<td><b>48.64</b><br><span class="al">AL-147.98</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/HipPitch2Roll:1::HipPitch2Roll_B</code></td></tr><tr><td>49</td><td><code>BaseLink_Bottom_A</code><br><small>pelvis</small></td>
+<td><a href="img/49_f36357e1ce.png"><img src="img/49_f36357e1ce.png"></a></td>
+<td>72.5133</td><td style="background:#eede8b">0.8874</td>
+<td><b>64.35</b><br><span class="al">AL-195.79</span></td>
+<td>×1<br><small>center body</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/CenterParts:1::BaseLink_Bottom_A</code></td></tr><tr><td>50</td><td><code>BaseLink_Bottom_B</code><br><small>pelvis</small></td>
+<td><a href="img/50_7acbafe835.png"><img src="img/50_7acbafe835.png"></a></td>
+<td>72.3246</td><td style="background:#eede8b">0.8874</td>
+<td><b>64.18</b><br><span class="al">AL-195.28</span></td>
+<td>×1<br><small>center body</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/CenterParts:1::BaseLink_Bottom_B</code></td></tr><tr><td>51</td><td><code>Baselink_Connect_Fr</code><br><small>pelvis</small></td>
+<td><a href="img/51_def276ca27.png"><img src="img/51_def276ca27.png"></a></td>
+<td>37.1166</td><td style="background:#eede8b">0.8874</td>
+<td><b>32.94</b><br><span class="al">AL-100.21</span></td>
+<td>×1<br><small>center body</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/CenterParts:1::Baselink_Connect_Fr</code></td></tr><tr><td>52</td><td><code>Baselink_Connect_Ba</code><br><small>pelvis</small></td>
+<td><a href="img/52_09f66fe824.png"><img src="img/52_09f66fe824.png"></a></td>
+<td>37.1166</td><td style="background:#eede8b">0.8874</td>
+<td><b>32.94</b><br><span class="al">AL-100.21</span></td>
+<td>×1<br><small>center body</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/CenterParts:1::Baselink_Connect_Ba</code></td></tr><tr><td>53</td><td><code>Baselink_toWaistYaw</code><br><small>pelvis</small></td>
+<td><a href="img/53_235b6d6c39.png"><img src="img/53_235b6d6c39.png"></a></td>
+<td>71.2567</td><td style="background:#eede8b">0.8874</td>
+<td><b>63.23</b><br><span class="al">AL-192.39</span></td>
+<td>×1<br><small>center body</small></td><td>3D-print effective density</td>
+<td>not in confirmed AL mapping</td><td>confident-mean<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/CenterParts:1::Baselink_toWaistYaw</code></td></tr><tr><td>54</td><td><code>Arm_A</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/54_a9ae3e18da.png"><img src="img/54_a9ae3e18da.png"></a></td>
+<td>20.2813</td><td style="background:#8ebee8">2.7000</td>
+<td><b>54.76</b><br><span class="al">AL-54.76</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Arm_A</code></td></tr><tr><td>55</td><td><code>Arm_B</code><br><small>ANKLE_SPLIT</small></td>
+<td><a href="img/55_ceee2d6f7b.png"><img src="img/55_ceee2d6f7b.png"></a></td>
+<td>14.3611</td><td style="background:#8ebee8">2.8932</td>
+<td><b>41.55</b><br><span class="al">AL-38.77</span></td>
+<td>×2<br><small>one-leg CAD mirrored L/R</small></td><td>prototype-tempmass AL6061</td>
+<td>CONFIRMED-AL</td><td>worksheet AL6061 geometry mass; not a new physical weighing; user-confirmed blue part; one-side CAD placement mirrored L/R<br><small>current v30 cached mesh</small></td>
+<td><code>/Joints_UnderBody:1/Ankle2Feet:1::Arm_B</code></td></tr></tbody></table>

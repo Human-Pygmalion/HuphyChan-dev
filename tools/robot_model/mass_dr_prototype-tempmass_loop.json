@@ -1,0 +1,1244 @@
+{
+ "bodies": "/tmp/pygmalion_prototype-tempmass_bodies.json",
+ "samples": 4000,
+ "sigma": {
+  "printed_measured": 0.03,
+  "printed_mean": 0.1,
+  "printed_common": 0.03,
+  "motor": 0.02,
+  "bearing": 0.02,
+  "fastener": 0.02,
+  "aluminium": 0.02
+ },
+ "struct": {
+  "mass_floor": 0.05,
+  "com_floor_m": 0.005,
+  "trunk_mass_extra": 0.1,
+  "trunk_com_floor_m": 0.02,
+  "d_cap": 0.02
+ },
+ "links": {
+  "pelvis": {
+   "mass_kg": 4.840512000000003,
+   "n_bodies": 130,
+   "classes": {
+    "fastener": 69,
+    "bearing": 53,
+    "printed_mean": 5,
+    "motor": 3
+   },
+   "mass_scale": {
+    "p2_5": 0.9795515132126551,
+    "p50": 1.0001546202202327,
+    "p97_5": 1.0208020946431324,
+    "sd": 0.010619736550371605
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.00012318546832410356,
+     -0.00047925294652212093,
+     -0.0009109239994090843
+    ],
+    "p97_5": [
+     0.00012601084573564378,
+     0.00048028392563526166,
+     0.0009160811930868168
+    ],
+    "sd": [
+     6.346946416869724e-05,
+     0.00024614832406012933,
+     0.0004649385366438048
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.980336187436268,
+     0.9782862248058504,
+     0.9785327950650926
+    ],
+    "p97_5": [
+     1.019715382875691,
+     1.021691806140902,
+     1.02154808365546
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9959009602728361,
+     0.9938722680816814,
+     0.9941089702979783
+    ],
+    "p97_5": [
+     1.0040144889634777,
+     1.0057224035679453,
+     1.0055837523143907
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0103,
+     0.0103
+    ],
+    "t1_range": [
+     -0.0001,
+     0.0001
+    ],
+    "t2_range": [
+     -0.0005,
+     0.0005
+    ],
+    "t3_range": [
+     -0.0009,
+     0.0009
+    ],
+    "d_range": [
+     -0.0031,
+     0.0029
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0699
+    ],
+    "t1_range": [
+     -0.02,
+     0.02
+    ],
+    "t2_range": [
+     -0.02,
+     0.02
+    ],
+    "t3_range": [
+     -0.02,
+     0.02
+    ],
+    "d_range": [
+     -0.0031,
+     0.0031
+    ],
+    "mass_scale": [
+     0.95,
+     1.15
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.02,
+      0.02
+     ],
+     "y": [
+      -0.02,
+      0.02
+     ],
+     "z": [
+      -0.0201,
+      0.0201
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "hip_pitch_link": {
+   "mass_kg": 1.782904,
+   "n_bodies": 54,
+   "classes": {
+    "fastener": 48,
+    "bearing": 1,
+    "printed_mean": 4,
+    "motor": 1
+   },
+   "mass_scale": {
+    "p2_5": 0.966558063852095,
+    "p50": 0.9998464762108938,
+    "p97_5": 1.0337176089182276,
+    "sd": 0.017086256112533532
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.00022301288884979975,
+     -0.0005285325519380617,
+     -7.773135885928966e-05
+    ],
+    "p97_5": [
+     0.00022531261814094563,
+     0.0005228149691642611,
+     7.828280099824757e-05
+    ],
+    "sd": [
+     0.00011518268055831489,
+     0.00026739641337184325,
+     3.9470595974843715e-05
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9666989761036565,
+     0.9656295582173733,
+     0.9663527376564746
+    ],
+    "p97_5": [
+     1.0340807119351052,
+     1.0371440329855783,
+     1.035444424222804
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9922381854554335,
+     0.9848106936150881,
+     0.9904881998696835
+    ],
+    "p97_5": [
+     1.0080477632915743,
+     1.015166914594009,
+     1.0093407302958946
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.017,
+     0.0166
+    ],
+    "t1_range": [
+     -0.0002,
+     0.0002
+    ],
+    "t2_range": [
+     -0.0005,
+     0.0005
+    ],
+    "t3_range": [
+     -0.0001,
+     0.0001
+    ],
+    "d_range": [
+     -0.0077,
+     0.0075
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.0077,
+     0.0077
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.005,
+      0.005
+     ],
+     "y": [
+      -0.0051,
+      0.0051
+     ],
+     "z": [
+      -0.005,
+      0.005
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "hip_roll_link": {
+   "mass_kg": 1.286795,
+   "n_bodies": 36,
+   "classes": {
+    "fastener": 30,
+    "bearing": 1,
+    "printed_measured": 3,
+    "printed_mean": 1,
+    "motor": 1
+   },
+   "mass_scale": {
+    "p2_5": 0.9707307952644293,
+    "p50": 1.0003116911404297,
+    "p97_5": 1.0284526849951567,
+    "sd": 0.014803830127662208
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.00026237509197152173,
+     -6.636277034047957e-05,
+     -0.0009451775097343128
+    ],
+    "p97_5": [
+     0.00027325027858158716,
+     6.349240532541778e-05,
+     0.0009662009204604348
+    ],
+    "sd": [
+     0.00013826378041827724,
+     3.344846596734397e-05,
+     0.00048425204328459727
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9698900349548071,
+     0.9607641081526979,
+     0.9580391585039149
+    ],
+    "p97_5": [
+     1.0286265458007997,
+     1.0391139735604973,
+     1.04164698873962
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.991429357815521,
+     0.9697661112107252,
+     0.967015992252259
+    ],
+    "p97_5": [
+     1.0077360327744882,
+     1.0312998130023405,
+     1.03459920674511
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0149,
+     0.014
+    ],
+    "t1_range": [
+     -0.0003,
+     0.0003
+    ],
+    "t2_range": [
+     -0.0001,
+     0.0001
+    ],
+    "t3_range": [
+     -0.0009,
+     0.001
+    ],
+    "d_range": [
+     -0.0168,
+     0.017
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.017,
+     0.017
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.005,
+      0.005
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.0071,
+      0.0071
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "thigh": {
+   "mass_kg": 2.0703639999999996,
+   "n_bodies": 83,
+   "classes": {
+    "fastener": 72,
+    "bearing": 1,
+    "aluminium": 3,
+    "printed_measured": 2,
+    "printed_mean": 4,
+    "motor": 1
+   },
+   "mass_scale": {
+    "p2_5": 0.9664439268815268,
+    "p50": 0.9995671476064603,
+    "p97_5": 1.0333132810530306,
+    "sd": 0.01688021641144059
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.0005893109743383784,
+     -0.00028456998110349335,
+     -0.0022848592141114367
+    ],
+    "p97_5": [
+     0.0005870935399364821,
+     0.00028490311642741066,
+     0.0022139780953400663
+    ],
+    "sd": [
+     0.0003031206490274172,
+     0.00014609416222505494,
+     0.001151688462557932
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9676509291544592,
+     0.9434040723171727,
+     0.9467599612804964
+    ],
+    "p97_5": [
+     1.0324108065386548,
+     1.055791714774751,
+     1.052652350145184
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9919774991353214,
+     0.9553427700949056,
+     0.9601288820704185
+    ],
+    "p97_5": [
+     1.0079530629653535,
+     1.0411278164813884,
+     1.03699062903942
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0171,
+     0.0164
+    ],
+    "t1_range": [
+     -0.0006,
+     0.0006
+    ],
+    "t2_range": [
+     -0.0003,
+     0.0003
+    ],
+    "t3_range": [
+     -0.0023,
+     0.0022
+    ],
+    "d_range": [
+     -0.0228,
+     0.0202
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.0149,
+     0.0149
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.0055,
+      0.0055
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.01,
+      0.01
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "shin": {
+   "mass_kg": 2.6227040000000015,
+   "n_bodies": 122,
+   "classes": {
+    "fastener": 103,
+    "aluminium": 6,
+    "printed_measured": 3,
+    "printed_mean": 8,
+    "motor": 2
+   },
+   "mass_scale": {
+    "p2_5": 0.9785273042594389,
+    "p50": 1.0001119810481844,
+    "p97_5": 1.0216900050463216,
+    "sd": 0.010875596325066062
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.00016086729886439813,
+     -0.00018835045613010946,
+     -0.0014495973965328263
+    ],
+    "p97_5": [
+     0.0001637663966452742,
+     0.00018124073104632682,
+     0.0014531204991118586
+    ],
+    "sd": [
+     8.340703665558868e-05,
+     9.533710372184479e-05,
+     0.0007465937634517027
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9804169246075571,
+     0.9605044978921325,
+     0.9620988093331557
+    ],
+    "p97_5": [
+     1.0192233405787834,
+     1.0396408789011025,
+     1.0380666291910312
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.994593562543208,
+     0.9699209740000795,
+     0.971612556059308
+    ],
+    "p97_5": [
+     1.005501538465439,
+     1.0307930293079561,
+     1.0289108868025094
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0109,
+     0.0107
+    ],
+    "t1_range": [
+     -0.0002,
+     0.0002
+    ],
+    "t2_range": [
+     -0.0002,
+     0.0002
+    ],
+    "t3_range": [
+     -0.0014,
+     0.0015
+    ],
+    "d_range": [
+     -0.0153,
+     0.0152
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.0153,
+     0.0153
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.0054,
+      0.0054
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.0086,
+      0.0086
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "ankle_pitch_link": {
+   "mass_kg": 0.040015999999999996,
+   "n_bodies": 3,
+   "classes": {
+    "bearing": 2,
+    "printed_mean": 1
+   },
+   "mass_scale": {
+    "p2_5": 0.8842850641294642,
+    "p50": 0.9989565971587305,
+    "p97_5": 1.1139392745451195,
+    "sd": 0.058447009892268705
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -2.842170943040401e-17,
+     -0.00028889434217292307,
+     -1.1368683772161603e-16
+    ],
+    "p97_5": [
+     2.842170943040401e-17,
+     0.00027265424890017054,
+     1.1368683772161603e-16
+    ],
+    "sd": [
+     1.5856217669204936e-17,
+     0.00014380992375213783,
+     8.307505713848318e-17
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.8634600094726694,
+     0.9353442695754633,
+     0.9320085872586864
+    ],
+    "p97_5": [
+     1.1362009089692675,
+     1.0632135155458369,
+     1.0669401837536865
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9752408094155399,
+     0.9524810476283466,
+     0.9556455312971478
+    ],
+    "p97_5": [
+     1.0197462708594134,
+     1.0595524775029046,
+     1.05558496146248
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0615,
+     0.054
+    ],
+    "t1_range": [
+     -0.0,
+     0.0
+    ],
+    "t2_range": [
+     -0.0003,
+     0.0003
+    ],
+    "t3_range": [
+     -0.0,
+     0.0
+    ],
+    "d_range": [
+     -0.0243,
+     0.0289
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0615,
+     0.054
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.02,
+     0.02
+    ],
+    "mass_scale": [
+     0.884,
+     1.114
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.005,
+      0.005
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.005,
+      0.005
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "foot": {
+   "mass_kg": 0.8068249999999999,
+   "n_bodies": 17,
+   "classes": {
+    "aluminium": 1,
+    "fastener": 6,
+    "bearing": 4,
+    "printed_mean": 6
+   },
+   "mass_scale": {
+    "p2_5": 0.9679858460082161,
+    "p50": 1.0000159631025736,
+    "p97_5": 1.03197335676082,
+    "sd": 0.016312236991562746
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.0009724550581208324,
+     -3.465216347570034e-05,
+     -0.00037578179614333176
+    ],
+    "p97_5": [
+     0.000916124016179623,
+     3.260031433777649e-05,
+     0.0004109982209620427
+    ],
+    "sd": [
+     0.0004831056609794674,
+     1.7038874284244107e-05,
+     0.00020221390778458434
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9615017530845258,
+     0.9652171081675265,
+     0.964622617522317
+    ],
+    "p97_5": [
+     1.0372576950748449,
+     1.03395950520315,
+     1.0350507586423547
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9781470032941895,
+     0.9933564111831883,
+     0.993514880730291
+    ],
+    "p97_5": [
+     1.0213089836260498,
+     1.0061930934673897,
+     1.0058236905358366
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0163,
+     0.0157
+    ],
+    "t1_range": [
+     -0.001,
+     0.0009
+    ],
+    "t2_range": [
+     -0.0,
+     0.0
+    ],
+    "t3_range": [
+     -0.0004,
+     0.0004
+    ],
+    "d_range": [
+     -0.011,
+     0.0105
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.011,
+     0.011
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.0054,
+      0.0054
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.0053,
+      0.0053
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "torso": {
+   "mass_kg": 5.869732000000001,
+   "n_bodies": 25,
+   "classes": {
+    "aluminium": 20,
+    "fastener": 1,
+    "motor": 4
+   },
+   "mass_scale": {
+    "p2_5": 0.9856770772172784,
+    "p50": 1.0002460162693603,
+    "p97_5": 1.0144810474138206,
+    "sd": 0.007387429499231883
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.00021905155795120274,
+     -0.0009914449353308444,
+     -0.0013875496766710257
+    ],
+    "p97_5": [
+     0.00023016116525946165,
+     0.0009522724010218582,
+     0.0014708268161340388
+    ],
+    "sd": [
+     0.0001130703817102282,
+     0.0005002890916652854,
+     0.0007256632634456633
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9810157772770939,
+     0.9874795460194046,
+     0.9872932614048731
+    ],
+    "p97_5": [
+     1.0191368180395253,
+     1.0130480576828458,
+     1.0125962690622317
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9875219640253767,
+     0.9918793245613926,
+     0.9941623168095446
+    ],
+    "p97_5": [
+     1.0125242870593565,
+     1.008341851763843,
+     1.005873738397949
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0072,
+     0.0072
+    ],
+    "t1_range": [
+     -0.0002,
+     0.0002
+    ],
+    "t2_range": [
+     -0.001,
+     0.001
+    ],
+    "t3_range": [
+     -0.0014,
+     0.0015
+    ],
+    "d_range": [
+     -0.0063,
+     0.0062
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0699
+    ],
+    "t1_range": [
+     -0.02,
+     0.02
+    ],
+    "t2_range": [
+     -0.02,
+     0.02
+    ],
+    "t3_range": [
+     -0.02,
+     0.02
+    ],
+    "d_range": [
+     -0.0063,
+     0.0063
+    ],
+    "mass_scale": [
+     0.95,
+     1.15
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.0201,
+      0.0201
+     ],
+     "y": [
+      -0.02,
+      0.02
+     ],
+     "z": [
+      -0.0218,
+      0.0218
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "shoulder_pitch_link": {
+   "mass_kg": 1.6042629999999987,
+   "n_bodies": 91,
+   "classes": {
+    "fastener": 79,
+    "printed_mean": 11,
+    "motor": 1
+   },
+   "mass_scale": {
+    "p2_5": 0.9621385377677762,
+    "p50": 0.9999474876665371,
+    "p97_5": 1.0375569552315922,
+    "sd": 0.019557549569184526
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.0007019853636338715,
+     -0.00028612024088581624,
+     -0.0014417331722470352
+    ],
+    "p97_5": [
+     0.0007348062034275884,
+     0.0002790856805219684,
+     0.001488925209350217
+    ],
+    "sd": [
+     0.0003612573155123471,
+     0.00014437041313311263,
+     0.0007439195747107853
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9620444725137411,
+     0.9481343786118324,
+     0.9541498264755254
+    ],
+    "p97_5": [
+     1.0378589865796028,
+     1.0512370460899532,
+     1.0451365705904145
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9895139404817156,
+     0.9718875654928161,
+     0.9791872581425134
+    ],
+    "p97_5": [
+     1.0102506780037102,
+     1.0262836203615728,
+     1.0197950006427716
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0193,
+     0.0184
+    ],
+    "t1_range": [
+     -0.0007,
+     0.0007
+    ],
+    "t2_range": [
+     -0.0003,
+     0.0003
+    ],
+    "t3_range": [
+     -0.0014,
+     0.0015
+    ],
+    "d_range": [
+     -0.0143,
+     0.013
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.005,
+     0.005
+    ],
+    "d_range": [
+     -0.0143,
+     0.0143
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.0051,
+      0.0051
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.0053,
+      0.0053
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  },
+  "arm": {
+   "mass_kg": 0.44941599999999987,
+   "n_bodies": 7,
+   "classes": {
+    "aluminium": 1,
+    "fastener": 4,
+    "bearing": 1,
+    "printed_mean": 1
+   },
+   "mass_scale": {
+    "p2_5": 0.9517202138182886,
+    "p50": 1.000221232842517,
+    "p97_5": 1.0478544605366173,
+    "sd": 0.02447493545984816
+   },
+   "com_shift_m": {
+    "p2_5": [
+     -0.0003178068351918071,
+     -5.684341886080802e-17,
+     -0.010176450864509261
+    ],
+    "p97_5": [
+     0.00029074305836834216,
+     5.684341886080802e-17,
+     0.010688584738152374
+    ],
+    "sd": [
+     0.00015399851824850745,
+     3.040308581136492e-17,
+     0.005310210736488888
+    ]
+   },
+   "inertia_scale": {
+    "p2_5": [
+     0.9436331326228349,
+     0.937913065780183,
+     0.9379960677435537
+    ],
+    "p97_5": [
+     1.0561317109255093,
+     1.058115581761874,
+     1.05801071440323
+    ]
+   },
+   "inertia_shape_residual": {
+    "p2_5": [
+     0.9795015809208159,
+     0.9773046934526118,
+     0.9773893012504473
+    ],
+    "p97_5": [
+     1.0201464435936405,
+     1.0200258483573565,
+     1.0199567070546849
+    ]
+   },
+   "mjlab_pseudo_inertia_measured": {
+    "alpha_range": [
+     -0.0247,
+     0.0234
+    ],
+    "t1_range": [
+     -0.0003,
+     0.0003
+    ],
+    "t2_range": [
+     -0.0,
+     0.0
+    ],
+    "t3_range": [
+     -0.0102,
+     0.0107
+    ],
+    "d_range": [
+     -0.0115,
+     0.01
+    ]
+   },
+   "mjlab_pseudo_inertia_recommended": {
+    "alpha_range": [
+     -0.0256,
+     0.0244
+    ],
+    "t1_range": [
+     -0.005,
+     0.005
+    ],
+    "t2_range": [
+     -0.005,
+     0.005
+    ],
+    "t3_range": [
+     -0.0102,
+     0.0107
+    ],
+    "d_range": [
+     -0.0115,
+     0.0115
+    ],
+    "mass_scale": [
+     0.95,
+     1.05
+    ],
+    "com_effective_m": {
+     "x": [
+      -0.0051,
+      0.0051
+     ],
+     "y": [
+      -0.005,
+      0.005
+     ],
+     "z": [
+      -0.0145,
+      0.015
+     ],
+     "note": "t plus the COM excursion d causes about the body origin"
+    },
+    "note": "alpha: mass & inertia x e^(2a); t: COM shift [m] in the body frame; d is the residual inertia shape factor and ALSO stretches the COM about the body origin, so it is capped small"
+   }
+  }
+ },
+ "mjlab_body_names": {
+  "pelvis": "base_link",
+  "hip_pitch_link": "hip_pitch_link",
+  "hip_roll_link": "hip_roll_link",
+  "thigh": "thigh_link",
+  "shin": "shin_link",
+  "ankle_pitch_link": "ankle_pitch_link",
+  "foot": "foot_link",
+  "torso": "torso_link",
+  "shoulder_pitch_link": "shoulder_pitch_link",
+  "arm": "arm_link"
+ }
+}

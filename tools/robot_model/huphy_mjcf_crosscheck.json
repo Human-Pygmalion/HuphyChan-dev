@@ -1,0 +1,290 @@
+{
+  "schema": "pygmalion-independent-mjcf-crosscheck-v1",
+  "ours": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+  "reference": "/tmp/pygmalion-crosscheck-20260902/huphy_mjcf/assets/huphy.xml",
+  "reference_repository": "https://github.com/Human-Pygmalion/huphy_mjcf",
+  "reference_commit": "8fa92beae31d787724facd3e9206b1ffb29e53db",
+  "frame_transform": {
+    "point_m": "[0.070-y_ref, x_ref, z_ref-0.060]",
+    "direction": "[-y_ref, x_ref, z_ref]",
+    "side_map": {
+      "reference_R": "ours_L",
+      "reference_L": "ours_R"
+    }
+  },
+  "scope": {
+    "validated": "hip pitch/roll/yaw and knee hinge axis lines at neutral",
+    "not_validated": "2-RSU crank A/B topology, motor IDs, offsets, or hardware signs"
+  },
+  "joints": {
+    "L_hip_pitch_joint": {
+      "reference_joint": "R_hip_pitch",
+      "ours_anchor_mm": [
+        0.0,
+        -123.7,
+        0.0
+      ],
+      "reference_anchor_transformed_mm": [
+        0.0,
+        -53.0,
+        0.0
+      ],
+      "ours_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "reference_axis_transformed": [
+        0.0,
+        -1.0,
+        -0.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.0,
+      "reference_motor_gear": -1.0,
+      "reference_motor_plus_axis_transformed": [
+        -0.0,
+        1.0,
+        0.0
+      ],
+      "raw_to_model_sign_candidate": 1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "L_hip_roll_joint": {
+      "reference_joint": "R_hip_roll",
+      "ours_anchor_mm": [
+        0.0,
+        -123.7,
+        0.0
+      ],
+      "reference_anchor_transformed_mm": [
+        26.75,
+        -123.5,
+        0.0
+      ],
+      "ours_axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "reference_axis_transformed": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.2,
+      "reference_motor_gear": 1.0,
+      "reference_motor_plus_axis_transformed": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "raw_to_model_sign_candidate": -1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "L_hip_yaw_joint": {
+      "reference_joint": "R_hip_yaw",
+      "ours_anchor_mm": [
+        0.0,
+        -123.7,
+        0.0
+      ],
+      "reference_anchor_transformed_mm": [
+        0.0,
+        -123.5,
+        -157.0
+      ],
+      "ours_axis": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "reference_axis_transformed": [
+        -0.0,
+        0.0,
+        1.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.2,
+      "reference_motor_gear": 1.0,
+      "reference_motor_plus_axis_transformed": [
+        -0.0,
+        0.0,
+        1.0
+      ],
+      "raw_to_model_sign_candidate": -1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "L_knee_joint": {
+      "reference_joint": "R_knee",
+      "ours_anchor_mm": [
+        -45.0,
+        -123.7,
+        -370.0
+      ],
+      "reference_anchor_transformed_mm": [
+        -45.0,
+        -95.95,
+        -370.0
+      ],
+      "ours_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "reference_axis_transformed": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.0,
+      "reference_motor_gear": -1.0,
+      "reference_motor_plus_axis_transformed": [
+        0.0,
+        1.0,
+        -0.0
+      ],
+      "raw_to_model_sign_candidate": -1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "R_hip_pitch_joint": {
+      "reference_joint": "L_hip_pitch",
+      "ours_anchor_mm": [
+        0.0,
+        123.7,
+        0.0
+      ],
+      "reference_anchor_transformed_mm": [
+        0.0,
+        53.2,
+        0.0
+      ],
+      "ours_axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "reference_axis_transformed": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.0,
+      "reference_motor_gear": 1.0,
+      "reference_motor_plus_axis_transformed": [
+        -0.0,
+        -1.0,
+        0.0
+      ],
+      "raw_to_model_sign_candidate": -1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "R_hip_roll_joint": {
+      "reference_joint": "L_hip_roll",
+      "ours_anchor_mm": [
+        0.0,
+        123.7,
+        0.0
+      ],
+      "reference_anchor_transformed_mm": [
+        -27.55,
+        123.7,
+        0.0
+      ],
+      "ours_axis": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "reference_axis_transformed": [
+        1.0,
+        0.0,
+        -0.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.0,
+      "reference_motor_gear": -1.0,
+      "reference_motor_plus_axis_transformed": [
+        -1.0,
+        -0.0,
+        0.0
+      ],
+      "raw_to_model_sign_candidate": 1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "R_hip_yaw_joint": {
+      "reference_joint": "L_hip_yaw",
+      "ours_anchor_mm": [
+        0.0,
+        123.7,
+        0.0
+      ],
+      "reference_anchor_transformed_mm": [
+        -0.8,
+        123.7,
+        -157.0
+      ],
+      "ours_axis": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "reference_axis_transformed": [
+        -0.0,
+        0.0,
+        -1.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.8,
+      "reference_motor_gear": -1.0,
+      "reference_motor_plus_axis_transformed": [
+        0.0,
+        -0.0,
+        1.0
+      ],
+      "raw_to_model_sign_candidate": -1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    },
+    "R_knee_joint": {
+      "reference_joint": "L_knee",
+      "ours_anchor_mm": [
+        -45.0,
+        123.7,
+        -370.0
+      ],
+      "reference_anchor_transformed_mm": [
+        -45.8,
+        150.45,
+        -370.0
+      ],
+      "ours_axis": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "reference_axis_transformed": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "axis_abs_dot": 1.0,
+      "axis_line_perpendicular_distance_mm": 0.8,
+      "reference_motor_gear": 1.0,
+      "reference_motor_plus_axis_transformed": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "raw_to_model_sign_candidate": 1,
+      "sign_evidence": "independent MJCF gear; raw hardware log provenance not committed"
+    }
+  },
+  "verdict": {
+    "axis_lines": "PASS",
+    "max_perpendicular_distance_mm": 0.8,
+    "motor_signs": "PROVISIONAL_CROSSCHECK_ONLY"
+  }
+}

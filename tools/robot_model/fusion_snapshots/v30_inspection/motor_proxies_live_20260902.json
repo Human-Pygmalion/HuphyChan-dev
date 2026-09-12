@@ -1,0 +1,266 @@
+{
+ "ankle_b_rs03": {
+  "occurrence": "Robstride RS03 - Ankle_A (1):1",
+  "family": "RS03",
+  "joint": "ankle_b",
+  "link": "shin",
+  "com": [
+   -125.418,
+   144.945,
+   -500.034
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "r": 49.5,
+  "len": 56.6,
+  "mass_kg": 0.88,
+  "box_mm": [
+   56.6,
+   98.6,
+   99.6
+  ]
+ },
+ "ankle_a_rs03": {
+  "occurrence": "Robstride RS03 - Ankle_A:3",
+  "family": "RS03",
+  "joint": "ankle_a",
+  "link": "shin",
+  "com": [
+   -121.983,
+   145.055,
+   -600.034
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "r": 49.5,
+  "len": 56.6,
+  "mass_kg": 0.88,
+  "box_mm": [
+   56.6,
+   98.6,
+   99.6
+  ]
+ },
+ "hip_yaw_rs03": {
+  "occurrence": "Robstride RS03 - Hip_Y:4",
+  "family": "RS03",
+  "joint": "hip_yaw",
+  "link": "hip_roll_link",
+  "com": [
+   -123.666,
+   69.945,
+   -73.033
+  ],
+  "axis": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "r": 49.5,
+  "len": 56.6,
+  "mass_kg": 0.88,
+  "box_mm": [
+   99.6,
+   98.6,
+   56.6
+  ]
+ },
+ "hip_roll_rs04": {
+  "occurrence": "Robstride RS04 - Hip_P:5",
+  "family": "RS04",
+  "joint": "hip_roll",
+  "link": "hip_pitch_link",
+  "com": [
+   -123.086,
+   66.825,
+   60.492
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "r": 60.0,
+  "len": 55.7,
+  "mass_kg": 1.42,
+  "box_mm": [
+   161.8,
+   55.7,
+   161.8
+  ]
+ },
+ "hip_pitch_rs04": {
+  "occurrence": "Robstride RS04 - Hip_R:1",
+  "family": "RS04",
+  "joint": "hip_pitch",
+  "link": "pelvis",
+  "com": [
+   -29.625,
+   69.347,
+   59.563
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "r": 60.0,
+  "len": 55.7,
+  "mass_kg": 1.42,
+  "box_mm": [
+   55.7,
+   120.0,
+   120.0
+  ]
+ },
+ "knee_rs04": {
+  "occurrence": "Robstride RS04 - Knee_P:1",
+  "family": "RS04",
+  "joint": "knee",
+  "link": "thigh",
+  "com": [
+   -126.876,
+   114.948,
+   -309.216
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "r": 60.0,
+  "len": 55.7,
+  "mass_kg": 1.42,
+  "box_mm": [
+   55.7,
+   120.0,
+   120.0
+  ]
+ },
+ "waist_yaw_rs04": {
+  "occurrence": "Robstride RS04 - Waist_Yaw:1",
+  "family": "RS04",
+  "joint": "waist_yaw",
+  "link": "pelvis",
+  "com": [
+   0.577,
+   69.466,
+   153.925
+  ],
+  "axis": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "r": 60.0,
+  "len": 55.7,
+  "mass_kg": 1.42,
+  "box_mm": [
+   167.6,
+   167.6,
+   55.7
+  ]
+ },
+ "shoulder_pitch_rs03": {
+  "occurrence": "Robstride RS03 - Shoulder_Pitch:1",
+  "family": "RS03",
+  "joint": "shoulder_pitch",
+  "link": "torso",
+  "com": [
+   -116.033,
+   85.055,
+   540.034
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "r": 49.5,
+  "len": 56.6,
+  "mass_kg": 0.88,
+  "box_mm": [
+   56.6,
+   98.6,
+   99.6
+  ]
+ },
+ "shoulder_roll_rs03": {
+  "occurrence": "Robstride RS03 - Shoulder_Roll:1",
+  "family": "RS03",
+  "joint": "shoulder_roll",
+  "link": "shoulder_pitch_link",
+  "com": [
+   -200.055,
+   86.717,
+   540.034
+  ],
+  "axis": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "r": 49.5,
+  "len": 56.6,
+  "mass_kg": 0.88,
+  "box_mm": [
+   98.6,
+   56.7,
+   99.6
+  ]
+ },
+ "neck_pitch_rs00": {
+  "occurrence": "Robstride RS00 - Neck_Pitch:1",
+  "family": "RS00",
+  "joint": "neck_pitch",
+  "link": "torso",
+  "com": [
+   -2.111,
+   75.0,
+   657.0
+  ],
+  "axis": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "r": 28.5,
+  "len": 51.4,
+  "mass_kg": 0.31,
+  "box_mm": [
+   51.4,
+   80.6,
+   80.6
+  ]
+ },
+ "neck_yaw_rs02": {
+  "occurrence": "Robstride RS02 - Neck_Yaw:1",
+  "family": "RS02",
+  "joint": "neck_yaw",
+  "link": "torso",
+  "com": [
+   0.017,
+   75.0,
+   597.325
+  ],
+  "axis": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "r": 41.8,
+  "len": 45.4,
+  "mass_kg": 0.38,
+  "box_mm": [
+   83.6,
+   83.6,
+   45.4
+  ]
+ }
+}

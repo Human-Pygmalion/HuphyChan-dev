@@ -8,6 +8,9 @@
    -1,
    0
   ],
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
   "evidence": "rotor face plane y=+43.25 mm, 3 dowel pins protruding to y=+40.25"
  },
  "RS04 Hip_R (drives HIP PITCH - CAD name is swapped)": {
@@ -19,6 +22,9 @@
    0,
    0
   ],
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
   "evidence": "rotor face plane x=-53.20 mm, 3 dowel pins to x=-56.20, faces laterally outboard"
  },
  "RS03 Hip_Y": {
@@ -30,6 +36,9 @@
    0,
    -1
   ],
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
   "evidence": "rotor face z=-97.00 flush, 3x d4 dowel + 6-hole circle r=15.18, 5 mm running clearance; occurrence flipped 180 deg about Y so the part is installed rotor-down"
  },
  "RS04 Knee_P": {
@@ -41,29 +50,38 @@
    0,
    0
   ],
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
   "evidence": "rotor face x=-150.45 mm, 3 dowel pins to x=-153.45, faces laterally outboard"
  },
- "RS03 Ankle_A lower (crank A)": {
+ "RS03 Ankle_A upper (crank A)": {
   "joint": [
    "L_crank_A_joint"
-  ],
-  "n_root": [
-   -1,
-   0,
-   0
-  ],
-  "evidence": "rotor face x=-145.95 flush, faces laterally outboard; occurrence flipped 180 deg about (1,0,1)"
- },
- "RS03 Ankle_B upper (crank B)": {
-  "joint": [
-   "L_crank_B_joint"
   ],
   "n_root": [
    1,
    0,
    0
   ],
-  "evidence": "rotor face x=-101.45 flush, faces MEDIALLY INBOARD - installed BACK-TO-BACK with its twin"
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
+  "evidence": "user-confirmed A=upper motor (closer to knee), live Fusion occurrence Robstride RS03 - Ankle_A (1):1 at z~-500 mm; rotor face x=-101.45 flush, faces medially inboard"
+ },
+ "RS03 Ankle_B lower (crank B)": {
+  "joint": [
+   "L_crank_B_joint"
+  ],
+  "n_root": [
+   -1,
+   0,
+   0
+  ],
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
+  "evidence": "user-confirmed B=lower motor (closer to ankle), live Fusion occurrence Robstride RS03 - Ankle_A:3 at z~-600 mm; rotor face x=-145.95 flush, faces laterally outboard; CAD component name is stale"
  },
  "RS04 Waist_Yaw": {
   "joint": [
@@ -74,6 +92,9 @@
    0,
    1
   ],
+  "attachment_parity": 1,
+  "physical_side": "CENTER",
+  "side_mapping_verified": true,
   "evidence": "rotor face z=+177.50, 3 dowel pins protruding up to z=+180.50, faces up"
  },
  "RS03 Shoulder_Pitch": {
@@ -85,6 +106,9 @@
    0,
    0
   ],
+  "attachment_parity": 1,
+  "physical_side": "R",
+  "side_mapping_verified": false,
   "evidence": "rotor face x=-140.00 flush, faces laterally outboard; occurrence flipped 180 deg about X"
  },
  "RS03 Shoulder_Roll": {
@@ -96,7 +120,12 @@
    -1,
    0
   ],
+  "attachment_parity": null,
+  "physical_side": "R",
+  "side_mapping_verified": false,
   "evidence": "rotor face y=+62.75 flush"
  },
- "_frame_note": "CAD models ONE leg, at CAD x=-123.7 -> model y=-0.1237. With +X toes and +Z head the right-handed +Y is the robot LEFT, so the bodies named L_ are on the geometric RIGHT and the CAD leg is the model L_ side. Attaching these normals to R_ joints would flip the verdict on every sign-mirrored joint (hip_roll, ankle_roll, shoulder_roll)."
+ "_frame_note": "CAD models ONE leg, at CAD x=-123.7 -> model y=-0.1237. With +X toes and +Z head the right-handed +Y is the robot LEFT, so the bodies named L_ are on the geometric RIGHT and the CAD leg is the model L_ side. Attaching these normals to R_ joints would flip the verdict on every sign-mirrored joint (hip_roll, ankle_roll, shoulder_roll).",
+ "_attachment_gate": "Leg rotor-side contacts were measured by Fusion MCP: HipPitch2Roll, HipRoll2Yaw, HipYaw2Knee, Knee2Ankle, Crank_A and Crank_B are the URDF child side, hence parity +1. Shoulder roll remains unknown.",
+ "_side_gate": "Active CAD is physical LegR/Arm_R, but the current builder emits that unmirrored geometry as L_* at y<0 and the runtime contract treats L_* as CAN-left. Therefore side_mapping_verified=false and signs remain UNKNOWN until one canonical L/R contract is selected."
 }

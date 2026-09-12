@@ -121,3 +121,50 @@ def test_left_and_right_tables_are_mirrors():
     span[s] = (have[0], have[-1])
   assert span["left"][0] == pytest.approx(-span["right"][1])
   assert span["left"][1] == pytest.approx(-span["right"][0])
+
+
+# ── 방식 비교 (2026-09-13, docs/142) ────────────────────────────────────────
+# 드롭다운에 올린 세 방식이 **같은 약속**을 지키는지. 성능이 아니라 계약을 봅니다.
+
+@pytest.fixture(scope="module")
+def strategies():
+  return pytest.importorskip("ankle_clip_strategies")
+
+
+def test_every_strategy_returns_the_same_shape(clipper, strategies):
+  for key in strategies.ORDER:
+    st = strategies.make(key, clipper)
+    st.reset()
+    r = st.clip(62.0, 40.0)
+    assert isinstance(r.a_out, float) and isinstance(r.b_out, float)
+    assert isinstance(r.inside, bool)
+    assert r.stage in r.stages or r.stage == "none"
+
+
+def test_no_clip_really_does_nothing(clipper, strategies):
+  st = strategies.make("none", clipper)
+  r = st.clip(85.0, -85.0)
+  assert r.a_out == 85.0 and r.b_out == -85.0
+  assert not r.inside          # 손을 안 댔으니 당연히 밖이어야 함
+
+
+def test_ours_blocks_where_the_unitree_style_lets_through(clipper, strategies):
+  """구석(A 가 크고 B 가 반대로 큰 자리)에서 갈리는 것이 §1 표의 근거입니다."""
+  ours = strategies.make("ours_pocs", clipper); ours.reset()
+  theirs = strategies.make("unitree_pr", clipper); theirs.reset()
+  leaked = [(a, b) for a in (57.0, 60.0, 63.0, 66.0) for b in (-75.0, -85.0)
+            if not theirs.clip(a, b).inside]
+  assert leaked, "이 구석에서 한 번 자르기가 새는 것이 §1 의 137건 근거입니다"
+  for a, b in leaked:
+    assert ours.clip(a, b).inside, f"우리 방식이 ({a},{b}) 를 놓쳤습니다"
+
+
+def test_booster_caps_force_not_angle(clipper, strategies):
+  """토크 상한이 실제로 걸리고, 그 각도가 상한/세기와 맞는지."""
+  st = strategies.make("booster_torque", clipper)
+  st.reset()
+  st.alpha = 1.0                       # 필터를 빼고 상한만 본다
+  r = st.clip(80.0, 0.0)
+  span = st.tmax / (st.kp * ankle_clip.math.pi / 180.0)
+  assert r.a_out == pytest.approx(span, abs=0.5), "토크 상한이 정한 각도와 다릅니다"
+  assert "torque_cap" in r.stages
