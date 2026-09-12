@@ -1,0 +1,31 @@
+{
+ "base_z": 0.904,
+ "base_z_crouch": {
+  "hip_pitch": 0.175,
+  "knee": 0.35
+ },
+ "pose": "KNEES_BENT (ankle_pitch +0.36, roll 0) re-expressed on LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop - crank axes are mirrored per side on this build, so the v3 numbers do not transfer",
+ "closure_mm": 0.0,
+ "target_deg": {
+  "ankle_pitch": 20.626480624709636,
+  "ankle_roll": 0.0
+ },
+ "joint_pos": {
+  "L_crank_A_joint": 0.2971476369244224,
+  "L_rod_A_u1": -0.3045479632707553,
+  "L_rod_A_u2": -2.462680411231727e-07,
+  "L_crank_B_joint": -0.30121348326727804,
+  "L_rod_B_u1": 0.30356704290556935,
+  "L_rod_B_u2": 3.6498458589126997e-07,
+  "L_ankle_pitch_joint": 0.36001354977514144,
+  "L_ankle_roll_joint": 7.116665700943656e-06,
+  "R_crank_A_joint": -0.2971527724635769,
+  "R_rod_A_u1": 0.30455342859189016,
+  "R_rod_A_u2": -4.843559989691646e-07,
+  "R_crank_B_joint": 0.30120810741648785,
+  "R_rod_B_u1": -0.3035613393171408,
+  "R_rod_B_u2": 7.178303446591513e-07,
+  "R_ankle_pitch_joint": 0.36001338687302376,
+  "R_ankle_roll_joint": 1.3996914962485635e-05
+ }
+}
