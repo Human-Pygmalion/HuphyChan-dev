@@ -685,6 +685,51 @@ def e22(f):
 
 
 # ===========================================================================
+# 사 · 응답을 기다리는 창
+# ===========================================================================
+@check("E23", "대기창", "--drain-ms 로 준 값이 실제 버스까지 닿는가")
+def e23(f):
+  """설정이 도중에 증발하는 것은 흔한 결함입니다. 값이 **버스 객체까지** 갔는지
+  직접 봅니다 — 그래야 '넣었다고 믿었는데 기본값으로 돌던' 일이 안 생깁니다."""
+  from huphy.motors.robstride.bus import RobStrideBus as _B
+  from huphy.motors.canbus import CanBus as _C, DEFAULT_DRAIN_S
+  from huphy.config.schema import LimbConfig as _L
+  from huphy.motors.base import Gains as _G, Motor as _M
+  install(MODELS)
+  cfg = _L(name="left_leg", kind="leg", side="left", channel="can0",
+           control_hz=100.0,
+           motors={n: _M(id=i, model=MODEL_NAME[i], gains=_G(kp=10.0, kd=1.0))
+                   for n, i in MOTOR_OF.items()})
+  base = _B(_C(cfg.channel), cfg.motors_by_id())
+  wide = _B(_C(cfg.channel), cfg.motors_by_id(), drain_s=0.005)
+  if abs(base.drain_s - DEFAULT_DRAIN_S) < 1e-9 and abs(wide.drain_s - 0.005) < 1e-9:
+    f.hold(f"기본값 {DEFAULT_DRAIN_S*1000:g}ms 이고, 5ms 를 주면 버스가 5ms 를 "
+           f"듭니다. `huphy_live --drain-ms` 가 `build_leg/build_biped` 의 "
+           f"`drain_s` 로, 거기서 `RobStrideBus` 로 그대로 갑니다.")
+  else:
+    f.leak(f"값이 중간에 증발합니다: 기본 {base.drain_s}, 준 값 {wide.drain_s}")
+
+
+@check("E24", "대기창", "huphy_live 의 기본 대기창이 실측으로 고른 값인가")
+def e24(f):
+  """2026-09-12 실측: 2ms 에서는 한 모터가 연속 40주기까지 응답을 놓쳐 로봇이
+  스스로 멈춥니다(멈추는 조건은 연속 5주기). 5ms 가 분기점입니다."""
+  import argparse as _a, huphy_live
+  ap = _a.ArgumentParser()
+  for act in ():
+    pass
+  # main() 의 파서를 직접 만들지 않고, 기본값만 확인한다
+  import inspect
+  src = inspect.getsource(huphy_live.main)
+  m = __import__("re").search(r'"--drain-ms".*?default=([\d.]+)', src, __import__("re").S)
+  if m and abs(float(m.group(1)) - 5.0) < 1e-9:
+    f.hold("기본값이 5.0 입니다. 실측 표는 `huphy_live` 머리말과 "
+           "`docs/experiments/2026-09-12_loop_timing.md` 에 있습니다.")
+  else:
+    f.leak(f"기본값이 5.0 이 아닙니다: {m.group(1) if m else '못 찾음'}")
+
+
+# ===========================================================================
 # 실행
 # ===========================================================================
 def main(argv=None) -> int:

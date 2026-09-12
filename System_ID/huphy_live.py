@@ -55,6 +55,31 @@ HUPHY 가 **안 해 주는 것**은 이 파일이 합니다 — 권선 과열 �
 `dict.update` 만 합니다. 통째로 갈아끼우지 않습니다.
 
 
+## 응답을 기다리는 창을 5밀리초로 둔 이유
+
+로봇 프로그램 기본값은 **2밀리초**입니다. 2026-09-12 에 토크 없이 실측해 보니
+그 값에서는 한 모터가 **연속 마흔 주기**까지 응답을 놓칩니다. 로봇 프로그램이
+멈추는 조건이 "한 모터가 연속 다섯 주기 무응답" 이라, 실제로 그것에 걸려 영자세
+유지가 296.5초에서 끊겼습니다.
+
+    창      실제 초당   전부 받은 주기   최악 연속 무응답   다섯을 친 모터
+    2 ms      200.0          0.3%             40           대부분
+    4 ms      200.0         32.8%              5           둘
+    **5 ms**  **199.9**     **55.2%**         **4**        **없음**
+    8 ms      170.6         62.4%              3           없음
+
+5밀리초가 분기점입니다 — 초당 200번을 그대로 지키면서 다섯을 치는 모터가 하나도
+없습니다. 6밀리초 이상은 속도를 잃으면서 얻는 것이 거의 없습니다.
+
+★ **이 숫자는 제어 계산이 없는 상태**입니다. 로봇 프로그램은 매 주기 계산을 하므로
+여유가 이보다 좁습니다. 그리고 5밀리초에서도 주기의 45퍼센트는 모터 하나가 한 주기
+묵은 값을 씁니다 — "패킷로스 없이" 라는 요구를 만족하지는 못합니다. 진짜 해법은
+통신 어댑터 펌웨어 교체이고, 그건 부트로더에 사람 손이 필요해 보류 중입니다
+(`System_ID/FIRMWARE_RUNBOOK.md`).
+
+원본: `docs/experiments/2026-09-12_loop_timing.md`
+
+
 ## 돌리는 법
 
     huphy_live.py --config ~/HUPHY/config/robot_v1.0.yaml --robot
@@ -405,11 +430,14 @@ def build(args):
   from huphy.scripts.bringup import build_biped, build_leg
 
   robot_cfg = load_robot(args.config)
+  drain_s = None if args.drain_ms is None else args.drain_ms / 1000.0
   if args.robot:
-    machine = build_biped(robot_cfg, allow_uncalibrated=args.allow_uncalibrated)
+    machine = build_biped(robot_cfg, allow_uncalibrated=args.allow_uncalibrated,
+                          drain_s=drain_s)
   else:
     machine = build_leg(robot_cfg, args.limb,
-                        allow_uncalibrated=args.allow_uncalibrated)
+                        allow_uncalibrated=args.allow_uncalibrated,
+                        drain_s=drain_s)
   hz = args.hz or getattr(machine, "control_hz", 100.0)
   loop = ControlLoop(machine, hz=hz, mode=Mode.CONTROL)
   return machine, loop, hz
@@ -431,6 +459,9 @@ def main(argv=None) -> int:
   ap.add_argument("--state-to", nargs="*", default=[],
                   help="상태를 보낼 자리. 예: 127.0.0.1:9873 10.8.0.16:9870")
   ap.add_argument("--state-hz", type=float, default=20.0)
+  ap.add_argument("--drain-ms", type=float, default=5.0,
+                  help="응답을 기다리는 창. 로봇 프로그램 기본은 2.0 인데 "
+                       "실측으로 5.0 이 나았습니다 — 아래 주석 참조")
   a = ap.parse_args(argv)
 
   logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
