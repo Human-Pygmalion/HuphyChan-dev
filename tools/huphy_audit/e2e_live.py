@@ -591,6 +591,100 @@ def e18(f):
 
 
 # ===========================================================================
+# 바 · 두 프로세스로 나눈 전 구간 (화면 -> UDP -> 제어 루프 -> 통신선)
+# ===========================================================================
+@check("E19", "두 프로세스", "화면이 UDP 로 보낸 목표가 통신선까지 가는가")
+def e19(f):
+  """사용자 결정(2026-09-12): 화면과 제어 루프를 **두 프로세스**로 나누고 UDP 로 잇는다.
+
+  화면 쪽 어댑터(`RemoteGuard`)에 넣은 목표가 제어 루프의 `LiveTargets` 를 거쳐
+  실제 바이트가 되는지, **중간을 가로채지 않고** 확인한다.
+  """
+  import socket as _s
+  sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)), "System_ID"))
+  from joint_web import RemoteGuard
+  from huphy_live import TargetServer
+
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+
+  probe = _s.socket(_s.AF_INET, _s.SOCK_DGRAM); probe.bind(("127.0.0.1", 0))
+  port = probe.getsockname()[1]; probe.close()
+  server = TargetServer(live, port, token="").start()
+  ui = RemoteGuard(f"127.0.0.1:{port}", arm_token="", allow={"hip_yaw"})
+
+  goal = trimmed("hip_yaw")[1] - SAFETY["command_margin_deg"]
+  reply = ui.local_target("hip_yaw", goal, "")
+  deadline = __import__("time").monotonic() + 2.0
+  while live.rx == 0 and __import__("time").monotonic() < deadline:
+    __import__("time").sleep(0.01)
+  spin(loop, motion, 400, t0=1.0)
+  server.stop()
+  hit = sent_to(motors, MOTOR_OF["hip_yaw"])
+  if not reply.get("ok"):
+    f.leak(f"화면 쪽에서 거부: {reply}")
+  elif live.rx == 0:
+    f.leak("UDP 가 제어 루프에 안 닿았습니다.")
+  elif hit and abs(hit["pos"] - goal) < 0.5:
+    f.hold(f"화면 -> UDP -> 제어 루프 -> 통신선이 이어집니다 "
+           f"(목표 {goal:+.2f}도 -> 나간 값 {hit['pos']:+.2f}도).")
+  else:
+    f.leak(f"통신선까지 못 갔습니다: {hit}")
+
+
+@check("E20", "두 프로세스", "암호가 틀리면 화면 쪽에서 먼저 막는가")
+def e20(f):
+  from joint_web import RemoteGuard
+  ui = RemoteGuard("127.0.0.1:1", arm_token="비밀", allow={"hip_yaw"})
+  bad = ui.local_target("hip_yaw", 5.0, "틀린값")
+  good_blocked = ui.local_target("모르는관절", 5.0, "비밀")
+  if bad.get("ok") is False and ui.stats["bad_token"] == 1 and \
+     good_blocked.get("ok") is False and ui.stats["unknown"] == 1:
+    f.hold("암호가 틀리면 UDP 를 **보내지도 않습니다**. 허락 안 된 이름도 같습니다. "
+           "이 둘은 화면 쪽 일이고, 한계·속도는 로봇 프로그램 몫입니다.")
+  else:
+    f.leak(f"예상과 다릅니다: {bad} / {good_blocked} / {ui.stats}")
+
+
+@check("E21", "두 프로세스", "'힘 빼기' 가 목표를 지금 자리로 묶는가")
+def e21(f):
+  leg, loop, live, motion, motors = build()
+  spin(loop, motion, 3)
+  live.update({"hip_yaw": 10.0})
+  spin(loop, motion, 200)
+  before = sent_to(motors, MOTOR_OF["hip_yaw"])
+  r = live.freeze("hip_yaw")
+  motors.sent.clear()
+  spin(loop, motion, 200, t0=3.0)
+  after = sent_to(motors, MOTOR_OF["hip_yaw"])
+  if r.get("ok") and after and abs(after["pos"] - before["pos"]) < 1.0:
+    f.hold(f"목표가 {r['deg']:+.2f}도에 묶였고, 그 뒤 200주기 동안 "
+           f"{after['pos']:+.2f}도에 머뭅니다. **토크는 안 끊습니다** — "
+           f"끊으면 중력이 끌어내려 화면과 실물이 어긋납니다.")
+  else:
+    f.leak(f"안 묶였습니다: {r} / {before} -> {after}")
+
+
+@check("E22", "두 프로세스", "화면이 통신선을 만지지 않는가 (읽는 곳은 하나여야 한다)")
+def e22(f):
+  """같은 선을 두 프로그램이 각자 읽으면 서로의 응답을 가로챕니다. 원격 모드의
+  화면 어댑터가 CAN 소켓을 아예 안 여는지 본다."""
+  import inspect
+  from joint_web import RemotePoller, RemoteGuard
+  bad = []
+  for cls in (RemotePoller, RemoteGuard):
+    src = inspect.getsource(cls)
+    for token in ("AF_CAN", "CAN_RAW", "socketcan"):
+      if token in src:
+        bad.append(f"{cls.__name__} 에 {token}")
+  if not bad:
+    f.hold("원격 모드의 화면 쪽 두 클래스 어디에도 CAN 소켓이 없습니다. "
+           "통신선을 읽는 것은 제어 루프 하나뿐입니다.")
+  else:
+    f.leak(f"화면이 통신선을 만집니다: {bad}")
+
+
+# ===========================================================================
 # 실행
 # ===========================================================================
 def main(argv=None) -> int:

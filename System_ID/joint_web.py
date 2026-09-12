@@ -193,6 +193,130 @@ class Poller:
     sock.close()
 
 
+# ===========================================================================
+# 원격 어댑터 — 버스를 안 만지고, huphy_live 에서 받아 그리고 huphy_live 로 보낸다
+# ===========================================================================
+class RemotePoller:
+  """`Poller` 와 **같은 모양**이지만 통신선을 만지지 않는다.
+
+  2026-09-12 사용자 결정: 화면과 제어 루프를 **두 프로세스**로 나누고 UDP 로 잇는다.
+  그러면 이 화면은 **통신선을 읽지 않아야** 한다 — 하나의 선을 두 프로그램이 각자
+  읽으면 서로의 응답을 가로채 엉뚱한 값을 집는다.
+
+  `snapshot()` 이 `Poller` 와 같은 것을 돌려주므로 화면 코드는 그대로 돈다.
+  """
+
+  def __init__(self, port: int = 9873):
+    self.port = int(port)
+    self.lock = threading.Lock()
+    self.state = {}
+    self.note = "아직 아무것도 안 받음"
+    self.rx = 0
+    self.last_mono = 0.0
+    self._stop = threading.Event()
+
+  def start(self):
+    threading.Thread(target=self._run, daemon=True).start()
+    time.sleep(0.3)
+    return self
+
+  def stop(self):
+    self._stop.set()
+
+  def _run(self):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("0.0.0.0", self.port))
+    sock.settimeout(0.4)
+    while not self._stop.is_set():
+      try:
+        raw, _ = sock.recvfrom(65535)
+      except (TimeoutError, socket.timeout):
+        continue
+      except OSError:
+        break
+      try:
+        msg = json.loads(raw)
+      except (ValueError, TypeError):
+        continue
+      with self.lock:
+        self.state = {int(k): v for k, v in (msg.get("motors") or {}).items()}
+        self.note = msg.get("note", "")
+        self.rx += 1
+        self.last_mono = time.monotonic()
+    sock.close()
+
+  def snapshot(self):
+    """`Poller.snapshot()` 과 같은 모양. 나이는 **제어 루프가 잰 것**을 그대로 쓴다."""
+    with self.lock:
+      out = {mid: dict(v) for mid, v in self.state.items()}
+      age = round(time.monotonic() - self.last_mono, 2) if self.last_mono else None
+    # 선 하나에 두 프로그램이 붙지 않으므로 버스 통계는 제어 루프 쪽에만 있다.
+    live = age is not None and age < 1.0
+    stat = {"huphy_live": dict(ok=self.rx, miss=0,
+                               leg="연결됨" if live else "안 옴")}
+    return out, stat
+
+
+class RemoteGuard:
+  """`CommandGuard` 와 **같은 모양**이지만 스스로 모터에 안 보낸다.
+
+  암호와 자물쇠는 **여기(화면 쪽)** 가 맡고, 한계·속도·프레임 만들기는 전부
+  `huphy_live` 를 거쳐 로봇 프로그램(HUPHY)이 합니다. 사용자 결정 2026-09-12:
+  *"암호 / UI잠금은 HUPHY 의 클래스 외부 UI 래퍼단에서 처리하는게 맞잖아."*
+  """
+
+  def __init__(self, target: str, arm_token: str = "", allow=()):
+    host, _, port = str(target).partition(":")
+    self.addr = (host, int(port or 9872))
+    self.arm_token = str(arm_token)
+    self.allow = set(allow)
+    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    self.stats = dict(rx=0, bad_token=0, unknown=0, sent=0, send_fail=0)
+    self.note = "아직 명령 없음"
+    self.dry_run = False
+    self.last_rx_any = 0.0
+
+  def local_target(self, name: str, deg: float, token: str) -> dict:
+    if self.arm_token and str(token) != self.arm_token:
+      self.stats["bad_token"] += 1
+      return dict(ok=False, why="암호가 다릅니다")
+    if self.allow and name not in self.allow:
+      self.stats["unknown"] += 1
+      return dict(ok=False, why=f"허락되지 않은 관절입니다: {name}")
+    self.stats["rx"] += 1
+    self.last_rx_any = time.monotonic()
+    try:
+      self.sock.sendto(json.dumps({"name": name, "deg": float(deg),
+                                   "token": self.arm_token}).encode(), self.addr)
+      self.stats["sent"] += 1
+    except OSError:
+      self.stats["send_fail"] += 1
+      return dict(ok=False, why="제어 루프로 못 보냈습니다")
+    self.note = f"{name} 목표 {float(deg):+.2f}도"
+    return dict(ok=True, homing=False)
+
+  def release_by_name(self, name: str, token: str) -> dict:
+    """화면의 '힘 빼기'. 제어 루프에 알린다 — 여기서 직접 끄지 않는다."""
+    del token
+    try:
+      self.sock.sendto(json.dumps({"release": name}).encode(), self.addr)
+    except OSError:
+      return dict(ok=False, why="제어 루프로 못 보냈습니다")
+    return dict(ok=True, released=True)
+
+  def status(self):
+    now = time.monotonic()
+    return dict(dry_run=False, kp=None, kd=None, max_vel_deg_s=None,
+                deadman_s=None, max_temp_c=None, note=self.note,
+                rx_age_s=round(now - self.last_rx_any, 2) if self.last_rx_any else None,
+                needs_token=bool(self.arm_token), stats=dict(self.stats),
+                port=self.addr[1], has_pair_mask=None, remote=True, motors={})
+
+  def start(self):
+    return self
+
+
 PROG_READ_ONLY = 4
 PROG_SLIDER_DRY = 5
 PROG_SLIDER_LIVE = 6
@@ -908,43 +1032,69 @@ def main(argv=None) -> int:
                   help="**정말로 힘을 넣음.** 없으면 계산만 하고 힘은 안 넣음(시험)")
   ap.add_argument("--telemetry", default=None,
                   help="뷰어로도 같은 값을 보냄. 예: 192.168.20.177:9871")
+  # ---- 제어 루프(huphy_live)와 이어 쓰기 --------------------------------
+  # 이 둘을 주면 이 화면은 **통신선을 만지지 않습니다** — 상태는 받아서 그리고,
+  # 명령은 제어 루프로 넘깁니다. 한계·속도·프레임은 전부 그쪽(HUPHY)이 합니다.
+  ap.add_argument("--from-huphy", type=int, default=None, metavar="포트",
+                  help="huphy_live 가 보내는 상태를 받을 포트 (예: 9873). "
+                       "주면 CAN 을 직접 안 읽습니다")
+  ap.add_argument("--to-huphy", default=None, metavar="주소:포트",
+                  help="huphy_live 에 목표를 보낼 자리 (예: 127.0.0.1:9872). "
+                       "주면 cmd_guard 대신 이쪽으로 나갑니다")
   a = ap.parse_args(argv)
+  remote = a.from_huphy is not None or a.to_huphy is not None
 
-  if not os.path.exists(MAP_PATH):
-    raise SystemExit(f"{MAP_PATH} 가 없습니다. 먼저 can_up.py 를 돌리세요")
-  buses = [b for b in json.load(open(MAP_PATH))["buses"] if b.get("motors")]
   conv = json.load(open(CONV_PATH)) if os.path.exists(CONV_PATH) else {}
   if not conv:
     print("시뮬 규약 파일이 없습니다 — 범위 칸이 비어 보입니다", flush=True)
 
-  for b in buses:
-    print(f"  {b['iface']}  {b['leg']}  모터 {b['motors']}")
-  guard = None
-  if a.command:
-    from cmd_guard import CommandGuard
-    mp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ankle_pair_mask.json")
-    pair_mask = json.load(open(mp)) if os.path.exists(mp) else None
-    if pair_mask is None and any("crank" in n for n in a.allow):
-      raise SystemExit("발목을 열려면 ankle_pair_mask.json 이 있어야 합니다 "
-                       "(크랭크 두 개를 한 쌍으로 자르는 지도)")
-    if not a.arm_token:
-      print("  ** 암호 없이 돕니다 — 이 화면에 닿는 사람은 누구나 움직일 수 있습니다. **")
-      print("     바깥에 열어 둔 주소(터널 등)가 있으면 먼저 닫을 것.", flush=True)
-    guard = CommandGuard(
-      allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
-      kp=a.kp, kd=a.kd, max_vel_deg_s=a.max_vel_deg_s,
-      deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live,
-      pair_mask=pair_mask,
-      kp_by=_kv(a.kp_map),
-      limit_by=_kv2(a.limit_map), needs_limit=NEEDS_LIMIT).start()
-    st = guard.status()
-    print(f"  ** 움직이는 명령 {'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
-    print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "
-          f"속도 {st['max_vel_deg_s']:g}도/초")
-    print(f"     손 떼면 {st['deadman_s']:g}초 안에 멈춤 · {st['max_temp_c']:g}도에서 끊음 · "
-          f"받는 포트 {st['port']}", flush=True)
+  buses, guard = [], None
+  if remote:
+    # ---- 제어 루프와 나눠 쓰는 방식 --------------------------------------
+    print("  ** 이 화면은 통신선을 만지지 않습니다 ** — 제어 루프(huphy_live)가")
+    print("     읽고 쓰며, 여기는 받아서 그리고 목표만 넘깁니다.")
+    if a.to_huphy:
+      guard = RemoteGuard(a.to_huphy, arm_token=a.arm_token,
+                          allow=set(a.allow) if a.allow else ())
+      print(f"     목표를 보낼 자리 {a.to_huphy}"
+            f"{' (암호 있음)' if a.arm_token else ' (암호 없음 — 망 안에서만)'}")
+      print(f"     허락한 관절 {sorted(guard.allow) if guard.allow else '(제한 없음)'}")
+    poller = RemotePoller(a.from_huphy or 9873).start()
+    print(f"     상태를 받을 포트 {a.from_huphy or 9873}")
+  else:
+    if not os.path.exists(MAP_PATH):
+      raise SystemExit(f"{MAP_PATH} 가 없습니다. 먼저 can_up.py 를 돌리세요")
+    buses = [b for b in json.load(open(MAP_PATH))["buses"] if b.get("motors")]
+    for b in buses:
+      print(f"  {b['iface']}  {b['leg']}  모터 {b['motors']}")
+    if a.command:
+      from cmd_guard import CommandGuard
+      mp = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "ankle_pair_mask.json")
+      pair_mask = json.load(open(mp)) if os.path.exists(mp) else None
+      if pair_mask is None and any("crank" in n for n in a.allow):
+        raise SystemExit("발목을 열려면 ankle_pair_mask.json 이 있어야 합니다 "
+                         "(크랭크 두 개를 한 쌍으로 자르는 지도)")
+      if not a.arm_token:
+        print("  ** 암호 없이 돕니다 — 이 화면에 닿는 사람은 누구나 움직일 수 있습니다. **")
+        print("     바깥에 열어 둔 주소(터널 등)가 있으면 먼저 닫을 것.", flush=True)
+      guard = CommandGuard(
+        allow=a.allow, arm_token=a.arm_token, port=a.cmd_port,
+        kp=a.kp, kd=a.kd, max_vel_deg_s=a.max_vel_deg_s,
+        deadman_s=a.deadman_s, max_temp_c=a.max_temp_c, dry_run=not a.live,
+        pair_mask=pair_mask,
+        kp_by=_kv(a.kp_map),
+        limit_by=_kv2(a.limit_map), needs_limit=NEEDS_LIMIT).start()
+      st = guard.status()
+      print(f"  ** 움직이는 명령 "
+            f"{'켜짐 — 실제로 힘이 들어갑니다' if a.live else '시험 모드 (힘 안 넣음)'} **")
+      print(f"     허락한 관절 {a.allow} · 세기 {st['kp']:g}/{st['kd']:g} · "
+            f"속도 {st['max_vel_deg_s']:g}도/초")
+      print(f"     손 떼면 {st['deadman_s']:g}초 안에 멈춤 · "
+            f"{st['max_temp_c']:g}도에서 끊음 · 받는 포트 {st['port']}", flush=True)
 
-  poller = Poller(buses, hz=a.hz, guard=guard).start()
+  if not remote:
+    poller = Poller(buses, hz=a.hz, guard=guard).start()
   sender = None
   if a.telemetry:
     sender = TelemetrySender(poller, a.telemetry, guard=guard).start()

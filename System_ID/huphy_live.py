@@ -108,6 +108,7 @@ class LiveTargets:
     self.rejected_not_finite = 0
     self.note = "아직 명령 없음"
     self.last_rx_mono: Optional[float] = None
+    self._measured: Dict[str, float] = {}
 
   # ---- 화면 쪽에서 부르는 것 ---------------------------------------------
   def update(self, partial: Dict[str, float]) -> Dict[str, Any]:
@@ -144,13 +145,38 @@ class LiveTargets:
     return dict(ok=not (bad or notfinite), taken=sorted(taken),
                 unknown=bad, not_finite=notfinite)
 
+  def freeze(self, name: str) -> Dict[str, Any]:
+    """그 관절의 목표를 **지금 측정 위치**로 옮긴다. 더 움직이지 않게.
+
+    `observe()` 가 매 주기 넣어 주는 최신 측정값을 씁니다. 아직 한 번도 못 읽었으면
+    그대로 둡니다 — 모르는 값으로 목표를 덮어쓰는 것이 더 위험합니다.
+    """
+    with self._lock:
+      if name not in self._targets:
+        return dict(ok=False, why=f"모르는 관절입니다: {name}")
+      pos = self._measured.get(name)
+      if pos is None:
+        return dict(ok=False, why="아직 그 관절의 측정값을 못 받았습니다")
+      self._targets[name] = float(pos)
+      self.note = f"{name} 지금 자리({pos:+.2f}도)에 묶음"
+    return dict(ok=True, deg=pos)
+
+  def observe(self, observation: Dict[str, Any]) -> None:
+    """제어 루프가 준 관찰에서 측정 위치를 갈무리한다. `freeze` 가 쓴다."""
+    with self._lock:
+      for name in self._targets:
+        pos = observation.get(f"{name}.pos")
+        if pos is not None:
+          self._measured[name] = float(pos)
+
   def snapshot(self) -> Dict[str, float]:
     with self._lock:
       return dict(self._targets)
 
   # ---- HUPHY 가 부르는 것 (Motion 계약) -----------------------------------
   def __call__(self, t: float, observation: Dict[str, Any]) -> Dict[str, float]:
-    del t, observation                      # 시간에도 관찰에도 기대지 않는다
+    del t                                   # 시간에는 기대지 않는다
+    self.observe(observation)               # '힘 빼기' 가 쓸 최신 측정값만 갈무리
     with self._lock:
       return dict(self._targets)
 
@@ -207,6 +233,87 @@ class ThermalCutoff:
 
 
 # ===========================================================================
+# 상태를 내보내는 통로 — **버스를 읽는 곳은 여기 하나뿐이다**
+# ===========================================================================
+class StateSender:
+  """모터 상태를 JSON 한 줄로 UDP 에 뿌린다. 받지는 않는다.
+
+  ★ **왜 화면이 직접 CAN 을 안 읽는가.** 통신선 하나를 두 프로그램이 각자 읽으면
+  서로의 응답을 가로채 엉뚱한 값을 집습니다. 그래서 버스를 만지는 것은 이
+  프로그램 하나이고, 화면은 여기서 나온 것을 **받아서 그리기만** 합니다.
+
+  같은 내용을 여러 곳에 보낼 수 있습니다 — 화면(관절 페이지)과 3차원 뷰어.
+  """
+
+  def __init__(self, robot, targets, targets_to, hz: float = 20.0):
+    self.robot = robot
+    self.targets = targets
+    self.addrs = []
+    for one in targets_to:
+      host, _, port = str(one).partition(":")
+      if host:
+        self.addrs.append((host, int(port or 9873)))
+    self.period = 1.0 / float(hz)
+    self.sent = 0
+    self._stop = threading.Event()
+    self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+  def start(self):
+    if self.addrs:
+      threading.Thread(target=self._run, daemon=True).start()
+    return self
+
+  def stop(self):
+    self._stop.set()
+
+  def rows(self) -> Dict[str, Any]:
+    """모터 번호 -> 사람이 읽는 값. 관절 화면이 쓰던 것과 같은 모양."""
+    out: Dict[str, Any] = {}
+    now = time.monotonic()
+    wanted = self.targets.snapshot()
+    for part in getattr(self.robot, "limbs", None) or [self.robot]:
+      cfg = getattr(part, "config", None)
+      bus = getattr(part, "bus", None)
+      if cfg is None or bus is None:
+        continue
+      prefix = f"{cfg.name}/" if getattr(self.robot, "limbs", None) else ""
+      for joint, motor in cfg.motors.items():
+        try:
+          st = bus.state(motor.id)
+        except Exception:                                   # noqa: BLE001
+          continue
+        full = prefix + joint
+        out[str(motor.id)] = dict(
+          joint=full, model=getattr(motor, "model", ""),
+          deg=round(float(getattr(st, "position_deg", 0.0)), 2),
+          vel=round(float(getattr(st, "velocity_deg_s", 0.0)), 1),
+          nm=round(float(getattr(st, "torque_nm", 0.0)), 2),
+          temp=round(float(getattr(st, "temp_c", 0.0)), 1),
+          # ★ 동작모드는 **판단에 쓰지 않는다** (위 MODE_IS_REPORTED 참조).
+          # 그대로 실어 보내되, 화면이 "꺼짐" 으로 읽지 않도록 모델도 같이 보낸다.
+          mode=getattr(st, "mode", None),
+          mode_reported=MODE_IS_REPORTED.get(getattr(motor, "model", ""), None),
+          tgt=round(float(wanted.get(full, 0.0)), 2),
+          age_s=round(now - float(getattr(st, "stamp", 0.0) or now), 2),
+        )
+    return out
+
+  def _run(self):
+    while not self._stop.is_set():
+      t0 = time.monotonic()
+      pkt = json.dumps(dict(t=round(t0, 3), motors=self.rows(),
+                            note=self.targets.note,
+                            rx=self.targets.rx)).encode()
+      for addr in self.addrs:
+        try:
+          self.sock.sendto(pkt, addr)
+          self.sent += 1
+        except OSError:
+          pass
+      time.sleep(max(0.0, self.period - (time.monotonic() - t0)))
+
+
+# ===========================================================================
 # 명령을 받는 통로
 # ===========================================================================
 class TargetServer:
@@ -243,7 +350,12 @@ class TargetServer:
       if self.token and str(msg.get("token", "")) != self.token:
         self.bad_token += 1
         continue
-      if "targets" in msg and isinstance(msg["targets"], dict):
+      if "release" in msg:
+        # 화면의 '힘 빼기'. 목표를 **지금 자리로** 옮겨 더 일하지 않게 한다.
+        # 토크를 끊지 않는 이유는 ThermalCutoff 머리말과 같다 — 목표 위치 제어에서
+        # 힘을 끊으면 중력이 관절을 끌어내려 화면과 실물이 어긋난다.
+        self.targets.freeze(str(msg["release"]))
+      elif "targets" in msg and isinstance(msg["targets"], dict):
         self.targets.update(msg["targets"])
       elif "name" in msg:
         self.targets.update({str(msg["name"]): msg.get("deg", 0.0)})
@@ -316,6 +428,9 @@ def main(argv=None) -> int:
   ap.add_argument("--max-temp-c", type=float, default=50.0)
   ap.add_argument("--allow-uncalibrated", action="store_true")
   ap.add_argument("--duration", type=float, default=None)
+  ap.add_argument("--state-to", nargs="*", default=[],
+                  help="상태를 보낼 자리. 예: 127.0.0.1:9873 10.8.0.16:9870")
+  ap.add_argument("--state-hz", type=float, default=20.0)
   a = ap.parse_args(argv)
 
   logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -325,12 +440,16 @@ def main(argv=None) -> int:
   live = LiveTargets(names)
   motion = ThermalCutoff(live, a.max_temp_c)
   server = TargetServer(live, a.listen, a.token).start()
+  state = StateSender(machine, live, a.state_to, hz=a.state_hz).start()
 
   print(f"\n{getattr(machine, 'id', '로봇')} · 초당 {hz:.0f}회 · 관절 {len(names)}개")
   print(f"  목표를 받는 자리 udp:{a.listen}"
         f"{' (암호 있음)' if a.token else ' (암호 없음 — 망 안에서만 쓸 것)'}")
   print(f"  권선 {a.max_temp_c:g}도를 넘으면 그 관절 목표를 지금 자리로 묶음")
   print("  한계·속도·프레임·전송·수거는 전부 로봇 프로그램(HUPHY)이 합니다.")
+  if a.state_to:
+    print(f"  상태를 내보내는 자리 {', '.join(a.state_to)} (초당 {a.state_hz:g}번, 보내기만)")
+    print("  ** 통신선을 읽는 것은 이 프로그램 하나입니다 — 화면은 여기서 받아 그립니다. **")
   print("  멈추려면 Ctrl-C.\n")
 
   try:
@@ -340,6 +459,7 @@ def main(argv=None) -> int:
     print("\n  사람이 멈춤")
   finally:
     server.stop()
+    state.stop()
 
   modes = report_modes(machine)
   if modes:
