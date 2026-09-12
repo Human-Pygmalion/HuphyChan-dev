@@ -84,6 +84,21 @@ def build(leg: str, step: float, rom_pitch, rom_roll, crank_limit: float):
       except Exception:                                     # noqa: BLE001
         unsolvable += 1
         continue
+      # ★ 되짚어 확인합니다. 뉴턴 반복은 추정이 멀면 **다른 자세로 수렴**하고,
+      # 그 값을 그대로 표에 적으면 표가 "갈 수 있다" 고 거짓말을 합니다
+      # (2026-09-13: 이 확인 없이 구운 표 때문에 클리퍼가 4/2000 를 놓쳤음).
+      if abs(p) > 90.0 or abs(r) > 90.0:
+        # 다중회전 답 (+5840도 같은). IK 로 되짚으면 360 배수라 통과해 버립니다.
+        unsolvable += 1
+        continue
+      try:
+        ba, bb = kin.solve_ik(p, r, enforce_envelope=False)
+      except Exception:                                     # noqa: BLE001
+        unsolvable += 1
+        continue
+      if abs(ba - a) > 0.05 or abs(bb - b) > 0.05:
+        unsolvable += 1
+        continue
       pitch[i][j], roll[i][j] = p, r
       ok[i][j] = (rom_pitch[0] <= p <= rom_pitch[1]
                   and rom_roll[0] <= r <= rom_roll[1])
