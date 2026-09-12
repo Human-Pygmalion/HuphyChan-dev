@@ -730,6 +730,173 @@ def e24(f):
 
 
 # ===========================================================================
+# 아 · 발목 두 모터를 한 쌍으로 자르기 (모터 공간 AB)
+# ===========================================================================
+def _ankle():
+  from huphy.kinematics.ankle import AnkleGeometry, AnkleKinematics
+  import huphy_live as HL
+
+  class _FakeLeg:
+    def __init__(self, kin, name):
+      self.kinematics = kin
+      self.config = type("C", (), {"name": name})()
+
+  left = _FakeLeg(AnkleKinematics(AnkleGeometry().mirrored()), "left_leg")
+  right = _FakeLeg(AnkleKinematics(AnkleGeometry()), "right_leg")
+  robot = type("R", (), {"limbs": [left, right]})()
+  return HL, robot, left, right
+
+
+@check("E25", "발목 쌍", "축마다 자르는 것이 실제로 먹히는가")
+def e25(f):
+  HL, robot, *_ = _ankle()
+  base = lambda t, o: {"left_leg/ankle_a": 90.0, "left_leg/ankle_b": -90.0,
+                       "right_leg/ankle_a": 0.0, "right_leg/ankle_b": 0.0}
+  g = HL.AnklePairGuard(base, robot)
+  out = g(0.0, {})
+  a, b = out["left_leg/ankle_a"], out["left_leg/ankle_b"]
+  if abs(a) <= HL.ANKLE_AXIS_DEG + 1e-6 and abs(b) <= HL.ANKLE_AXIS_DEG + 1e-6:
+    f.hold(f"A 90도 / B -90도를 넣었는데 {a:+.2f} / {b:+.2f} 로 나갔습니다 "
+           f"(축 한계 \u00b1{HL.ANKLE_AXIS_DEG:g}도).")
+  else:
+    f.leak(f"축 한계를 넘었습니다: {a:+.2f} / {b:+.2f}")
+
+
+@check("E26", "발목 쌍", "축 안이어도 **조합**이 ROM 밖이면 물러나는가")
+def e26(f):
+  """축 한계 안이지만 발판을 한계 밖으로 보내는 조합을 일부러 고른다."""
+  HL, robot, left, _ = _ankle()
+  worst = None
+  n = 61
+  lim = HL.ANKLE_AXIS_DEG
+  for i in range(n):
+    a = -lim + 2 * lim * i / (n - 1)
+    for j in range(n):
+      b = -lim + 2 * lim * j / (n - 1)
+      try:
+        p, r = left.kinematics.solve_fk(a, b)
+      except Exception:                                    # noqa: BLE001
+        continue
+      if not (HL.ANKLE_ROM_PITCH[0] <= p <= HL.ANKLE_ROM_PITCH[1]
+              and HL.ANKLE_ROM_ROLL[0] <= r <= HL.ANKLE_ROM_ROLL[1]):
+        worst = (a, b, p, r)
+  if worst is None:
+    f.hold(f"축 한계 \u00b1{lim:g}도 안에서는 **조합이 ROM 을 벗어나는 자리가 "
+           f"아예 없습니다** ({n}x{n} 격자 전수). 두 겹 중 축 한 겹만으로도 "
+           f"이미 닫혀 있고, 조합 검사는 그 위에 덧대는 것입니다.")
+    return
+  a, b, p, r = worst
+  base = lambda t, o: {"left_leg/ankle_a": a, "left_leg/ankle_b": b,
+                       "right_leg/ankle_a": 0.0, "right_leg/ankle_b": 0.0}
+  g = HL.AnklePairGuard(base, robot)
+  out = g(0.0, {})
+  pa, pb = out["left_leg/ankle_a"], out["left_leg/ankle_b"]
+  p2, r2 = left.kinematics.solve_fk(pa, pb)
+  ok = (HL.ANKLE_ROM_PITCH[0] <= p2 <= HL.ANKLE_ROM_PITCH[1]
+        and HL.ANKLE_ROM_ROLL[0] <= r2 <= HL.ANKLE_ROM_ROLL[1])
+  (f.hold if ok else f.leak)(
+    f"A{a:+.1f}/B{b:+.1f} 은 발판을 숙임 {p:+.1f} 기울임 {r:+.1f} 로 보냅니다. "
+    f"물러난 뒤 A{pa:+.1f}/B{pb:+.1f} -> 숙임 {p2:+.1f} 기울임 {r2:+.1f} "
+    f"({'ROM 안' if ok else '**여전히 밖**'}).")
+
+
+@check("E27", "발목 쌍", "축 한계가 ROM 과 아직 맞는가 (전수)")
+def e27(f):
+  """`ANKLE_AXIS_DEG` 는 ROM 에서 계산해 낸 값이다. ROM 을 바꾸면 같이 바뀌어야
+  하는데 사람이 잊는다. 그래서 **매번 다시 계산해 대조한다.**"""
+  HL, robot, left, right = _ankle()
+  P, R = HL.ANKLE_ROM_PITCH, HL.ANKLE_ROM_ROLL
+  worst = 1e9
+  for kin in (left.kinematics, right.kinematics):
+    s_ok = 0.0
+    for s in [x * 0.25 for x in range(1, 300)]:
+      good = True
+      for a in (-s, s):
+        for b in (-s, s):
+          try:
+            p, r = kin.solve_fk(a, b)
+            if not (P[0] <= p <= P[1] and R[0] <= r <= R[1]):
+              good = False
+          except Exception:                                # noqa: BLE001
+            good = False
+      if good:
+        s_ok = s
+      else:
+        break
+    worst = min(worst, s_ok)
+  if abs(worst - HL.ANKLE_AXIS_DEG) <= 0.25 + 1e-9:
+    f.hold(f"ROM 숙임 {P} 기울임 {R} 로 다시 계산하면 \u00b1{worst:.2f}도이고, "
+           f"코드의 값은 \u00b1{HL.ANKLE_AXIS_DEG:g}도입니다. 맞습니다.")
+  else:
+    f.leak(f"어긋났습니다 — 다시 계산하면 \u00b1{worst:.2f}도인데 코드는 "
+           f"\u00b1{HL.ANKLE_AXIS_DEG:g}도입니다. ROM 을 바꾸고 축 한계를 "
+           f"안 고쳤을 수 있습니다.")
+
+
+@check("E28", "발목 쌍", "ROM 이 **지금 쓰는** 시뮬레이터 모델과 같은가")
+def e28(f):
+  """사용자 지시로 확정한 출처(*"rp 모드 mjcf / urdf 확인해봐"*). 모델이 바뀌면
+  여기서 갈립니다.
+
+  ★ **옛 모델은 뺍니다.** `pygmalion_v1`·`cant20`·`cant30`·`rolloff30` 은 숙임 상한이
+  +40도라 지금 값(+30도)과 다른데, 그건 v1 시절 값이고 지금 학습도 뷰어도 안 씁니다.
+  한 폴더에 세대가 섞여 있어 전부 대조하면 이 차이가 매번 걸립니다.
+  """
+  import glob, math as _m, re as _re
+  import huphy_live as HL
+  root = os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                      "mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls")
+  # 옛 세대 (숙임 상한 +40도). 지금 학습도 뷰어도 안 쓰고, 파이썬 어디에서도
+  # 참조되지 않는 것을 확인했습니다. 날짜도 6~7월로 v2(9월) 이전입니다.
+  OLD = ("pygmalion_v1.xml", "pygmalion.xml",
+         "cant20", "cant30", "rolloff30")
+  # `_` 로 시작하는 것은 도구가 만든 임시 파일입니다 (예: `_scene_tmp.xml`).
+  xmls = [x for x in glob.glob(os.path.join(root, "*.xml"))
+          if not os.path.basename(x).startswith("_")
+          and os.path.basename(x) not in OLD
+          and not any(o in os.path.basename(x) for o in OLD if not o.endswith(".xml"))]
+  seen = {}
+  for path in xmls:
+    src = open(path).read()
+    for m in _re.finditer(
+        r'<joint name="[LR]_ankle_(pitch|roll)_joint"[^>]*range="([-\d.]+) ([-\d.]+)"', src):
+      key = (m.group(1), round(_m.degrees(float(m.group(2))), 2),
+             round(_m.degrees(float(m.group(3))), 2))
+      seen.setdefault(key, []).append(os.path.basename(path))
+  want = {("pitch",) + tuple(HL.ANKLE_ROM_PITCH), ("roll",) + tuple(HL.ANKLE_ROM_ROLL)}
+  if not xmls:
+    f.note("시뮬레이터 모델 파일을 못 찾았습니다 — 대조를 건너뜁니다.")
+  elif set(seen) == want:
+    f.hold(f"지금 쓰는 모델 {len(xmls)}개가 전부 같은 값이고 코드와 일치합니다: "
+           f"숙임 {HL.ANKLE_ROM_PITCH} 기울임 {HL.ANKLE_ROM_ROLL}. "
+           f"(옛 세대 {len(OLD)}종은 숙임 상한이 +40도라 뺐습니다 — "
+           f"코드에서 참조하지 않는 것을 확인했습니다)")
+  else:
+    lines = [f"{k} <- {v[:2]}" for k, v in sorted(seen.items())]
+    f.leak(f"모델과 코드가 다릅니다. 모델 {lines} / 코드 {sorted(want)}")
+
+
+@check("E29", "발목 쌍", "물러날 때 두 모터가 **같이** 움직이는가")
+def e29(f):
+  """한쪽만 자르면 두 로드가 서로 다른 자세를 요구해 기구가 비틉니다."""
+  HL, robot, left, _ = _ankle()
+  lim = HL.ANKLE_AXIS_DEG
+  base = lambda t, o: {"left_leg/ankle_a": lim, "left_leg/ankle_b": -lim,
+                       "right_leg/ankle_a": 0.0, "right_leg/ankle_b": 0.0}
+  g = HL.AnklePairGuard(base, robot)
+  g(0.0, {})
+  out = g(0.01, {})
+  a, b = out["left_leg/ankle_a"], out["left_leg/ankle_b"]
+  p, r = left.kinematics.solve_fk(a, b)
+  ok = (HL.ANKLE_ROM_PITCH[0] <= p <= HL.ANKLE_ROM_PITCH[1]
+        and HL.ANKLE_ROM_ROLL[0] <= r <= HL.ANKLE_ROM_ROLL[1])
+  ratio = abs(a) / lim if lim else 0.0
+  (f.hold if ok else f.leak)(
+    f"A{a:+.2f}/B{b:+.2f} (원한 값의 {ratio*100:.0f}%) -> 숙임 {p:+.1f} "
+    f"기울임 {r:+.1f}. 둘이 같은 비율로 물러납니다.")
+
+
+# ===========================================================================
 # 실행
 # ===========================================================================
 def main(argv=None) -> int:

@@ -258,6 +258,129 @@ class ThermalCutoff:
 
 
 # ===========================================================================
+# HUPHY 가 안 해 주는 것 (2) — 발목 두 모터를 **한 쌍으로** 자르기
+# ===========================================================================
+ANKLE_AXIS_DEG = 22.75
+"""발목 크랭크 한 축이 혼자 갈 수 있는 한계.
+
+**실측으로 고른 값입니다.** HUPHY 의 발목 기구학으로 A·B 격자를 훑어, 네 귀퉁이가
+전부 발판 자세 한계 안에 드는 가장 큰 정사각형을 찾았습니다. 아래 `ANKLE_ROM_*`
+기준으로 잰 값이고, 값을 바꾸면 이것도 다시 재야 합니다 —
+`tools/huphy_audit/e2e_live.py` 의 E27 이 그 일치를 검사합니다."""
+
+ANKLE_ROM_PITCH = (-50.0, 30.0)
+ANKLE_ROM_ROLL = (-20.0, 20.0)
+"""발판이 실제로 가도 되는 자세. **시뮬레이터 모델에서 그대로 읽은 값입니다.**
+
+사용자 지시(2026-09-12) *"rp 모드 mjcf / urdf 확인해봐"* 를 따라 확인했습니다.
+`mjlab/.../pygmalion/xmls/*.xml` 의 모든 판이 같은 값을 갖고 있고 양발이 같습니다.
+
+    <joint name="L_ankle_pitch_joint" range="-0.872665 0.523599"/>   -> -50.00 ~ +30.00도
+    <joint name="L_ankle_roll_joint"  range="-0.349066 0.349066"/>   -> -20.00 ~ +20.00도
+
+★ 제가 처음에 방향을 몰라 "두 해석의 교집합인 ±30" 으로 잡아 두었던 것을 **실제
+값으로 바꿨습니다.** 숙임은 한쪽으로 치우쳐 있습니다 — 한쪽 50도, 다른 쪽 30도.
+
+HUPHY 자신의 `AnkleEnvelope` 기본값(숙임 ±40 · 기울임 ±25,
+`kinematics/ankle.py:148`)은 **다른 값**이고, 그 코드가 스스로 "소프트웨어 시험
+범위이지 링키지가 닿는 범위가 아니다" 라고 적어 두었습니다. 우리는 학습이 쓰는
+실제 가동범위를 씁니다."""
+
+
+class AnklePairGuard:
+  """발목 A·B 를 **두 겹으로** 자른다. 축마다 한 번, 조합으로 한 번.
+
+  ## 왜 필요한가
+
+  발목은 모터 두 개가 로드 두 개로 발판 하나를 미는 **닫힌 기구**입니다. 그래서
+  두 각도를 따로 자르면 모자랍니다 — 각각은 범위 안이어도 **그 조합이 발판을
+  한계 밖으로** 보낼 수 있습니다.
+
+  HUPHY 는 발판 공간(`ankle_pitch`/`ankle_roll`)으로 줄 때만 기구학으로 조합을
+  봅니다. 우리는 **모터 공간(`ankle_a`/`ankle_b`)** 으로 줍니다 — 지금 구현체도
+  학습된 정책도 그 공간으로 돌기 때문입니다(사용자 결정 2026-09-12). 그 공간에서는
+  HUPHY 가 A·B 를 **따로따로** 자르고 조합은 아무도 안 봅니다.
+
+  실측한 구멍: A와 B를 각자 ±53.75도까지 열면 A+53.8/B-53.8 에서 **발판이 67.4도
+  숙고**, A+53.8/B+53.8 에서 **45.2도 기웁니다.**
+
+  ## 어떻게 자르는가 — **둘 다 만족해야 한다** (사용자 지시: "and 문으로 클리핑")
+
+      1) 축마다      |A| <= ANKLE_AXIS_DEG,  |B| <= ANKLE_AXIS_DEG
+      2) 조합으로    solve_fk(A, B) 가 ROM 안
+
+  둘 중 하나라도 어긋나면 **직전에 받아들인 자리 쪽으로 물러납니다.** 거부하지 않고
+  자르는 이유는, 한쪽 모터만 거부하면 두 로드가 서로 다른 자세를 요구해 기구가
+  비틀리기 때문입니다 — 둘은 같이 움직이거나 같이 물러나야 합니다.
+
+  물러나는 방법은 **반씩 좁히기**입니다. 직전 자리는 정의상 안전하므로, 그 사이
+  어딘가에 경계가 있습니다.
+  """
+
+  def __init__(self, inner, robot, *, axis_deg: float = ANKLE_AXIS_DEG,
+               rom_pitch=ANKLE_ROM_PITCH, rom_roll=ANKLE_ROM_ROLL, steps: int = 12):
+    self.inner = inner
+    self.axis = abs(float(axis_deg))
+    self.rom_pitch = tuple(rom_pitch)
+    self.rom_roll = tuple(rom_roll)
+    self.steps = int(steps)
+    self.axis_clipped = 0
+    self.pair_clipped = 0
+    self.no_kinematics = 0
+    # 다리별 (발목A 이름, 발목B 이름, 기구학) 과 직전에 받아들인 자리
+    self.legs = []
+    for part in getattr(robot, "limbs", None) or [robot]:
+      kin = getattr(part, "kinematics", None)
+      cfg = getattr(part, "config", None)
+      if kin is None or cfg is None:
+        continue
+      prefix = f"{cfg.name}/" if getattr(robot, "limbs", None) else ""
+      self.legs.append(dict(a=prefix + "ankle_a", b=prefix + "ankle_b",
+                            kin=kin, last=(0.0, 0.0)))
+
+  def _inside(self, kin, a: float, b: float) -> bool:
+    """이 조합이 발판을 ROM 안에 두는가. 기구학이 못 풀면 **안 되는 것으로 본다.**"""
+    try:
+      pitch, roll = kin.solve_fk(a, b)
+    except Exception:                                     # noqa: BLE001
+      return False
+    return (self.rom_pitch[0] <= pitch <= self.rom_pitch[1]
+            and self.rom_roll[0] <= roll <= self.rom_roll[1])
+
+  def __call__(self, t: float, observation: Dict[str, Any]) -> Dict[str, float]:
+    action = dict(self.inner(t, observation))
+    for leg in self.legs:
+      na, nb = leg["a"], leg["b"]
+      if na not in action or nb not in action:
+        continue
+      # (1) 축마다
+      a = max(-self.axis, min(self.axis, float(action[na])))
+      b = max(-self.axis, min(self.axis, float(action[nb])))
+      if a != action[na] or b != action[nb]:
+        self.axis_clipped += 1
+      # (2) 조합으로 -- 둘 다 만족해야 통과
+      if self._inside(leg["kin"], a, b):
+        leg["last"] = (a, b)
+      else:
+        la, lb = leg["last"]
+        if not self._inside(leg["kin"], la, lb):
+          # 직전 자리마저 밖이면 (첫 주기 등) 원점으로. 원점은 늘 안전하다.
+          la = lb = 0.0
+        lo, hi = 0.0, 1.0            # 직전 자리(0) 에서 원하는 자리(1) 사이
+        for _ in range(self.steps):
+          mid = 0.5 * (lo + hi)
+          if self._inside(leg["kin"], la + (a - la) * mid, lb + (b - lb) * mid):
+            lo = mid
+          else:
+            hi = mid
+        a, b = la + (a - la) * lo, lb + (b - lb) * lo
+        leg["last"] = (a, b)
+        self.pair_clipped += 1
+      action[na], action[nb] = a, b
+    return action
+
+
+# ===========================================================================
 # 상태를 내보내는 통로 — **버스를 읽는 곳은 여기 하나뿐이다**
 # ===========================================================================
 class StateSender:
@@ -469,7 +592,7 @@ def main(argv=None) -> int:
 
   names = list(getattr(machine, "joint_names", ()))
   live = LiveTargets(names)
-  motion = ThermalCutoff(live, a.max_temp_c)
+  motion = AnklePairGuard(ThermalCutoff(live, a.max_temp_c), machine)
   server = TargetServer(live, a.listen, a.token).start()
   state = StateSender(machine, live, a.state_to, hz=a.state_hz).start()
 
@@ -477,6 +600,8 @@ def main(argv=None) -> int:
   print(f"  목표를 받는 자리 udp:{a.listen}"
         f"{' (암호 있음)' if a.token else ' (암호 없음 — 망 안에서만 쓸 것)'}")
   print(f"  권선 {a.max_temp_c:g}도를 넘으면 그 관절 목표를 지금 자리로 묶음")
+  print(f"  발목은 축마다 \u00b1{ANKLE_AXIS_DEG:g}도 **그리고** 조합이 "
+        f"숙임 {ANKLE_ROM_PITCH} 기울임 {ANKLE_ROM_ROLL} 안일 때만 나갑니다")
   print("  한계·속도·프레임·전송·수거는 전부 로봇 프로그램(HUPHY)이 합니다.")
   if a.state_to:
     print(f"  상태를 내보내는 자리 {', '.join(a.state_to)} (초당 {a.state_hz:g}번, 보내기만)")
@@ -497,7 +622,10 @@ def main(argv=None) -> int:
     print(f"\n  모터가 보고한 동작모드: {modes}")
     print("  (RS03 은 힘이 들어가도 0으로 보고합니다 — 이 값으로 판단하지 마십시오)")
   print(f"  받은 목표 {live.rx}개 · 모르는 이름 {live.rejected_unknown}개 "
-        f"· 숫자가 아님 {live.rejected_not_finite}개 · 과열로 묶음 {motion.events}회")
+        f"· 숫자가 아님 {live.rejected_not_finite}개 "
+        f"· 과열로 묶음 {motion.inner.events}회")
+  print(f"  발목: 축으로 자름 {motion.axis_clipped}회 · 조합으로 물러남 "
+        f"{motion.pair_clipped}회")
   if stats is not None and getattr(stats, "link_loss", None):
     print(f"\n  ** 통신 두절로 멈춤: {stats.link_loss} **")
     return 1
