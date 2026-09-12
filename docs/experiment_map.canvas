@@ -2621,6 +2621,22 @@
       "toNode": "n_limp_root_cause_mirror",
       "toSide": "right",
       "label": "완주본 보행 재측정 → 절뚝임은 엉덩이회전 한 관절(수직축 회전 문제)"
+    },
+    {
+      "id": "e_v2_to_limp",
+      "fromNode": "n_legonly_v2",
+      "fromSide": "bottom",
+      "toNode": "n_limp_root_cause_mirror",
+      "toSide": "left",
+      "label": "§3c 전 구간 추적: 1단계를 1.31로 끝내 끝까지 가장 비대칭(무릎 창 0° 버그의 흔적)"
+    },
+    {
+      "id": "e_v3_to_limp",
+      "fromNode": "n_legonly_v3_keyfix",
+      "fromSide": "bottom",
+      "toNode": "n_limp_root_cause_mirror",
+      "toSide": "left",
+      "label": "§3c: 무작위화가 꺼진 1단계에서 가장 빠르게 표류(+0.0134/1000회)"
     }
   ]
 }
