@@ -168,10 +168,19 @@ class LiveTargets:
         continue
       taken[name] = v
     with self._lock:
+      # ★ 사람이 넣은 값을 **기록에 남긴다.** 화면은 초당 열 번 같은 값을 되풀이해
+      # 보내므로 그대로 적으면 로그가 쓸모없어집니다. **바뀐 것만** 적습니다.
+      changed = {n: v for n, v in taken.items()
+                 if abs(v - self._targets.get(n, float("inf"))) > 0.05}
       self._targets.update(taken)
       self.rx += len(taken)
       self.rejected_unknown += len(bad)
       self.rejected_not_finite += len(notfinite)
+      if changed:
+        logger.info("목표 받음: %s",
+                    " · ".join(f"{n} {v:+.2f}도" for n, v in sorted(changed.items())))
+      if bad or notfinite:
+        logger.warning("목표 거부: 모르는 이름 %s · 숫자가 아님 %s", bad, notfinite)
       if taken:
         self.last_rx_mono = time.monotonic()
         one = next(iter(taken))
@@ -1124,7 +1133,7 @@ def main(argv=None) -> int:
     print(f"  상태를 내보내는 자리 {', '.join(a.state_to)} (초당 {a.state_hz:g}번, 보내기만)")
     print("  ** 통신선을 읽는 것은 이 프로그램 하나입니다 — 화면은 여기서 받아 그립니다. **")
 
-  # ---- 켜기를 **여러 번** 보낸다 -----------------------------------------
+  # ---- 켜기를 **여러 번** 보낸다 ------------------------------------------
   #
   # 2026-09-12 실측: 제어 루프가 시작하며 보내는 켜기(0xFC) 한 방이 **안 먹는
   # 일이 있습니다.** 그날 화면에는 관절이 다 보이고 명령도 매 주기 나가는데
@@ -1133,21 +1142,25 @@ def main(argv=None) -> int:
   # 곧바로 힘을 냈습니다.
   #
   # HUPHY 는 켜기를 보내고 `_torque_on[mid] = True` 로 **믿기만** 합니다
-  # (`motors/robstride/bus.py:175`). 모터에 물어보지 않습니다. 그래서 여기서
-  # 여러 번 보냅니다 -- 한 프레임이 흘려져도 다음 것이 갑니다.
+  # (`motors/robstride/bus.py:175`). 모터에 물어보지 않습니다.
   #
-  # ★ 모드 비트로 확인하지 않는 이유: **거짓말을 합니다.** 같은 날 8번(RS04)이
-  # 모드 0 을 보고하면서도 3도 오차에 0.44뉴턴미터를 냈습니다. 켜졌는지 알려면
-  # 토크를 봐야 하고, 토크를 보려면 관절을 밀어야 하므로 여기서는 안 합니다.
-  for attempt in range(max(1, a.enable_tries)):
+  # ★ **연결한 뒤에** 보내야 합니다. 처음에는 이 자리가 `loop.run()` 앞이라
+  # `can1 이 연결되지 않음` 으로 매번 실패하고 있었고, 그런데도 "3번 보냈습니다"
+  # 라고 적고 있었습니다 (2026-09-12 로그에서 발견). 그래서 연결을 직접 확인하고,
+  # 실패하면 **실패했다고 적습니다.**
+  sent_enable = 0
+  if not machine.is_connected:
+    machine.connect()
+  for _ in range(max(1, a.enable_tries)):
     try:
       machine.enable()
+      sent_enable += 1
     except Exception as e:                                  # noqa: BLE001
-      print(f"  ** 켜기 실패 ({attempt + 1}번째): {e} **")
+      print(f"  ** 켜기 실패: {e} **")
       break
     time.sleep(0.05)
-  print(f"  켜기(0xFC)를 {max(1, a.enable_tries)}번 보냈습니다 "
-        f"(한 방이 안 먹는 일이 있어 여러 번 보냅니다)")
+  print(f"  켜기(0xFC)를 {sent_enable}번 보냈습니다"
+        + ("" if sent_enable else "  ** 한 번도 못 보냈습니다 **"))
   print("  멈추려면 Ctrl-C.\n")
 
   try:
