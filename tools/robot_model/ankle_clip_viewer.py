@@ -26,6 +26,7 @@ import argparse
 import io
 import json
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -126,22 +127,62 @@ def run(host: str, port: int, leg: str) -> int:
   from mjviser import ViserMujocoScene
 
   clipper = AnkleClipper(leg)
-  model = mujoco.MjModel.from_xml_path(XML)
+
+  # 모델을 여기서 다시 세우지 않습니다. `tools/viewer/mjcf_joint_viewer.py` 가 이미
+  # 같은 파일(legonly/loop)에 크랭크 위치 서보를 붙이고 중력을 끄는 일을 하고
+  # 있으므로 **그 함수를 그대로 불러 씁니다**. 예전에는 여기서 원본 XML 을 직접
+  # 열었는데, 그 파일에는 액추에이터가 하나도 없어(nu=0) 크랭크가 전혀 안 움직였고
+  # 게다가 중력에 떠 있는 다리가 그대로 떨어져 화면에서 사라졌습니다 (2026-09-13).
+  sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "viewer"))
+  import mjcf_joint_viewer as JV
+
+  model, crank_actuators = JV.build_model("legonly", "loop")
   data = mujoco.MjData(model)
 
   side = "L" if leg == "left" else "R"
-  crank = {tag: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT,
-                                  f"{side}_crank_{tag}_joint") for tag in "AB"}
-  act = {}
-  for tag in "AB":
-    for i in range(model.nu):
-      if mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_ACTUATOR, i) == \
-              f"{side}_crank_{tag}_joint":
-        act[tag] = i
+
+  def jid(name: str) -> int:
+    return mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
+
+  act = {tag: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR,
+                                crank_actuators[f"{side}_crank_{tag}_joint"])
+         for tag in "AB"}
   foot_bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, f"{side}_foot_link")
+
+  # 크랭크와 로드·발목만 움직이게 두고 나머지(떠 있는 몸통 포함)는 매 스텝 붙잡습니다.
+  # 이것도 `mjcf_joint_viewer` 의 규약을 그대로 가져온 것입니다.
+  free_names = JV.LOOP_HIDDEN + JV.CRANK_JOINTS + JV.LOOP_PASSIVE_READOUT
+  free_q = {int(model.jnt_qposadr[jid(n)]) for n in free_names}
+  free_v = {int(model.jnt_dofadr[jid(n)]) for n in free_names}
+  pin_q = sorted(set(range(model.nq)) - free_q)
+  pin_v = sorted(set(range(model.nv)) - free_v)
+
+  # 지운 것: geom 을 안 보이는 그림표(5번)로 옮겨 발목 위쪽을 잘라내려 했는데,
+  # 그러면 **남긴 8개까지 통째로 안 그려집니다** (2026-09-13 화면으로 확인). 잘라내는
+  # 대신 아래처럼 카메라를 발목에 붙이는 쪽으로 갑니다.
+
+  # 화면을 발목에 맞추는 두 번째 손질: **카메라 대신 모델을 옮깁니다.**
+  # `client.camera` 로 넣은 값은 접속·1.2초 뒤·단추 세 경우 모두 화면에 반영되지
+  # 않았습니다 (예외도 안 납니다). 그래서 몸통을 띄우는 높이를 골라 **발판이 원점에
+  # 오게** 합니다 — viser 의 기본 카메라가 원점을 보므로 이러면 항상 발목이 잡힙니다.
+  # 몸통은 매 스텝 붙잡히는 자리라 물리에는 아무 영향이 없습니다.
+  data.qpos[:] = 0.0
+  data.qpos[0:3] = [0, 0, 1.0]
+  data.qpos[3:7] = [1, 0, 0, 0]
+  mujoco.mj_forward(model, data)
+  off = data.xpos[foot_bid].copy()
+  data.qpos[0:3] = [-off[0], -off[1], 1.0 - off[2]]
+  home = data.qpos.copy()
+  mujoco.mj_forward(model, data)
 
   server = viser.ViserServer(host=host, port=port, label="발목 클리핑 확인")
   scene = ViserMujocoScene(server, model, num_envs=1)
+  # ★ 이것 때문에 화면이 계속 엉덩이였습니다. 이 장면 객체는 기본값으로 **따라다니는
+  # 몸통을 원점에 붙여 놓습니다** (`update_from_mjdata` 안에서 scene_offset =
+  # -tracked_pos). 그래서 모델을 아무리 옮기고 카메라를 발판에 맞춰도, 그릴 때마다
+  # 몸통이 원점으로 끌려와 발목이 화면 밖으로 나갔습니다 (2026-09-13 화면으로 확인).
+  # 여기서는 다리가 매달린 채 가만히 있으므로 따라다닐 이유가 없습니다.
+  scene.camera_tracking_enabled = False
 
   state = dict(a=0.0, b=0.0, bypass=False, last=None)
 
@@ -150,13 +191,19 @@ def run(host: str, port: int, leg: str) -> int:
 
     `mj_forward` 만으로는 로드 끝을 발판에 붙이는 구속이 안 풀립니다 -- 그것은
     `mj_step` 의 구속 해석기가 합니다 (`tools/viewer/mjcf_joint_viewer.py` 가 같은
-    이유로 같은 방법을 씁니다). 여기서는 크랭크에 위치 서보를 걸고 몇 스텝 돌립니다.
+    이유로 같은 방법을 씁니다). 여기서는 크랭크 위치 서보의 목표를 천천히 올리면서 스텝을 돌립니다.
     """
-    for tag, jid in crank.items():
-      if tag in act:
-        data.ctrl[act[tag]] = np.radians(a_deg if tag == "A" else b_deg)
-    for _ in range(220):
+    goal = {tag: np.radians(a_deg if tag == "A" else b_deg) for tag in "AB"}
+    start = {tag: float(data.ctrl[act[tag]]) for tag in "AB"}
+    steps = JV.SETTLE_STEPS
+    for k in range(steps):
+      f = min(1.0, k / (steps / 2))          # 절반에 걸쳐 올리고 나머지는 유지
+      for tag in "AB":
+        data.ctrl[act[tag]] = start[tag] + f * (goal[tag] - start[tag])
+      data.qpos[pin_q] = home[pin_q]
+      data.qvel[pin_v] = 0.0
       mujoco.mj_step(model, data)
+    mujoco.mj_forward(model, data)
 
   def apply() -> None:
     r = clipper.clip(state["a"], state["b"])
@@ -177,17 +224,22 @@ def run(host: str, port: int, leg: str) -> int:
           for n in ("pitch", "roll")}
     sim = {n: (np.degrees(data.qpos[model.jnt_qposadr[j]]) if j >= 0 else float("nan"))
            for n, j in pj.items()}
-    gap = abs(sim["pitch"] - r.pitch) if r.pitch == r.pitch else float("nan")
+    # 예전에는 **숙임만** 비교했습니다. 그래서 기울임이 3도씩 어긋나 있는데도 화면은
+    # "차이 0.29도" 라고 안심시켰습니다 (2026-09-13 발견). 둘 다 봅니다.
+    gp = abs(sim["pitch"] - r.pitch) if r.pitch == r.pitch else float("nan")
+    gr = abs(sim["roll"] - r.roll) if r.roll == r.roll else float("nan")
+    worst = max([g for g in (gp, gr) if g == g], default=float("nan"))
     pose.content = (
       f"시뮬레이터가 세운 발판: 숙임 `{sim['pitch']:+.2f}°` · 기울임 `{sim['roll']:+.2f}°`  \n"
-      f"우리 기구학과의 차이: `{gap:.2f}°`"
-      + ("  ⚠ 둘이 다릅니다" if gap == gap and gap > 1.0 else ""))
+      f"우리 기구학과의 차이: 숙임 `{gp:.2f}°` · 기울임 `{gr:.2f}°`"
+      + ("  ⚠ 둘이 다릅니다" if worst == worst and worst > 1.0 else ""))
 
   with server.gui.add_folder("AB 모터"):
     sa = server.gui.add_slider("크랭크 A [도]", min=-90.0, max=90.0, step=0.25, initial_value=0.0)
     sb = server.gui.add_slider("크랭크 B [도]", min=-90.0, max=90.0, step=0.25, initial_value=0.0)
     bypass = server.gui.add_checkbox("클리핑 끄기 (막는 것을 눈으로 확인)", False)
     reset = server.gui.add_button("0, 0 으로")
+    look = server.gui.add_button("발목으로 화면 맞추기")
 
   with server.gui.add_folder("클리핑"):
     status = server.gui.add_markdown(" ")
@@ -217,11 +269,29 @@ def run(host: str, port: int, leg: str) -> int:
   # 모델에서 몸통을 잘라내려면 파일을 새로 만들어야 하고 그러면 기구가 달라질 위험이
   # 있습니다. 그래서 자르는 대신 **그 부분만 크게** 봅니다 -- 보이는 것은 같고,
   # 모델은 학습·실물과 한 글자도 다르지 않습니다.
+  def frame_ankle(client: viser.ClientHandle) -> None:
+    tgt = data.xpos[foot_bid].copy()
+    # ★ 순서가 중요합니다. `look_at` 을 먼저 넣고 `position` 을 넣으면 viser 가
+    # **보는 방향을 유지한 채** 눈 위치만 옮겨서, 되읽어 보면 look_at 이
+    # (-2.85, -2.51, -2.48) 처럼 엉뚱한 데로 가 있습니다 (2026-09-13 실측).
+    # 눈 위치를 먼저 놓고, 그 다음에 어디를 볼지 말해야 합니다.
+    client.camera.up_direction = (0.0, 0.0, 1.0)
+    # 발판(원점)에서 크랭크 모터까지가 0.30 m 입니다. 그 한가운데를 보고 0.55 m
+    # 뒤에서 잡으면 크랭크 두 개 - 로드 - 발판이 한 화면에 다 들어옵니다.
+    client.camera.position = (tgt[0] + 0.40, tgt[1] + 0.32, tgt[2] + 0.26)
+    client.camera.look_at = (tgt[0], tgt[1], tgt[2] + 0.15)
+
   @server.on_client_connect
   def _(client: viser.ClientHandle) -> None:
-    tgt = data.xpos[foot_bid].copy()
-    client.camera.position = (tgt[0] + 0.42, tgt[1] + 0.34, tgt[2] + 0.22)
-    client.camera.look_at = (tgt[0], tgt[1], tgt[2] + 0.10)
+    # 접속 직후에 한 번 넣으면 화면 쪽이 아직 제 카메라를 세우는 중이라 덮어써
+    # 버립니다 (2026-09-13 실측: 발목 대신 엉덩이가 잡혔음). 조금 기다렸다 다시
+    # 넣습니다.
+    frame_ankle(client)
+    threading.Timer(1.2, lambda: frame_ankle(client)).start()
+
+  @look.on_click
+  def _(event) -> None:
+    frame_ankle(event.client)
 
   apply()
   print(f"  화면: http://{host}:{port}/   (모터로 나가는 길 없음)")
