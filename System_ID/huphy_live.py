@@ -134,6 +134,7 @@ class LiveTargets:
     self.note = "아직 명령 없음"
     self.last_rx_mono: Optional[float] = None
     self._measured: Dict[str, float] = {}
+    self._seeded = False
 
   # ---- 화면 쪽에서 부르는 것 ---------------------------------------------
   def update(self, partial: Dict[str, float]) -> Dict[str, Any]:
@@ -202,8 +203,40 @@ class LiveTargets:
   def __call__(self, t: float, observation: Dict[str, Any]) -> Dict[str, float]:
     del t                                   # 시간에는 기대지 않는다
     self.observe(observation)               # '힘 빼기' 가 쓸 최신 측정값만 갈무리
+    self._seed_once()
     with self._lock:
       return dict(self._targets)
+
+  def _seed_once(self) -> None:
+    """첫 주기에 목표를 **지금 있는 자리**로 맞춘다. 명령을 받기 전까지만.
+
+    ★ 이게 없으면 제어 루프가 켜지는 순간 모든 관절에 **0도를 그대로** 명령합니다.
+    관절이 0도에 있지 않으면 그만큼이 계단이 되어 한 번에 튑니다 — 2026-09-12 에
+    왼 엉덩이회전이 +11.26도에 있었으니 11도짜리 계단이었을 것입니다. 세기 10에서
+    그 오차는 약 2뉴턴미터라, 매달린 관절이 홱 돕니다.
+
+    HUPHY 자신도 같은 생각을 합니다 — `scripts/selftest.py` 의 `approach` 가 **지금
+    자세를 읽어** 거기서부터 목표까지 끌고 갑니다. 여기서는 화면이 목표를 주므로
+    끌고 갈 곳이 없고, 대신 **가만히 있는 것**에서 시작합니다. 움직임은 전부 사람이
+    시켜야 생깁니다.
+
+    한 번만 합니다. 사람이 목표를 준 뒤에는 측정값이 목표를 덮어쓰면 안 됩니다 —
+    그러면 관절이 처질 때 목표가 따라 내려가 영영 못 올라갑니다.
+    """
+    if self._seeded:
+      return
+    with self._lock:
+      if self.rx:                            # 이미 사람이 목표를 줬다
+        self._seeded = True
+        return
+      missing = [n for n in self._targets if n not in self._measured]
+      if missing:
+        return                               # 아직 다 못 읽음. 다음 주기에
+      self._targets.update(self._measured)
+      self._seeded = True
+      self.note = "지금 자세를 그대로 잡고 시작"
+    logger.info("시작 자세를 그대로 잡음: %s",
+                ", ".join(f"{n} {v:+.2f}도" for n, v in sorted(self._measured.items())))
 
 
 # ===========================================================================

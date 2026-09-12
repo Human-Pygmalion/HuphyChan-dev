@@ -980,6 +980,56 @@ def e33(f):
 
 
 # ===========================================================================
+# 차 · 시작하는 순간
+# ===========================================================================
+@check("E34", "시작", "제어 루프가 켜질 때 **지금 자리를 잡고** 시작하는가")
+def e34(f):
+  """0도를 그대로 명령하면 관절이 있던 자리만큼이 계단이 되어 한 번에 튑니다."""
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build()
+  # 관절을 0도가 아닌 자리로 **실제로 몰아 놓는다.** 가짜 모터는 명령을 받아야만
+  # 답하므로, 명령 없이 자리만 바꾸면 상태가 안 오고 통신 두절로 멈춘다.
+  live_all.update({"hip_yaw": 11.26})
+  spin(loop, motion_all, 300)
+  here = leg.get_observation()["hip_yaw.pos"]
+
+  live = HL.LiveTargets(HL.pick_joints(leg, {"hip_yaw"}))
+  motion = HL.ThermalCutoff(live, 50.0)
+  motors.sent.clear()
+  loop.step(motion, t=9.0)
+  first = sent_to(motors, MOTOR_OF["hip_yaw"])
+  loop.step(motion, t=9.01)
+  second = sent_to(motors, MOTOR_OF["hip_yaw"])
+  if second is None:
+    f.leak("아무것도 안 나갔습니다.")
+  elif abs(second["pos"] - here) < 0.5:
+    f.hold(f"관절이 {here:+.2f}도에 있을 때 첫 명령이 {second['pos']:+.2f}도입니다 — "
+           f"**있던 자리를 잡습니다.** 움직임은 사람이 시켜야 생깁니다.")
+  else:
+    f.leak(f"관절은 {here:+.2f}도인데 첫 명령이 {second['pos']:+.2f}도입니다. "
+           f"{abs(second['pos'] - here):.2f}도짜리 계단이 나갑니다.")
+
+
+@check("E35", "시작", "사람이 목표를 준 뒤에는 측정값이 목표를 덮어쓰지 않는가")
+def e35(f):
+  """처지는 관절에서 목표가 따라 내려가면 영영 못 올라갑니다."""
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build()
+  live_all.update({"hip_yaw": 5.0})
+  spin(loop, motion_all, 200)
+  live = HL.LiveTargets(HL.pick_joints(leg, {"hip_yaw"}))
+  live.update({"hip_yaw": 20.0})            # 사람이 먼저 목표를 줬다
+  motion = HL.ThermalCutoff(live, 50.0)
+  for k in range(5):
+    loop.step(motion, t=9.0 + k * 0.01)
+  if abs(live.snapshot()["hip_yaw"] - 20.0) < 1e-9:
+    f.hold("사람이 준 목표 +20.00도가 그대로 남았습니다. 측정값(+5도)이 "
+           "덮어쓰지 않습니다.")
+  else:
+    f.leak(f"목표가 {live.snapshot()['hip_yaw']:+.2f}도로 덮였습니다.")
+
+
+# ===========================================================================
 # 실행
 # ===========================================================================
 def main(argv=None) -> int:
