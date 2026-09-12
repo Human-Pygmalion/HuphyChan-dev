@@ -76,32 +76,9 @@ class Echo:
     return dict(self.targets)
 
 
-# ---------------------------------------------------------------- 과열 차단
-class TestThermalCutoff:
-  def test_cool_joint_passes_through(self):
-    inner = Echo({"left_leg/knee": 30.0})
-    m = guards.ThermalCutoff(inner, max_temp_c=50.0)
-    out = m(0.0, {"left_leg/knee.temp": 31.0, "left_leg/knee.pos": 0.0})
-    assert out["left_leg/knee"] == 30.0
-    assert m.events == 0
-
-  def test_hot_joint_is_pinned_to_where_it_is(self):
-    inner = Echo({"left_leg/knee": 30.0})
-    m = guards.ThermalCutoff(inner, max_temp_c=50.0)
-    out = m(0.0, {"left_leg/knee.temp": 61.0, "left_leg/knee.pos": 7.5})
-    assert out["left_leg/knee"] == pytest.approx(7.5)
-    assert m.events == 1
-
-  def test_it_reads_temp_not_temp_c(self):
-    """HUPHY 가 내는 이름은 `.temp` 입니다. `.temp_c` 로 읽던 판은 **영원히 안
-    걸렸습니다** (2026-09-12, 실물 직전에 검사가 잡음)."""
-    inner = Echo({"left_leg/knee": 30.0})
-    m = guards.ThermalCutoff(inner, max_temp_c=50.0)
-    m(0.0, {"left_leg/knee.temp_c": 99.0, "left_leg/knee.pos": 1.0})
-    assert m.events == 0                      # `.temp_c` 는 쳐다보지 않는다
-    m(0.0, {"left_leg/knee.temp": 99.0, "left_leg/knee.pos": 1.0})
-    assert m.events == 1
-
+# 과열 차단 시험은 여기 없습니다 — 브리지의 `motor_fault.ThermalCutoff` 가 원본이고
+# `tests/test_fault_visibility.py` 가 이미 덮습니다. 2026-09-13 에 제가 그것을
+# `guards.py` 로 옮겼다가, 목적지에 이미 있는 것을 확인하고 되물렸습니다.
 
 # ---------------------------------------------------------------- 발목 쌍
 class TestAnklePairGuard:

@@ -55,54 +55,17 @@ def joint_prefix(machine, part) -> str:
 # ===========================================================================
 # HUPHY 가 안 해 주는 것 (2) — 발목 두 모터를 **한 쌍으로** 자르기
 # ===========================================================================
-
-class ThermalCutoff:
-  """권선이 뜨거우면 그 관절 목표를 **지금 위치로 묶어** 힘을 쓰지 않게 한다.
-
-  HUPHY 에는 온도로 무언가를 막는 코드가 없습니다 — `MotorState.temp_c` 를 관찰로
-  내보내기만 합니다(`robots/leg.py:287`). 2026-09-11 전수 검사에서 확인한 구멍이고,
-  여기서 메웁니다.
-
-  **토크를 끊지 않고 목표를 묶는 이유**: 목표 위치 제어에서 토크를 끊으면 중력이
-  관절을 끌어내려 화면과 실물이 어긋납니다(2026-09-12 사용자 지적). 그래서 뜨거우면
-  "더 일하지 마라"로 만들되 붙잡고는 있게 합니다. 그래도 계속 오르면 사람이
-  `--max-temp-c` 를 낮추고 힘을 빼야 합니다.
-  """
-
-  def __init__(self, inner, max_temp_c: float, release_margin_c: float = 5.0):
-    self.inner = inner
-    self.max_temp_c = float(max_temp_c)
-    self.release_margin_c = float(release_margin_c)
-    self.hot: Dict[str, bool] = {}
-    self.events = 0
-
-  def __call__(self, t: float, observation: Dict[str, Any]) -> Dict[str, float]:
-    action = dict(self.inner(t, observation))
-    for name in list(action):
-      # 관찰은 **모터 이름**으로 옵니다 (hip_yaw, ankle_a, ...). 발판 공간 이름
-      # (ankle_pitch/ankle_roll)으로 목표를 주면 그 둘은 온도 키가 없으므로
-      # 아래 `temp is None` 에서 건너뜁니다 — 그 경우 발목 과열은 못 막습니다.
-      # 우리는 모터 공간(ankle_a/ankle_b)으로 주므로 해당되지 않습니다.
-      # ★ 키 이름은 `.temp` 다. `.temp_c` 가 아니다 (robots/leg.py:397).
-      # 2026-09-12 E2E 검사(E11)가 이 오타를 잡았다 — 그전에는 온도 차단이
-      # **영원히 안 걸렸다.** 값이 늘 None 이라 조용히 건너뛰었기 때문이다.
-      temp = observation.get(f"{name}.temp")
-      pos = observation.get(f"{name}.pos")
-      if temp is None:
-        continue
-      was = self.hot.get(name, False)
-      if temp >= self.max_temp_c:
-        if not was:
-          self.events += 1
-          logger.warning("%s 권선 %.1f도 — 목표를 지금 자리로 묶음", name, temp)
-        self.hot[name] = True
-      elif was and temp <= self.max_temp_c - self.release_margin_c:
-        self.hot[name] = False
-        logger.info("%s 권선 %.1f도로 내려감 — 다시 받음", name, temp)
-      if self.hot.get(name) and pos is not None:
-        action[name] = float(pos)
-    return action
-
+# 과열 차단은 **여기 없습니다** — 브리지에 이미 있습니다
+# ===========================================================================
+#
+# 2026-09-13. `System_ID/huphy_live.py` 의 `ThermalCutoff` 를 여기로 옮겼다가
+# **바로 되물렸습니다.** `bridge/motor_fault.py` 에 같은 것이 이미 있고, 그쪽이 더
+# 강합니다 -- 50도에서 끊고 45도에서 되살리는 이력(履歷)이 있고, 목표를 지금 자리로
+# 묶는 데서 그치지 않고 **게인까지 0 으로** 내려 토크를 확실히 없앱니다.
+# `huphy_remote_motion._update_thermal_cutoff` 가 매 주기 그것을 돌리고,
+# `{관절}/temp_valid` · `{관절}/cutoff` 를 관측으로 내보냅니다.
+#
+# 옮기기 전에 목적지를 안 봤습니다. 같은 실수를 문서로 남겨 둡니다 (`docs/138` 정정).
 
 # ===========================================================================
 # 로봇 한 마리에서 팔다리를 꺼내는 자리 — **이름을 여기 한 곳에만 적는다**
