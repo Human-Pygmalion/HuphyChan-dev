@@ -611,10 +611,13 @@ def e19(f):
   probe = _s.socket(_s.AF_INET, _s.SOCK_DGRAM); probe.bind(("127.0.0.1", 0))
   port = probe.getsockname()[1]; probe.close()
   server = TargetServer(live, port, token="").start()
-  ui = RemoteGuard(f"127.0.0.1:{port}", arm_token="", allow={"hip_yaw"})
+  # 다리 하나짜리 루프에 **양다리 표기**(L_hip_yaw_joint -> left_leg/hip_yaw)로
+  # 보낸다. 제어 루프가 꼬리를 보고 맞춰 줘야 한다 — 화면은 상대가 한 다리로
+  # 도는지 양다리로 도는지 모르는 편이 낫다.
+  ui = RemoteGuard(f"127.0.0.1:{port}", arm_token="", allow={"L_hip_yaw_joint"})
 
   goal = trimmed("hip_yaw")[1] - SAFETY["command_margin_deg"]
-  reply = ui.local_target("hip_yaw", goal, "")
+  reply = ui.local_target("L_hip_yaw_joint", goal, "")
   deadline = __import__("time").monotonic() + 2.0
   while live.rx == 0 and __import__("time").monotonic() < deadline:
     __import__("time").sleep(0.01)
@@ -710,40 +713,49 @@ def e23(f):
     f.leak(f"값이 중간에 증발합니다: 기본 {base.drain_s}, 준 값 {wide.drain_s}")
 
 
-@check("E24", "대기창", "huphy_live 의 기본 대기창이 실측으로 고른 값인가")
+@check("E24", "대기창", "기본 대기창이 **오래 버티는** 값인가")
 def e24(f):
-  """2026-09-12 실측: 2ms 에서는 한 모터가 연속 40주기까지 응답을 놓쳐 로봇이
-  스스로 멈춥니다(멈추는 조건은 연속 5주기). 5ms 가 분기점입니다."""
-  import argparse as _a, huphy_live
-  ap = _a.ArgumentParser()
-  for act in ():
-    pass
-  # main() 의 파서를 직접 만들지 않고, 기본값만 확인한다
-  import inspect
+  """2026-09-12 실측 (토크 없이, 양다리 12관절):
+
+      창        10초              90초
+      0 ms      85Hz 무응답 0     **20초 만에 통신두절로 죽음**
+      2 ms      66Hz              66.2Hz 버팀
+      3 ms      68Hz              **68.0Hz 버팀**  <- 고른 값
+      5 ms      57Hz              61.1Hz 버팀
+
+  ☆ 같은 날 5.0 -> 0.0 -> 3.0 으로 두 번 뒤집혔습니다. 두 번 다 **짧게 재고**
+  결론 낸 것이 원인이었습니다. 10초로는 0이 최선처럼 보입니다.
+  """
+  import inspect, re as _re
+  import huphy_live
   src = inspect.getsource(huphy_live.main)
-  m = __import__("re").search(r'"--drain-ms".*?default=([\d.]+)', src, __import__("re").S)
-  if m and abs(float(m.group(1)) - 5.0) < 1e-9:
-    f.hold("기본값이 5.0 입니다. 실측 표는 `huphy_live` 머리말과 "
-           "`docs/experiments/2026-09-12_loop_timing.md` 에 있습니다.")
+  m = _re.search(r'"--drain-ms".*?default=([\d.]+)', src, _re.S)
+  got = float(m.group(1)) if m else -1.0
+  if abs(got - 3.0) < 1e-9:
+    f.hold("기본값이 3.0 입니다. 0 은 20초 만에 죽고, 5 는 더 느립니다.")
+  elif got == 0.0:
+    f.leak("기본값이 0 입니다 — 90초 소크에서 통신두절로 죽는 값입니다.")
   else:
-    f.leak(f"기본값이 5.0 이 아닙니다: {m.group(1) if m else '못 찾음'}")
+    f.leak(f"기본값이 3.0 이 아닙니다: {got}")
 
 
-# ===========================================================================
-# 아 · 발목 두 모터를 한 쌍으로 자르기 (모터 공간 AB)
-# ===========================================================================
 def _ankle():
+  """발목 기구학만 붙인 가벼운 로봇. 통신선이 필요 없는 검사들이 씁니다."""
   from huphy.kinematics.ankle import AnkleGeometry, AnkleKinematics
   import huphy_live as HL
 
   class _FakeLeg:
     def __init__(self, kin, name):
       self.kinematics = kin
+      self.id = name                      # ★ 접두사는 **id** 로 붙는다
       self.config = type("C", (), {"name": name})()
 
   left = _FakeLeg(AnkleKinematics(AnkleGeometry().mirrored()), "left_leg")
   right = _FakeLeg(AnkleKinematics(AnkleGeometry()), "right_leg")
-  robot = type("R", (), {"limbs": [left, right]})()
+  # ★ 속성 이름은 `parts` 다 (`robots/biped.py:122`). `limbs` 로 짐작해 놨다가
+  # 실물 양다리 구동이 통째로 실패했고, 이 시험은 그 가짜 이름을 쓰고 있었기
+  # 때문에 **아무것도 못 잡았다.** 시험이 실물과 같은 이름을 써야 한다.
+  robot = type("R", (), {"parts": [left, right]})()
   return HL, robot, left, right
 
 
@@ -1027,6 +1039,373 @@ def e35(f):
            "덮어쓰지 않습니다.")
   else:
     f.leak(f"목표가 {live.snapshot()['hip_yaw']:+.2f}도로 덮였습니다.")
+
+
+# ===========================================================================
+# 카 · 0도가 곧 하드스톱인 관절 (무릎)
+# ===========================================================================
+@check("E36", "하드스톱", "0도가 하드스톱인 무릎에 0도를 주면 여유만큼 떨어져 서는가")
+def e36(f):
+  """사용자 질문(2026-09-12): *"0도에서 하드스탑쪽으로 가는 명령 주는 건 HUPHY
+  안전필터 클리핑이 막아주지?"*
+
+  무릎은 왼쪽이 `0~+120`, 오른쪽이 `-120~0` 이라 **0도가 곧 하드스톱**입니다.
+  지금까지 검사한 것은 엉덩이회전(양쪽이 다 열린 관절)이었으므로, 한쪽 끝이
+  막힌 관절로 직접 확인합니다.
+  """
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build(trim=False)   # 모델 한계 그대로
+  spin(loop, motion_all, 3)
+  live = HL.LiveTargets(HL.pick_joints(leg, {"knee"}))
+  motion = HL.ThermalCutoff(live, 50.0)
+  live.update({"knee": 0.0})
+  motors.sent.clear()
+  for k in range(400):
+    loop.step(motion, t=9.0 + k * 0.01)
+  hit = sent_to(motors, MOTOR_OF["knee"])
+  lo, hi = leg.calibration["knee"].limits_deg
+  floor = lo + SAFETY["command_margin_deg"]
+  if hit is None:
+    f.leak("아무것도 안 나갔습니다.")
+  elif abs(hit["pos"] - floor) < 0.1:
+    f.hold(f"한계 {lo:+.1f}~{hi:+.1f}도에서 0도를 달라고 했더니 "
+           f"**{hit['pos']:+.2f}도**가 나갔습니다 — 하드스톱에서 "
+           f"{SAFETY['command_margin_deg']:g}도 떨어져 섭니다.")
+  else:
+    f.leak(f"{hit['pos']:+.2f}도가 나갔습니다 (하한 {floor:+.2f}도).")
+
+
+@check("E37", "하드스톱", "하드스톱 **너머**를 달라고 해도 같은 자리에 서는가")
+def e37(f):
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build(trim=False)
+  spin(loop, motion_all, 3)
+  live = HL.LiveTargets(HL.pick_joints(leg, {"knee"}))
+  motion = HL.ThermalCutoff(live, 50.0)
+  lo, hi = leg.calibration["knee"].limits_deg
+  floor = lo + SAFETY["command_margin_deg"]
+  seen = []
+  for want in (-5.0, -50.0, -500.0):
+    live.update({"knee": want})
+    motors.sent.clear()
+    for k in range(400):
+      loop.step(motion, t=20.0 + k * 0.01)
+    hit = sent_to(motors, MOTOR_OF["knee"])
+    seen.append((want, hit["pos"] if hit else None))
+  ok = all(p is not None and abs(p - floor) < 0.1 for _, p in seen)
+  (f.hold if ok else f.leak)(
+    "한계 너머로 얼마를 달라고 하든 같은 자리에 섭니다: "
+    + " · ".join(f"{w:+.0f}도 -> {p:+.2f}도" for w, p in seen)
+    + f" (하한 {lo:+.1f} + 여유 {SAFETY['command_margin_deg']:g} = {floor:+.2f}도)")
+
+
+@check("E38", "하드스톱", "이미 한계 밖에 있으면 **한 주기씩** 돌아오는가")
+def e38(f):
+  """실물에서 실제로 일어날 일입니다 — 지금 오른 무릎이 +0.19도인데 허용 상한이
+  -3.00도라, 켜는 순간 한계 안으로 끌려옵니다. 한 번에 뛰면 안 됩니다."""
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build(trim=False)
+  live_all.update({"knee": 30.0})          # 일단 한계 안 깊숙이
+  spin(loop, motion_all, 400)
+  # 한계를 관절보다 아래로 끌어내려 '이미 밖' 을 만든다
+  from dataclasses import replace
+  cal = dict(leg.calibration)
+  cal["knee"] = replace(cal["knee"], limits_deg=(0.0, 10.0))
+  leg._set_calibration(cal)
+  live = HL.LiveTargets(HL.pick_joints(leg, {"knee"}))
+  motion = HL.ThermalCutoff(live, 50.0)
+  motors.sent.clear()
+  steps = []
+  prev = None
+  for k in range(6):
+    loop.step(motion, t=40.0 + k * 0.01)
+    hit = sent_to(motors, MOTOR_OF["knee"])
+    if hit and prev is not None:
+      steps.append(abs(hit["pos"] - prev))
+    if hit:
+      prev = hit["pos"]
+  cap = SAFETY["max_delta_deg"]
+  if steps and max(steps) <= cap + 0.05:
+    f.hold(f"한 주기 최대 이동 {max(steps):.2f}도 (상한 {cap:g}도). "
+           f"한계 밖에서 안으로도 한 번에 안 뜁니다.")
+  else:
+    f.leak(f"한 주기에 {max(steps) if steps else '?'}도 뛰었습니다 (상한 {cap:g}도).")
+
+
+# ===========================================================================
+# 타 · 양다리 — **가짜가 아니라 진짜 Biped 로**
+# ===========================================================================
+def build_biped_fake():
+  """다리 둘을 진짜 `Biped` 로 묶는다. 통신선만 가짜다."""
+  from huphy.robots.biped import Biped
+  motors = install({**MODELS, **{i + 6: m for i, m in MODELS.items()}})
+  legs = []
+  for side, name, base in (("left", "left_leg", 0), ("right", "right_leg", 6)):
+    cfg = LimbConfig(
+      name=name, kind="leg", side=side, channel=f"can{base // 6}",
+      control_hz=100.0,
+      motors={n: Motor(id=i + base, model=MODEL_NAME[i],
+                       gains=Gains(kp=10.0, kd=1.0))
+              for n, i in MOTOR_OF.items()})
+    cal = {n: MotorCalibration(motor_id=i + base, zero_reference="시험",
+                               limits_deg=MJCF_LIMITS[n])
+           for n, i in MOTOR_OF.items()}
+    geo = AnkleGeometry().mirrored() if side == "left" else AnkleGeometry()
+    leg = Leg(cfg, RobStrideBus(CanBus(cfg.channel), cfg.motors_by_id()),
+              safety=SafetyConfig(**SAFETY), calibration=cal,
+              kinematics=AnkleKinematics(geo))
+    leg.connect()
+    legs.append(leg)
+  robot = Biped(legs, safety=SafetyConfig(**SAFETY))
+  motors.sent.clear()
+  return robot, motors
+
+
+@check("E39", "양다리", "고른 관절 이름을 **진짜 Biped 가** 받아들이는가")
+def e39(f):
+  """★ 이 검사가 없어서 실물 양다리 구동이 통째로 실패했습니다.
+
+  `Biped` 는 이름 앞에 팔다리를 붙여야 받습니다(`biped.py:367`). 제가 팔다리
+  목록을 `limbs` 라는 **없는 속성**에서 꺼내고 있었는데, 이 파일의 시험이
+  **같은 틀린 이름으로 만든 가짜 로봇**을 쓰고 있어서 전부 통과했습니다. 진짜
+  속성은 `parts` 입니다(`biped.py:122`).
+
+  교훈: 시험이 실물과 **같은 물건**을 써야 합니다. 내가 지어낸 모양을 시험하면
+  내 착각이 그대로 통과합니다.
+  """
+  import huphy_live as HL
+  robot, motors = build_biped_fake()
+  chosen = HL.pick_joints(robot, set(MOTOR_OF))
+  if len(chosen) != 12:
+    f.leak(f"12개가 아니라 {len(chosen)}개를 골랐습니다: {chosen}")
+    return
+  if not all("/" in n for n in chosen):
+    f.leak(f"접두사가 안 붙었습니다: {chosen[:3]}")
+    return
+  try:
+    robot.build_commands({n: 0.0 for n in chosen})
+  except ValueError as exc:
+    f.leak(f"진짜 Biped 가 거부했습니다: {exc}")
+    return
+  f.hold(f"12개 전부 접두사가 붙었고({chosen[0]}, …) 진짜 `Biped.build_commands` 가 "
+         f"받아들입니다.")
+
+
+@check("E40", "양다리", "양다리에서도 안 연 관절에는 아무것도 안 나가는가")
+def e40(f):
+  import huphy_live as HL
+  robot, motors = build_biped_fake()
+  loop = ControlLoop(robot, hz=100.0, mode=Mode.CONTROL)
+  chosen = HL.pick_joints(robot, {"hip_yaw"})
+  live = HL.LiveTargets(chosen)
+  motion = HL.AnklePairGuard(HL.ThermalCutoff(live, 50.0), robot)
+  motors.sent.clear()
+  for k in range(60):
+    loop.step(motion, t=k * 0.01)
+  yaw = [count_sent(motors, i) for i in (3, 9)]
+  others = {i: count_sent(motors, i) for i in range(1, 13) if i not in (3, 9)}
+  if all(v > 0 for v in yaw) and all(v == 0 for v in others.values()):
+    f.hold(f"양쪽 엉덩이회전(3·9번)만 {yaw}주기 받았고 나머지 열 개는 0회입니다.")
+  else:
+    f.leak(f"샜습니다 — 회전 {yaw} / 나머지 {others}")
+
+
+@check("E42", "시작", "자세를 모르는 동안에는 **아무 명령도 안 나가는가**")
+def e42(f):
+  """못 뿌렸을 때 0도가 나가는 것보다, 아무것도 안 나가는 편이 안전합니다.
+  모터는 꺼진 채 남고 수거는 계속 돌아 다음 주기에 자세를 알게 됩니다."""
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build()
+  live_all.update({"hip_yaw": 11.0})
+  spin(loop, motion_all, 300)
+
+  live = HL.LiveTargets(HL.pick_joints(leg, {"hip_yaw"}))
+  # 응답이 하나도 없는 관찰 -> 명령이 나가면 안 된다
+  out = live(0.0, {"hip_yaw.pos": 0.0, "stale_motors": 6})
+  if out:
+    f.leak(f"자세를 모르는데 명령을 냈습니다: {out}")
+    return
+  # 응답이 온 뒤에는 낸다
+  out2 = live(0.01, leg.get_observation())
+  if out2 and abs(out2["hip_yaw"] - leg.get_observation()["hip_yaw.pos"]) < 0.5:
+    f.hold(f"모를 때는 빈 사전(HUPHY 가 전송을 건너뜀), 안 뒤에는 "
+           f"{out2['hip_yaw']:+.2f}도를 냅니다. 막은 주기 {live._blocked}회.")
+  else:
+    f.leak(f"응답이 온 뒤에도 이상합니다: {out2}")
+
+
+@check("E41", "시작", "응답을 못 받은 첫 주기에 **빈칸(0도)을 자세로 착각하지 않는가**")
+def e41(f):
+  """2026-09-12 실물에서 실제로 일어났습니다. 응답 대기창을 0으로 바꾸자 첫 주기에
+  응답이 없었고, 관절이 0.03~9.46도에 있는데 시작 자세를 전부 `+0.00도` 로 잡아
+  열두 관절에 0도를 명령했습니다.
+
+  `MotorState` 는 응답 전에도 `position_deg=0.0` 을 들고 있고(`motors/base.py:127`)
+  관찰에는 그냥 숫자로 실려 옵니다. **키가 있는지만 봐서는 못 가립니다.**
+  """
+  import huphy_live as HL
+  leg, loop, live_all, motion_all, motors = build()
+  live_all.update({"hip_yaw": 11.0})
+  spin(loop, motion_all, 300)
+  here = leg.get_observation()["hip_yaw.pos"]
+
+  live = HL.LiveTargets(HL.pick_joints(leg, {"hip_yaw"}))
+  # 응답이 아예 없는 관찰 — 첫 주기의 모습
+  live.observe({"hip_yaw.pos": 0.0, "stale_motors": 6})
+  live._seed_once()
+  if live._seeded:
+    f.leak(f"응답도 없는데 씨를 뿌렸습니다: {live.snapshot()}")
+    return
+  # 응답이 온 뒤에는 제대로
+  live.observe(leg.get_observation())
+  live._seed_once()
+  got = live.snapshot()["hip_yaw"]
+  if live._seeded and abs(got - here) < 0.5:
+    f.hold(f"응답 없는 주기에는 안 뿌리고, 응답이 온 뒤 {got:+.2f}도"
+           f"(실제 {here:+.2f}도)로 뿌립니다.")
+  else:
+    f.leak(f"뿌린 값 {got:+.2f}도, 실제 {here:+.2f}도")
+
+
+@check("E46", "화면 연결", "양다리에서 팔다리 없는 이름은 **모호하다고 거절하는가**")
+def e46(f):
+  """양다리인데 `hip_yaw` 만 오면 어느 다리인지 정할 근거가 없습니다. 조용히 한쪽을
+  고르면 반대쪽이 안 움직이는 줄 모른 채 돕니다."""
+  import huphy_live as HL
+  robot, motors = build_biped_fake()
+  live = HL.LiveTargets(HL.pick_joints(robot, {"hip_yaw"}))
+  vague = live.update({"hip_yaw": 5.0})
+  clear = live.update({"left_leg/hip_yaw": 5.0})
+  if vague["ok"] is False and clear["ok"] is True \
+     and clear["taken"] == ["left_leg/hip_yaw"]:
+    f.hold("팔다리 없는 이름은 거절하고, 붙은 이름만 받습니다. "
+           "다리 하나짜리 루프에서는 꼬리만 맞아도 받습니다(E19).")
+  else:
+    f.leak(f"예상과 다릅니다: 모호 {vague} / 분명 {clear}")
+
+
+@check("E43", "화면 연결", "화면 이름이 제어 루프 이름으로 **제대로 번역되는가**")
+def e43(f):
+  """화면은 `L_hip_yaw_joint`, 제어 루프는 `left_leg/hip_yaw` 를 씁니다.
+  번역이 틀리면 슬라이더를 아무리 움직여도 '모르는 이름' 으로 조용히 버려집니다."""
+  from joint_web import RemoteGuard
+  import huphy_live as HL
+  robot, motors = build_biped_fake()
+  names = set(HL.pick_joints(robot, set(MOTOR_OF)))
+  bad = [sim for sim, huphy in RemoteGuard.TO_HUPHY.items() if huphy not in names]
+  if bad:
+    f.leak(f"제어 루프가 모르는 이름으로 번역됩니다: {bad}")
+    return
+  if len(RemoteGuard.TO_HUPHY) != 12:
+    f.leak(f"12개가 아니라 {len(RemoteGuard.TO_HUPHY)}개만 번역됩니다")
+    return
+  f.hold(f"12개 전부 제어 루프가 아는 이름으로 번역됩니다 "
+         f"(예: L_hip_yaw_joint -> {RemoteGuard.TO_HUPHY['L_hip_yaw_joint']}).")
+
+
+@check("E44", "화면 연결", "슬라이더 -> UDP -> 제어 루프 -> 통신선이 **끝까지** 이어지는가")
+def e44(f):
+  """화면 어댑터에 넣은 목표가 실제 바이트가 되는지, 양다리 이름으로 확인합니다."""
+  import socket as _s, time as _t
+  from joint_web import RemoteGuard
+  import huphy_live as HL
+  robot, motors = build_biped_fake()
+  loop = ControlLoop(robot, hz=100.0, mode=Mode.CONTROL)
+  chosen = HL.pick_joints(robot, {"hip_yaw"})
+  live = HL.LiveTargets(chosen)
+  motion = HL.ThermalCutoff(live, 50.0)
+  for k in range(5):                      # 자세를 알게 한다
+    loop.step(motion, t=k * 0.01)
+
+  probe = _s.socket(_s.AF_INET, _s.SOCK_DGRAM); probe.bind(("127.0.0.1", 0))
+  port = probe.getsockname()[1]; probe.close()
+  server = HL.TargetServer(live, port, token="").start()
+  ui = RemoteGuard(f"127.0.0.1:{port}", arm_token="", allow={"L_hip_yaw_joint"})
+  reply = ui.local_target("L_hip_yaw_joint", 12.0, "")
+  end = _t.monotonic() + 2.0
+  while live.rx == 0 and _t.monotonic() < end:
+    _t.sleep(0.01)
+  motors.sent.clear()
+  for k in range(400):
+    loop.step(motion, t=1.0 + k * 0.01)
+  server.stop()
+  hit = sent_to(motors, 3)                # 왼 엉덩이회전
+  if not reply.get("ok"):
+    f.leak(f"화면 쪽에서 거부: {reply}")
+  elif live.rx == 0:
+    f.leak("UDP 가 제어 루프에 안 닿았습니다.")
+  elif hit and abs(hit["pos"] - 12.0) < 0.5:
+    f.hold(f"슬라이더 +12.00도 -> 통신선 {hit['pos']:+.2f}도. "
+           f"이름 번역까지 포함해 끝까지 이어집니다.")
+  else:
+    f.leak(f"통신선까지 못 갔습니다: {hit}")
+
+
+@check("E45", "화면 연결", "화면이 RS03 을 '힘 꺼짐' 으로 단정하지 않는가")
+def e45(f):
+  """RS03 은 힘이 들어가도 동작모드를 0으로 보고합니다. 화면이 그걸 '꺼짐' 으로
+  그리면 사람이 잘못 판단합니다 — 제가 그것 때문에 멀쩡한 모터 일곱 개를 고장으로
+  몰았습니다."""
+  import json as _j, socket as _s, time as _t
+  from joint_web import RemotePoller
+  probe = _s.socket(_s.AF_INET, _s.SOCK_DGRAM); probe.bind(("127.0.0.1", 0))
+  port = probe.getsockname()[1]; probe.close()
+  rp = RemotePoller(port).start()
+  sock = _s.socket(_s.AF_INET, _s.SOCK_DGRAM)
+  pkt = {"motors": {"3": {"joint": "left_leg/hip_yaw", "deg": 1.0, "vel": 0.0,
+                          "nm": 0.0, "temp": 30.0, "mode": 0,
+                          "mode_reported": False, "tgt": 1.0, "age_ms": 3.0},
+                    "4": {"joint": "left_leg/knee", "deg": 9.0, "vel": 0.0,
+                          "nm": 0.0, "temp": 30.0, "mode": 2,
+                          "mode_reported": True, "tgt": 9.0, "age_ms": 3.0}}}
+  for _ in range(5):
+    sock.sendto(_j.dumps(pkt).encode(), ("127.0.0.1", port)); _t.sleep(0.05)
+  _t.sleep(0.3)
+  rows, _ = rp.snapshot()
+  rp.stop()
+  if not rows:
+    f.leak("상태를 못 받았습니다.")
+  elif rows[3].get("mode") is None and rows[4].get("mode") == 2 \
+       and abs(rows[3].get("age_s", -1) - 0.0) < 0.01:
+    f.hold("보고하지 않는 모델(3번)은 모드를 **비워** 두고, 보고하는 모델(4번)은 "
+           "그대로 둡니다. 나이도 초 단위로 바뀝니다.")
+  else:
+    f.leak(f"예상과 다릅니다: {rows}")
+
+
+@check("E47", "화면 연결", "제어 루프가 죽으면 화면이 **목표를 안 보내고 알리는가**")
+def e47(f):
+  """2026-09-12 에 실제로 겪었습니다. 제어 루프가 통신두절로 죽어 있는데 화면이
+  *"목표 10.0도 유지 중"* 이라고 적었습니다 — UDP 는 받는 쪽이 죽어도 오류를 안
+  내기 때문입니다. 사람이 관절이 붙잡혀 있다고 믿을 상태였습니다."""
+  import socket as _s, time as _t
+  from joint_web import RemoteGuard, RemotePoller
+  probe = _s.socket(_s.AF_INET, _s.SOCK_DGRAM); probe.bind(("127.0.0.1", 0))
+  port = probe.getsockname()[1]; probe.close()
+  rp = RemotePoller(port).start()
+  ui = RemoteGuard("127.0.0.1:1", arm_token="", allow={"L_hip_yaw_joint"}, poller=rp)
+
+  dead = ui.local_target("L_hip_yaw_joint", 10.0, "")   # 상태를 한 번도 못 받음
+  if dead.get("ok") is not False:
+    rp.stop(); f.leak(f"죽은 루프에 목표를 보냈습니다: {dead}"); return
+
+  # 상태가 오기 시작하면 다시 받는다
+  sock = _s.socket(_s.AF_INET, _s.SOCK_DGRAM)
+  import json as _j
+  pkt = {"motors": {"3": {"joint": "left_leg/hip_yaw", "deg": 1.0, "vel": 0.0,
+                          "nm": 0.0, "temp": 30.0, "mode": None,
+                          "mode_reported": False, "tgt": 1.0, "age_ms": 3.0,
+                          "lo": -42.0, "hi": 42.0}}}
+  for _ in range(3):
+    sock.sendto(_j.dumps(pkt).encode(), ("127.0.0.1", port)); _t.sleep(0.05)
+  _t.sleep(0.3)
+  alive = ui.local_target("L_hip_yaw_joint", 10.0, "")
+  rp.stop()
+  if alive.get("ok") is True and ui.stats.get("loop_dead") == 1:
+    f.hold("루프가 말이 없으면 **보내지 않고 거절**하고, 상태가 오면 다시 받습니다. "
+           "거절 1회를 셌습니다.")
+  else:
+    f.leak(f"예상과 다릅니다: {alive} / {ui.stats}")
 
 
 # ===========================================================================

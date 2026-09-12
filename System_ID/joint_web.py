@@ -240,11 +240,32 @@ class RemotePoller:
       except (ValueError, TypeError):
         continue
       with self.lock:
-        self.state = {int(k): v for k, v in (msg.get("motors") or {}).items()}
+        # 제어 루프가 주는 칸 이름을 화면이 쓰는 이름으로 맞춘다. 화면 코드는
+        # `Poller` 시절 그대로이므로 여기서 흡수한다.
+        self.state = {}
+        for k, v in (msg.get("motors") or {}).items():
+          row = dict(v)
+          if "age_ms" in row:
+            row["age_s"] = round(row.pop("age_ms") / 1000.0, 2)
+          # ★ 동작모드는 **판단에 쓰지 않는다** — RS03 은 힘이 들어가도 0으로
+          # 보고합니다(2026-09-12). 화면이 "힘 꺼짐" 이라고 단정하지 않도록,
+          # 모터가 보고하지 않는 모델이면 아예 비워 둔다.
+          if row.get("mode_reported") is False:
+            row["mode"] = None
+          row.setdefault("fault", False)
+          row.setdefault("warning", False)
+          self.state[int(k)] = row
         self.note = msg.get("note", "")
         self.rx += 1
         self.last_mono = time.monotonic()
     sock.close()
+
+  def age_s(self):
+    """마지막 상태를 받은 지 몇 초. 한 번도 못 받았으면 `None`."""
+    with self.lock:
+      if not self.last_mono:
+        return None
+      return time.monotonic() - self.last_mono
 
   def snapshot(self):
     """`Poller.snapshot()` 과 같은 모양. 나이는 **제어 루프가 잰 것**을 그대로 쓴다."""
@@ -266,7 +287,24 @@ class RemoteGuard:
   *"암호 / UI잠금은 HUPHY 의 클래스 외부 UI 래퍼단에서 처리하는게 맞잖아."*
   """
 
-  def __init__(self, target: str, arm_token: str = "", allow=()):
+  # 화면이 쓰는 이름 -> 제어 루프(HUPHY)가 쓰는 이름.
+  # 화면은 시뮬 관절 이름(`L_hip_yaw_joint`)을, 로봇 프로그램은 팔다리를 붙인
+  # 이름(`left_leg/hip_yaw`)을 씁니다. 여기서 한 번만 번역합니다.
+  TO_HUPHY = {sim: f"{leg}_leg/{motor}"
+              for _mid, (leg, motor, _m, _ko, sim) in LAYOUT.items()}
+
+  # 시뮬 관절 이름 -> (모터 번호, 한글 이름). `cmd_guard.ALLOWED` 를 쓰지 않습니다 —
+  # 원격 방식에서는 그 파일을 아예 안 부르므로, 여기서 `LAYOUT` 으로 만듭니다.
+  BY_SIM = {sim: (mid, f"{'왼' if leg == 'left' else '오른'} {ko}")
+            for mid, (leg, _motor, _m, ko, sim) in LAYOUT.items()}
+
+  def __init__(self, target: str, arm_token: str = "", allow=(), poller=None):
+    self.poller = poller
+    """화면이 슬라이더를 만들 재료(구간·이름)를 여기서 꺼냅니다.
+
+    한계를 아는 것은 **제어 루프**입니다. 화면이 따로 들고 있으면 둘이 어긋나
+    "슬라이더 끝까지 밀었는데 안 간다" 가 생깁니다. 그래서 받아 온 것을 그대로
+    씁니다."""
     host, _, port = str(target).partition(":")
     self.addr = (host, int(port or 9872))
     self.arm_token = str(arm_token)
@@ -284,10 +322,17 @@ class RemoteGuard:
     if self.allow and name not in self.allow:
       self.stats["unknown"] += 1
       return dict(ok=False, why=f"허락되지 않은 관절입니다: {name}")
+    if not self.loop_alive():
+      self.stats["loop_dead"] = self.stats.get("loop_dead", 0) + 1
+      return dict(ok=False, why="제어 루프가 응답하지 않습니다 — 목표를 안 보냅니다")
+    huphy_name = self.TO_HUPHY.get(name)
+    if huphy_name is None:
+      self.stats["unknown"] += 1
+      return dict(ok=False, why=f"제어 루프 쪽 이름을 모릅니다: {name}")
     self.stats["rx"] += 1
     self.last_rx_any = time.monotonic()
     try:
-      self.sock.sendto(json.dumps({"name": name, "deg": float(deg),
+      self.sock.sendto(json.dumps({"name": huphy_name, "deg": float(deg),
                                    "token": self.arm_token}).encode(), self.addr)
       self.stats["sent"] += 1
     except OSError:
@@ -296,22 +341,55 @@ class RemoteGuard:
     self.note = f"{name} 목표 {float(deg):+.2f}도"
     return dict(ok=True, homing=False)
 
+  def loop_alive(self) -> bool:
+    """제어 루프가 지금 살아 있는가.
+
+    ★ **보내는 것만으로는 모릅니다.** UDP 는 받는 쪽이 죽어도 오류를 안 냅니다.
+    2026-09-12 에 제어 루프가 통신두절로 죽어 있는데 화면이 *"목표 10.0도 유지 중"*
+    이라고 적었습니다 — 사람이 관절이 붙잡혀 있다고 믿을 상태였습니다.
+
+    그래서 **상태가 오고 있는지**로 판단합니다. 제어 루프가 초당 스무 번 뿌리므로,
+    1초 넘게 안 오면 죽었거나 끊긴 것입니다.
+    """
+    if self.poller is None:
+      return True                      # 판단할 근거가 없으면 막지 않는다
+    return self.poller.age_s() is not None and self.poller.age_s() < 1.0
+
   def release_by_name(self, name: str, token: str) -> dict:
     """화면의 '힘 빼기'. 제어 루프에 알린다 — 여기서 직접 끄지 않는다."""
     del token
+    huphy_name = self.TO_HUPHY.get(name, name)
     try:
-      self.sock.sendto(json.dumps({"release": name}).encode(), self.addr)
+      self.sock.sendto(json.dumps({"release": huphy_name}).encode(), self.addr)
     except OSError:
       return dict(ok=False, why="제어 루프로 못 보냈습니다")
     return dict(ok=True, released=True)
 
   def status(self):
     now = time.monotonic()
+    rows = {}
+    if self.poller is not None:
+      state, _ = self.poller.snapshot()
+      for name in sorted(self.allow) or sorted(self.TO_HUPHY):
+        found = self.BY_SIM.get(name)
+        if found is None:
+          continue
+        mid, ko = found
+        live = state.get(mid)
+        if live is None or live.get("lo") is None:
+          continue
+        lo, hi = float(live["lo"]), float(live["hi"])
+        rows[str(mid)] = dict(
+          ko=ko, sim=name, iface="",
+          lo=round(lo, 2), hi=round(hi, 2),
+          home=round(min(hi, max(lo, 0.0)), 2),
+          cmd=live.get("tgt"), q0=None, homing=False,
+          torque_on=None, temp_cut=False, age_s=live.get("age_s"))
     return dict(dry_run=False, kp=None, kd=None, max_vel_deg_s=None,
                 deadman_s=None, max_temp_c=None, note=self.note,
                 rx_age_s=round(now - self.last_rx_any, 2) if self.last_rx_any else None,
                 needs_token=bool(self.arm_token), stats=dict(self.stats),
-                port=self.addr[1], has_pair_mask=None, remote=True, motors={})
+                port=self.addr[1], has_pair_mask=None, remote=True, motors=rows)
 
   def start(self):
     return self
@@ -769,9 +847,15 @@ async function tick(){{
                     : `<span class="big">${{d>0?'+':''}}${{d.toFixed(2)}}</span>`;
       rng = (r.lo==null) ? '<span class="dim">모름</span>'
           : `${{bar(m.deg, r.lo, r.hi)}}<span class="dim">${{r.lo}} ~ ${{r.hi}}\\uB3C4</span>`;
+      // ★ HUPHY 는 상태 프레임의 **동작모드 비트를 안 담습니다** — `MotorState` 에
+      // 그 칸이 없습니다 (`motors/base.py:124`, `bus.py:249` 가 다섯 값만 품).
+      // 그래서 원격 방식에서는 늘 비어 옵니다. **모르면 모른다고 적습니다** —
+      // RS03 이 힘이 들어가도 0으로 보고하는 것을 "꺼짐" 으로 읽었다가 멀쩡한
+      // 모터 일곱 개를 고장으로 몰았습니다 (2026-09-12).
       const mode = m.mode===2 ? '<span class="pill bad">힘 켜짐</span>'
                  : m.mode===0 ? '<span class="pill ok">힘 꺼짐</span>'
-                 : '<span class="pill warn">보정중</span>';
+                 : m.mode===1 ? '<span class="pill warn">보정중</span>'
+                 : '<span class="dim">힘 여부 모름</span>';
       st = mode + (m.fault?' <span class="pill bad">고장</span>':'')
                 + (m.warning?' <span class="pill warn">경고</span>':'')
                 + (m.age_s>1 ? ` <span class="pill warn">${{m.age_s}}초 전</span>` : '')
@@ -836,7 +920,7 @@ async function tick(){{
           + `<b style="min-width:104px">${{m.ko}}</b>`
           + `<span class="dim">${{mid}}번</span>`
           + `<input type="range" id="s${{mid}}" min="${{m.lo}}" max="${{m.hi}}"`
-          + ` step="0.5" value="${{m.home}}" style="width:210px">`
+          + ` step="0.5" value="${{m.cmd!=null ? m.cmd : m.home}}" style="width:210px">`
           + `<span id="v${{mid}}" class="big" style="min-width:62px">+0.0&deg;</span>`
           + `<button id="z${{mid}}" title="이 관절을 영자세로">0\u00B0 \uB85C</button>`
           + `<button id="b${{mid}}">움직이기</button>`
@@ -893,6 +977,15 @@ async function tick(){{
       '\uC774 \uD654\uBA74\uC740 \uBAA8\uD130\uB97C \uC6C0\uC9C1\uC77C \uC218 '
       + '\uC5C6\uC2B5\uB2C8\uB2E4 (\uC138\uAE30 0 \u00B7 \uD1A0\uD06C 0 \uC778 '
       + '\uD504\uB808\uC784\uB9CC \uBCF4\uB0C4)';
+  }}
+
+  // 제어 루프가 말이 없으면 **화면 맨 위에 크게** 알린다. 통신 상태 표 한 줄로는
+  // 사람이 못 봅니다 — 2026-09-12 에 루프가 죽은 채로 슬라이더를 만졌습니다.
+  if (j.cmd && j.cmd.remote) {{
+    const bus = j.buses && j.buses['huphy_live'];
+    if (!bus || bus.leg !== '\uC5F0\uACB0\uB428')
+      hot.push('\uC81C\uC5B4 \uB8E8\uD504\uAC00 \uB9D0\uC774 \uC5C6\uC2B5\uB2C8\uB2E4 '
+               + '\u2014 \uBAA9\uD45C\uAC00 \uC548 \uB098\uAC11\uB2C8\uB2E4');
   }}
 
   const bt = document.getElementById('bus');
@@ -1053,14 +1146,16 @@ def main(argv=None) -> int:
     # ---- 제어 루프와 나눠 쓰는 방식 --------------------------------------
     print("  ** 이 화면은 통신선을 만지지 않습니다 ** — 제어 루프(huphy_live)가")
     print("     읽고 쓰며, 여기는 받아서 그리고 목표만 넘깁니다.")
+    # 상태를 받는 쪽을 **먼저** 세웁니다 — 목표를 보내는 쪽이 슬라이더 구간을
+    # 여기서 꺼내 쓰기 때문입니다.
+    poller = RemotePoller(a.from_huphy or 9873).start()
+    print(f"     상태를 받을 포트 {a.from_huphy or 9873}")
     if a.to_huphy:
       guard = RemoteGuard(a.to_huphy, arm_token=a.arm_token,
-                          allow=set(a.allow) if a.allow else ())
+                          allow=set(a.allow) if a.allow else (), poller=poller)
       print(f"     목표를 보낼 자리 {a.to_huphy}"
             f"{' (암호 있음)' if a.arm_token else ' (암호 없음 — 망 안에서만)'}")
       print(f"     허락한 관절 {sorted(guard.allow) if guard.allow else '(제한 없음)'}")
-    poller = RemotePoller(a.from_huphy or 9873).start()
-    print(f"     상태를 받을 포트 {a.from_huphy or 9873}")
   else:
     if not os.path.exists(MAP_PATH):
       raise SystemExit(f"{MAP_PATH} 가 없습니다. 먼저 can_up.py 를 돌리세요")

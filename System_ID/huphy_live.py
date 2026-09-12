@@ -55,27 +55,32 @@ HUPHY 가 **안 해 주는 것**은 이 파일이 합니다 — 권선 과열 �
 `dict.update` 만 합니다. 통째로 갈아끼우지 않습니다.
 
 
-## 응답을 기다리는 창을 5밀리초로 둔 이유
+## 응답을 기다리는 창 — 3밀리초
 
-로봇 프로그램 기본값은 **2밀리초**입니다. 2026-09-12 에 토크 없이 실측해 보니
-그 값에서는 한 모터가 **연속 마흔 주기**까지 응답을 놓칩니다. 로봇 프로그램이
-멈추는 조건이 "한 모터가 연속 다섯 주기 무응답" 이라, 실제로 그것에 걸려 영자세
-유지가 296.5초에서 끊겼습니다.
+토크 없이(`--gain-scale 0`) 창만 바꿔 가며 쟀습니다. **짧게 재면 0이 최선처럼
+보이는데, 오래 재면 뒤집힙니다.**
 
-    창      실제 초당   전부 받은 주기   최악 연속 무응답   다섯을 친 모터
-    2 ms      200.0          0.3%             40           대부분
-    4 ms      200.0         32.8%              5           둘
-    **5 ms**  **199.9**     **55.2%**         **4**        **없음**
-    8 ms      170.6         62.4%              3           없음
+    창        10초 (양다리)        90초 (양다리)
+    0 ms      85Hz · 무응답 0      **20초 만에 통신두절로 죽음**
+    2 ms      66Hz                 66.2Hz · 버팀
+    **3 ms**  68Hz                 **68.0Hz · 버팀**
+    5 ms      57Hz                 61.1Hz · 버팀
 
-5밀리초가 분기점입니다 — 초당 200번을 그대로 지키면서 다섯을 치는 모터가 하나도
-없습니다. 6밀리초 이상은 속도를 잃으면서 얻는 것이 거의 없습니다.
+**창 0은 빠른 대신 죽습니다.** 기다리지 않으면 그 주기에 "응답 없음" 이 자주 찍히고,
+로봇 프로그램은 연속 다섯 번이면 통신두절로 봅니다(`safety/link.py:44`). 20초를 못
+넘겼습니다.
 
-★ **이 숫자는 제어 계산이 없는 상태**입니다. 로봇 프로그램은 매 주기 계산을 하므로
-여유가 이보다 좁습니다. 그리고 5밀리초에서도 주기의 45퍼센트는 모터 하나가 한 주기
-묵은 값을 씁니다 — "패킷로스 없이" 라는 요구를 만족하지는 못합니다. 진짜 해법은
-통신 어댑터 펌웨어 교체이고, 그건 부트로더에 사람 손이 필요해 보류 중입니다
-(`System_ID/FIRMWARE_RUNBOOK.md`).
+☆ **철회 2번 (2026-09-12)**: 같은 날 ~~"창 5가 낫다"~~ 고 했다가(한 다리만 보고),
+~~"창 0이 최선"~~ 이라고 뒤집었는데(10초만 재고), 90초로 재니 **창 0이 죽습니다.**
+짧게 재고 결론 낸 것이 두 번 다 원인이었습니다.
+
+★ 참고: 벤치에서 모터 한두 개로 연속 제어가 잘 되던 것은 **왕복이 0.53밀리초**라
+5밀리초 안에 여유롭게 들어왔기 때문입니다. 12개는 한 주기에 6.28밀리초가 들어
+사정이 다릅니다. 벤치에서 통하던 감각을 그대로 옮기면 안 됩니다.
+
+무응답이 여전히 많은 것(90초에 2472~5793주기)은 **대기창으로 풀 문제가 아닙니다** —
+"응답이 왔다" 의 정의가 위상에 좌우되기 때문입니다. 밀린 개수로 세는 설계안이
+`docs/132_link_health_design.md` 에 있습니다.
 
 원본: `docs/experiments/2026-09-12_loop_timing.md`
 
@@ -135,6 +140,8 @@ class LiveTargets:
     self.last_rx_mono: Optional[float] = None
     self._measured: Dict[str, float] = {}
     self._seeded = False
+    self._fresh = False
+    self._blocked = 0
 
   # ---- 화면 쪽에서 부르는 것 ---------------------------------------------
   def update(self, partial: Dict[str, float]) -> Dict[str, Any]:
@@ -146,8 +153,9 @@ class LiveTargets:
     """
     bad, notfinite, taken = [], [], {}
     for name, value in partial.items():
-      if name not in self._targets:
-        bad.append(name)
+      name = self._resolve(name)
+      if name is None or name not in self._targets:
+        bad.append(name if name is not None else "(모호함)")
         continue
       try:
         v = float(value)
@@ -171,6 +179,27 @@ class LiveTargets:
     return dict(ok=not (bad or notfinite), taken=sorted(taken),
                 unknown=bad, not_finite=notfinite)
 
+  def _resolve(self, name: str) -> Optional[str]:
+    """보내는 쪽 표기를 우리 표기로 맞춘다. 모호하면 `None`.
+
+    제어 루프가 양다리면 이름에 팔다리가 붙고(`left_leg/hip_yaw`), 다리 하나면
+    안 붙습니다(`hip_yaw`). 보내는 쪽(화면)은 어느 쪽으로 돌고 있는지 모르는
+    편이 낫습니다 — 여기서 받아 줍니다.
+
+    **모호하면 받지 않습니다.** 양다리인데 `hip_yaw` 만 오면 어느 다리인지
+    정할 근거가 없고, 조용히 한쪽을 고르면 반대쪽이 안 움직이는 줄 모른 채
+    돕니다.
+    """
+    if name in self._targets:
+      return name
+    tail = str(name).split("/")[-1]
+    hits = [n for n in self._targets if n.split("/")[-1] == tail]
+    if len(hits) == 1:
+      return hits[0]
+    if len(hits) > 1:
+      return None                            # 모호함 — 팔다리를 붙여 줘야 함
+    return name                              # 정말 모르는 이름
+
   def freeze(self, name: str) -> Dict[str, Any]:
     """그 관절의 목표를 **지금 측정 위치**로 옮긴다. 더 움직이지 않게.
 
@@ -178,6 +207,7 @@ class LiveTargets:
     그대로 둡니다 — 모르는 값으로 목표를 덮어쓰는 것이 더 위험합니다.
     """
     with self._lock:
+      name = self._resolve(name) or name
       if name not in self._targets:
         return dict(ok=False, why=f"모르는 관절입니다: {name}")
       pos = self._measured.get(name)
@@ -188,8 +218,26 @@ class LiveTargets:
     return dict(ok=True, deg=pos)
 
   def observe(self, observation: Dict[str, Any]) -> None:
-    """제어 루프가 준 관찰에서 측정 위치를 갈무리한다. `freeze` 가 쓴다."""
+    """제어 루프가 준 관찰에서 측정 위치를 갈무리한다. `freeze` 와 씨뿌리기가 쓴다.
+
+    ★ **응답을 한 번도 못 받았으면 그 값은 각도가 아니라 빈칸(0.0)입니다.**
+    `MotorState` 의 기본값이 0이고, 응답이 오기 전에는 `is_valid` 가 False 입니다
+    (`motors/base.py:138`). 관찰에는 그 0이 그냥 숫자로 실려 옵니다 — 키가 있는지만
+    봐서는 못 가립니다.
+
+    2026-09-12 에 이것에 걸렸습니다. 응답 대기창을 0으로 바꾸자 **첫 주기에 응답이
+    아예 없어서**, 관절이 0.03·3.59·3.40·9.46도에 있는데 시작 자세를 전부 `+0.00도`
+    로 잡고 열두 관절에 0도를 명령했습니다. 무릎은 여유 3도가 막아 줬지만 막아 준
+    것과 안 시킨 것은 다릅니다.
+
+    그래서 `stale_motors` 로 **응답을 받았는지** 먼저 봅니다. 팔다리마다 나오므로
+    (`robots/leg.py:406`, 양다리는 `왼다리/stale_motors`) 전부 0이어야 합니다.
+    """
+    stale = [v for k, v in observation.items() if k.endswith("stale_motors")]
     with self._lock:
+      self._fresh = bool(stale) and all(int(v) == 0 for v in stale)
+      if not self._fresh:
+        return                               # 빈칸을 각도로 갈무리하지 않는다
       for name in self._targets:
         pos = observation.get(f"{name}.pos")
         if pos is not None:
@@ -205,6 +253,17 @@ class LiveTargets:
     self.observe(observation)               # '힘 빼기' 가 쓸 최신 측정값만 갈무리
     self._seed_once()
     with self._lock:
+      if not self._seeded:
+        # ★ **자세를 모르면 아무것도 안 보낸다.** 빈 사전을 주면 HUPHY 가
+        # `if action:` 에서 걸러 전송을 건너뜁니다 (`control/loop.py:271`).
+        # 모터는 꺼진 채 남고, 수거는 계속 돌아 다음 주기에 자세를 알게 됩니다.
+        #
+        # 그전에는 못 뿌렸을 때 목표의 초기값인 **0도가 그대로 나갔습니다.**
+        # 2026-09-12 에 실제로 그랬습니다 — 응답 대기창을 0으로 바꾼 뒤 씨뿌리기가
+        # 한 번도 안 됐는데, 열두 관절에 20초 동안 0도가 나갔습니다. 아무것도 안
+        # 움직인 것은 정지마찰 덕이지 막아서가 아닙니다.
+        self._blocked += 1
+        return {}
       return dict(self._targets)
 
   def _seed_once(self) -> None:
@@ -229,6 +288,8 @@ class LiveTargets:
       if self.rx:                            # 이미 사람이 목표를 줬다
         self._seeded = True
         return
+      if not self._fresh:
+        return                               # 아직 응답을 한 번도 못 받았다
       missing = [n for n in self._targets if n not in self._measured]
       if missing:
         return                               # 아직 다 못 읽음. 다음 주기에
@@ -288,6 +349,31 @@ class ThermalCutoff:
       if self.hot.get(name) and pos is not None:
         action[name] = float(pos)
     return action
+
+
+# ===========================================================================
+# 로봇 한 마리에서 팔다리를 꺼내는 자리 — **이름을 여기 한 곳에만 적는다**
+# ===========================================================================
+def limbs_of(machine):
+  """팔다리 목록. 다리 하나짜리면 빈 목록.
+
+  ★ 속성 이름은 `parts` 입니다 (`robots/biped.py:122`). 제가 `limbs` 로 짐작해
+  써 놨다가 2026-09-12 에 양다리 구동이 통째로 실패했습니다 — 접두사가 안 붙어
+  `ValueError: 모르는 관절 [...]. 이름 앞에 팔다리를 붙일 것` 으로 루프가 섰습니다.
+  짐작한 이름을 여러 군데 흩어 놓았던 것이 문제라, 이제 여기 한 곳에만 둡니다.
+  """
+  return list(getattr(machine, "parts", ()) or ())
+
+
+def joint_prefix(machine, part) -> str:
+  """양다리면 `왼다리/`, 다리 하나면 빈 문자열.
+
+  접두사는 **팔다리의 id** 입니다 (`biped.py:84 join_name`). 설정의 `name` 과
+  같을 수도 다를 수도 있으니 id 를 씁니다.
+  """
+  if not limbs_of(machine):
+    return ""
+  return f"{getattr(part, 'id', getattr(part.config, 'name', ''))}/"
 
 
 # ===========================================================================
@@ -362,12 +448,12 @@ class AnklePairGuard:
     self.no_kinematics = 0
     # 다리별 (발목A 이름, 발목B 이름, 기구학) 과 직전에 받아들인 자리
     self.legs = []
-    for part in getattr(robot, "limbs", None) or [robot]:
+    for part in limbs_of(robot) or [robot]:
       kin = getattr(part, "kinematics", None)
       cfg = getattr(part, "config", None)
       if kin is None or cfg is None:
         continue
-      prefix = f"{cfg.name}/" if getattr(robot, "limbs", None) else ""
+      prefix = joint_prefix(robot, part)
       self.legs.append(dict(a=prefix + "ankle_a", b=prefix + "ankle_b",
                             kin=kin, last=(0.0, 0.0)))
 
@@ -452,20 +538,35 @@ class StateSender:
     out: Dict[str, Any] = {}
     now = time.monotonic()
     wanted = self.targets.snapshot()
-    for part in getattr(self.robot, "limbs", None) or [self.robot]:
+    for part in limbs_of(self.robot) or [self.robot]:
       cfg = getattr(part, "config", None)
       bus = getattr(part, "bus", None)
       if cfg is None or bus is None:
         continue
-      prefix = f"{cfg.name}/" if getattr(self.robot, "limbs", None) else ""
+      prefix = joint_prefix(self.robot, part)
       for joint, motor in cfg.motors.items():
         try:
           st = bus.state(motor.id)
         except Exception:                                   # noqa: BLE001
           continue
         full = prefix + joint
+        # 화면이 슬라이더를 만들려면 **갈 수 있는 구간**을 알아야 합니다.
+        # 한계는 가드가 실제로 보는 자리에서 읽고(`config.motors[…].limits_deg`),
+        # 여유를 문 값을 줍니다 — 화면이 보여 주는 끝이 실제로 닿는 끝이어야
+        # 사람이 "왜 거기까지 안 가지" 하고 헤매지 않습니다.
+        span = getattr(motor, "limits_deg", None)
+        margin = float(getattr(getattr(part, "safety", None),
+                               "command_margin_deg", 0.0) or 0.0)
+        if span:
+          lo, hi = float(span[0]) + margin, float(span[1]) - margin
+          if hi < lo:
+            lo = hi = 0.5 * (lo + hi)
+        else:
+          lo = hi = None
         out[str(motor.id)] = dict(
           joint=full, model=getattr(motor, "model", ""),
+          lo=None if lo is None else round(lo, 2),
+          hi=None if hi is None else round(hi, 2),
           deg=round(float(getattr(st, "position_deg", 0.0)), 2),
           vel=round(float(getattr(st, "velocity_deg_s", 0.0)), 1),
           nm=round(float(getattr(st, "torque_nm", 0.0)), 2),
@@ -475,7 +576,7 @@ class StateSender:
           mode=getattr(st, "mode", None),
           mode_reported=MODE_IS_REPORTED.get(getattr(motor, "model", ""), None),
           tgt=round(float(wanted.get(full, 0.0)), 2),
-          age_s=round(now - float(getattr(st, "stamp", 0.0) or now), 2),
+          age_ms=round((now - float(getattr(st, "stamp", 0.0) or now)) * 1000.0, 1),
         )
     return out
 
@@ -567,7 +668,7 @@ def report_modes(robot) -> Dict[int, Any]:
     위치의 차이가 줄어들면 힘이 들어간 것입니다.
     """
     out: Dict[int, Any] = {}
-    for part in getattr(robot, "limbs", None) or [robot]:
+    for part in limbs_of(robot) or [robot]:
         bus = getattr(part, "bus", None)
         if bus is None:
             continue
@@ -596,7 +697,7 @@ def trim_limits(machine, trim_deg: float) -> Dict[str, Any]:
   """
   from dataclasses import replace
   out = {}
-  for part in getattr(machine, "limbs", None) or [machine]:
+  for part in limbs_of(machine) or [machine]:
     cal = getattr(part, "calibration", None)
     if not cal:
       continue
@@ -613,9 +714,7 @@ def trim_limits(machine, trim_deg: float) -> Dict[str, Any]:
       else:
         new_span = (lo + trim_deg, hi - trim_deg)
       narrowed[name] = replace(entry, limits_deg=new_span)
-      key = name if not getattr(machine, "limbs", None) else \
-        f"{getattr(part.config, 'name', '')}/{name}"
-      out[key] = new_span
+      out[joint_prefix(machine, part) + name] = new_span
     setter = getattr(part, "_set_calibration", None)
     if setter is None:
       raise SystemExit("이 판의 HUPHY 에는 _set_calibration 이 없습니다 — "
@@ -640,11 +739,9 @@ def pick_joints(machine, wanted) -> list:
   # 학습된 정책도 그 공간이기 때문입니다(사용자 결정 2026-09-12). 받을 수 있는
   # 이름 전부는 `robots/leg.py:87 COMMANDABLE` 입니다.
   from huphy.robots.leg import COMMANDABLE
-  legs = getattr(machine, "limbs", None)
   names = []
-  for part in legs or [machine]:
-    prefix = f"{getattr(part.config, 'name', '')}/" if legs else ""
-    names.extend(prefix + n for n in COMMANDABLE)
+  for part in limbs_of(machine) or [machine]:
+    names.extend(joint_prefix(machine, part) + n for n in COMMANDABLE)
   if not wanted:
     # 안 고르면 **발판 공간 기본값**을 씁니다. 여덟 개를 통째로 주면 HUPHY 가
     # "두 공간이 섞임" 으로 거부합니다 (`leg.py:443`).
@@ -681,11 +778,13 @@ def build(args):
   drain_s = None if args.drain_ms is None else args.drain_ms / 1000.0
   if args.robot:
     machine = build_biped(robot_cfg, allow_uncalibrated=args.allow_uncalibrated,
-                          drain_s=drain_s)
+                          drain_s=drain_s, gain_scale=args.gain_scale,
+                          reader=args.reader)
   else:
     machine = build_leg(robot_cfg, _pick_limb(robot_cfg, args.limb),
                         allow_uncalibrated=args.allow_uncalibrated,
-                        drain_s=drain_s)
+                        drain_s=drain_s, gain_scale=args.gain_scale,
+                        reader=args.reader)
   hz = args.hz or getattr(machine, "control_hz", 100.0)
   loop = ControlLoop(machine, hz=hz, mode=Mode.CONTROL)
   return machine, loop, hz
@@ -712,9 +811,15 @@ def main(argv=None) -> int:
                        "아무것도 안 나갑니다 (예: hip_yaw ankle_a ankle_b)")
   ap.add_argument("--trim-deg", type=float, default=0.0,
                   help="한계를 양쪽으로 이만큼 안으로 좁힘. 설정 파일은 안 건드림")
-  ap.add_argument("--drain-ms", type=float, default=5.0,
-                  help="응답을 기다리는 창. 로봇 프로그램 기본은 2.0 인데 "
-                       "실측으로 5.0 이 나았습니다 — 아래 주석 참조")
+  ap.add_argument("--reader", dest="reader", action="store_true", default=True,
+                  help="채널마다 수신 스레드를 붙임 (기본 켬)")
+  ap.add_argument("--no-reader", dest="reader", action="store_false")
+  ap.add_argument("--gain-scale", type=float, default=1.0,
+                  help="설정의 세기에 곱함. **0 이면 계산은 다 하고 힘은 안 나감** — "
+                       "주기를 재거나 길이 뚫렸는지 볼 때 씁니다")
+  ap.add_argument("--drain-ms", type=float, default=3.0,
+                  help="응답을 기다리는 창. **0 으로 두면 20초 만에 통신두절로 "
+                       "죽습니다** — 머리말의 실측 표 참조")
   a = ap.parse_args(argv)
 
   logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -745,6 +850,10 @@ def main(argv=None) -> int:
         print(f"     {n:24} {span[0]:+8.2f} ~ {span[1]:+8.2f}도")
   print(f"  목표를 받는 자리 udp:{a.listen}"
         f"{' (암호 있음)' if a.token else ' (암호 없음 — 망 안에서만 쓸 것)'}")
+  if a.gain_scale == 0.0:
+    print("  ** 세기 0 — 계산은 다 하지만 힘이 나가지 않습니다 (주기 재기용) **")
+  elif a.gain_scale != 1.0:
+    print(f"  세기에 {a.gain_scale:g} 를 곱합니다")
   print(f"  권선 {a.max_temp_c:g}도를 넘으면 그 관절 목표를 지금 자리로 묶음")
   print(f"  발목은 축마다 \u00b1{ANKLE_AXIS_DEG:g}도 **그리고** 조합이 "
         f"숙임 {ANKLE_ROM_PITCH} 기울임 {ANKLE_ROM_ROLL} 안일 때만 나갑니다")
@@ -767,6 +876,11 @@ def main(argv=None) -> int:
   if modes:
     print(f"\n  모터가 보고한 동작모드: {modes}")
     print("  (RS03 은 힘이 들어가도 0으로 보고합니다 — 이 값으로 판단하지 마십시오)")
+  if not live._seeded:
+    print("\n  ** 시작 자세를 한 번도 못 읽어 아무 명령도 안 보냈습니다 "
+          f"({live._blocked}주기). 통신을 확인하십시오. **")
+  elif live._blocked:
+    print(f"  시작 자세를 읽기까지 {live._blocked}주기 동안 아무것도 안 보냈습니다")
   print(f"  받은 목표 {live.rx}개 · 모르는 이름 {live.rejected_unknown}개 "
         f"· 숫자가 아님 {live.rejected_not_finite}개 "
         f"· 과열로 묶음 {motion.inner.events}회")
