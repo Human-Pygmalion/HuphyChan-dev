@@ -19,6 +19,21 @@ utils/buffers/circular_buffer.py:210-217): q(t-1) == q(t) on that first call. Th
 module reproduces that by initializing ObsHistory.q_prev to None and treating
 None as "use q_now for q_prev too."
 
+★ NAMING EPOCH (2026-09-12). The names below are the PRE-RENAME ones. On that
+day the models' L_/R_ prefixes were swapped, because the chain called L_ sat at
+y = -0.1237 and is physically the RIGHT leg (docs/136). The physical ORDER never
+changed -- the model has always listed the -y chain first -- so this tuple is
+still a faithful copy of the v3/v4 checkpoints' contract, and the first six slots
+are still the -y chain. What changed is what that chain is CALLED: it is now
+R_*. Two consequences, both about mapping these names onto real motors:
+
+  * A contract baked BEFORE 2026-09-12 uses the old names. Resolving its
+    `L_hip_pitch_joint` against a post-rename model lands on the OTHER leg.
+  * A re-bake AFTER the rename will list the same physical joints in the same
+    order under the new names (R_ first). The parity test will then flag this
+    tuple, which is the intended loud failure -- update it together with a note
+    saying which epoch it came from.
+
 Joint order matches the checkpoint's own baked contract's `obs_joint_names` (which
 is identical, element for element, to `action_joint_names` -- confirmed by
 diffing the two lists in the .policy_contract.json). It is hardcoded here as a
