@@ -1455,6 +1455,16 @@
       "width": 470,
       "height": 300,
       "color": "1"
+    },
+    {
+      "id": "n_legonly_v6_standing",
+      "type": "file",
+      "file": "experiments/2026-09-14_legonly_ab_v6_standing.md",
+      "x": 23600,
+      "y": 580,
+      "width": 420,
+      "height": 170,
+      "color": "6"
     }
   ],
   "edges": [
@@ -2787,6 +2797,22 @@
       "toNode": "n_v5_stand_pose_diag",
       "toSide": "left",
       "label": "정지 q목표·토크 측정 → 원인"
+    },
+    {
+      "id": "e_v5_to_v6standing",
+      "fromNode": "n_legonly_v5_heading",
+      "fromSide": "right",
+      "toNode": "n_legonly_v6_standing",
+      "toSide": "left",
+      "label": "유일 변인: 정지 환경 비율 0.1 → 0.3"
+    },
+    {
+      "id": "e_standpose_to_v6",
+      "fromNode": "n_v5_stand_pose_diag",
+      "fromSide": "right",
+      "toNode": "n_legonly_v6_standing",
+      "toSide": "bottom",
+      "label": "정지 자세 추종이 죽어 있다 → 변인 근거"
     }
   ]
 }
