@@ -178,6 +178,7 @@
 | gen2p2_fc / fcp | gen2_bent_p2 | ✅ (⚠pure-vx creep 미달성 confound — 부하값 참조용, 앵커 아님) |
 | gen21p1_fc / fcp | gen21_bent_p1 | ✅ (DR-OFF 명목, 게이트 통과) |
 | **gen21p2_fc / fcp** | gen21_bent_p2 | ✅ ★★**flat 설계앵커(현행)** — 게이트 통과·낙상 0/0, 65 §2/§2b/§3 갱신 |
+| **v5_18099_stand** | legonly_ab_v5_heading model_18099 | ✅ 정지 명령 한 개(0,0,0) 30초 — [[2026-09-14_v5_stand_zero_command]]. **설계 앵커 아님**(명령 하나뿐). 서 있는 상태에서 시작하면 20초 동안 몸통 변화 폭 2 mm 로 정지, 최대 토크 엉덩이앞뒤 15.3 N·m(정격 38 %); ★엉덩이회전이 양쪽 다 액션 한계 ±40.5도에 상시 포화. `analysis/measure_stand.py`(measure_loads 래퍼 6줄) |
 
 ## 10. 다음 판정 대기 (게이트) — 2026-07-13 갱신
 1. ~~P1 init A/B~~ ✅ bent 승 · ~~P2 push-학습 앵커~~ ✅ bentp2 → ~~gen2 P2~~ ❌ 기각 → ✅ **gen21p2_fc = 현행 flat 앵커**(2026-07-13 승격)
@@ -187,6 +188,8 @@
 5. **Era-9 cant30_p1** (2026-07-14 착수, `PYG_HIP_CANT30` 기하변형 fresh P1): 게이트 = gen21_bent_p1 대비 추종 유지 + yaw 부하 예측(docs/67 §3: P99 +9.6 N·m·ω RMS 0.88) 실측 대조 → 통과 시 P2(DR+push) 진행
 
 ## 11. 문서 인프라 (런 아님)
+
+- [[2026-09-14_motor_bus_silent]] — 실물 모터 12개 통신 무응답 점검 기록(두 통신선 TX 10만 프레임 · RX 0 · 오류 0, HUPHY 자체 스캔도 동일). 소프트웨어 경로는 끝까지 정상이고 로봇 설정 한계가 최종 MJCF 와 여유 3도만큼만 다름을 확인. 원인 후보와 확인 순서(48 V 전원 → 커넥터/종단 → `data[6]` 프로토콜 변경) 정리.
 | 날짜 | 작업 | 산출 |
 |---|---|---|
 | 2026-09-03 | **분석/문서 작업 — 런 아님**: 전 학습 노트에 설정 명세 표(§1b~§1b-4) 소급 + 런처 자동 삽입 | [[122_spec_table_backfill]] · `analysis/run_spec_tables.py` · `tools/notes/backfill_spec_tables.py` |

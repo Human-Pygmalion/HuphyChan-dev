@@ -1415,6 +1415,26 @@
       "width": 420,
       "height": 140,
       "color": "4"
+    },
+    {
+      "id": "n_v5_stand",
+      "type": "file",
+      "file": "experiments/2026-09-14_v5_stand_zero_command.md",
+      "x": 22860,
+      "y": 960,
+      "width": 420,
+      "height": 150,
+      "color": "5"
+    },
+    {
+      "id": "n_motor_bus_silent",
+      "type": "file",
+      "file": "experiments/2026-09-14_motor_bus_silent.md",
+      "x": 22860,
+      "y": 1150,
+      "width": 420,
+      "height": 140,
+      "color": "1"
     }
   ],
   "edges": [
@@ -2707,6 +2727,22 @@
       "toNode": "n_legonly_v5_heading_p1",
       "toSide": "left",
       "label": "유일 변인: rel_heading_envs 0.3 → 0.8"
+    },
+    {
+      "id": "e_p2_to_stand",
+      "fromNode": "n_legonly_v5_heading_p2",
+      "fromSide": "right",
+      "toNode": "n_v5_stand",
+      "toSide": "left",
+      "label": "완주본을 정지 명령으로 측정"
+    },
+    {
+      "id": "e_stand_to_bus",
+      "fromNode": "n_v5_stand",
+      "fromSide": "bottom",
+      "toNode": "n_motor_bus_silent",
+      "toSide": "top",
+      "label": "실물 대조 시도 → 모터 무응답으로 막힘"
     }
   ]
 }
