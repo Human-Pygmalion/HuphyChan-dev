@@ -1435,6 +1435,16 @@
       "width": 420,
       "height": 140,
       "color": "1"
+    },
+    {
+      "id": "n_v5_walkstop",
+      "type": "file",
+      "file": "experiments/2026-09-14_v5_walk_then_stop.md",
+      "x": 23320,
+      "y": 960,
+      "width": 420,
+      "height": 150,
+      "color": "5"
     }
   ],
   "edges": [
@@ -2743,6 +2753,14 @@
       "toNode": "n_motor_bus_silent",
       "toSide": "top",
       "label": "실물 대조 시도 → 모터 무응답으로 막힘"
+    },
+    {
+      "id": "e_stand_to_walkstop",
+      "fromNode": "n_v5_stand",
+      "fromSide": "right",
+      "toNode": "n_v5_walkstop",
+      "toSide": "left",
+      "label": "걷고 나서 세워 10회 비교"
     }
   ]
 }
