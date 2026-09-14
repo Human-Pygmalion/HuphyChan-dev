@@ -1395,6 +1395,26 @@
       "width": 420,
       "height": 170,
       "color": "6"
+    },
+    {
+      "id": "n_legonly_v5_heading_p1",
+      "type": "file",
+      "file": "experiments/2026-09-13_03-02-08_legonly_ab_v5_heading_p1.md",
+      "x": 22400,
+      "y": 790,
+      "width": 420,
+      "height": 140,
+      "color": "4"
+    },
+    {
+      "id": "n_legonly_v5_heading_p2",
+      "type": "file",
+      "file": "experiments/2026-09-13_08-07-54_legonly_ab_v5_heading_p2.md",
+      "x": 22400,
+      "y": 960,
+      "width": 420,
+      "height": 140,
+      "color": "4"
     }
   ],
   "edges": [
@@ -2663,6 +2683,30 @@
       "toNode": "n_legonly_v5_heading",
       "toSide": "bottom",
       "label": "§3d 비틀기 5.32° vs 걸음 6.02°, §2b 벌점 두 항 합쳐 0.8 % → 변인 근거"
+    },
+    {
+      "id": "e_v5_to_p1",
+      "fromNode": "n_legonly_v5_heading",
+      "fromSide": "bottom",
+      "toNode": "n_legonly_v5_heading_p1",
+      "toSide": "top",
+      "label": "1단계 (4,100)"
+    },
+    {
+      "id": "e_p1_to_p2",
+      "fromNode": "n_legonly_v5_heading_p1",
+      "fromSide": "bottom",
+      "toNode": "n_legonly_v5_heading_p2",
+      "toSide": "top",
+      "label": "이어받기 → 2단계 완주 (18,099)"
+    },
+    {
+      "id": "e_v4_to_v5p1",
+      "fromNode": "n_legonly_v4_motorparams",
+      "fromSide": "bottom",
+      "toNode": "n_legonly_v5_heading_p1",
+      "toSide": "left",
+      "label": "유일 변인: rel_heading_envs 0.3 → 0.8"
     }
   ]
 }
