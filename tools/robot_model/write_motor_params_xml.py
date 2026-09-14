@@ -103,14 +103,65 @@ def patch(text: str, values: dict) -> tuple[str, list]:
   return JOINT_RE.sub(one, text), touched
 
 
+URDF_JOINT_RE = re.compile(r'(<joint\b[^>]*?>)(.*?)(</joint>)', re.S)
+DYN_RE = re.compile(r'\s*<dynamics\b[^>]*/>')
+ARM_COMMENT_RE = re.compile(r'\s*<!--\s*armature \(reflected rotor inertia\).*?-->', re.S)
+"""두 번 돌려도 같은 결과가 나오게 **직전에 쓴 것부터 걷어낸다.** 안 그러면 주석이
+돌릴 때마다 한 줄씩 쌓인다 (2026-09-15 실제로 그랬음)."""
+
+
+def patch_urdf(text: str, values: dict) -> tuple[str, list]:
+  """URDF 의 `<joint>` 마다 `<dynamics damping= friction=/>` 를 넣거나 갈아 끼운다.
+
+  2026-09-15 · 사용자 지시: *"최신 mjcf 에 있는 설정 중에 urdf 에도 쓸수있지만 override
+  하도록 설정된 값들이 있나? 그런게 있으면 urdf 에도 업데이트해줘. 실제로 나중에 로봇을
+  다른 플랫폼 시뮬쪽에 달면 문제가 될거같아."*
+
+  ★ **armature 는 URDF 규격에 자리가 없습니다.** 점성(`damping`)과 쿨롱 마찰(`friction`)만
+  `<dynamics>` 로 표준에 맞게 넣고, armature 는 관절마다 **주석**으로 적고 옆에 sidecar
+  JSON 을 따로 냅니다. 규격에 없는 태그를 지어내면 엄격한 파서가 파일 전체를 거부할 수
+  있어서, 읽는 쪽이 골라 쓸 수 있게 둡니다.
+
+  URDF 의 `friction` 은 MuJoCo 의 `frictionloss` 와 같은 뜻입니다(움직임을 막는 방향의
+  일정한 힘). `damping` 도 양쪽 다 속도에 비례하는 감쇠라 그대로 옮겨집니다.
+  """
+  touched = []
+
+  def one(m):
+    head, body, tail = m.group(1), m.group(2), m.group(3)
+    nm = NAME_RE.search(head)
+    if not nm:
+      return m.group(0)
+    fam = motor_for(nm.group(1))
+    if fam is None:
+      return m.group(0)
+    v = values[fam]
+    body = ARM_COMMENT_RE.sub("", DYN_RE.sub("", body))     # 있던 것은 걷어낸다
+    body = body.rstrip() + (
+      f'\n    <dynamics damping="{v["damping"]:.6g}" friction="{v["frictionloss"]:.6g}"/>'
+      f'\n    <!-- armature (reflected rotor inertia) = {v["armature"]:.6g} kg*m^2 : '
+      f'no standard URDF field; see the sidecar .motor_params.json -->\n  ')
+    touched.append((nm.group(1), fam))
+    return head + body + tail
+
+  return URDF_JOINT_RE.sub(one, text), touched
+
+
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("--xml", nargs="+", required=True, help="고칠 원본 MJCF 파일들")
+  ap.add_argument("--xml", nargs="+", required=True,
+                  help="고칠 파일들. `.urdf` 면 URDF 규칙으로, 아니면 MJCF 규칙으로 고친다")
   ap.add_argument("--set", dest="which", default="bench-2026-09-10", choices=list(SETS))
   ap.add_argument("--suffix", default=None,
                   help="사본 이름에 붙일 꼬리. 기본은 값 묶음 이름")
   ap.add_argument("--dry-run", action="store_true")
+  ap.add_argument("--in-place", action="store_true",
+                  help="사본을 만들지 않고 **원본을 고친다**. URDF 처럼 '다른 플랫폼이 "
+                       "그대로 집어 가는 파일' 은 값이 그 안에 있어야 해서 필요하다")
+  ap.add_argument("--sidecar", action="store_true",
+                  help="URDF 옆에 `<이름>.motor_params.json` 을 같이 낸다 "
+                       "(armature 는 URDF 규격에 자리가 없다)")
   a = ap.parse_args(argv)
 
   values = SETS[a.which]
@@ -125,8 +176,9 @@ def main(argv=None) -> int:
     if not p.exists():
       print(f"  없음: {p}", file=sys.stderr)
       continue
-    out, touched = patch(p.read_text(), values)
-    dst = p.with_name(f"{p.stem}_{suffix}{p.suffix}")
+    is_urdf = p.suffix.lower() == ".urdf"
+    out, touched = (patch_urdf if is_urdf else patch)(p.read_text(), values)
+    dst = p if a.in_place else p.with_name(f"{p.stem}_{suffix}{p.suffix}")
     counts = {}
     for _n, fam in touched:
       counts[fam] = counts.get(fam, 0) + 1
@@ -135,6 +187,18 @@ def main(argv=None) -> int:
             + ", ".join(f"{k} {v}개" for k, v in sorted(counts.items())))
       continue
     dst.write_text(out)
+    if is_urdf and a.sidecar:
+      import json
+      side = dst.with_suffix(".motor_params.json")
+      side.write_text(json.dumps({
+        "_comment": ("armature (reflected rotor inertia, kg*m^2) has no standard URDF "
+                     "field. Apply these per joint when loading this URDF into a "
+                     "simulator that supports it (MuJoCo: <joint armature>, Isaac: "
+                     "ArticulationRootProperties/joint armature)."),
+        "source": a.which,
+        "joints": {n: {"motor": fam, **values[fam]} for n, fam in touched},
+      }, indent=2, ensure_ascii=False) + "\n")
+      print(f"  {side.name} 같이 씀")
     print(f"  {p.name} → {dst.name} · 고친 관절 "
           + ", ".join(f"{k} {v}개" for k, v in sorted(counts.items())))
     print("      " + ", ".join(n for n, _f in touched))

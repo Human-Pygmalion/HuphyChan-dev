@@ -192,6 +192,37 @@ CRANK_RANGE = (-1.2, 1.2)      # rad, wider than the ankle needs; verified by th
 EFFORT = {'hip_pitch': 120, 'hip_roll': 120, 'hip_yaw': 60, 'knee': 120,
           'ankle_pitch': 90, 'ankle_roll': 50,
           'waist_yaw': 120, 'shoulder_pitch': 60, 'shoulder_roll': 60}   # RS04 / RS03 / RS03
+
+# 2026-09-15: URDF 의 `<dynamics>` 에 **실측 모터 값**을 같이 낸다.
+#
+# 왜: 이 값들은 지금까지 mjlab 이 불러올 때만 주입돼서, **URDF 나 MJCF 파일만 다른
+# 시뮬레이터에 가져가면 아예 안 들어갔다.** armature 는 100배 작은 자리표시자가, 마찰은
+# 아무것도 없는 채로 로봇이 만들어진다. 사용자 지적(2026-09-15): *"실제로 나중에 로봇을
+# 다른 플랫폼 시뮬쪽에 달면 문제가 될거같아."*
+#
+# URDF `friction` = MuJoCo `frictionloss`(움직임을 막는 일정한 힘), `damping` 은 양쪽 다
+# 속도 비례 감쇠라 그대로 옮겨진다. **armature 는 URDF 규격에 자리가 없어** 주석과
+# 옆 파일(`*.motor_params.json`)로 낸다 — `write_motor_params_xml.py` 와 같은 규약이다.
+#
+# 값의 정본은 `tools/robot_model/write_motor_params_xml.py` 의 `SETS` 다. 여기 숫자를
+# 고치지 말고 그쪽을 고친 뒤 이 표를 맞출 것.
+MOTOR_DYN = {                        # 관절 이름 조각 -> (damping, frictionloss, armature)
+  'hip_pitch': (0.0275, 0.519, 0.0773), 'hip_roll': (0.0275, 0.519, 0.0773),
+  'knee': (0.0275, 0.519, 0.0773), 'waist_yaw': (0.0275, 0.519, 0.0773),
+  'hip_yaw': (0.0252, 0.251, 0.0638),
+  'shoulder_pitch': (0.0252, 0.251, 0.0638), 'shoulder_roll': (0.0252, 0.251, 0.0638),
+}
+
+
+def dyn_xml(jn: str, ind: str = '    ') -> str:
+  """그 관절의 `<dynamics>` 한 줄 + armature 주석. 구동 관절이 아니면 빈 문자열."""
+  v = MOTOR_DYN.get(jn)
+  if v is None:
+    return ''
+  d, f, a = v
+  return (f'{ind}<dynamics damping="{d:g}" friction="{f:g}"/>\n'
+          f'{ind}<!-- armature (reflected rotor inertia) = {a:g} kg*m^2 : '
+          f'no standard URDF field; see the sidecar .motor_params.json -->\n')
 # Upper body. When the mass-property file carries an `upper` block (the Fusion export does -
 # the current CAD is "wUpper" and models Torso, Neck and the arm), it is used verbatim,
 # mirrored to two arms. Otherwise the old placeholder lump is used: the docs/82
@@ -1026,7 +1057,7 @@ def main():
                 o[1] = sign * abs(o[1])
             U.append(f'  <joint name="{s}_{jn}_joint" type="revolute">\n    <origin xyz="{o[0]:.6g} {o[1]:.6g} {o[2]:.6g}" rpy="0 0 0"/>\n'
                      f'    <parent link="{parent}"/>\n    <child link="{s}_{BNAME[b]}"/>\n    <axis xyz="{ax[0]} {ax[1]} {ax[2]}"/>\n'
-                     f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n  </joint>\n')
+                     f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n{dyn_xml(jn)}  </joint>\n')
             parent = f'{s}_{BNAME[b]}'
     if loop:
         for s in 'LR':
@@ -1045,7 +1076,7 @@ def main():
         o = off['torso']
         U.append(f'  <joint name="waist_yaw_joint" type="revolute">\n    <origin xyz="{o[0]:.6g} {o[1]:.6g} {o[2]:.6g}" rpy="0 0 0"/>\n'
                  f'    <parent link="base_link"/>\n    <child link="torso_link"/>\n    <axis xyz="{ax[0]} {ax[1]} {ax[2]}"/>\n'
-                 f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n  </joint>\n')
+                 f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n{dyn_xml(jn)}  </joint>\n')
         for s_ in 'LR':
             sgn = -1.0 if s_ == 'L' else 1.0
             parent = 'torso_link'
@@ -1081,7 +1112,7 @@ def main():
                 else:
                     U.append(f'  <joint name="{s_}_{jn}_joint" type="revolute">\n    <origin xyz="{o[0]:.6g} {o[1]:.6g} {o[2]:.6g}" rpy="0 0 0"/>\n'
                              f'    <parent link="{parent}"/>\n    <child link="{s_}_{BNAME[b]}"/>\n    <axis xyz="{ax[0]} {ax[1]} {ax[2]}"/>\n'
-                             f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n  </joint>\n')
+                             f'    <limit lower="{rg[0]}" upper="{rg[1]}" effort="{EFFORT[jn]}" velocity="20"/>\n{dyn_xml(jn)}  </joint>\n')
                 parent = f'{s_}_{BNAME[b]}'
     U.append('</robot>\n')
     assert_left_is_plus_y(''.join(U), f'{tag}.urdf')

@@ -171,6 +171,8 @@
     <child link="R_hip_pitch_link"/>
     <axis xyz="0 1 0"/>
     <limit lower="-2.0943951023931953" upper="0.4363323129985824" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="R_hip_roll_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -178,6 +180,8 @@
     <child link="R_hip_roll_link"/>
     <axis xyz="-1 0 0"/>
     <limit lower="-0.4363323129985824" upper="1.4835298641951802" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="R_hip_yaw_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -185,6 +189,8 @@
     <child link="R_thigh_link"/>
     <axis xyz="0 0 1"/>
     <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="60" velocity="20"/>
+    <dynamics damping="0.0252" friction="0.251"/>
+    <!-- armature (reflected rotor inertia) = 0.0638 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="R_knee_joint" type="revolute">
     <origin xyz="-0.045 0 -0.37" rpy="0 0 0"/>
@@ -192,6 +198,8 @@
     <child link="R_shin_link"/>
     <axis xyz="0 1 0"/>
     <limit lower="0.0" upper="2.0943951023931953" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="R_ankle_pitch_joint" type="revolute">
     <origin xyz="-0.03 0 -0.49" rpy="0 0 0"/>
@@ -213,6 +221,8 @@
     <child link="L_hip_pitch_link"/>
     <axis xyz="0 -1 0"/>
     <limit lower="-0.4363323129985824" upper="2.0943951023931953" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="L_hip_roll_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -220,6 +230,8 @@
     <child link="L_hip_roll_link"/>
     <axis xyz="-1 0 0"/>
     <limit lower="-1.4835298641951802" upper="0.4363323129985824" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="L_hip_yaw_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -227,6 +239,8 @@
     <child link="L_thigh_link"/>
     <axis xyz="0 0 1"/>
     <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="60" velocity="20"/>
+    <dynamics damping="0.0252" friction="0.251"/>
+    <!-- armature (reflected rotor inertia) = 0.0638 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="L_knee_joint" type="revolute">
     <origin xyz="-0.045 0 -0.37" rpy="0 0 0"/>
@@ -234,6 +248,8 @@
     <child link="L_shin_link"/>
     <axis xyz="0 -1 0"/>
     <limit lower="-2.0943951023931953" upper="0.0" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="L_ankle_pitch_joint" type="revolute">
     <origin xyz="-0.03 0 -0.49" rpy="0 0 0"/>
@@ -320,6 +336,8 @@
     <child link="torso_link"/>
     <axis xyz="0 0 -1"/>
     <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="120" velocity="20"/>
+    <dynamics damping="0.0275" friction="0.519"/>
+    <!-- armature (reflected rotor inertia) = 0.0773 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="R_shoulder_pitch_joint" type="revolute">
     <origin xyz="-0.015 -0.2 0.3625" rpy="0 0 0"/>
@@ -327,6 +345,8 @@
     <child link="R_shoulder_pitch_link"/>
     <axis xyz="0 1 0"/>
     <limit lower="-2.9670597283903604" upper="1.0471975511965976" effort="60" velocity="20"/>
+    <dynamics damping="0.0252" friction="0.251"/>
+    <!-- armature (reflected rotor inertia) = 0.0638 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="R_shoulder_roll_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -334,6 +354,8 @@
     <child link="R_arm_link"/>
     <axis xyz="-1 0 0"/>
     <limit lower="-0.2617993877991494" upper="2.2689280275926285" effort="60" velocity="20"/>
+    <dynamics damping="0.0252" friction="0.251"/>
+    <!-- armature (reflected rotor inertia) = 0.0638 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="L_shoulder_pitch_joint" type="revolute">
     <origin xyz="-0.015 0.2 0.3625" rpy="0 0 0"/>
@@ -341,6 +363,8 @@
     <child link="L_shoulder_pitch_link"/>
     <axis xyz="0 -1 0"/>
     <limit lower="-1.0471975511965976" upper="2.9670597283903604" effort="60" velocity="20"/>
+    <dynamics damping="0.0252" friction="0.251"/>
+    <!-- armature (reflected rotor inertia) = 0.0638 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
   <joint name="L_shoulder_roll_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -348,5 +372,7 @@
     <child link="L_arm_link"/>
     <axis xyz="-1 0 0"/>
     <limit lower="-2.2689280275926285" upper="0.2617993877991494" effort="60" velocity="20"/>
+    <dynamics damping="0.0252" friction="0.251"/>
+    <!-- armature (reflected rotor inertia) = 0.0638 kg*m^2 : no standard URDF field; see the sidecar .motor_params.json -->
   </joint>
 </robot>

@@ -1,0 +1,84 @@
+{
+  "_comment": "armature (reflected rotor inertia, kg*m^2) has no standard URDF field. Apply these per joint when loading this URDF into a simulator that supports it (MuJoCo: <joint armature>, Isaac: ArticulationRootProperties/joint armature).",
+  "source": "bench-2026-09-10",
+  "joints": {
+    "R_hip_pitch_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "R_hip_roll_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "R_hip_yaw_joint": {
+      "motor": "RS03",
+      "armature": 0.0638,
+      "damping": 0.0252,
+      "frictionloss": 0.251
+    },
+    "R_knee_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "L_hip_pitch_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "L_hip_roll_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "L_hip_yaw_joint": {
+      "motor": "RS03",
+      "armature": 0.0638,
+      "damping": 0.0252,
+      "frictionloss": 0.251
+    },
+    "L_knee_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "waist_yaw_joint": {
+      "motor": "RS04",
+      "armature": 0.0773,
+      "damping": 0.0275,
+      "frictionloss": 0.519
+    },
+    "R_shoulder_pitch_joint": {
+      "motor": "RS03",
+      "armature": 0.0638,
+      "damping": 0.0252,
+      "frictionloss": 0.251
+    },
+    "R_shoulder_roll_joint": {
+      "motor": "RS03",
+      "armature": 0.0638,
+      "damping": 0.0252,
+      "frictionloss": 0.251
+    },
+    "L_shoulder_pitch_joint": {
+      "motor": "RS03",
+      "armature": 0.0638,
+      "damping": 0.0252,
+      "frictionloss": 0.251
+    },
+    "L_shoulder_roll_joint": {
+      "motor": "RS03",
+      "armature": 0.0638,
+      "damping": 0.0252,
+      "frictionloss": 0.251
+    }
+  }
+}
