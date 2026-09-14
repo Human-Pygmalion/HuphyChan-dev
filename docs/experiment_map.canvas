@@ -1545,6 +1545,26 @@
       "width": 420,
       "height": 160,
       "color": "6"
+    },
+    {
+      "id": "n_p2_timing_scan",
+      "type": "text",
+      "text": "**정지 차이는 굳히기 구간에서야 갈린다** (2026-09-15)\n\n발 뗀 시간(10초 중), 시드 6개 — v4 대 v5:\n1단계끝 4,100  0.82±1.10 : 2.92±2.54  겹침\n6,100  0.99±1.31 : 3.70±3.05  겹침\n8,100  1.08±1.41 : 3.60±3.27  겹침\n11,100  0.97±1.31 : 3.67±4.03  겹침\n**18,099  1.24±1.81 : 8.42±1.32  구분됨**\n\n평균은 내내 벌어져 있으나 퍼짐이 커서, 무작위화 100 % 고정 구간에서\n±4.03 → ±1.32 로 좁혀져야 갈린다.\n→ **v7 은 완주해야 판정 가능**(6시간 불가).",
+      "x": 24800,
+      "y": 1340,
+      "width": 470,
+      "height": 300,
+      "color": "2"
+    },
+    {
+      "id": "n_twist_grows",
+      "type": "text",
+      "text": "**비틀림은 리셋 때 없다가 자란다** (2026-09-15)\n\nv4 비틀기: 0초 **+1.63°** → 3초 +10.50° → 8초 +16.28° → 15초 **+19.49°**\nv5 비틀기: 내내 **+1° 근처** (대신 발을 뗀다)\n\n되돌리는 힘이 없어 한 방향으로 쌓인다 —\n걷는 중 방향 표류와 **같은 구조**.",
+      "x": 24800,
+      "y": 1700,
+      "width": 440,
+      "height": 230,
+      "color": "2"
     }
   ],
   "edges": [
@@ -3005,6 +3025,30 @@
       "toNode": "n_v6b_flatfoot",
       "toSide": "top",
       "label": "발목 키프레임 고쳐 재발사"
+    },
+    {
+      "id": "e_posestill_to_p2scan",
+      "fromNode": "n_pose_vs_stillness",
+      "fromSide": "right",
+      "toNode": "n_p2_timing_scan",
+      "toSide": "left",
+      "label": "언제 갈리나 → v7 길이 산정"
+    },
+    {
+      "id": "e_p2scan_to_v7",
+      "fromNode": "n_p2_timing_scan",
+      "fromSide": "top",
+      "toNode": "n_legonly_v7_heading_revert",
+      "toSide": "bottom",
+      "label": "완주 필요(약 26시간)"
+    },
+    {
+      "id": "e_twist_to_anklefix",
+      "fromNode": "n_twist_grows",
+      "fromSide": "left",
+      "toNode": "n_ankle_keyframe_fix",
+      "toSide": "right",
+      "label": "비틀림은 리셋 자세와 별개"
     }
   ]
 }
