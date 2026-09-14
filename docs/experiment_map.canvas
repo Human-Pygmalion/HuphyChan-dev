@@ -1565,6 +1565,26 @@
       "width": 440,
       "height": 230,
       "color": "2"
+    },
+    {
+      "id": "n_standing_vs_gate",
+      "type": "text",
+      "text": "**정지 환경 비율이 커리큘럼 게이트와 싸운다** (2026-09-15)\n\n게이트 = `error_vel_xy_steady`(전 환경 평균) ≤ 앞 단계 값 × 1.1.\n**서 있는 환경은 명령 0이라 가만히 있으면 오차 0** →\n정지 비율 0.1→0.3 이 **앞 단계 기준선을 끌어내린다.**\n\n| | 진입 | 기준선 | 현재 | 비율 |\n|---|--:|--:|--:|--:|\n| v4 | 3,200 | 0.2131 | 0.2269 | 1.065 ✅ |\n| v5 | 3,200 | 0.2108 | 0.2249 | 1.067 ✅ |\n| **v6b** | 5,400 | **0.1679** | 0.2137 | **1.273** ❌ |\n\nv6b 의 **절대 오차가 오히려 낮다** — 문턱만 좁다.\n→ 1단계 16,000 상한까지. 후속 런은 `--gate-err-ratio` 동반 상향 필요.",
+      "x": 25400,
+      "y": 580,
+      "width": 500,
+      "height": 330,
+      "color": "1"
+    },
+    {
+      "id": "n_deploy_contract",
+      "type": "text",
+      "text": "**배포 계약 골든 시험** `analysis/deploy_contract.py` (2026-09-15)\n\ndocs/109 가 `배포 obs/action parity: UNKNOWN — 실기 배포 차단` 으로\n못 박아 둔 결손. 행동 12개의 출력 순서·스케일·기준값·클립,\n관측 45개 배치, 제어 주기, **골든 벡터 16쌍**을 얼려 둔다.\n\n첫 실행에서 두 가지를 잡았다:\n① 기준값을 새 환경에서 뽑으면 **오늘의 로봇 정의**를 집는다\n   (발바닥 수정이 크랭크 기준값을 8.8° 옮겼다) → 저장된 설정에서 읽도록\n② 재구성 정책이 ONNX 와 **0.42** 차이 — 정규화가 `std + 1e-2` 인데\n   eps 를 빠뜨렸다. std 45개 중 7개가 0.1 미만이라 최대 34 % 오차.\n   **패리티 0.42 → 3.8e-06 통과**",
+      "x": 25400,
+      "y": 980,
+      "width": 500,
+      "height": 320,
+      "color": "4"
     }
   ],
   "edges": [
@@ -3049,6 +3069,22 @@
       "toNode": "n_ankle_keyframe_fix",
       "toSide": "right",
       "label": "비틀림은 리셋 자세와 별개"
+    },
+    {
+      "id": "e_v6b_to_gate",
+      "fromNode": "n_legonly_v6_standing",
+      "fromSide": "right",
+      "toNode": "n_standing_vs_gate",
+      "toSide": "left",
+      "label": "진행 중 관찰: 승급 못 함"
+    },
+    {
+      "id": "e_v6b_to_contract",
+      "fromNode": "n_legonly_v6_standing",
+      "fromSide": "bottom",
+      "toNode": "n_deploy_contract",
+      "toSide": "left",
+      "label": "배포 후보 → 계약 검증 필요"
     }
   ]
 }
