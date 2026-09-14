@@ -1465,6 +1465,16 @@
       "width": 420,
       "height": 170,
       "color": "6"
+    },
+    {
+      "id": "n_legonly_v7_heading_revert",
+      "type": "file",
+      "file": "experiments/2026-09-15_legonly_ab_v7_heading_revert.md",
+      "x": 24200,
+      "y": 580,
+      "width": 420,
+      "height": 170,
+      "color": "6"
     }
   ],
   "edges": [
@@ -2813,6 +2823,22 @@
       "toNode": "n_legonly_v6_standing",
       "toSide": "bottom",
       "label": "정지 자세 추종이 죽어 있다 → 변인 근거"
+    },
+    {
+      "id": "e_v6_to_v7",
+      "fromNode": "n_legonly_v6_standing",
+      "fromSide": "right",
+      "toNode": "n_legonly_v7_heading_revert",
+      "toSide": "left",
+      "label": "유일 변인: 방향 유지 0.8 → 0.3"
+    },
+    {
+      "id": "e_v4_to_v7",
+      "fromNode": "n_legonly_v4_motorparams",
+      "fromSide": "bottom",
+      "toNode": "n_legonly_v7_heading_revert",
+      "toSide": "bottom",
+      "label": "2×2 대각: 방향 0.3 고정, 정지 0.1 → 0.3"
     }
   ]
 }
