@@ -110,9 +110,10 @@ def build_ui(core, host: str, port: int, freshness: dict, base: str = "free") ->
 # --------------------------------------------------------------------------- panel
 _PANEL_RESIZE_JS = (
   "if(window.__pygGrip)return;window.__pygGrip=1;"
-  "var K='pygPanelWidth';function find(el){var n=el,b=null;while(n&&n.parentElement){var r=n.getBou"
-  'ndingClientRect();if(r.width>150&&r.height>window.innerHeight*0.5&&r.right>window.innerWidth-80)'
-  'b=n;n=n.parentElement;}return b;}var panel=find(this);if(!panel)return;var g=document.createElem'
+  "var K='pygPanelWidth';function find(el){var n=el;while(n&&n.parentElement){var r=n.getBoundingCl"
+  'ientRect();if(r.width>150&&r.width<window.innerWidth*0.8&&r.height>window.innerHeight*0.5&&r.rig'
+  "ht>window.innerWidth-80)return n;n=n.parentElement;}return null;}var panel=find(this);"
+  "if(!panel)return;var g=document.createElem"
   "ent('div');g.title='\\uB04C\\uC5B4\\uC11C \\uB108\\uBE44 \\uC870\\uC808';g.style.cssText='position:fixe"
   "d;top:0;bottom:0;width:10px;z-index:10000;cursor:col-resize;background:rgba(128,128,128,.25)';g."
   "onmouseenter=function(){g.style.background='rgba(90,150,210,.55)'};g.onmouseleave=function(){g.s"
