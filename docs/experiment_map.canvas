@@ -1459,7 +1459,7 @@
     {
       "id": "n_legonly_v6_standing",
       "type": "file",
-      "file": "experiments/2026-09-14_legonly_ab_v6_standing.md",
+      "file": "experiments/2026-09-14_legonly_ab_v6b_standing_flatfoot.md",
       "x": 23600,
       "y": 580,
       "width": 420,
@@ -1515,6 +1515,16 @@
       "width": 420,
       "height": 170,
       "color": "6"
+    },
+    {
+      "id": "n_ankle_keyframe_fix",
+      "type": "text",
+      "text": "**발목 키프레임이 깊은 웅크림 값이었다** (2026-09-14 수정)\n\n수평 조건: 발목 = 무릎 − 엉덩이.\n얕은 웅크림(전 런이 쓰는 것) 0.175 rad, 깊은 웅크림 0.35.\n해결기에 **0.36 이 상수로 박혀** 있었다.\n\n발바닥 +10.600° → **0.000°**, 앞뒤 단차 47.8 → **0.1 mm**,\n접지 지지면 **0 mm(선) → 260 mm(면)**.\n\nv2~v6 전 세대가 발끝 든 자세를 액션 0 기준으로 학습 — 호환 안 됨.",
+      "x": 23600,
+      "y": 1700,
+      "width": 470,
+      "height": 260,
+      "color": "1"
     }
   ],
   "edges": [
@@ -2943,6 +2953,22 @@
       "toNode": "n_legonly_v6_standing",
       "toSide": "bottom",
       "label": "정지 자세가 두 무리로 갈림 → 이 학습의 동기"
+    },
+    {
+      "id": "e_standq_to_anklefix",
+      "fromNode": "n_v4_stand_q",
+      "fromSide": "bottom",
+      "toNode": "n_ankle_keyframe_fix",
+      "toSide": "top",
+      "label": "사용자 지적 → 실측 → 원인"
+    },
+    {
+      "id": "e_anklefix_to_v6b",
+      "fromNode": "n_ankle_keyframe_fix",
+      "fromSide": "top",
+      "toNode": "n_legonly_v6_standing",
+      "toSide": "bottom",
+      "label": "v6 중단·폐기 후 재발사의 공통 기반"
     }
   ]
 }

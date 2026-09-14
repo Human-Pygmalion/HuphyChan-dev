@@ -1,4 +1,4 @@
-# legonly_ab_v6_standing — 정지 구간을 3배로 학습시키면 서 있는 자세가 잡히는가 (2026-09-14)
+# legonly_ab_v6b_standing_flatfoot — 발바닥을 바로잡고, 정지 구간을 3배로 학습시킨다 (2026-09-14)
 
 > 약어를 쓰지 않는다. 처음 보는 사람도 읽을 수 있게 쓴다.
 > 계보: [[2026-09-13_legonly_ab_v5_heading]] 의 **유일 변인 후속**. 근거는 그 노트 §13·§13-1.
@@ -40,9 +40,36 @@
 
 **여유가 같다.** 정책이 어쩔 수 없이 다리를 벌린 게 아니라, 앞뒤로 어긋선 자세를 고른 것뿐이다.
 
-## §1 설계 — v5와 유일 변인만 다르다
 
-**변인: `PYG_REL_STANDING` 0.1 → 0.3** (설정 숫자 하나)
+## §0a ★ 이 런이 v6 을 대체한다 — 발목 키프레임을 고쳤다 (2026-09-14 22:5x)
+
+첫 v6 은 19:37 에 발사해 반복 2,434회까지 갔으나 **중단**했다
+(`ABORTED_2026-09-14_19-37-39_legonly_ab_v6_standing_p1`). 이유는 사용자가 렌더를 보고
+*"target pose 부터가 이상한데? 발이 들려있는거 아닌가?"* 라고 지적한 것이 **맞았기 때문**이다.
+
+리셋/목표 웅크림 자세의 **발목 값이 깊은 웅크림 것**이었다. 기하로는 엉덩이 `h`·무릎 `k` 굽힘에
+대해 발바닥이 수평이려면 발목이 `k − h` 여야 하는데, 얕은 웅크림(`PYG_INIT_MID=1`, 이 런들이
+쓰는 것)은 0.175 rad 이 맞고 키프레임에는 깊은 웅크림 값 0.36 이 상수로 박혀 있었다.
+
+| | 전 | 후 |
+|---|--:|--:|
+| 발목 숙임 목표 | +20.63° | **+10.03°** |
+| 발바닥 앞뒤 기울기 | +10.600° | **+0.000°** |
+| 앞뒤 단차 | 47.8 mm | **0.1 mm** |
+| 접지 귀퉁이 | 4 / 24 | **24 / 24** |
+| 접지 지지면 앞뒤 폭 | **0 mm**(선 위) | **260 mm** |
+| 폐루프 벌어짐 | 0.00000 mm | 0.00000 mm |
+
+자세한 것은 [[2026-09-14_v4_standing_q_torque_gains]] §2c·§2e.
+
+**그래서 이 런은 v5 대비 변인이 둘이다**: `PYG_REL_STANDING` 0.1 → 0.3 **과** 발바닥 수정.
+단일 변인이 아니라는 점을 명시한다 — 발바닥은 모든 후속 런의 공통 기반이 되므로 되돌리지 않는다.
+`PYG_REL_STANDING` 의 순수 효과를 보려면 발바닥을 고친 상태에서 0.1 인 런이 따로 필요하다.
+
+## §1 설계 — v5와 다른 점
+
+**변인 1: `PYG_REL_STANDING` 0.1 → 0.3** (설정 숫자 하나)
+**변인 2(불가피): 발바닥 수평 수정**(§0a) — 모든 후속 런의 공통 기반
 
 명령 0 구간을 **3배** 학습시킨다. 노림수는 자세 추종 항을 직접 되살리는 게 아니라, 그 구간에서
 **기울기가 살아 있는 항들에 표본을 더 주는 것**이다 — 전후·좌우 속도 추종과 회전 속도 추종은
@@ -74,7 +101,7 @@
 
 ```
 cd mujoco-sim/mjlab
-bash analysis/run_v2_scratch.sh --run legonly_ab_v6_standing --ankle AB --seed 42 --num-envs 16384 \
+bash analysis/run_v2_scratch.sh --run legonly_ab_v6b_standing_flatfoot --ankle AB --seed 42 --num-envs 16384 \
   --p1-max-iters 16000 --ramp-iters 10000 --digest-iters 4000 --settle-hold 10 --n-stages 5 \
   --gate-min-dwell 800 --gate-max-dwell 3000 --gate-window 100 --gate-err-ratio 1.1 --gate-fell-max 0.005 --gate-min-episodes 64 \
   --entropy-start 0.01 --entropy-end 0.002 --video-interval 8000 --video-length 500 --logger wandb --vy-stages \
