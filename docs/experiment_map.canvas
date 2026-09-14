@@ -1525,6 +1525,26 @@
       "width": 470,
       "height": 260,
       "color": "1"
+    },
+    {
+      "id": "n_v6_aborted",
+      "type": "file",
+      "file": "experiments/ABORTED_2026-09-14_19-37-39_legonly_ab_v6_standing_p1.md",
+      "x": 22820,
+      "y": 790,
+      "width": 420,
+      "height": 150,
+      "color": "1"
+    },
+    {
+      "id": "n_v6b_flatfoot",
+      "type": "file",
+      "file": "experiments/2026-09-14_legonly_ab_v6b_standing_flatfoot.md",
+      "x": 22820,
+      "y": 980,
+      "width": 420,
+      "height": 160,
+      "color": "6"
     }
   ],
   "edges": [
@@ -2969,6 +2989,22 @@
       "toNode": "n_legonly_v6_standing",
       "toSide": "bottom",
       "label": "v6 중단·폐기 후 재발사의 공통 기반"
+    },
+    {
+      "id": "e_v6_to_aborted",
+      "fromNode": "n_legonly_v6_standing",
+      "fromSide": "bottom",
+      "toNode": "n_v6_aborted",
+      "toSide": "top",
+      "label": "반복 2,434에서 중단"
+    },
+    {
+      "id": "e_aborted_to_v6b",
+      "fromNode": "n_v6_aborted",
+      "fromSide": "bottom",
+      "toNode": "n_v6b_flatfoot",
+      "toSide": "top",
+      "label": "발목 키프레임 고쳐 재발사"
     }
   ]
 }
