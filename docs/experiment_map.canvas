@@ -1495,6 +1495,16 @@
       "width": 460,
       "height": 260,
       "color": "1"
+    },
+    {
+      "id": "n_pose_vs_stillness",
+      "type": "text",
+      "text": "**자세와 가만히 있음은 별개 축** (2026-09-14 렌더)\n\n엉덩이회전 목표 0° 대비 — v3 +37/−37°(대칭 벌어짐), v4 +40/+14°(어긋섬·몸 비틀림), **v5 +1/−0°(목표에 가장 가깝다)**\n\n발 뗀 시간(10초 중) — v3 4.3 / **v4 1.2** / **v5 8.4초**\n\n→ 방향 유지 0.8은 **자세를 개선하면서 안정성을 망쳤다**.\nv7에서 단순 복귀하면 안정성은 돌아와도 자세가 다시 비틀릴 수 있다.",
+      "x": 24200,
+      "y": 1340,
+      "width": 470,
+      "height": 270,
+      "color": "2"
     }
   ],
   "edges": [
@@ -2883,6 +2893,22 @@
       "toNode": "n_legonly_v5_heading",
       "toSide": "bottom",
       "label": "§13-0 세대 비교 철회"
+    },
+    {
+      "id": "e_standq_to_posestill",
+      "fromNode": "n_v4_stand_q",
+      "fromSide": "bottom",
+      "toNode": "n_pose_vs_stillness",
+      "toSide": "left",
+      "label": "세대별 렌더"
+    },
+    {
+      "id": "e_posestill_to_v7",
+      "fromNode": "n_pose_vs_stillness",
+      "fromSide": "top",
+      "toNode": "n_legonly_v7_heading_revert",
+      "toSide": "bottom",
+      "label": "설계 함의"
     }
   ]
 }
