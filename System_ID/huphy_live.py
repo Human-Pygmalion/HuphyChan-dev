@@ -1042,6 +1042,50 @@ def build(args):
   return machine, loop, hz
 
 
+def observe(machine, state, *, hz: float = 20.0, duration_s=None) -> int:
+  """**모터를 켜지 않고** 상태만 읽어 내보낸다. 사람이 손으로 움직여 보는 모드.
+
+  2026-09-14 · 사용자 지시: *"내가 실제 로봇을 조작하면서, 상/하한에 걸리는지,
+  지금 어디 있는지 실제로 만져보면서 검토해보겠다."*
+
+  ★ **왜 이것이 안전한가.** HUPHY 의 `Leg.refresh()` 를 그대로 부릅니다
+  (`robots/leg.py:722`). 그 함수의 설명이 이렇습니다 -- *"명령하지 않고 상태만 읽음.
+  게인과 토크가 0인 명령을 보내고 그 응답을 받음... 토크가 0이라 아무 일도 일어나지
+  않음. 관찰 모드와 시작 직전에 씀."* 즉 **켜기(0xFC)를 한 번도 안 보냅니다.**
+  모터가 꺼져 있으면 MIT 프레임은 아무 힘도 만들지 않습니다.
+
+  목표를 받는 자리(`TargetServer`)는 열려 있지만, 그 목표를 쓰는 제어 루프
+  (`loop.run`)를 아예 돌리지 않습니다. **여기서 모터로 나가는 길이 없습니다.**
+  """
+  period = 1.0 / max(1.0, float(hz))
+  t0 = time.monotonic()
+  ticks = 0
+  print("\n  ** 관찰 모드입니다 — 켜기를 보내지 않습니다. 손으로 움직이셔도 됩니다. **")
+  print(f"  초당 {hz:g}번 상태를 읽어 내보냅니다. 멈추려면 Ctrl-C.\n")
+  try:
+    while True:
+      tick = time.monotonic()
+      for part in getattr(machine, "parts", ()) or (machine,):
+        try:
+          part.refresh()
+        except Exception as e:                              # noqa: BLE001
+          print(f"  상태 읽기 실패({getattr(part, 'name', '?')}): {e}")
+      ticks += 1
+      if duration_s and (time.monotonic() - t0) >= duration_s:
+        break
+      rest = period - (time.monotonic() - tick)
+      if rest > 0:
+        time.sleep(rest)
+  except KeyboardInterrupt:
+    print("\n  사람이 멈춤")
+  finally:
+    state.stop()
+  dt = time.monotonic() - t0
+  print(f"  {ticks}번 읽음 · {dt:.1f}초 · 실제 초당 {ticks / max(dt, 1e-9):.1f}번")
+  print("  ** 이 모드에서는 모터를 한 번도 켜지 않았습니다. **")
+  return 0
+
+
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1065,6 +1109,11 @@ def main(argv=None) -> int:
                   help="한계를 양쪽으로 이만큼 안으로 좁힘. 설정 파일은 안 건드림")
   ap.add_argument("--enable-tries", type=int, default=3,
                   help="켜기(0xFC)를 몇 번 보낼지. 한 방이 안 먹는 일이 있습니다")
+  ap.add_argument("--observe", action="store_true",
+                  help="★ 관찰 모드. **모터를 켜지 않고** 상태만 읽어 내보냅니다. "
+                       "사람이 손으로 로봇을 움직이며 각도·한계를 볼 때 씁니다. "
+                       "HUPHY 의 `Leg.refresh()` 를 그대로 씁니다 -- 게인과 토크가 "
+                       "0인 프레임을 보내고 답만 받으므로 힘이 나가지 않습니다")
   ap.add_argument("--link-probe", action="store_true",
                   help="'샘' 판정(최근 20번 중 15번 무응답)을 **흉내만** 내 "
                        "보고 끝에 표로 냅니다. 아무것도 멈추지 않습니다")
@@ -1148,9 +1197,14 @@ def main(argv=None) -> int:
   # `can1 이 연결되지 않음` 으로 매번 실패하고 있었고, 그런데도 "3번 보냈습니다"
   # 라고 적고 있었습니다 (2026-09-12 로그에서 발견). 그래서 연결을 직접 확인하고,
   # 실패하면 **실패했다고 적습니다.**
-  sent_enable = 0
   if not machine.is_connected:
     machine.connect()
+
+  # ---- 관찰 모드: 켜지 않는다 ---------------------------------------------
+  if a.observe:
+    return observe(machine, state, hz=a.state_hz, duration_s=a.duration)
+
+  sent_enable = 0
   for _ in range(max(1, a.enable_tries)):
     try:
       machine.enable()
