@@ -1445,6 +1445,16 @@
       "width": 420,
       "height": 150,
       "color": "5"
+    },
+    {
+      "id": "n_v5_stand_pose_diag",
+      "type": "text",
+      "text": "**정지 자세 추종이 죽어 있다** (2026-09-14)\n\n`pose` 항 목표 = `default_joint_pos`(리셋 웅크림). 별도 정지 자세 없음.\n허용이 정지 규모만 `.*: 0.05` 한 줄 = 전 관절 2.86° — 걷기 규모는 관절별로 맞춰져 있는데(무릎 68.8°, 엉덩이회전 8.6°) 정지만 일률.\n\n명령 0에서 실제는 허용의 2~5.6배 벗어남 → `exp(-8.7)=1.7e-4`.\n**가중치 1.0 항이 0을 냄**(양수 합의 16 %). 기울기도 1.7e-4라 학습 신호 없음.\n\n→ 발끝 벌어짐(엉덩이회전 ±12~15°), 발목 비틀림(크랭크 B 16°), 다리 꼬임.",
+      "x": 23000,
+      "y": 980,
+      "width": 470,
+      "height": 300,
+      "color": "1"
     }
   ],
   "edges": [
@@ -2761,6 +2771,22 @@
       "toNode": "n_v5_walkstop",
       "toSide": "left",
       "label": "걷고 나서 세워 10회 비교"
+    },
+    {
+      "id": "e_v5_to_standpose",
+      "fromNode": "n_legonly_v5_heading",
+      "fromSide": "bottom",
+      "toNode": "n_v5_stand_pose_diag",
+      "toSide": "top",
+      "label": "명령 0 거동 진단(사용자 지적)"
+    },
+    {
+      "id": "e_standzero_to_standpose",
+      "fromNode": "n_v5_stand",
+      "fromSide": "right",
+      "toNode": "n_v5_stand_pose_diag",
+      "toSide": "left",
+      "label": "정지 q목표·토크 측정 → 원인"
     }
   ]
 }
