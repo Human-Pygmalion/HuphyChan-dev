@@ -39,7 +39,22 @@ def xml_path(tag: str) -> Path:
       return d / f"{tag}.xml"
   raise SystemExit(f"{tag}.xml not found in {[str(d) for d in XML_DIRS]}")
 KP, KD, DT = 200.0, 5.0, 0.0005          # same servo as tools/robot_model/loop_ankle_verify.py
-TARGET_PITCH_RAD, TARGET_ROLL_RAD = 0.36, 0.0   # the KNEES_BENT crouch (constants.py)
+# 2026-09-14: the ankle target is DERIVED from the crouch, not hard-coded.
+#
+# Geometry: with the hip flexed h and the knee flexed k, the thigh leans h and the shank
+# leans (h - k), so the sole is level only when the ankle takes back (k - h).
+#   MID crouch  (PYG_INIT_MID=1, what every LegOnly run uses)  h=0.175 k=0.35 -> 0.175 rad
+#   DEEP crouch                                                h=0.32  k=0.67 -> 0.350 rad
+#
+# The value that stood here, 0.36, is the DEEP figure. Every run since has used the MID
+# crouch with the DEEP ankle, which left the soles tilted 10.60 deg toes-up: heel 2.5 mm
+# below ground, toe 45.4 mm above, only 4 of the 12 sole corners touching, so the robot
+# reset onto its heel line every episode. Flagged as a backlog item on 2026-09-03
+# (docs/experiments/2026-09-03_legonly_ab_v2.md) and measured 2026-09-14
+# (docs/experiments/2026-09-14_v4_standing_q_torque_gains.md section 2c).
+#
+# --ankle-pitch overrides it; omit and it follows --hip/--knee.
+TARGET_ROLL_RAD = 0.0
 LOOP_JOINTS = ("crank_A_joint", "rod_A_u1", "rod_A_u2", "crank_B_joint", "rod_B_u1", "rod_B_u2",
                "ankle_pitch_joint", "ankle_roll_joint")
 
@@ -132,7 +147,13 @@ def main():
   ap.add_argument("--out", default=None, help="default: <tag>_bent.json next to the xml")
   ap.add_argument("--hip", type=float, default=0.175, help="hip_pitch flexion magnitude [rad] used for base_z (PYG_INIT_MID crouch = 0.175; deep = 0.32)")
   ap.add_argument("--knee", type=float, default=0.35, help="knee flexion magnitude [rad] used for base_z (PYG_INIT_MID crouch = 0.35; deep = 0.67)")
+  ap.add_argument("--ankle-pitch", type=float, default=None,
+                  help="ankle_pitch target [rad]; default = knee - hip, the value that puts the sole flat")
   a = ap.parse_args()
+  global TARGET_PITCH_RAD
+  TARGET_PITCH_RAD = a.ankle_pitch if a.ankle_pitch is not None else (a.knee - a.hip)
+  print(f"[bent] ankle_pitch target = {TARGET_PITCH_RAD:.6f} rad = {math.degrees(TARGET_PITCH_RAD):.3f} deg"
+        f"  ({'given' if a.ankle_pitch is not None else 'derived from knee - hip'})")
   joint_pos, worst = {}, 0.0
   for side in ("L", "R"):
     jp, cl, p, r, its = solve_side(a.tag, side)

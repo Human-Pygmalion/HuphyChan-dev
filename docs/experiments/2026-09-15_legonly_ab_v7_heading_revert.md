@@ -91,3 +91,9 @@ bash analysis/run_v2_scratch.sh --run legonly_ab_v7_heading_revert --ankle AB --
 - 정지 자세 추종이 죽은 이유: [[2026-09-13_legonly_ab_v5_heading]] §13-1
 - 형제 런: [[2026-09-14_legonly_ab_v6_standing]]
 - 코드: `PYG_REL_HEADING`·`PYG_REL_STANDING` (`src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py`)
+
+<!-- SPEC-TABLES:BEGIN (analysis/run_spec_tables.py) -->
+
+**§1b-2 / §1b-3 / §1b-4 (설정 명세 표)** — 이 노트가 가리키는 학습 런의 디렉토리(`params/env.yaml`)가 남아 있지 않다: **원본 설정 소실**. 액추에이터 한계·ROM·플래그를 추측으로 채우지 않는다.
+
+<!-- SPEC-TABLES:END -->
