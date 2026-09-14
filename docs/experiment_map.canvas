@@ -1475,6 +1475,26 @@
       "width": 420,
       "height": 170,
       "color": "6"
+    },
+    {
+      "id": "n_v4_stand_q",
+      "type": "file",
+      "file": "experiments/2026-09-14_v4_standing_q_torque_gains.md",
+      "x": 23000,
+      "y": 1340,
+      "width": 430,
+      "height": 180,
+      "color": "3"
+    },
+    {
+      "id": "n_seed_methodology",
+      "type": "text",
+      "text": "**시드 미지정 굴림은 비교에 쓸 수 없다** (2026-09-14)\n\n같은 저장본·같은 명령·흔들림 없음으로 두 번 굴림:\n첫 스텝 몸통 높이 4.9 mm 차, 발 뗀 시간 **0.00 s 대 4.58 s**.\n\n리셋마다 엔코더 편향(±0.86°)·몸통 무게중심(±20~30 mm)이 **재추첨**된다.\n관절 초기값은 결정적이지만 무작위화 추첨은 아니다.\n\n→ v4/v5 정지 비교·1단계 비교·2단계 추적 **전부 철회**, 시드 지정 반복으로 재측정.",
+      "x": 23600,
+      "y": 1340,
+      "width": 460,
+      "height": 260,
+      "color": "1"
     }
   ],
   "edges": [
@@ -2839,6 +2859,30 @@
       "toNode": "n_legonly_v7_heading_revert",
       "toSide": "bottom",
       "label": "2×2 대각: 방향 0.3 고정, 정지 0.1 → 0.3"
+    },
+    {
+      "id": "e_v4_to_standq",
+      "fromNode": "n_legonly_v4_motorparams",
+      "fromSide": "bottom",
+      "toNode": "n_v4_stand_q",
+      "toSide": "top",
+      "label": "정지 q목표·토크·게인 측정(사용자 요청)"
+    },
+    {
+      "id": "e_standq_to_seed",
+      "fromNode": "n_v4_stand_q",
+      "fromSide": "right",
+      "toNode": "n_seed_methodology",
+      "toSide": "left",
+      "label": "측정 중 발견"
+    },
+    {
+      "id": "e_seed_to_v5",
+      "fromNode": "n_seed_methodology",
+      "fromSide": "top",
+      "toNode": "n_legonly_v5_heading",
+      "toSide": "bottom",
+      "label": "§13-0 세대 비교 철회"
     }
   ]
 }

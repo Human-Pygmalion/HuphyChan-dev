@@ -143,3 +143,11 @@ v5 완주본을 같은 방법으로 잰 값이 기준선이다. **정지 항목�
 - 부모 런: [[2026-09-13_legonly_ab_v5_heading]]
 - 코드: `PYG_REL_STANDING`·`PYG_REL_HEADING` (`src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py`),
   정지 자세 추종 (`src/mjlab/tasks/velocity/mdp/rewards.py` `variable_posture`)
+
+## §2c 학습 중 리뷰 (게이트마다 스냅샷, docs/27 체크리스트)
+
+![progress](mujoco/assets/legonly_ab_v6_standing_p1_progress.png)
+
+| 시각 | iter | reward | ep_len | noise σ | value loss | entropy | surrogate / LR | fell / low_base | err_vel xy / yaw | dr_factor / vx_max | thermal | 판정(docs/27) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 09-14 20:37 | 733 | 104.6 (50avg 103.9) | 1000 | 0.222 | 0.0281 | -4.31 | 0.0007 / 8.8e-05 | 0.000 / 0.042 | 0.406 / 0.502 | 0.00 / 0.8 | 1.12 | (자동 스냅샷, 판정은 게이트 리뷰에서) |
