@@ -39,21 +39,65 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------- 값 묶음
-SETS = {
-  # 2026-09-09/10 라즈베리파이 직결 재측정. 관성은 두 방법(타성 감속 · 마찰 소거 뺄셈)이
-  # 합치고 공진 자리로 다시 확인했으며, 마찰·점성은 순수 타성 감속에서 나왔습니다.
-  # docs/130 (방법) · docs/131 (인수인계).
-  "bench-2026-09-10": {
-    "RS04": dict(armature=0.0773, damping=0.0275, frictionloss=0.519),
-    "RS03": dict(armature=0.0638, damping=0.0252, frictionloss=0.251),
-  },
-}
+#
+# 2026-09-15 · 사용자 지시: *"모든 설정파일은 같은 값을 가져야 한다고. 혹은 단 하나만
+# True 값을 가지도록 하라고."*
+#
+# 그래서 이 숫자를 여기 **적지 않습니다.** 하나뿐인 출처인
+# `pygmalion_constants.MOTOR_MEAS` 에서 읽어 옵니다 — `check_motor_params.py` 가 이미
+# "하나뿐인 출처" 라고 부르는 바로 그 표입니다. 손으로 베낀 사본이 따라오지 않아
+# 한 모형 안에서 4.2배 어긋난 채 학습이 돌아간 적이 있습니다(2026-09-10, 발목).
+# 사본을 아예 두지 않으면 그 일이 다시 일어날 수 없습니다.
+#
+# 값의 유래: 2026-09-09/10 라즈베리파이 직결 재측정. 관성은 두 방법(타성 감속 ·
+# 마찰 소거 뺄셈)이 합치고 공진 자리로 다시 확인했으며, 마찰·점성은 순수 타성 감속에서
+# 나왔습니다. docs/130 (방법) · docs/131 (인수인계).
+REPO = Path(__file__).resolve().parents[2]
+
+
+MOTOR_MEAS_PY = (REPO / "mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion"
+                 / "pygmalion_constants.py")
+"""하나뿐인 출처가 사는 파일. 값은 여기 `MOTOR_MEAS` 에만 있습니다."""
+
+
+def _motor_meas() -> dict:
+  """`MOTOR_MEAS` 를 **그 파일에서 직접** 읽는다. 못 읽으면 멈춘다 — 짐작하지 않는다.
+
+  `import` 가 아니라 글자를 읽어 해석합니다(`ast`). `pygmalion_constants.py` 는
+  `mjlab` 전체를 끌어오므로 그 가상환경 밖에서는 불러올 수 없는데, 이 도구는 평범한
+  `python3` 로도 돌아야 하기 때문입니다. 읽는 것은 **같은 한 파일** 이므로 출처는
+  여전히 하나입니다.
+  """
+  import ast
+  if os.environ.get("PYG_MOTOR_MEAS_LEGACY", "0") not in ("", "0"):
+    raise SystemExit(
+      "PYG_MOTOR_MEAS_LEGACY=1 이 켜져 있습니다. 그 값은 재생 전용이라 모델 파일에 "
+      "쓰면 안 됩니다. 끄고 다시 실행하십시오."
+    )
+  tree = ast.parse(MOTOR_MEAS_PY.read_text(encoding="utf-8"))
+  for node in tree.body:                      # 맨 바깥 `MOTOR_MEAS = {...}` 하나만 본다
+    if isinstance(node, ast.Assign) and any(
+      isinstance(tgt, ast.Name) and tgt.id == "MOTOR_MEAS" for tgt in node.targets
+    ):
+      out = {}
+      for k, v in zip(node.value.keys, node.value.values):
+        out[ast.literal_eval(k)] = {
+          kw.arg: ast.literal_eval(kw.value) for kw in v.keywords
+        }
+      if not out:
+        break
+      return out
+  raise SystemExit(f"{MOTOR_MEAS_PY} 에서 MOTOR_MEAS 를 못 찾았습니다.")
+
+
+SETS = {"bench-2026-09-10": _motor_meas()}
 
 JOINT_MOTOR = [
   (re.compile(r".*_hip_pitch_joint$"), "RS04"),

@@ -204,13 +204,30 @@ EFFORT = {'hip_pitch': 120, 'hip_roll': 120, 'hip_yaw': 60, 'knee': 120,
 # 속도 비례 감쇠라 그대로 옮겨진다. **armature 는 URDF 규격에 자리가 없어** 주석과
 # 옆 파일(`*.motor_params.json`)로 낸다 — `write_motor_params_xml.py` 와 같은 규약이다.
 #
-# 값의 정본은 `tools/robot_model/write_motor_params_xml.py` 의 `SETS` 다. 여기 숫자를
-# 고치지 말고 그쪽을 고친 뒤 이 표를 맞출 것.
+# 2026-09-15 · 사용자 지시: *"모든 설정파일은 같은 값을 가져야 한다고. 혹은 단 하나만
+# True 값을 가지도록 하라고."*
+#
+# 그래서 **여기에는 숫자가 없다.** 하나뿐인 출처
+# (`pygmalion_constants.py` 의 `MOTOR_MEAS`)에서 읽어 온다. 예전에는 이 표가 손으로 베낀
+# 사본이었고, 바로 그 방식 때문에 2026-09-10 에 발목 값이 안 따라와 한 모형 안에서
+# 4.2배 어긋난 채 학습이 돌았다 (`check_motor_params.py` 가 그 사고로 생겼다).
+#
+# 여기 남는 것은 **숫자가 아니라 배선**이다: 어느 관절에 어느 모터가 달렸는가.
+# 그 대응은 `write_motor_params_xml.JOINT_MOTOR` 와 같아야 하고, `check_motor_params.py`
+# 가 둘이 같은지 본다.
+_wmp_dir = os.path.dirname(os.path.abspath(__file__))
+if _wmp_dir not in sys.path:
+  sys.path.insert(0, _wmp_dir)
+import write_motor_params_xml as _WMP                                    # noqa: E402
+
+JOINT_FAMILY = {                     # 관절 이름 조각 -> 모터 종류
+  'hip_pitch': 'RS04', 'hip_roll': 'RS04', 'knee': 'RS04', 'waist_yaw': 'RS04',
+  'hip_yaw': 'RS03', 'shoulder_pitch': 'RS03', 'shoulder_roll': 'RS03',
+}
 MOTOR_DYN = {                        # 관절 이름 조각 -> (damping, frictionloss, armature)
-  'hip_pitch': (0.0275, 0.519, 0.0773), 'hip_roll': (0.0275, 0.519, 0.0773),
-  'knee': (0.0275, 0.519, 0.0773), 'waist_yaw': (0.0275, 0.519, 0.0773),
-  'hip_yaw': (0.0252, 0.251, 0.0638),
-  'shoulder_pitch': (0.0252, 0.251, 0.0638), 'shoulder_roll': (0.0252, 0.251, 0.0638),
+  _frag: (_m['damping'], _m['frictionloss'], _m['armature'])
+  for _frag, _fam in JOINT_FAMILY.items()
+  for _m in (_WMP.SETS['bench-2026-09-10'][_fam],)
 }
 
 

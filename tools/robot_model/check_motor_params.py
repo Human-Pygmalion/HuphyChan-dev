@@ -23,7 +23,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
+from pathlib import Path
 
 REPO = "/home/syaro/MikuchanRemote/Human-Pygmalion"
 sys.path.insert(0, f"{REPO}/mujoco-sim/mjlab/src")
@@ -74,7 +76,17 @@ def main() -> int:
       bad.append(f"{names} 에 마찰 또는 점성이 없습니다 — 이 관절만 다른 물리로 학습됩니다")
     print(f"  {names:<46}{arm:>10.5g}{str(fr):>10}{str(vd):>10}{flag}")
 
-  # --- 3. 판정 -------------------------------------------------------------------
+  # --- 3. 모델 파일들이 같은 값을 들고 있는가 (2026-09-15) ------------------------
+  #
+  # 사용자 지시: *"모든 설정파일은 같은 값을 가져야 한다고. 혹은 단 하나만 True 값을
+  # 가지도록 하라고."* 여기가 그 "같은 값인가" 를 보는 곳입니다. 출처는 위 `MOTOR_MEAS`
+  # 하나뿐이고, 아래는 **디스크에 있는 파일이 그 값을 정말 들고 있는지** 봅니다 --
+  # mjlab 이 불러올 때 덮어쓰므로 학습은 맞더라도, 파일만 다른 도구로 가져가면
+  # 안 맞을 수 있기 때문입니다 (실제로 09-15 까지 MJCF 는 전부 0 이었습니다).
+  print("\n모델 파일이 들고 있는 값 (mjlab 없이 그 파일만 열었을 때)")
+  bad += _check_model_files(C)
+
+  # --- 4. 판정 -------------------------------------------------------------------
   print()
   if bad:
     print("★★ 그대로 학습하면 안 됩니다:")
@@ -83,6 +95,69 @@ def main() -> int:
     return 1
   print("모든 관절이 같은 출처의 값을 씁니다. 학습을 걸어도 됩니다.")
   return 0
+
+
+def _check_model_files(C) -> list[str]:
+  """MJCF 와 URDF 를 **그대로 열어** 관절마다 세 값을 읽고 `MOTOR_MEAS` 와 대조한다.
+
+  mjlab 을 거치지 않습니다 -- 거치면 덮어쓴 값을 보게 되어 검사가 뜻이 없습니다.
+  """
+  import sys as _sys
+  _sys.path.insert(0, f"{REPO}/tools/robot_model")
+  import write_motor_params_xml as W
+
+  meas = W.SETS["bench-2026-09-10"]
+  if meas != C.MOTOR_MEAS:
+    return [f"write_motor_params_xml 이 읽은 값이 MOTOR_MEAS 와 다릅니다: "
+            f"{meas} 대 {C.MOTOR_MEAS}"]
+
+  import mujoco
+  bad: list[str] = []
+  xmls = sorted(Path(f"{REPO}/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls")
+                .glob("*v30_proxyfix*.xml"))
+  xmls = [x for x in xmls if "bench" not in x.name]
+  for x in xmls:
+    m = mujoco.MjModel.from_xml_path(str(x))
+    miss = []
+    for i in range(m.njnt):
+      n = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, i) or ""
+      fam = W.motor_for(n)
+      if fam is None:
+        continue                    # 수동 관절 -- 모터 값이 있으면 안 된다
+      d = m.jnt_dofadr[i]
+      want = meas[fam]
+      got = (m.dof_armature[d], m.dof_damping[d], m.dof_frictionloss[d])
+      exp = (want["armature"], want["damping"], want["frictionloss"])
+      if any(abs(a - b) > 1e-9 for a, b in zip(got, exp)):
+        miss.append(f"{n} {tuple(round(float(v), 5) for v in got)} 대 {exp}")
+    mark = "맞음" if not miss else f"★ 어긋남 {len(miss)}개"
+    print(f"  {x.name:<62} {mark}")
+    if miss:
+      bad.append(f"{x.name}: {miss[0]}" + (f" 외 {len(miss) - 1}개" if len(miss) > 1 else ""))
+
+  urdfs = sorted(Path(f"{REPO}/pygmalion_locomotion/assets/pygmalion_v2").glob("*v30_proxyfix*.urdf"))
+  for u in urdfs:
+    txt = u.read_text(encoding="utf-8")
+    miss = []
+    for jn, fam in ((m_.group(1), W.motor_for(m_.group(1)))
+                    for m_ in re.finditer(r'<joint name="([^"]+)" type="revolute">', txt)):
+      if fam is None:
+        continue
+      blk = txt.split(f'<joint name="{jn}" type="revolute">', 1)[1].split("</joint>", 1)[0]
+      dyn = re.search(r'<dynamics damping="([-\d.eE]+)" friction="([-\d.eE]+)"', blk)
+      want = meas[fam]
+      if dyn is None:
+        miss.append(f"{jn} <dynamics> 없음")
+        continue
+      got = (float(dyn.group(1)), float(dyn.group(2)))
+      exp = (want["damping"], want["frictionloss"])
+      if any(abs(a - b) > 1e-9 for a, b in zip(got, exp)):
+        miss.append(f"{jn} {got} 대 {exp}")
+    mark = "맞음" if not miss else f"★ 어긋남 {len(miss)}개"
+    print(f"  {u.name:<62} {mark}")
+    if miss:
+      bad.append(f"{u.name}: {miss[0]}" + (f" 외 {len(miss) - 1}개" if len(miss) > 1 else ""))
+  return bad
 
 
 if __name__ == "__main__":

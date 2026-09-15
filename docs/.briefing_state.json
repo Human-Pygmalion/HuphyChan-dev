@@ -3155,6 +3155,16 @@
    "now_": "틀렸다. tx_map.py:114 가 계약을 직접 읽어 관문을 안 거쳤다 - 그대로 무장했으면 세 관절에 거꾸로 된 명령이 나갔다. 이제 양쪽 travel_sign 전부 1.0 확인",
    "section": "실물",
    "changed": "2026-09-15 14:42"
+  },
+  "single-source-motor-params": {
+   "id": "single-source-motor-params",
+   "created": "2026-09-15 15:02",
+   "title": "모터 물리값을 출처 하나로 모으고 모델 파일에 박아 넣음",
+   "finding": "같은 표가 세 벌 있었다: pygmalion_constants.MOTOR_MEAS(mjlab 이 주입), write_motor_params_xml.SETS, build_robot.MOTOR_DYN. 뒤 둘은 손으로 베낀 사본이었고, 바로 그 방식으로 2026-09-10 에 발목이 안 따라와 한 모형 안에서 4.2배 어긋난 채 학습이 돌았다. 이제 사본을 없애고 둘 다 MOTOR_MEAS 를 읽는다(ast 로 그 파일만 읽어 mjlab 가상환경 없이도 됨). 그리고 MJCF 9개에 실측값을 파일 안에 써 넣었다 - 09-15 까지 MJCF 는 armature/damping/frictionloss 가 전부 0 이었다.",
+   "number": "MJCF 9개 + URDF 9개 전부 맞음. MJCF 파일 = mjlab 주입값 (L_hip_pitch armature 0.0773 damping 0.0275 friction 0.519, L_hip_yaw/crank 0.0638/0.0252/0.251). AB 모드 검사 통과. urdf_crosscheck 재확인 MATCH (축 0.0000도, 앵커 0.0000 mm)",
+   "needs": "RP 모드 발목(ankle_pitch/roll)은 여전히 마찰·점성 없음 - AB 로 학습하므로 당장은 안 걸리지만 RP 학습 전에 고쳐야 한다",
+   "section": "로봇 모델",
+   "changed": "2026-09-15 15:02"
   }
  },
  "order": [
@@ -3424,7 +3434,8 @@
   "viewer-mirror-two-bugs",
   "three-file-structure",
   "stale-review-loops",
-  "fullstack-no-sign-manipulation"
+  "fullstack-no-sign-manipulation",
+  "single-source-motor-params"
  ],
- "updated": "2026-09-15 14:58"
+ "updated": "2026-09-15 15:02"
 }
