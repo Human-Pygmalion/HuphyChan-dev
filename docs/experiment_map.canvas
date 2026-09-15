@@ -1585,6 +1585,16 @@
       "width": 500,
       "height": 320,
       "color": "4"
+    },
+    {
+      "id": "n_hand_check_plan",
+      "type": "file",
+      "file": "143_joint_hand_check_plan.md",
+      "x": 22860,
+      "y": 1340,
+      "width": 420,
+      "height": 160,
+      "color": "4"
     }
   ],
   "edges": [
@@ -3093,6 +3103,14 @@
       "toNode": "n_legonly_v7_revert",
       "toSide": "bottom",
       "label": "정지 비율이 커리큘럼 게이트와 부딪힘 — 다음 런은 게이트 문턱도 같이 올릴 것"
+    },
+    {
+      "id": "e_bus_to_handcheck",
+      "fromNode": "n_motor_bus_silent",
+      "fromSide": "bottom",
+      "toNode": "n_hand_check_plan",
+      "toSide": "top",
+      "label": "모터 응답 → 화면 연결 → 무릎 영점 어긋남 발견"
     }
   ]
 }
