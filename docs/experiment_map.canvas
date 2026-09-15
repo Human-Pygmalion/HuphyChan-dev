@@ -1595,6 +1595,36 @@
       "width": 420,
       "height": 160,
       "color": "4"
+    },
+    {
+      "id": "n_sign_rom_verdict",
+      "type": "file",
+      "file": "146_joint_sign_and_rom_final_check.md",
+      "x": 22860,
+      "y": 1560,
+      "width": 420,
+      "height": 160,
+      "color": "4"
+    },
+    {
+      "id": "n_sign_evidence",
+      "type": "text",
+      "x": 23360,
+      "y": 1540,
+      "width": 520,
+      "height": 300,
+      "color": "6",
+      "text": "**부호는 모형이 맞다 — 이동 크기가 증명한다** (2026-09-15)\n\n사용자가 세 관절을 뒤집으라고 지시. 실측을 보니 **뒤집으면 안 된다**.\n\n| 관절 | 실측 최대 | 뒤집으면 뜻 | 그쪽 한계 |\n|---|--:|---|--:|\n| L_hip_pitch | **+108.0°** | 뒤로 108° 젖힘 | 25° |\n| R_hip_roll | **+81.2°** | 안쪽 81° 모음 | 25° |\n| R_knee | **+120.5°** | 앞으로 120° 역굽힘 | 0° |\n\n★**정정**: 같은 결론을 \"폭이 같으니\" 로 냈던 것은 근거가 무효 —\n부호 반전은 범위도 `(-hi,-lo)` 로 바꾸므로 **폭을 보존한다.**"
+    },
+    {
+      "id": "n_viewer_mirror_fix",
+      "type": "text",
+      "x": 23960,
+      "y": 1540,
+      "width": 520,
+      "height": 300,
+      "color": "1",
+      "text": "**거울이 깨져 있던 두 군데** (2026-09-15)\n\n부호가 맞는데 화면은 이상했다. 원인은 모형이 아니라 뷰어.\n\n**A. 아예 안 비추고 있었다** — `huphy_viser` 가 `SimCore` 를\n`idle` 로 두고 `real_replay` 로 안 바꿨다. 3D 로봇은 텔레메트리를\n무시하고 제 물리로 처지고, 숫자판만 맞았다.\n보낸 +108° → 화면 **+10.4°**\n\n**B. 부호를 한 번 더 뒤집었다** — 브리지가 `travel_sign` 을 또 곱해\n`R_hip_pitch`·`L_hip_roll`·`L_knee` 반전.\n전선 −12.7° → 화면 **+0.0°**\n\n09-12 `swap_leg_names` 뒤 브리지를 같이 안 봤다 —\n`test_bridge_huphy` 가 **그때부터 5개 깨진 채** 있었다."
     }
   ],
   "edges": [
@@ -3111,6 +3141,38 @@
       "toNode": "n_hand_check_plan",
       "toSide": "top",
       "label": "모터 응답 → 화면 연결 → 무릎 영점 어긋남 발견"
+    },
+    {
+      "id": "e_v5_diag_to_v6b",
+      "fromNode": "n_legonly_v5_heading",
+      "fromSide": "bottom",
+      "toNode": "n_v6b_flatfoot",
+      "toSide": "left",
+      "label": "§13-1 진단: 정지 자세 항이 1.7e-04 로 죽어 있음 → v6b 에서 0.83 으로 되살아남"
+    },
+    {
+      "id": "e_handcheck_to_verdict",
+      "fromNode": "n_hand_check_plan",
+      "fromSide": "right",
+      "toNode": "n_sign_rom_verdict",
+      "toSide": "left",
+      "label": "손으로 20분 기록"
+    },
+    {
+      "id": "e_verdict_to_evidence",
+      "fromNode": "n_sign_rom_verdict",
+      "fromSide": "right",
+      "toNode": "n_sign_evidence",
+      "toSide": "left",
+      "label": "이동 크기가 증명"
+    },
+    {
+      "id": "e_evidence_to_viewer",
+      "fromNode": "n_sign_evidence",
+      "fromSide": "right",
+      "toNode": "n_viewer_mirror_fix",
+      "toSide": "left",
+      "label": "그럼 화면은 왜?"
     }
   ]
 }
