@@ -6,6 +6,9 @@
 # Stops the reactive "just tweak the weight" failure mode. Robust: any parse error -> exit 0 (never wedge).
 ROOT=/home/syaro/MikuchanRemote/Human-Pygmalion
 input=$(cat 2>/dev/null)
+
+# --- 세션별 끄기 (hook_optout.sh) — .claude/hooks_off/<세션번호> 가 있으면 조용히 통과
+printf '%s' "$input" | bash "${CLAUDE_PROJECT_DIR:-/home/syaro/MikuchanRemote/Human-Pygmalion}"/pygmalion_locomotion/scripts/hook_optout.sh && exit 0
 fp=$(printf '%s' "$input" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null) || exit 0
 [ -z "$fp" ] && exit 0
 # only police the REWARD-definition files

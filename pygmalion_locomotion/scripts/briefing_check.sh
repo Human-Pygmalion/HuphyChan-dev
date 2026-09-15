@@ -10,6 +10,10 @@
 #   (4) "지금 하고 있는 일" points at a training run that is no longer running
 #
 # Robust by construction: any internal error -> exit 0. A status page must never wedge a session.
+__HOOK_IN=$(cat 2>/dev/null)
+# --- 세션별 끄기 (hook_optout.sh) — .claude/hooks_off/<세션번호> 가 있으면 조용히 통과
+printf '%s' "$__HOOK_IN" | bash "${CLAUDE_PROJECT_DIR:-/home/syaro/MikuchanRemote/Human-Pygmalion}"/pygmalion_locomotion/scripts/hook_optout.sh && exit 0
+
 set -uo pipefail
 R="${CLAUDE_PROJECT_DIR:-/home/syaro/MikuchanRemote/Human-Pygmalion}"
 STATE="$R/docs/.briefing_state.json"

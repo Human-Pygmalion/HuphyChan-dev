@@ -3,6 +3,10 @@
 # un-recorded as notes. The memory rules kept being forgotten; this makes the HARNESS enforce them so it
 # does not depend on the model remembering. stderr is fed back to the model as the reason to keep working.
 # Wired as a Claude Code Stop hook (settings.json). Robust: any internal error -> exit 0 (never wedge).
+__HOOK_IN=$(cat 2>/dev/null)
+# --- 세션별 끄기 (hook_optout.sh) — .claude/hooks_off/<세션번호> 가 있으면 조용히 통과
+printf '%s' "$__HOOK_IN" | bash "${CLAUDE_PROJECT_DIR:-/home/syaro/MikuchanRemote/Human-Pygmalion}"/pygmalion_locomotion/scripts/hook_optout.sh && exit 0
+
 ROOT=/home/syaro/MikuchanRemote/Human-Pygmalion
 cd "$ROOT" 2>/dev/null || exit 0
 g=""
