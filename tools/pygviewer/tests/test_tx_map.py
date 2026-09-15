@@ -103,10 +103,14 @@ def test_mapper_to_motor_targets_both_knees_plus_30_deg():
   groups by are ``left_leg``/``right_leg``, matching HUPHY biped's own ``Leg.id`` vocabulary."""
   c = _contract()
   mapper = JointTargetMapper(c)
+  # 2026-09-15: the wire is mirrored, same as the model, so a 30 deg flexion of each knee
+  # is -30 on the left and +30 on the right. The old expectation (+30 on both, from
+  # L_knee = +0.5236 rad) asked L_knee to hold an angle outside its own range of -120..0
+  # deg, and only looked right because travel_sign negated it on the way out.
   out = mapper.to_motor_targets(
-    ["L_knee_joint", "R_knee_joint"], [0.5235988, -0.5235988]
+    ["L_knee_joint", "R_knee_joint"], [-0.5235988, 0.5235988]
   )
-  assert out["left_leg"]["knee"] == pytest.approx(30.0, abs=1e-4)
+  assert out["left_leg"]["knee"] == pytest.approx(-30.0, abs=1e-4)
   assert out["right_leg"]["knee"] == pytest.approx(30.0, abs=1e-4)
 
 

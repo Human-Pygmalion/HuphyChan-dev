@@ -146,9 +146,9 @@ def rig():
 
 def test_live_target_moves_the_motor_toward_it(rig):
   c, rx, client, catcher = rig
-  target_deg = _target_deg(c, "L_knee_joint", 0.4)
+  target_deg = _target_deg(c, "L_knee_joint", -0.4)
   client.arm()
-  client.set_target({"L_knee_joint": 0.4})
+  client.set_target({"L_knee_joint": -0.4})
   # keep feeding fresh packets faster than the 0.15s deadman for a bit, so it stays "live"
   for _ in range(30):
     client.tick()
@@ -172,7 +172,7 @@ def test_deadman_then_return_to_default(rig):
   # NOT 0 - discovered while writing this test (docs/123 section 5); comparing against a
   # hand-picked 0 here would silently pass for the wrong reason (or fail for the wrong one).
   client.arm()
-  client.set_target({"L_knee_joint": 0.5})
+  client.set_target({"L_knee_joint": -0.5})
   for _ in range(20):
     client.tick()
     time.sleep(0.02)
@@ -209,10 +209,10 @@ def test_disabled_joint_never_moves(rig):
     deadman_s=0.15, return_s=0.3, hz=100.0, enable={"L_knee_joint"},
   )
   rx2.start()
-  knee_target_deg = _target_deg(c, "L_knee_joint", 0.4)
+  knee_target_deg = _target_deg(c, "L_knee_joint", -0.4)
   try:
     client.arm()
-    client.set_target({"L_knee_joint": 0.4, "L_hip_pitch_joint": 0.4})
+    client.set_target({"L_knee_joint": -0.4, "L_hip_pitch_joint": 0.4})
     for _ in range(30):
       client.tick()
       time.sleep(0.02)
@@ -239,7 +239,7 @@ def test_wrong_arm_token_is_rejected_and_does_not_move_the_motor(rig):
     arm_token="wrong-token", origin="manual", hz=50.0,
   )
   bad_client.arm()
-  bad_client.set_target({"L_knee_joint": 0.9})
+  bad_client.set_target({"L_knee_joint": -0.9})
   try:
     for _ in range(10):
       bad_client.tick()

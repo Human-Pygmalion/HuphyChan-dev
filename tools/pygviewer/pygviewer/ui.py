@@ -9,11 +9,15 @@ Two rules the panel follows everywhere:
     owns the model.
 
 Mirror handling: on the v30 build the two legs have opposite joint axes for the knee, the
-hips, the cranks and the ankle roll.  ``+0.35 rad`` therefore means flexion on the left leg
-and extension on the right.  Every mirrored joint's readout carries a second number,
-``phys``, which is ``travel_sign * q`` - the same physical motion reads the same on both
-legs.  The slider stays in raw q, because that is what the API, the policy and the
-telemetry all speak.
+hips, the cranks and the ankle roll, so ``+0.35 rad`` means flexion on the left leg and
+extension on the right.  The robot speaks that SAME mirrored convention on the wire - its
+own calibration (``config/calibration/*_leg_v1.0.json``) is ``sign=1.0`` / ``offset_deg=0.0``
+on all twelve motors, with ``limits_deg`` equal to the MJCF's per-side ranges - so nothing
+anywhere converts between the two, and every number here is the raw q the API, the policy
+and the telemetry all speak (2026-09-15; the old ``phys = travel_sign * q`` readout is gone
+with the multiply it named).  A readout marked ``OUT OF MODEL RANGE`` is a received value
+the model cannot hold: it is shown as received and never clipped, because clipping hides
+exactly the disagreement worth seeing.
 """
 
 from __future__ import annotations
@@ -272,8 +276,9 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
   with gui.add_folder("Joints (targets, rad)"):
     gui.add_markdown(
       "Slider range = the contract's `safe_clip` (centre &plusmn; 0.5&middot;range&middot;"
-      "factor) - the same clamp the trainer applies to a policy target. `phys` on a mirrored "
-      "joint is `travel_sign &times; q`, so both legs read alike."
+      "factor) - the same clamp the trainer applies to a policy target. In `real_replay` the "
+      "received value is shown as received, never clipped; one the model cannot hold is "
+      "marked `OUT OF MODEL RANGE`."
     )
     for n in c.action_joint_names:
       lo, hi = c.clip(n)
@@ -737,13 +742,16 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
     if not s:
       return
     qi = {n: i for i, n in enumerate(s["joint_names"])}
+    oor = set(s.get("out_of_range") or ())
     for k, n in enumerate(s["act_names"]):
       q = s["q"][qi[n]]
       tau = s["tau"][k]
       tgt = s["target"][k]
-      extra = ""
-      if jc[n]["mirrored"] and jc[n]["travel_sign"]:
-        extra = f"  phys {jc[n]['travel_sign'] * q:+.3f}"
+      # 2026-09-15: `phys`(= travel_sign x q) 를 뺐습니다. 그 곱하기는 이제 어느 경로에도
+      # 없으므로(로봇 교정이 sign=1/offset=0, 한계도 MJCF 와 같음) 화면에만 남으면
+      # 파이프라인에 없는 숫자를 보여 주는 셈이라 오히려 오독을 부릅니다.
+      # 대신 지금 필요한 것을 냅니다: **받은 값이 모형 범위를 벗어났는가.**
+      extra = "  ** OUT OF MODEL RANGE" if n in oor else ""
       if n in readouts:
         readouts[n].value = f"q {q:+.3f}  tgt {tgt:+.3f}  tau {tau:+7.2f}{extra}"
     b = s["base"]

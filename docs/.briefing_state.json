@@ -3152,6 +3152,18 @@
    "finding": "자동 기록 루프 셋 중 둘이 쓸모없이 돌고 있습니다. 하나는 어제 새벽에 완주한 실험을 붙들고 한 시간마다 **똑같은 숫자 한 줄씩**을 노트에 덧붙이고 있고(완주 뒤 꺼야 하는 규칙이 있는데 안 꺼짐), 다른 하나는 중단되면서 **노트가 없어진 실험**을 가리켜 파일 없음 오류만 반복해 찍고 있습니다. 진행 중인 실험을 보는 세 번째 하나만 제 일을 합니다. 남의 세션이 띄운 것이라 끄지 않고 보고만 합니다",
    "section": "next",
    "changed": "2026-09-15 14:30"
+  },
+  "fullstack-no-sign-manipulation": {
+   "id": "fullstack-no-sign-manipulation",
+   "created": "2026-09-15 14:42",
+   "title": "실물->모형 경로에서 부호·영점·ROM 을 만지는 곳 전부 제거",
+   "finding": "로봇 교정(config/calibration/*_leg_v1.0.json)이 12개 모터 전부 sign=1.0 offset_deg=0.0 이고 limits_deg 가 MJCF 좌우 범위와 동일. 즉 전선과 MJCF 사이에 곱하거나 더할 것이 애초에 없다. 우리 쪽 변환 13곳을 추적해 6곳을 껐다: rom_deg 클립(거부하도록), 받는쪽 travel_sign, 보내는쪽 travel_sign(tx_map 이 계약을 직접 읽어 제 관문을 안 거치고 있었음), dummy_tx, sim_core 하드범위 클립, 크랭크 PD 목표 클립. ui 의 phys 표시도 제거하고 OUT OF MODEL RANGE 로 교체.",
+   "number": "기록한 최대·최소 12개 전부 전선=화면, 어긋남 0/12 (전에는 6개가 잘렸다 - 왼무릎 +9.7 -> 0.0). 실물 생중계 6관절 전부 항등, 20Hz, 실패 0",
+   "needs": "MJCF 파일의 armature/damping/frictionloss 가 0 (mjlab 이 주입해서 학습·뷰어는 맞지만 파일만 가져가면 마찰 없는 로봇). 넣어도 학습은 안 바뀐다 - 넣을지 결정 필요",
+   "was": "보내는 쪽도 같은 표를 읽으므로 한 곳만 고치면 받기/보내기가 함께 맞는다",
+   "now_": "틀렸다. tx_map.py:114 가 계약을 직접 읽어 관문을 안 거쳤다 - 그대로 무장했으면 세 관절에 거꾸로 된 명령이 나갔다. 이제 양쪽 travel_sign 전부 1.0 확인",
+   "section": "실물",
+   "changed": "2026-09-15 14:42"
   }
  },
  "order": [
@@ -3421,7 +3433,8 @@
   "joint-sign-final",
   "viewer-mirror-two-bugs",
   "three-file-structure",
-  "stale-review-loops"
+  "stale-review-loops",
+  "fullstack-no-sign-manipulation"
  ],
- "updated": "2026-09-15 14:30"
+ "updated": "2026-09-15 14:42"
 }

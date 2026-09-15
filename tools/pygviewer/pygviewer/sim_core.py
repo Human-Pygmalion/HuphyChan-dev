@@ -871,24 +871,22 @@ class SimCore:
     whatever ``self.target``/qpos it already had, which is the default pose right after a
     reset (design item 6: "no data" holds default, it is never guessed).
 
-    ROM enforcement (2026-09-04): a value that IS present is never trusted blind.
-      * direct-drive joints (hip/knee/RP-ankle) are snapped straight into qpos by
-        ``_substep`` - so they are clipped here to the HARD model range
-        (``self.range_lo/hi``, the MJCF joint range) before being cached into
-        ``self._replay_direct_vals_now``. A non-finite (NaN/inf) sample is treated
-        EXACTLY like "no data this tick" - excluded from ``self._replay_direct_now``
-        entirely, never guessed, never snapped as NaN.
-      * the AB crank only ever reaches qpos through the PD (module docstring - snapping a
-        crank qpos tears the closed loop open and MuJoCo answers with QACC NaN), so its
-        target keeps going through the existing, tighter, soft ``clip_lo/hi`` (safe_clip)
-        below - soft ⊂ hard, so the applied PD target can never mechanically exceed the
-        crank's hard range either. The raw value is still checked against the HARD range
-        here purely for clamp bookkeeping (a real host asking for something outside the
-        crank's mechanical range is worth counting even though the soft clip already
-        absorbs it), and non-finite values are skipped the same way as direct-drive.
+    ROM: **the received value is never altered** (2026-09-15, replacing the 2026-09-04
+    clip). The user's rule is that nothing between the robot and the model may set a
+    direction or a range limit - doing so erases the very mismatch this view exists to
+    show. The left knee reached 9.7 deg past its model bound and the old clip drew it
+    pinned at the bound, which read as "fine".
 
-    Either way, the RAW value received stays untouched in ``self.real.q`` - only what gets
-    fed to the physics/solver is bounded here.
+      * direct-drive joints (hip/knee/RP-ankle) are snapped into qpos by ``_substep``
+        exactly as received. A non-finite (NaN/inf) sample is still treated EXACTLY like
+        "no data this tick" - excluded entirely, never guessed, never snapped as NaN.
+      * the AB crank still only reaches qpos through the PD (module docstring - snapping a
+        crank qpos tears the closed loop open and MuJoCo answers with QACC NaN), but its
+        PD target is now the received value verbatim too.
+
+    Out-of-range samples are COUNTED (``replay_clamp_count``) and surfaced, never clamped.
+    This is safe because this path is a base-fixed kinematic replay with no route to a
+    motor, and MuJoCo accepts a qpos written outside ``jnt_range`` directly.
     """
     src = self._replay_source() or {}
     direct_now: list[int] = []
@@ -901,13 +899,20 @@ class SimCore:
         continue
       raw = float(raw)
       lo, hi = float(self.range_lo[i]), float(self.range_hi[i])
-      clipped = min(max(raw, lo), hi)
-      clamped = clipped != raw
-      self.replay_clamped_now[n] = clamped
-      if clamped:
+      # 2026-09-15: **자르지 않는다. 세기만 한다.** 사용자 지시: *"관절값을 넣거나,
+      # 시뮬레이션에 입력하는 동작 등에서 관절의 ROM 제한 방향이나 모터방향을 설정하면
+      # 안된다."* 자르면 **모형과 실물이 어긋난 바로 그 사실이 화면에서 사라집니다** --
+      # 실제로 왼무릎이 한계를 9.7도 넘었는데 화면은 0.0도로 붙어 있어 멀쩡해 보였습니다.
+      # 이제 받은 값 그대로 qpos 에 넣고, 범위를 벗어난 것은 `replay_clamp_count` 로
+      # 보고만 합니다 (이름은 남기되 뜻은 "잘랐다" 가 아니라 "벗어났다" 입니다).
+      # 안전 문제 없음: 이 경로는 받침대를 고정한 **기구학 재생**이고, 모터로 나가는
+      # 길이 아닙니다. MuJoCo 도 qpos 를 직접 쓰는 것은 범위 밖이어도 받습니다.
+      out_of_range = raw < lo or raw > hi
+      self.replay_clamped_now[n] = out_of_range
+      if out_of_range:
         self.replay_clamp_count[n] += 1
       direct_now.append(i)
-      vals[i] = clipped
+      vals[i] = raw
     self._replay_direct_now = direct_now
     self._replay_direct_vals_now = vals
 
@@ -919,11 +924,13 @@ class SimCore:
         continue
       v = float(v)
       hard_lo, hard_hi = float(self.range_lo[i]), float(self.range_hi[i])
-      clamped = v < hard_lo or v > hard_hi
-      self.replay_clamped_now[n] = clamped
-      if clamped:
+      out_of_range = v < hard_lo or v > hard_hi
+      self.replay_clamped_now[n] = out_of_range
+      if out_of_range:
         self.replay_clamp_count[n] += 1
-      self.target[i] = float(np.clip(v, self.clip_lo[i], self.clip_hi[i]))
+      # 크랭크는 닫힌 사슬이라 qpos 로 못 박고 PD 로만 갑니다(위 설명). 하지만 목표값을
+      # 자르지는 않습니다 -- 위와 같은 이유로, 받은 값 그대로 줍니다 (2026-09-15).
+      self.target[i] = v
 
   def _drain(self) -> None:
     with self._lock:
@@ -1185,6 +1192,9 @@ class SimCore:
         if f"{s}_ankle_pitch_joint" in self.qadr
       }
       snap["closure_mm"] = self.closure_mm()
+    # 2026-09-15: 재생 중 **모형 범위를 벗어난 관절**을 화면이 볼 수 있게 같이 냅니다.
+    # 예전에는 이 값을 잘라서 숨겼습니다 (`_update_replay_targets` 설명 참고).
+    snap["out_of_range"] = [n for n, v in self.replay_clamped_now.items() if v]
     with self._lock:
       self._snap = snap
     if self.recorder is not None:

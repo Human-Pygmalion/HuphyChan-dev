@@ -104,6 +104,16 @@ class JointMap:
     if len(self.motors) != 12:
       raise ValueError(f"{self.path}: expected 12 motor rows (2 legs x 6 motors), found {len(self.motors)}")
     self.ankle_joints = {(a["limb"], a["joint"]): a for a in raw["ankle_joints"]}
+    # 2026-09-15: `rom_deg` 는 **들어오는 값을 자르는** 장치였습니다. 사용자 규칙상
+    # 실물 -> 모형 경로에서는 범위 제한을 걸지 않습니다 (자르면 모형과 실물이 어긋난
+    # 사실이 화면에서 사라집니다). 그래서 채워져 있으면 조용히 자르는 대신 **거부**합니다.
+    # 벗어난 값은 `sim_core` 가 세어서 보고합니다 -- 고치는 곳은 모형이지 이 경로가 아닙니다.
+    bad = [f"{m['limb']}/{m['motor']}" for m in raw["motors"] if m.get("rom_deg") is not None]
+    if bad:
+      raise ValueError(
+        f"{self.path}: rom_deg 가 채워진 줄이 있습니다 ({', '.join(bad)}). 이 경로는 "
+        "들어오는 관절값을 자르지 않습니다 -- 전부 null 로 두십시오 (docs/146 section 5)."
+      )
 
   def sim_joint(self, limb: str, motor: str) -> dict:
     row = self.motors.get((limb, motor))
@@ -221,6 +231,9 @@ class HuphyBridge:
     self.imu_quat_rejects = 0
 
   def _clip_rom_deg(self, sim_joint: str, row: dict, value: float) -> float:
+    """항등입니다. `JointMap` 이 `rom_deg` 가 채워진 지도를 아예 거부하므로 (2026-09-15)
+    아래 자르는 가지는 닿지 않습니다. 남겨 둔 것은 기록이자, 누가 다시 켰을 때 어디를
+    봐야 하는지 가리키기 위해서입니다."""
     rom = row.get("rom_deg")
     if rom is None:
       return value

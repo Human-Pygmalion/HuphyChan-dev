@@ -131,8 +131,12 @@ def test_sign_and_unit_round_trip_through_the_real_huphy_udp_adapter(rig):
   commanded rad to within the wire's own rounding, for BOTH legs' knees (opposite
   travel_sign, same synthetic case ``test_bridge_huphy.py``/``test_tx_map.py`` fix)."""
   c, rx, client, catcher = rig
-  target_l = 0.35
-  target_r = -0.20
+  # 2026-09-15: was L +0.35 / R -0.20 rad, and NEITHER knee can hold its own value
+  # (L_knee range -120..0 deg, R_knee 0..+120). They only round-tripped because
+  # travel_sign negated each one twice. With the wire recognised as already mirrored,
+  # the round trip has to be exercised with angles each knee can actually reach.
+  target_l = -0.35
+  target_r = 0.20
   client.arm()
   client.set_target({"L_knee_joint": target_l, "R_knee_joint": target_r})
   # feed it long enough for the PD model to settle close to the target (a few time constants)
@@ -162,7 +166,7 @@ def test_deadman_trigger_timing_is_0_2s_plus_minus_0_05s(rig):
   item 7's own precision requirement for the actually-running background thread."""
   c, rx, client, catcher = rig
   client.arm()
-  client.set_target({"L_knee_joint": 0.3})
+  client.set_target({"L_knee_joint": -0.3})
   for _ in range(15):
     client.tick()
     time.sleep(0.02)
@@ -189,7 +193,7 @@ def test_disabled_motor_is_unaffected_end_to_end(rig):
   rx2.start()
   try:
     client.arm()
-    client.set_target({"L_knee_joint": 0.3, "L_hip_pitch_joint": 0.3})
+    client.set_target({"L_knee_joint": -0.3, "L_hip_pitch_joint": 0.3})
     for _ in range(40):
       client.tick()
       time.sleep(0.02)
@@ -201,7 +205,7 @@ def test_disabled_motor_is_unaffected_end_to_end(rig):
         return None
       by_name = dict(zip(st.joint_names, st.q))
       q = by_name.get("L_knee_joint")
-      return st if (q is not None and abs(q - 0.3) < ACHIEVABLE_RAD_TOL) else None
+      return st if (q is not None and abs(q - -0.3) < ACHIEVABLE_RAD_TOL) else None
 
     _wait_until(_knee_moved, timeout=3.0)
     st = catcher.last_state

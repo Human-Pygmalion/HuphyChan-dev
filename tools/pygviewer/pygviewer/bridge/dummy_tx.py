@@ -35,7 +35,7 @@ import time
 from .. import CACHE_DIR, VARIANTS
 from ..contract import load_contract
 from ..schema import ImuState, JointState, to_jsonl
-from .huphy_udp import DEFAULT_PORT, JointMap
+from .huphy_udp import DEFAULT_PORT, WIRE_IS_ALREADY_MIRRORED, JointMap
 
 
 # --------------------------------------------------------------------------- trajectories
@@ -190,8 +190,12 @@ async def run(args) -> None:
     raise SystemExit(f"unknown --pattern {args.pattern!r}")
 
   jmap = JointMap() if "udp" in args.target else None
+  # 2026-09-15: 같은 관문을 쓴다 (tx_map/huphy_udp 와 동일) - 전선과 모형 사이에
+  # 곱할 것이 없다는 것이 로봇 교정으로 확인됐다.
   travel_sign = (
-    {n: float(c.raw["joint_contract"][n]["travel_sign"]) for n in c.action_joint_names}
+    {n: (1.0 if WIRE_IS_ALREADY_MIRRORED
+         else float(c.raw["joint_contract"][n]["travel_sign"]))
+     for n in c.action_joint_names}
     if jmap else {}
   )
   if "udp" in args.target and not c.is_loop:

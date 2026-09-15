@@ -27,7 +27,12 @@ from __future__ import annotations
 import math
 
 from ..contract import ModelContract
-from .huphy_udp import DEFAULT_MAP_PATH, JointMap, huphy_torque_to_sim  # noqa: F401  (re-export)
+from .huphy_udp import (  # noqa: F401  (re-export)
+  DEFAULT_MAP_PATH,
+  WIRE_IS_ALREADY_MIRRORED,
+  JointMap,
+  huphy_torque_to_sim,
+)
 
 __all__ = [
   "sim_rad_to_cal_deg",
@@ -111,8 +116,15 @@ class JointTargetMapper:
 
   def __init__(self, contract: ModelContract, jmap: JointMap | None = None):
     self.jmap = jmap or JointMap(DEFAULT_MAP_PATH)
+    # 2026-09-15: 받는 쪽과 **같은 관문**을 쓴다. 전에는 이 줄이 계약을 직접 읽어서,
+    # 받기만 고치고 보내기는 안 고친 상태가 될 수 있었다 -- 그러면 명령이 거꾸로 나간다.
+    # 로봇 교정(`config/calibration/*_leg_v1.0.json`)이 12개 모터 전부
+    # `sign=1.0, offset_deg=0.0` 이고 `limits_deg` 가 MJCF 좌우 범위와 같으므로,
+    # 전선과 모형 사이에 곱할 것이 애초에 없다.
     self.travel_sign: dict[str, float] = {
-      n: float(contract.raw["joint_contract"][n]["travel_sign"]) for n in contract.action_joint_names
+      n: (1.0 if WIRE_IS_ALREADY_MIRRORED
+          else float(contract.raw["joint_contract"][n]["travel_sign"]))
+      for n in contract.action_joint_names
     }
     self._by_sim_joint: dict[str, tuple[str, str, dict]] = {
       row["sim_joint"]: (limb, motor, row) for (limb, motor), row in self.jmap.motors.items()
