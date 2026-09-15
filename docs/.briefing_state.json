@@ -181,17 +181,6 @@
    "section": "next",
    "changed": "2026-08-28 15:36"
   },
-  "pretrain-audit": {
-   "id": "pretrain-audit",
-   "created": "2026-09-01 14:44",
-   "title": "학습 전 자동 안전검사",
-   "why": "이전 작업은 자원 부족·설정 의미 혼동·감시 중단 때문에 재측정과 재학습이 생겼습니다. 실행 전에 메모리·저장공간·설정·보상·감시를 한 번에 확인하도록 만듭니다.",
-   "section": "done",
-   "changed": "2026-09-01 14:54",
-   "finding": "GPU가 아니라 실행 전 설정검사가 병목임을 확인했습니다. 상체 보상표·모터 정격·초기자세 오류를 수정하고 자원 검사를 자동화했습니다. 1환경 실제 step과 1,024환경 GPU 예행을 통과했으며, 본학습은 아직 시작하지 않았습니다.",
-   "number": "GPU 16.3 GB 중 15.7 GB 여유, actor action 17·observation 68, 예행 120 iteration·약 26k step/s, NaN reward 0",
-   "collapsed": true
-  },
   "upper-smoke": {
    "id": "upper-smoke",
    "created": "2026-09-01 14:54",
@@ -3150,8 +3139,10 @@
    "title": "완주·중단된 실험의 자동 기록 루프가 아직 돌고 있음",
    "why": "같은 노트가 한 시간마다 똑같은 줄만 늘어나면서 기록 검사가 반복해서 걸려, 이유를 따져 봄",
    "finding": "자동 기록 루프 셋 중 둘이 쓸모없이 돌고 있습니다. 하나는 어제 새벽에 완주한 실험을 붙들고 한 시간마다 **똑같은 숫자 한 줄씩**을 노트에 덧붙이고 있고(완주 뒤 꺼야 하는 규칙이 있는데 안 꺼짐), 다른 하나는 중단되면서 **노트가 없어진 실험**을 가리켜 파일 없음 오류만 반복해 찍고 있습니다. 진행 중인 실험을 보는 세 번째 하나만 제 일을 합니다. 남의 세션이 띄운 것이라 끄지 않고 보고만 합니다",
-   "section": "next",
-   "changed": "2026-09-15 14:30"
+   "section": "correct",
+   "changed": "2026-09-15 14:58",
+   "was": "남의 세션이 띄운 것이라 끄지 않고 보고만 합니다",
+   "now_": "사용자 지시로 껐습니다. 완주한 실험을 붙들고 한 시간마다 같은 줄을 덧붙이던 것과, 없어진 노트를 가리켜 파일 없음 오류만 찍던 것 둘을 멈췄습니다. 진행 중인 실험을 보는 하나만 남겨 뒀습니다"
   },
   "fullstack-no-sign-manipulation": {
    "id": "fullstack-no-sign-manipulation",
@@ -3185,7 +3176,6 @@
   "landingfix",
   "mcprestart",
   "upperdof",
-  "pretrain-audit",
   "upper-smoke",
   "skill_12dof",
   "aluminum10_mass",
@@ -3436,5 +3426,5 @@
   "stale-review-loops",
   "fullstack-no-sign-manipulation"
  ],
- "updated": "2026-09-15 14:42"
+ "updated": "2026-09-15 14:58"
 }
