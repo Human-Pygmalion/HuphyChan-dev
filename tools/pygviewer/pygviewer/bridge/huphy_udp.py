@@ -121,6 +121,37 @@ class JointMap:
     return row
 
 
+WIRE_IS_ALREADY_MIRRORED = True
+"""실물이 보내는 각도가 **이미 모형과 같은 좌우 규약**인가? (2026-09-15: 그렇다)
+
+`travel_sign` 은 "이 관절은 어느 쪽으로 길게 도는가"(`test_bake_contract.py` — 범위의
+긴 쪽이 음수면 −1)이고, 이 다리의 **거울 규약**을 뜻합니다. 이것을 곱하는 설계는
+*실물이 좌우 구분 없이 같은 부호로 보낸다*(양다리 굽힘 = 둘 다 +30) 는 **가정** 위에
+서 있었습니다. 그 가정이 틀렸습니다.
+
+실물은 **좌우가 이미 뒤집힌 채로** 보냅니다. 두 가지 독립된 증거:
+
+1. 로봇 제 설정(`robot.yaml` → 텔레메트리 `lo`/`hi`)이 좌우 반대입니다 —
+   `left_leg/knee: -117 ~ -3`, `right_leg/knee: +3 ~ +117`. 모형의
+   `L_knee (-120, 0)` / `R_knee (0, +120)` 과 **쪽까지 그대로** 맞습니다.
+2. 09-15 손 검사 23,660줄: 왼 무릎 −110.9…+9.7, 오른 무릎 −0.5…+120.5.
+   좌우가 반대 부호이고, 각각 제 쪽 모형 범위 안입니다.
+
+그래서 `travel_sign` 을 한 번 더 곱하면 **두 번 뒤집는 것**이 됩니다.
+실제로 그랬습니다 (실물 생중계, 2026-09-15):
+
+    L_knee       전선 -12.7 도  ->  화면 +0.0 도   (뒤집힌 뒤 위 한계에 걸려 죽음)
+    R_hip_pitch  전선  -3.7 도  ->  화면 +3.7 도   (거꾸로)
+    L_hip_roll   전선  +7.2 도  ->  화면 -7.2 도   (거꾸로)
+
+`True` 면 이 곱셈을 하지 않습니다. 보내는 쪽(`sim_rad_to_cal_deg`)도 **같은**
+`travel_sign` 표를 읽으므로, 여기 한 곳만 바꾸면 받기/보내기가 같이 맞습니다 —
+한쪽만 바뀌어 명령이 거꾸로 나가는 일이 없습니다.
+
+되돌리려면 `False` 로 두십시오. 실물의 영점 규약이 바뀌면 이 값을 다시 판단해야 합니다.
+"""
+
+
 def huphy_deg_to_sim_rad(deg: float, sign: int, offset_rad: float, travel_sign: float) -> float:
   """The one conversion this whole bridge exists to get right: HUPHY physical degrees, in
   its own "cal space" convention, into the sim's canonical, travel-signed radians.
@@ -156,7 +187,9 @@ class HuphyBridge:
     self.jmap = jmap or JointMap()
     self.act_names = list(contract.action_joint_names)
     self.travel_sign = {
-      n: float(contract.raw["joint_contract"][n]["travel_sign"]) for n in self.act_names
+      n: (1.0 if WIRE_IS_ALREADY_MIRRORED
+          else float(contract.raw["joint_contract"][n]["travel_sign"]))
+      for n in self.act_names
     }
     self._buf = {
       n: dict(

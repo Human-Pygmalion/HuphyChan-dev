@@ -392,8 +392,13 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
     )
     pol_load = gui.add_button("load policy")
     pol_unload = gui.add_button("unload")
+    # real_replay 가 빠져 있었습니다 (2026-09-15). 그래서 실물 값을 받아도 3D 로봇을
+    # 그 값으로 움직이게 만들 방법이 화면에 없었고, 시뮬은 idle 로 제 물리를 돌며
+    # 중력에 처졌습니다 -- 옆 숫자판은 맞는데 그림만 엉뚱하게 움직이는 증상입니다.
+    # initial_value 는 core 의 지금 상태를 따릅니다 (huphy_viser 는 real_replay 로 켭니다).
     run_mode = gui.add_dropdown(
-      "mode", ("idle", "manual", "policy_sim", "policy_shadow"), initial_value="idle"
+      "mode", ("idle", "manual", "policy_sim", "policy_shadow", "real_replay"),
+      initial_value=core.mode,
     )
     vx = gui.add_slider("vx [m/s]", min=-1.0, max=2.5, step=0.05, initial_value=0.0)
     vy = gui.add_slider("vy [m/s]", min=-0.5, max=0.5, step=0.05, initial_value=0.0)

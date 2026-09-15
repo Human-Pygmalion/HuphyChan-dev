@@ -73,6 +73,15 @@ def main(argv=None) -> int:
   recv = HuphyUdpReceiver(core, port=a.udp_port, host="0.0.0.0", jmap_path=a.map)
   recv.start()
 
+  # 2026-09-15: 이게 빠져 있었습니다. `SimCore` 는 `idle` 로 시작하고, 받은 값을 관절에
+  # 넣는 곳은 `_replay_source` 의 `if self.mode == "real_replay"` 뿐입니다. 그래서 이
+  # 프로그램은 텔레메트리를 **받아서 숫자판에만 보여주고**, 3D 로봇은 `knees_bent`
+  # 자세에서 제 물리대로 중력에 처지고 있었습니다 -- 사용자가 본 "관절이 이상하게
+  # 움직인다" 가 이것입니다. 모형이나 부호 문제가 아니었습니다 (docs/146).
+  # 이 프로그램의 존재 이유가 "실물을 그대로 비추기" 이므로 켜질 때부터 이 모드입니다.
+  # `_apply_cmd` 가 받침대를 `fixed` 로 강제합니다 (sim_core.py 959행 안전장치).
+  core._apply_cmd({"op": "mode", "value": "real_replay"})
+
   server = build_ui(core, host=a.host, port=a.port, freshness=fresh, base="fixed")
   print(f"\n  3D 화면   http://{a.host}:{a.port}/")
   print(f"  텔레메트리 {a.udp_port} 번으로 받는 중 ({a.variant})")

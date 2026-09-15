@@ -165,11 +165,15 @@ def test_sync_with_no_telemetry_ever_is_409():
 
 # ------------------------------------------------------------------------------------- (b)
 def test_partial_sync_reports_synced_and_skipped_separately(core, client):
-  _ingest(core, {"L_knee_joint": 0.5})
+  # 2026-09-15: was +0.5 rad, which L_knee (range -120..0 deg) cannot hold at all - it only
+  # survived because the bridge's travel_sign negated it on the way in. With that double
+  # negation removed (WIRE_IS_ALREADY_MIRRORED) the value has to be one this joint can
+  # actually reach, so the test now uses a real left-knee flexion angle.
+  _ingest(core, {"L_knee_joint": -0.5})
   r = client.post("/sync_from_real")
   assert r.status_code == 200, r.text
   body = r.json()
-  assert body["synced"] == {"L_knee_joint": pytest.approx(0.5)}
+  assert body["synced"] == {"L_knee_joint": pytest.approx(-0.5)}
   assert body["clipped"] == {}
   assert len(body["skipped"]) == len(core.act_names) - 1
   assert body["skipped"]["R_knee_joint"] == "no real data"

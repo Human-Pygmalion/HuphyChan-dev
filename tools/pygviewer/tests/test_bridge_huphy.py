@@ -76,18 +76,27 @@ def test_pure_conversion_matches_the_task_briefs_synthetic_case():
   assert r_rad == pytest.approx(-0.5235988, abs=1e-6)
 
 
-def test_bridge_end_to_end_both_knees_plus_30_deg():
+def test_bridge_end_to_end_knees_in_the_wires_own_mirrored_convention():
+  """2026-09-15: the wire is ALREADY mirrored, so the bridge must pass it straight through.
+
+  The robot's own limits are per-side opposite (`left_leg/knee: -117..-3`,
+  `right_leg/knee: +3..+117`), matching the model's `L_knee (-120, 0)` /
+  `R_knee (0, +120)`. A knee flexed 30 deg therefore arrives as -30 on the left and
+  +30 on the right, and each must land unchanged in its own leg's range. Applying the
+  contract's travel_sign on top of that negated three joints - see
+  `WIRE_IS_ALREADY_MIRRORED`.
+  """
   c = _contract()
   bridge = HuphyBridge(c)  # DEFAULT_MAP_PATH -> joint_map_biped.json (left_leg/right_leg)
   assert bridge.travel_sign["L_knee_joint"] == pytest.approx(1.0)
-  assert bridge.travel_sign["R_knee_joint"] == pytest.approx(-1.0)
+  assert bridge.travel_sign["R_knee_joint"] == pytest.approx(1.0)
 
-  payload = {"t": 0.0, "loop_dt": 10.0, "left_leg/knee/pos": 30.0, "right_leg/knee/pos": 30.0}
+  payload = {"t": 0.0, "loop_dt": 10.0, "left_leg/knee/pos": -30.0, "right_leg/knee/pos": 30.0}
   msg = bridge.parse_fast(payload)
   assert msg is not None
   by_name = dict(zip(msg.joint_names, msg.q))
-  assert by_name["L_knee_joint"] == pytest.approx(0.5235988, abs=1e-6)
-  assert by_name["R_knee_joint"] == pytest.approx(-0.5235988, abs=1e-6)
+  assert by_name["L_knee_joint"] == pytest.approx(-0.5235988, abs=1e-6)
+  assert by_name["R_knee_joint"] == pytest.approx(0.5235988, abs=1e-6)
   # every other joint in this packet is untouched -> null, never a guessed 0.0
   for n, v in by_name.items():
     if n not in ("L_knee_joint", "R_knee_joint"):
@@ -133,10 +142,13 @@ def test_bridge_converts_velocity_and_torque_with_the_same_sign():
   msg = bridge.parse_fast(payload)
   by_name_qd = dict(zip(msg.joint_names, msg.qd))
   by_name_tau = dict(zip(msg.joint_names, msg.tau_est))
+  # 2026-09-15: rate and torque follow position - the wire is already mirrored, so both
+  # legs pass straight through (WIRE_IS_ALREADY_MIRRORED). The point of this test is that
+  # vel/tau get the SAME treatment as pos, not that the two legs disagree.
   assert by_name_qd["L_knee_joint"] == pytest.approx(math.radians(90.0), abs=1e-6)
-  assert by_name_qd["R_knee_joint"] == pytest.approx(-math.radians(90.0), abs=1e-6)
+  assert by_name_qd["R_knee_joint"] == pytest.approx(math.radians(90.0), abs=1e-6)
   assert by_name_tau["L_knee_joint"] == pytest.approx(5.0, abs=1e-6)
-  assert by_name_tau["R_knee_joint"] == pytest.approx(-5.0, abs=1e-6)
+  assert by_name_tau["R_knee_joint"] == pytest.approx(5.0, abs=1e-6)
 
 
 def test_minus_one_sentinel_becomes_null_and_warns_after_three():
@@ -266,12 +278,13 @@ def test_legacy_map_still_has_twelve_rows_with_the_old_left_right_vocabulary():
     jmap.sim_joint("left_leg", "knee")
 
 
-def test_legacy_bridge_end_to_end_both_knees_plus_30_deg():
+def test_legacy_bridge_end_to_end_knees_in_the_wires_own_mirrored_convention():
+  """Same as the non-legacy case above, through the bare left/right map."""
   c = _contract()
   bridge = _legacy_bridge(c)
-  payload = {"t": 0.0, "left/knee/pos": 30.0, "right/knee/pos": 30.0}
+  payload = {"t": 0.0, "left/knee/pos": -30.0, "right/knee/pos": 30.0}
   msg = bridge.parse_fast(payload)
   assert msg is not None
   by_name = dict(zip(msg.joint_names, msg.q))
-  assert by_name["L_knee_joint"] == pytest.approx(0.5235988, abs=1e-6)
-  assert by_name["R_knee_joint"] == pytest.approx(-0.5235988, abs=1e-6)
+  assert by_name["L_knee_joint"] == pytest.approx(-0.5235988, abs=1e-6)
+  assert by_name["R_knee_joint"] == pytest.approx(0.5235988, abs=1e-6)
