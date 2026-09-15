@@ -727,12 +727,44 @@ class StateSender:
           out[str(motor.id)].update(self.probe.rows().get(full, {}))
     return out
 
+  def flat(self, rows) -> Dict[str, Any]:
+    """3차원 뷰어가 읽는 **납작한** 모양으로 같은 값을 다시 적는다.
+
+    2026-09-15 · `bridge/huphy_udp.py` 의 `parse_fast` 는 최상위 열쇠가
+    `"<팔다리>/<모터>/<항목>"` **세 토막**인 것만 읽습니다(HUPHY 자신의 텔레메트리
+    모양). 우리가 보내던 `{"motors": {...}}` 는 토막이 하나라 **한 줄도 안 읽히고
+    조용히 버려집니다** — 실제로 그 때문에 화면이 리셋 자세에 멈춰 있었습니다.
+
+    같은 값을 두 모양으로 같이 보냅니다. 관절 화면(`joint_web.py`)은 원래 모양을,
+    3차원 뷰어는 이 모양을 씁니다. 팔다리 이름은 `joint_map_biped.json` 의
+    말버릇(`left_leg`/`right_leg`)에 맞춥니다 — 우리 `joint` 값이 이미 그 모양입니다.
+    """
+    out: Dict[str, Any] = {"t": round(time.monotonic(), 3)}
+    for r in rows.values():
+      full = str(r.get("joint", ""))
+      if "/" not in full:
+        continue
+      limb, _, motor = full.partition("/")
+      for wire, ours in (("pos", "deg"), ("tgt", "tgt"), ("vel", "vel"), ("tau", "nm"),
+                         ("temp", "temp")):
+        v = r.get(ours)
+        if v is not None:
+          out[f"{limb}/{motor}/{wire}"] = v
+    return out
+
   def _run(self):
     while not self._stop.is_set():
       t0 = time.monotonic()
-      pkt = json.dumps(dict(t=round(t0, 3), motors=self.rows(),
+      rows = self.rows()
+      pkt = json.dumps(dict(t=round(t0, 3), motors=rows,
                             note=self.targets.note,
                             rx=self.targets.rx)).encode()
+      flat = json.dumps(self.flat(rows)).encode()
+      for addr in self.addrs:
+        try:
+          self.sock.sendto(flat, addr)
+        except OSError:
+          pass
       for addr in self.addrs:
         try:
           self.sock.sendto(pkt, addr)
