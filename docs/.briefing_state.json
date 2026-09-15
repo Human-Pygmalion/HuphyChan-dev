@@ -3122,6 +3122,27 @@
    ],
    "section": "next",
    "changed": "2026-09-15 13:49"
+  },
+  "viewer-mirror-two-bugs": {
+   "id": "viewer-mirror-two-bugs",
+   "created": "2026-09-15 14:19",
+   "title": "viser 뷰어가 실물을 안 비추던 이유 두 가지",
+   "finding": "A: huphy_viser 가 SimCore 를 idle 로 두고 real_replay 로 안 바꿨다 (ui.py 모드 목록에도 real_replay 가 없어 손으로도 못 골랐다). 3D 로봇은 텔레메트리를 무시하고 제 물리로 처지고 있었고 숫자판만 맞았다. B: 브리지가 travel_sign 을 한 번 더 곱해 R_hip_pitch / L_hip_roll / L_knee 를 뒤집고 있었다. 09-12 swap_leg_names 로 travel_sign 의 좌우가 바뀐 뒤 브리지를 같이 안 봤다 - test_bridge_huphy 가 그때부터 5개 깨져 있었다.",
+   "number": "실물 생중계 검증: 고치기 전 L_knee 전선 -12.7도 -> 화면 +0.0도, R_hip_pitch -3.7 -> +3.7, L_hip_roll +7.2 -> -7.2. 고친 뒤 여섯 관절 모두 전선=화면. 20Hz, hard_failures=0",
+   "needs": "고친 뷰어로 여섯 관절 다시 눈으로 확인. 좌우 배정(side_mapping_verified=false) 확정. 영점 offset_rad 채우기 - left_knee 9.7도가 가장 크다",
+   "was": "브리지는 sign=+1 통과라 화면=실측 그대로 (docs/146 2c)",
+   "now_": "틀렸다. sign 말고 travel_sign 이라는 두 번째 곱하기가 있었고 그것이 세 관절을 뒤집고 있었다",
+   "section": "실물",
+   "changed": "2026-09-15 14:19"
+  },
+  "three-file-structure": {
+   "id": "three-file-structure",
+   "created": "2026-09-15 14:25",
+   "title": "로봇 값이 세 군데 나뉜 구조를 쉬운 말로 정리",
+   "why": "사용자가 '설명서 두 종류와 코드 중 무엇이 우선인가' 를 물었고, 제 앞선 설명이 순서를 잘못 짚게 만들었음",
+   "finding": "제 설명이 오해를 만들었습니다. 두 설명서는 위아래가 아니라 형제입니다 — 같은 도면에서 한 프로그램이 동시에 찍어내고 서로 읽지 않습니다. 학습은 그중 하나만 읽고, 그 위에 코드가 모터 값만 덮어씁니다. 소스에서 확인한 근거도 같이 적었습니다: 학습 코드에 다른 설명서를 여는 곳이 한 군데도 없습니다. 이 구조 자체는 이 분야 표준이며 Isaac Lab 등도 같습니다. 약점은 코드에 값을 빠뜨리면 조용히 파일 값이 쓰인다는 것이고, 실제로 직렬 발목 모드가 그 상태라 별도 검사로 막고 있습니다",
+   "section": "next",
+   "changed": "2026-09-15 14:25"
   }
  },
  "order": [
@@ -3388,7 +3409,9 @@
   "real-mirror-live",
   "handcheck-result",
   "v6b-11100",
-  "joint-sign-final"
+  "joint-sign-final",
+  "viewer-mirror-two-bugs",
+  "three-file-structure"
  ],
- "updated": "2026-09-15 13:49"
+ "updated": "2026-09-15 14:25"
 }
