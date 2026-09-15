@@ -96,6 +96,10 @@ def build_ui(core, host: str, port: int, freshness: dict, base: str = "free") ->
           state["readout"]()
         except Exception:
           pass
+        try:
+          state["sync_run_mode"]()
+        except Exception:
+          pass
         last_o = now
       if now - last_p >= 1.0 / PLOT_PUSH_HZ:
         try:
@@ -131,7 +135,14 @@ _PANEL_RESIZE_JS = (
   'nction(){put(panel.getBoundingClientRect().width)});var w0=420;try{w0=parseInt(localStorage.getI'
   "tem(K)||'420',10)||420}catch(e){}put(w0);"
 )
-"""조작판 왼쪽에 끌기 손잡이를 붙이는 코드. 브라우저에서 실행된다."""
+"""조작판 왼쪽 끌기 손잡이 코드. **2026-09-15 부터 아무 데서도 안 씁니다.**
+
+사용자 지시: *"이상한 바 생긴거 없에"* -- 조작판 왼쪽에 세로로 길게 붙던 회색 띠가
+이것입니다. 지우지 않고 남겨 둔 이유는, 넓이 조절을 다시 원할 때 **브라우저에서 패널을
+찾아내는 이 방법이 유일하게 통했기** 때문입니다 (Mantine 클래스 이름에 빌드 해시가 붙어
+CSS 선택자로는 못 잡고, `<script>` 태그는 `innerHTML` 로 넣으면 실행되지 않아
+`onerror` 를 탄다). 되살리려면 `_mount` 의 "Panel width" 자리에서 `gui.add_html` 로
+다시 불러 주면 됩니다."""
 
 
 def _mount(server: viser.ViserServer, state: dict) -> None:
@@ -148,21 +159,13 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
   # keeps its default, which is what this app was already getting.
   gui.configure_theme(control_width="large")
 
-  # The handle is built in the browser, because only the browser knows where the panel is.
-  # It walks UP from this element - the panel is whatever ancestor is right-anchored and
-  # full-height - instead of matching a CSS class, because Mantine's class names carry a
-  # build hash that changes when viser is upgraded.  Width is remembered per browser;
-  # double-click resets it.
+  # 2026-09-15 · 사용자 지시: *"이상한 바 생긴거 없에"*.
   #
-  # ★ The code rides on an ``onerror`` attribute, not a ``<script>`` tag: HTML inserted
-  # through ``innerHTML`` (which is what ``add_html`` ends up doing) never executes script
-  # tags, so the first attempt here silently did nothing - confirmed by driving the page
-  # with a real browser, which is the only way this class of bug shows up.
-  gui.add_html(
-    '<img src="data:," style="display:none" alt="" onerror="'
-    + _PANEL_RESIZE_JS.replace('"', '&quot;')
-    + '">'
-  )
+  # 여기 있던 **끌기 손잡이를 뗐습니다.** 조작판 왼쪽에 세로로 길게 붙던 회색 띠가
+  # 그것입니다 - 넓이를 조절하라고 넣었는데, 화면에 정체 모를 막대로 보였습니다.
+  # 넓이는 위 `control_width="large"` 로 이미 넓고, 관절을 돌려 보는 데 손잡이는
+  # 필요하지 않습니다. `_PANEL_RESIZE_JS` 는 되살릴 때를 위해 아래에 남겨 두되
+  # **아무 데서도 쓰지 않습니다.**
 
   # ------------------------------------------------------------- Bench camera
   # 2026-09-12, user: "viser Wrapper 뷰어에 카메라 화면뜨게 할수있나? 지연 최대한 적게".
@@ -616,7 +619,13 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
     gui.add_markdown("**Replay** (file_replay mode)")
     replay_path = gui.add_text("recording path", initial_value="")
     replay_load = gui.add_button("load")
-    replay_run = gui.add_dropdown("run mode", ("idle", "manual", "file_replay"), initial_value="idle")
+    # 2026-09-15: `real_replay` 가 목록에 없고 `initial_value` 가 `"idle"` 로 박혀 있었다.
+    # 그래서 실물을 비추고 있는 중에도 이 칸은 **항상 `idle` 이라고 적혀** 있었고,
+    # 지금 무슨 모드인지 화면에서 알 길이 없었다. 목록에 넣고, 지금 모드를 보여준다.
+    replay_run = gui.add_dropdown(
+      "run mode", ("idle", "manual", "real_replay", "file_replay"),
+      initial_value=core.mode,
+    )
     replay_speed = gui.add_slider("speed", min=0.1, max=4.0, step=0.1, initial_value=1.0)
     replay_status = gui.add_markdown("no recording loaded")
 
@@ -639,6 +648,13 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
     @replay_speed.on_update
     def _(_evt):
       state["core"].submit({"op": "replay_speed", "speed": replay_speed.value})
+
+    # 다른 곳에서 모드가 바뀌어도(켤 때 `real_replay` 로 들어가는 것 포함) 이 칸이
+    # 따라오게 한다 -- 화면이 실제 상태와 다르면 없느니만 못하다 (2026-09-15).
+    state["sync_run_mode"] = lambda: (
+      setattr(replay_run, "value", state["core"].mode)
+      if replay_run.value != state["core"].mode else None
+    )
 
   def _telemetry_md() -> str:
     s = state["core"].snapshot()

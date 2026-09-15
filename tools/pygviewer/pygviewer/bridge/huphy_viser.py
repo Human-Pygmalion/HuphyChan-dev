@@ -81,9 +81,13 @@ def main(argv=None) -> int:
   # 이 프로그램의 존재 이유가 "실물을 그대로 비추기" 이므로 켜질 때부터 이 모드입니다.
   # `_apply_cmd` 가 받침대를 `fixed` 로 강제합니다 (sim_core.py 959행 안전장치).
   core._apply_cmd({"op": "mode", "value": "real_replay"})
+  if core.mode != "real_replay":                       # 조용히 실패하면 안 된다
+    raise SystemExit(f"real_replay 로 못 들어갔습니다 (지금 {core.mode!r})")
 
   server = build_ui(core, host=a.host, port=a.port, freshness=fresh, base="fixed")
   print(f"\n  3D 화면   http://{a.host}:{a.port}/")
+  print(f"  모드 {core.mode} · 받침대 {core.base_mode} "
+        f"(실물 관절값이 3D 로봇을 그대로 움직입니다)")
   print(f"  텔레메트리 {a.udp_port} 번으로 받는 중 ({a.variant})")
   print("  ** 이 프로그램에는 모터로 명령을 보내는 길이 없습니다 **")
   print("  Ctrl-C 로 멈춤\n", flush=True)
