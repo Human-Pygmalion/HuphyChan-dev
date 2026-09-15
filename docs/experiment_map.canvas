@@ -3085,6 +3085,14 @@
       "toNode": "n_deploy_contract",
       "toSide": "left",
       "label": "배포 후보 → 계약 검증 필요"
+    },
+    {
+      "id": "e_v6b_gate_note",
+      "fromNode": "n_v6b_flatfoot",
+      "fromSide": "right",
+      "toNode": "n_legonly_v7_revert",
+      "toSide": "bottom",
+      "label": "정지 비율이 커리큘럼 게이트와 부딪힘 — 다음 런은 게이트 문턱도 같이 올릴 것"
     }
   ]
 }
