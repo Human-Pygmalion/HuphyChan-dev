@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "관절 부호·ROM 최종 검토: 세 관절은 모형이 맞다",
-  "detail": "docs/146. 손으로 돌린 실측값이 근거.",
-  "since": "2026-09-15 13:49"
+  "title": "v6b 학습 2단계 진행 중 (무작위화 램프) — 절대 반복 19,290/29,998, 낙상 0",
+  "detail": "1단계는 09-15 19:49 에 16,000 상한에서 끝났습니다(자력 졸업 실패). 원인은 실력이 아니라 승급 관문이 쓰는 지표였습니다 — 관문은 전 환경의 평균 속도 오차를 보는데, 서 있으라고 명령한 환경은 로봇이 가만히 있으면 오차가 0에 가깝습니다. 이 런은 서 있는 환경 비율을 10%에서 30%로 올렸으므로 쉬운 앞 단계의 오차가 끌려 내려가 기준선이 0.1679(v4 0.2131 · v5 0.2108)로 낮게 잡혔고, 마지막 단계는 자기보다 쉬운 단계가 정한 문턱을 넘어야 했습니다. 이 런의 절대 오차 0.2078 은 오히려 v4·v5 가 통과한 값(0.2269·0.2249)보다 낮습니다. 커리큘럼 자체는 이미 마지막 단계까지 갔고 거기서 10,600회를 학습했으므로 잃은 것은 약 13시간의 시간이지 정책 품질이 아닙니다(낙상 0, 보상·에피소드 길이 평평). 지표를 고쳐 다음 런부터는 구조적으로 막았습니다(mjlab ad1adf8d, 기본값 꺼짐). 2단계 완주 예상 09-16 18시경.",
+  "since": "2026-09-16 01:09"
  },
  "items": {
   "shouldermesh": {
@@ -189,16 +189,6 @@
    "section": "next",
    "changed": "2026-09-01 14:54"
   },
-  "skill_12dof": {
-   "id": "skill_12dof",
-   "created": "2026-09-01 18:46",
-   "title": "Pygmalion 12-DOF Sim2Real Skill 설치",
-   "finding": "자동 호출 가능한 pygmalion-12dof-sim2real Skill 검증·설치 완료",
-   "now_": "/home/syaro/.codex/skills/pygmalion-12dof-sim2real",
-   "section": "done",
-   "changed": "2026-09-01 18:46",
-   "collapsed": true
-  },
   "aluminum10_mass": {
    "id": "aluminum10_mass",
    "created": "2026-09-01 18:46",
@@ -209,18 +199,6 @@
    "section": "blocked",
    "changed": "2026-09-01 20:12",
    "finding": "prototype-tempmass 32.470 kg 모델과 스모크는 완료"
-  },
-  "prototype_tempmass_smoke": {
-   "id": "prototype_tempmass_smoke",
-   "created": "2026-09-01 20:12",
-   "title": "prototype-tempmass 12-DOF GPU 스모크",
-   "why": "임시 알루미늄 질량과 배포 가능한 Student 입력 계약이 실제 학습 스택에서 동작하는지 검증",
-   "finding": "actor 45D, critic 82D, action 12D; P1 model_200, P2 model_399 생성",
-   "number": "전체 32.470 kg, 1024 env, 약 32k steps/s, GPU free 15.7 GB",
-   "now_": "docs/110_prototype_tempmass_student_teacher_report.md",
-   "section": "done",
-   "changed": "2026-09-01 20:12",
-   "collapsed": true
   },
   "teacher_contract": {
    "id": "teacher_contract",
@@ -3189,9 +3167,7 @@
   "mcprestart",
   "upperdof",
   "upper-smoke",
-  "skill_12dof",
   "aluminum10_mass",
-  "prototype_tempmass_smoke",
   "teacher_contract",
   "contact_reward_200hz",
   "v30-st45-smoke",
@@ -3439,5 +3415,5 @@
   "fullstack-no-sign-manipulation",
   "single-source-motor-params"
  ],
- "updated": "2026-09-15 15:05"
+ "updated": "2026-09-16 01:09"
 }

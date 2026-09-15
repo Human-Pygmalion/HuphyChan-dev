@@ -36,3 +36,10 @@ legonly_ab_v3_keyfix_p2
 # legonly_ab_v4_motorparams_p1/p2 = 2단계 단일 런, 통합노트 2026-09-11_legonly_ab_v4_motorparams.md 가 커버 (§2c 게이트표 · §2c-1 1단계 졸업 · §2c-2 2단계 발사)
 legonly_ab_v4_motorparams_p1
 legonly_ab_v4_motorparams_p2
+# legonly_ab_v5_heading_p1/p2, v6b_standing_flatfoot_p1/p2 = 2단계 단일 런, 통합노트가 커버
+#   v5  -> 2026-09-13_legonly_ab_v5_heading.md
+#   v6b -> 2026-09-14_legonly_ab_v6b_standing_flatfoot.md (§2c 게이트표 · §2c-0 1단계 결말 · §2c 2단계 경과)
+legonly_ab_v5_heading_p1
+legonly_ab_v5_heading_p2
+legonly_ab_v6b_standing_flatfoot_p1
+legonly_ab_v6b_standing_flatfoot_p2

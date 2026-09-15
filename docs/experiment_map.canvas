@@ -1645,6 +1645,26 @@
       "width": 420,
       "height": 150,
       "color": "6"
+    },
+    {
+      "id": "n_gate_exclude_standing",
+      "type": "text",
+      "x": 26000,
+      "y": 780,
+      "width": 520,
+      "height": 340,
+      "text": "**지표를 고쳐 구조적으로 막았다** (2026-09-16, mjlab `ad1adf8d`)\n\n문제는 런처 인자가 아니라 **게이트가 무엇을 재는가** 였다.\n\n- `error_vel_xy_steady_moving` — 같은 평균이되 **0이 아닌 명령을 받은 환경만** 센다. 항상 함께 기록되어 두 값을 나란히 읽는다.\n- `PYG_GATE_EXCLUDE_STANDING=1` — 게이트가 그 지표를 읽는다. **기본값 꺼짐** → v6b 까지의 게이트 숫자는 그대로 비교 가능.\n\n검증: 플래그 0/1 에서 파라미터가 기본값 ↔ `..._moving` 로 바뀜.\n**수치 검증은 v6b 완주 후 스모크**(지금 GPU 쓰면 학습과 경합).",
+      "color": "5"
+    },
+    {
+      "id": "n_v6b_p1_end",
+      "type": "text",
+      "x": 25400,
+      "y": 1760,
+      "width": 500,
+      "height": 300,
+      "text": "**v6b 1단계 결말 — 상한에서 끝났다** (2026-09-15 19:49)\n\n종료 사유 **`hard iteration cap`** (자력 졸업 실패)\n최상단계 체류 **10,599회** (5,400 → 15,999)\n오차/기준선 0.2078 / 0.1679 = **비율 1.238** (1.10 필요)\n강제 승급 1회 · 낙상 **0.0000** · 보상 109.4 · 판당 1000/1000\n\n**커리큘럼은 이미 끝까지 갔다.** 최상단계 학습량은 v4·v5 보다 많다.\n잃은 것은 **약 13시간**이지 정책 품질이 아니다.\n\n2단계 09-15 19:50 발사 → 완주 예상 **09-16 18시경**.",
+      "color": "4"
     }
   ],
   "edges": [
@@ -3201,6 +3221,30 @@
       "toNode": "n_v6b_progress",
       "toSide": "top",
       "label": "그 게이트에 걸린 런"
+    },
+    {
+      "id": "e_gate_to_fix",
+      "fromNode": "n_standing_vs_gate",
+      "fromSide": "right",
+      "toNode": "n_gate_exclude_standing",
+      "toSide": "left",
+      "label": "이렇게 고쳤다"
+    },
+    {
+      "id": "e_v6bprog_to_p1end",
+      "fromNode": "n_v6b_progress",
+      "fromSide": "bottom",
+      "toNode": "n_v6b_p1_end",
+      "toSide": "top",
+      "label": "1단계 결말"
+    },
+    {
+      "id": "e_p1end_to_fix",
+      "fromNode": "n_v6b_p1_end",
+      "fromSide": "right",
+      "toNode": "n_gate_exclude_standing",
+      "toSide": "bottom",
+      "label": "이 대가로 얻은 수정"
     }
   ]
 }
