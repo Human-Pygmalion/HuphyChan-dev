@@ -100,6 +100,10 @@ def build_ui(core, host: str, port: int, freshness: dict, base: str = "free") ->
           state["sync_run_mode"]()
         except Exception:
           pass
+        try:
+          state["est_readout"]()
+        except Exception:
+          pass
         last_o = now
       if now - last_p >= 1.0 / PLOT_PUSH_HZ:
         try:
@@ -838,6 +842,91 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
     status_md.content = "\n".join(lines)
     state["telemetry_md"]()
     gtxt.content = _gains_md()  # R7: refresh so a newly-received hardware gains report shows
+
+  # ----------------------------------------- Ground-FK estimate vs the real IMU
+  # 2026-09-15 · 사용자 지시: *"두 발바닥이 지면에 닿고, 관절값이 정확하다는 가정하에
+  # FK/IK 풀어서 Base_link 의 회전을 구하고 ... IMU 에서 읽히는 projected gravity ...
+  # 좌표계 시각화로 로봇위에 그려줘."*
+  #
+  # 추정은 **관찰**입니다 — 시뮬 상태를 절대 안 건드립니다 (`ground_fk` 는 자기 전용
+  # MjData 를 씁니다). 그래서 어느 모드에서든 켜 둘 수 있습니다.
+  est_state: dict = {"on": True, "overlay": None, "est": None}
+  try:
+    from .frame_overlay import FrameOverlay
+    from .ground_fk import GroundFkEstimator
+    est_state["est"] = GroundFkEstimator(core.m)
+    est_state["overlay"] = FrameOverlay(server, core, scene=state["scene"])
+  except Exception as exc:                                  # noqa: BLE001
+    est_state["error"] = f"{type(exc).__name__}: {exc}"
+
+  with gui.add_folder("Ground-FK estimate vs IMU"):
+    gui.add_markdown(
+      "Both soles flat on the ground + exact joint angles gives the base tilt with no "
+      "IK at all: **projected gravity = &minus;(sole normal seen from the base)**. "
+      "`residual` is how far the two feet disagree - the estimate is only worth "
+      "trusting while it is small. Gyro comes from the same assumption (planted feet), "
+      "as `-J_rot(q) q&#775;`.\n\n"
+      "Green = estimate, orange = real IMU, drawn at the `imu_in_base` site the policy "
+      "actually reads."
+    )
+    est_show = gui.add_checkbox("draw on the robot", initial_value=True)
+    est_md = gui.add_markdown("(waiting)")
+
+    @est_show.on_update
+    def _(_evt):
+      est_state["on"] = est_show.value
+      ov = est_state.get("overlay")
+      if ov is not None:
+        ov.set_visible(est_show.value)
+
+  def est_readout():
+    """추정값을 구해 3D 에 그리고 숫자로 낸다. **초당 몇 번**만 불린다."""
+    if est_state.get("error"):
+      est_md.content = f"**켤 수 없습니다** - {est_state['error']}"
+      return
+    e = est_state["est"]
+    ov = est_state["overlay"]
+    if e is None or ov is None or not est_state["on"]:
+      return
+    try:
+      est = e.estimate(core.d.qpos.copy(), core.d.qvel.copy())
+    except Exception as exc:                                # noqa: BLE001
+      est_md.content = f"**추정 실패** - {type(exc).__name__}: {exc}"
+      return
+    raw = getattr(core.real, "imu", None)
+    imu = None
+    if raw:
+      g = raw.get("gravity_b")
+      w = raw.get("gyro_rad_s")
+      if g is not None:
+        imu = {"proj_gravity_b": np.asarray(g, float),
+               "gyro_b": None if w is None else np.asarray(w, float)}
+    cmp_ = ov.update(est, imu)
+
+    def vec(v):
+      return "none" if v is None else "  ".join(f"{x:+.3f}" for x in np.asarray(v, float))
+
+    lines = [
+      f"`residual` **{est['residual_deg']:.2f} deg**  (feet disagree by this much)",
+      "",
+      f"estimate  gravity `{vec(est['proj_gravity_b'])}`",
+      f"estimate  gyro    `{vec(est.get('gyro_b'))}` rad/s",
+    ]
+    if imu is None:
+      lines += ["", "**no IMU on the wire yet** - showing the estimate only "
+                    "(docs/147: the /dev/ebimu link is still missing)."]
+    else:
+      lines += [
+        f"IMU       gravity `{vec(imu['proj_gravity_b'])}`",
+        f"IMU       gyro    `{vec(imu.get('gyro_b'))}` rad/s",
+        "",
+        f"**gravity disagreement {cmp_.get('grav_angle_deg', float('nan')):.2f} deg**",
+      ]
+      if "gyro_err_norm" in cmp_:
+        lines.append(f"gyro difference {cmp_['gyro_err_norm']:.3f} rad/s")
+    est_md.content = "\n".join(lines)
+
+  state["est_readout"] = est_readout
 
   state["readout"] = readout
 
