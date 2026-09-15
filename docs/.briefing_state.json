@@ -3043,8 +3043,10 @@
    "media": [
     "docs/img/urdf_crosscheck_LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.png"
    ],
-   "section": "next",
-   "changed": "2026-09-15 10:25"
+   "section": "correct",
+   "changed": "2026-09-15 10:50",
+   "was": "값마다 어디서 왔고 파일끼리 맞는지 표로 정리했습니다",
+   "now_": "그 표가 '어느 CAD에서' 수준으로 추상적이라는 지적을 받아 다시 했습니다. 이제 항목 19개마다 정의된 파일과 줄 번호, 변수 이름, 그 파일에 지금 적혀 있는 실제 숫자, 언제 어떤 방법으로 잰 값인지, 근거 문서를 함께 적습니다. 손으로 쓰지 않고 프로그램이 파일에서 직접 읽어 쓰므로, 값이 바뀌면 문서도 바뀌고 변수가 사라지면 못 찾았다고 표시됩니다. 실제로 처음 돌렸을 때 한 항목을 못 찾아 정의 위치를 바로잡았습니다. 속도 한계에 대한 앞선 판정도 정정했습니다 — 세 숫자가 어긋난 것이 아니라 카탈로그 무부하 속도, 실제로 잰 곡선, 특정 설정에서만 쓰는 상한으로 뜻이 서로 달랐고, 진짜 자리표시자는 URDF의 평평한 20 하나였습니다"
   },
   "gate-standing-interaction": {
    "id": "gate-standing-interaction",
@@ -3316,5 +3318,5 @@
   "model-param-audit",
   "gate-standing-interaction"
  ],
- "updated": "2026-09-15 10:27"
+ "updated": "2026-09-15 10:50"
 }
