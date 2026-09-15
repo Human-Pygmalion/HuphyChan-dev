@@ -750,7 +750,47 @@ class StateSender:
         v = r.get(ours)
         if v is not None:
           out[f"{limb}/{motor}/{wire}"] = v
+    out.update(self.imu_fields())
     return out
+
+  def imu_fields(self) -> Dict[str, Any]:
+    """IMU 값을 **HUPHY 자신의 함수로** 만들어 같은 꾸러미에 얹는다.
+
+    2026-09-15 · 사용자가 IMU 를 꽂은 뒤. 그 전까지 이 송신기는 **관절만** 보냈고,
+    그래서 IMU 가 잡혀 있어도 3차원 화면은 자세를 전혀 못 받았습니다 (docs/147).
+
+    `huphy.telemetry.snapshot.build_imu` 를 그대로 부릅니다. 직접 만들지 않는 이유는
+    받는 쪽(`bridge/huphy_udp.py parse_imu`)이 **그 함수가 내는 열쇠 모양**
+    (`imu/<이름>/gx` …)에 맞춰 이미 쓰여 있기 때문입니다. 우리가 따로 만들면 두 벌이
+    되고, 어긋나도 아무 오류가 안 납니다.
+
+    ★ **조용한 실패를 막는다.** HUPHY 는 센서를 못 만들면 그 센서만 빼고 진행합니다
+    (`sensors/registry.make_imus`). 로봇은 잘 뜨는데 IMU 만 없는 상태가 되고, 그것이
+    화면에서는 "자세가 안 움직인다" 로만 보입니다. 그래서 여기서 **한 번만** 알립니다.
+    """
+    if getattr(self, "_imu_off", False):
+      return {}
+    try:
+      from huphy.telemetry.snapshot import build_imu
+      fields = build_imu(self.robot, t=time.monotonic())
+    except Exception as e:                                  # noqa: BLE001
+      if not getattr(self, "_imu_warned", False):
+        self._imu_warned = True
+        print(f"  IMU 값을 못 만듭니다 ({type(e).__name__}: {e}). 관절만 보냅니다.")
+      return {}
+    fields.pop("t", None)                                   # 시각은 위에서 이미 넣었다
+    if not fields:
+      if not getattr(self, "_imu_warned", False):
+        self._imu_warned = True
+        self._imu_off = True
+        print("  ** IMU 가 하나도 안 붙었습니다 ** — 설정의 port 가 실제 자리와 다르거나 "
+              "센서가 안 꽂힌 것입니다. 관절만 보냅니다 (docs/147).")
+      return {}
+    if not getattr(self, "_imu_said", False):
+      self._imu_said = True
+      names = sorted({k.split("/")[1] for k in fields if k.startswith("imu/")})
+      print(f"  IMU {', '.join(names)} 값을 같이 보냅니다 ({len(fields)}개 항목).")
+    return fields
 
   def _run(self):
     while not self._stop.is_set():

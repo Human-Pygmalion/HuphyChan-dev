@@ -1,0 +1,27 @@
+{
+  "when": "2026-09-15 15:39:35",
+  "host": "maido@10.8.0.17",
+  "tty": [
+    "/dev/ttyACM2",
+    "/dev/ttyACM3",
+    "/dev/ttyUSB0"
+  ],
+  "by_id": [
+    "usb-Protofusion_Labs_CANable_9fddea4_github.com_normaldotcom_canable-fw.git_003E00315550530B20303731-if00",
+    "usb-Protofusion_Labs_CANable_9fddea4_github.com_normaldotcom_canable-fw.git_004100375034570520323530-if00",
+    "usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0"
+  ],
+  "lsusb": [
+    "Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub",
+    "Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub",
+    "Bus 001 Device 003: ID 2109:2822 VIA Labs, Inc. USB2.0 Hub",
+    "Bus 001 Device 004: ID 32e4:0415 4K USB Camera 4K USB Camera",
+    "Bus 001 Device 005: ID 2109:2822 VIA Labs, Inc. USB2.0 Hub",
+    "Bus 001 Device 008: ID ad50:60c4 Protofusion Labs CANable 9fddea4 github.com/normaldotcom/canable-fw.git",
+    "Bus 001 Device 009: ID ad50:60c4 Protofusion Labs CANable 9fddea4 github.com/normaldotcom/canable-fw.git",
+    "Bus 001 Device 013: ID 10c4:ea60 Silicon Labs CP210x UART Bridge",
+    "Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub",
+    "Bus 002 Device 002: ID 2109:0822 VIA Labs, Inc. USB3.1 Hub",
+    "Bus 002 Device 009: ID 2109:0822 VIA Labs, Inc. USB3.1 Hub"
+  ]
+}

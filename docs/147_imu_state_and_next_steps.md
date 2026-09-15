@@ -117,14 +117,68 @@ usb_snapshot.py --diff 2026-09-15_imu_unplugged <꽂은뒤이름>
 그 이름으로 `/dev/ebimu` udev 링크를 만드는 것이 맞습니다 (`can_up.sh` 가 이미 같은
 이유로 `by-id` 를 씁니다).
 
-## 6. 꽂으면 할 일 — 순서대로
+## 5b. 꽂았습니다 — 실제로 어디로 잡혔나 (2026-09-15 15:39)
 
-1. `usb_snapshot.py --diff 2026-09-15_imu_unplugged <새이름>` 으로 **새로 생긴 자리**를 찾는다.
-2. 그 `by-id` 이름으로 `/dev/ebimu` udev 링크를 만들거나, `robot.yaml` 의 `port` 를 그
-   이름으로 바꾼다. (지금 udev 규칙은 `99-rpi-keyboard.rules` 하나뿐입니다.)
-3. `python -m huphy.scripts.imu check` 로 센서가 설정대로 내보내는지, 붙은 방향이 맞는지
-   본다. 안 맞으면 `huphy-imu apply --yes` — **센서 비휘발성 메모리에 씁니다.**
-4. `huphy_live.py` 의 `flat()` 에 `build_imu` 를 합친다 (§4).
+차분 결과입니다. **`ttyACM0` 이 아니라 `/dev/ttyUSB0` 였습니다** — 예상과 달랐고,
+그래서 기준선을 찍어 둔 것이 값을 했습니다.
+
+```
+[tty]    + /dev/ttyUSB0
+[by_id]  + usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0
+[lsusb]  + Bus 001 Device 013: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+```
+
+udev 속성(실제로 읽은 값, 추측 아님):
+
+```
+ATTRS{idVendor}=="10c4"   ATTRS{idProduct}=="ea60"   ATTRS{serial}=="0001"
+ATTRS{manufacturer}=="Silicon Labs"
+ATTRS{product}=="CP2102 USB to UART Bridge Controller"
+```
+
+**센서는 정상입니다.** HUPHY 자신의 파서(`ebimu/protocol.decode`)로 생중계 한 줄을
+풀어 확인했습니다:
+
+```
+원본  *-0.9844,0.0079,0.0165,0.1750, 0.00,0.00,0.00, 0.037,-0.010,1.001, ... 29.5, 46705
+
+중력방향 = (0.0353, 0.0098, -0.9993)    크기 1.000, 거의 (0,0,-1) -> 거의 수평
+각속도   = (0.0, 0.0, 0.0) deg/s        가만히 있음
+가속도   = (0.363, -0.098, 9.816) m/s^2 크기 9.82 = g, g->m/s^2 변환도 맞음
+```
+
+초당 **100줄**(설정 `rate_hz: 100` 과 일치), 15개 항목이 `output` 순서와 맞습니다.
+
+### 포트를 맞추는 법 — udev 링크 (사용자 선택, 2026-09-15)
+
+`ttyUSB0` 번호는 꽂는 순서로 변하므로 번호를 설정에 적지 않습니다. 대신 링크를 만듭니다.
+**루트 권한이 필요해 사람이 실행합니다.**
+
+```
+/etc/udev/rules.d/60-ebimu.rules
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="0001", SYMLINK+="ebimu"
+```
+
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger --subsystem-match=tty
+ls -l /dev/ebimu          # -> ttyUSB0 을 가리켜야 함
+```
+
+★ **주의**: 이 CP2102 의 일련번호가 `0001` 입니다 — 제조사 기본값이라 **같은 칩을 쓰는
+장치를 하나 더 꽂으면 규칙이 둘 다 잡습니다.** 그때는 `KERNELS=="1-1.1.3"` 처럼 꽂은
+자리로 좁히거나, 센서 일련번호를 바꿔야 합니다. CAN 어댑터들은 `ad50:60c4` 라 안 겹칩니다.
+
+## 6. 남은 순서
+
+
+1. ~~새로 생긴 자리 찾기~~ ✅ `/dev/ttyUSB0` (§5b)
+2. **udev 링크 만들기** — 위 규칙. 루트 권한이라 사람이 실행합니다. ← **여기서 막혀 있음**
+3. `python -m huphy.scripts.imu check` 로 센서 설정과 붙은 방향을 본다.
+   안 맞으면 `huphy-imu apply --yes` — **센서 비휘발성 메모리에 씁니다.**
+4. ~~`flat()` 에 `build_imu` 합치기~~ ✅ 2026-09-15. `StateSender.imu_fields()` 가
+   HUPHY 의 `build_imu` 를 그대로 부릅니다. IMU 가 하나도 안 붙으면 **한 번 알리고**
+   관절만 보냅니다 — HUPHY 는 조용히 빼고 진행하므로 우리가 말해 줘야 합니다.
 5. `huphy_live` 를 다시 띄우고, 전선에서 `imu/main/*` 가 실제로 오는지 본다.
    **이때 돌고 있는 기록이 있으면 끊깁니다** — 기록 중에는 재시작하지 않습니다.
 6. 뷰어에서 자세가 실물과 같이 기우는지 본다.
