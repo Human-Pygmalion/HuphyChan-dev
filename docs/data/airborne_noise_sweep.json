@@ -1,0 +1,51 @@
+{
+  "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+  "hold": "hands",
+  "rows": [
+    {
+      "kind": "noise",
+      "value": 0.0,
+      "delay_steps": 0.0,
+      "delay_ms": 0.0,
+      "ground_qd": 0.0013620841782540083,
+      "air_qd": 0.00824746210128069,
+      "air_qd_max": 0.012830270454287529
+    },
+    {
+      "kind": "noise",
+      "value": 0.005,
+      "delay_steps": 0.005,
+      "delay_ms": 0.1,
+      "ground_qd": 0.0013761776499450207,
+      "air_qd": 0.020614104345440865,
+      "air_qd_max": 0.12450890243053436
+    },
+    {
+      "kind": "noise",
+      "value": 0.01,
+      "delay_steps": 0.01,
+      "delay_ms": 0.2,
+      "ground_qd": 0.0019638300873339176,
+      "air_qd": 0.06755878776311874,
+      "air_qd_max": 0.30367591977119446
+    },
+    {
+      "kind": "noise",
+      "value": 0.02,
+      "delay_steps": 0.02,
+      "delay_ms": 0.4,
+      "ground_qd": 0.0034525233786553144,
+      "air_qd": 0.2610125243663788,
+      "air_qd_max": 0.8402125835418701
+    },
+    {
+      "kind": "noise",
+      "value": 0.04,
+      "delay_steps": 0.04,
+      "delay_ms": 0.8,
+      "ground_qd": 0.005924875847995281,
+      "air_qd": 0.7208669185638428,
+      "air_qd_max": 2.0665130615234375
+    }
+  ]
+}

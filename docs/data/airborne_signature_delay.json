@@ -1,0 +1,146 @@
+{
+  "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+  "seconds": 10.0,
+  "lift": 0.6,
+  "hold": "hands",
+  "joints": [
+    {
+      "joint": "R_crank_A_joint",
+      "ground": 5.452213287353516,
+      "air": 8.876117706298828
+    },
+    {
+      "joint": "R_crank_B_joint",
+      "ground": 6.673710823059082,
+      "air": 8.100744247436523
+    },
+    {
+      "joint": "L_crank_A_joint",
+      "ground": 4.9903564453125,
+      "air": 8.908613204956055
+    },
+    {
+      "joint": "L_crank_B_joint",
+      "ground": 4.900730133056641,
+      "air": 8.064663887023926
+    },
+    {
+      "joint": "R_hip_yaw_joint",
+      "ground": 0.38843196630477905,
+      "air": 0.17932893335819244
+    },
+    {
+      "joint": "L_hip_yaw_joint",
+      "ground": 0.09177354723215103,
+      "air": 0.40529343485832214
+    },
+    {
+      "joint": "R_hip_pitch_joint",
+      "ground": 0.8741070628166199,
+      "air": 0.4220999479293823
+    },
+    {
+      "joint": "R_hip_roll_joint",
+      "ground": 1.359849214553833,
+      "air": 0.20099592208862305
+    },
+    {
+      "joint": "L_hip_pitch_joint",
+      "ground": 0.8515689373016357,
+      "air": 0.6668673753738403
+    },
+    {
+      "joint": "L_hip_roll_joint",
+      "ground": 0.4645310938358307,
+      "air": 0.6778805255889893
+    },
+    {
+      "joint": "R_knee_joint",
+      "ground": 0.28297102451324463,
+      "air": 0.5074717998504639
+    },
+    {
+      "joint": "L_knee_joint",
+      "ground": 1.5278946161270142,
+      "air": 1.2477331161499023
+    }
+  ],
+  "detectors": [
+    {
+      "name": "tau_all",
+      "ground_min": 26.507347106933594,
+      "ground_mean": 27.858139038085938,
+      "ground_max": 28.93958282470703,
+      "air_min": 34.88990020751953,
+      "air_mean": 38.2578125,
+      "air_max": 43.268646240234375,
+      "direction": "air>ground",
+      "separation": 3.257586674268482,
+      "threshold": 31.91474151611328
+    },
+    {
+      "name": "tau_ankle_crank",
+      "ground_min": 20.791906356811523,
+      "ground_mean": 22.017011642456055,
+      "ground_max": 22.72442054748535,
+      "air_min": 33.93168640136719,
+      "air_mean": 33.95014190673828,
+      "air_max": 33.96678924560547,
+      "direction": "air>ground",
+      "separation": 37.40294172117006,
+      "threshold": 28.328052520751953
+    },
+    {
+      "name": "tau_hip_roll",
+      "ground_min": 1.6195611953735352,
+      "ground_mean": 1.8243803977966309,
+      "ground_max": 2.004462242126465,
+      "air_min": 0.020388398319482803,
+      "air_mean": 0.8788764476776123,
+      "air_max": 2.990260362625122,
+      "direction": "ground>air",
+      "separation": -2.1404301389926688,
+      "threshold": 2.304910659790039
+    },
+    {
+      "name": "tau_knee",
+      "ground_min": 1.7261631488800049,
+      "ground_mean": 1.8108656406402588,
+      "ground_max": 1.907070279121399,
+      "air_min": 0.030611220747232437,
+      "air_mean": 1.7552049160003662,
+      "air_max": 6.161107540130615,
+      "direction": "air>ground",
+      "separation": -1.8855727301993725,
+      "threshold": 0.9688407778739929
+    },
+    {
+      "name": "qd_all",
+      "ground_min": 0.0012448972556740046,
+      "ground_mean": 0.004585308954119682,
+      "ground_max": 0.012622476555407047,
+      "air_min": 0.03438441827893257,
+      "air_mean": 0.350170373916626,
+      "air_max": 1.0073158740997314,
+      "direction": "air>ground",
+      "separation": 0.11444682023215064,
+      "threshold": 0.023503446951508522
+    },
+    {
+      "name": "qerr_all",
+      "ground_min": 0.9673566222190857,
+      "ground_mean": 1.0239529609680176,
+      "ground_max": 1.057700514793396,
+      "air_min": 1.5336427688598633,
+      "air_mean": 1.5553888082504272,
+      "air_max": 1.594472885131836,
+      "direction": "air>ground",
+      "separation": 20.96177160751278,
+      "threshold": 1.2956717014312744
+    }
+  ],
+  "best": "tau_ankle_crank",
+  "direction": "air>ground",
+  "separation": 37.40294172117006,
+  "threshold": 28.328052520751953
+}

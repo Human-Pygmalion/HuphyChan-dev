@@ -96,7 +96,7 @@ OUT = REPO / "docs/data"
 DROP_EVENTS = ("push_robot", "foot_friction", "encoder_bias", "base_com")
 
 
-def build(checkpoint: str):
+def build(checkpoint: str, obs_noise: bool = False):
   import torch
 
   import mjlab.tasks  # noqa: F401
@@ -117,6 +117,11 @@ def build(checkpoint: str):
   for cname in ("twist", "base_velocity"):
     if cname in cfg.commands:
       cfg.commands[cname].resampling_time_range = (_b, _b)
+  # 2026-09-17: play 모드는 관찰 잡음을 끕니다. 그런데 **학습은 켜고 돌립니다** —
+  # 실물 센서가 잡음을 내기 때문입니다(관절속도 ±1.5 rad/s, 자세 ±0.05). 정책이 내는
+  # 명령은 그 잡음을 그대로 받아 늘 조금씩 떨립니다. 땅에서는 안 보이고 공중에서는
+  # 보입니다. 그래서 "실물과 같은 조건" 을 재려면 이걸 다시 켜야 합니다.
+  cfg.observations["actor"].enable_corruption = bool(obs_noise)
   env = ManagerBasedRlEnv(cfg=cfg, device="cpu")
   envw = RslRlVecEnvWrapper(env, clip_actions=load_rl_cfg(TASK).clip_actions)
   runner = (load_runner_cls(TASK) or MjlabOnPolicyRunner)(
@@ -243,27 +248,35 @@ def sweep(env, envw, policy, torch, n) -> int:
   그래서 모형·정책·자세가 완전히 같은 상태에서 지연 하나만 달라집니다 — 단일 변인입니다.
   """
   term = env.action_manager.get_term("joint_pos")
-  if not hasattr(term, "max_delay"):
+  attr = "max_delay" if n.sweep_kind == "delay" else "noise"
+  if not hasattr(term, attr):
     raise SystemExit("--sweep 은 지연 항목이 켜져 있어야 합니다: "
                      "--env PYG_ACTION_DELAY=1.0 을 같이 주세요")
+  # 쓸지 않는 쪽은 **0 으로 못박는다**. 2026-09-17 에 지연과 잡음을 같이 켜 놓고
+  # "지연이 원인" 이라고 썼다가 쓸기에서 틀린 것이 드러났습니다 — 변인이 둘이었습니다.
+  other = "noise" if attr == "max_delay" else "max_delay"
+  setattr(term, other, 0.0)
   vals = [float(x) for x in n.sweep.split(",")]
-  print(f"\n{'지연[스텝]':>12}{'지연[ms]':>10}"
+  unit = "지연[스텝]" if attr == "max_delay" else "잡음[비율]"
+  print(f"\n{unit:>12}{'지연[ms]':>10}"
         f"{'땅 |qd| 평균':>14}{'공중 |qd| 평균':>16}{'공중 |qd| 최대':>16}{'배수':>9}")
   rows = []
   for v in vals:
-    term.max_delay = v
+    setattr(term, attr, v)
     g = rollout(env, envw, policy, torch, n.seconds, None)
     a = rollout(env, envw, policy, torch, n.seconds, n.lift, hold=n.hold)
     gq = float(np.abs(g["qvel"]).sum(axis=1).mean())
     aq = float(np.abs(a["qvel"]).sum(axis=1).mean())
     am = float(np.abs(a["qvel"]).sum(axis=1).max())
-    rows.append(dict(delay_steps=v, delay_ms=v * 20.0, ground_qd=gq,
-                     air_qd=aq, air_qd_max=am))
-    print(f"{v:>12.2f}{v * 20.0:>10.1f}{gq:>14.3f}{aq:>16.3f}{am:>16.3f}"
+    rows.append(dict(kind=n.sweep_kind, value=v, delay_steps=v, delay_ms=v * 20.0,
+                     ground_qd=gq, air_qd=aq, air_qd_max=am))
+    print(f"{v:>12.4f}{v * 20.0:>10.1f}{gq:>14.3f}{aq:>16.3f}{am:>16.3f}"
           f"{(aq / gq if gq > 1e-9 else float('inf')):>9.0f}")
   OUT.mkdir(parents=True, exist_ok=True)
   (OUT / f"{n.tag}_sweep.json").write_text(
-    json.dumps(dict(checkpoint=n.checkpoint, hold=n.hold, rows=rows),
+    json.dumps(dict(checkpoint=n.checkpoint, hold=n.hold, kind=n.sweep_kind,
+                    overrides=dict(kv.split("=", 1) for kv in n.env),
+                    note="쓸지 않는 쪽(지연/잡음)은 0 으로 못박고 잰다", rows=rows),
                ensure_ascii=False, indent=2, default=float), encoding="utf-8")
   sweep_plot(OUT / f"{n.tag}_sweep.png", rows)
   print(f"기록: {OUT / (n.tag + '_sweep.json')}, {OUT / (n.tag + '_sweep.png')}")
@@ -276,7 +289,8 @@ def sweep_plot(path, rows) -> None:
   matplotlib.use("Agg")
   import matplotlib.pyplot as plt
 
-  d = [r["delay_ms"] for r in rows]
+  kind = rows[0].get("kind", "delay")
+  d = [(r["delay_ms"] if kind == "delay" else r["value"]) for r in rows]
   fig, ax = plt.subplots(figsize=(7.2, 4.4))
   ax.plot(d, [r["air_qd"] for r in rows], "o-", color="#e08214",
           label="held in the air (mean)")
@@ -284,9 +298,10 @@ def sweep_plot(path, rows) -> None:
           label="held in the air (peak)")
   ax.plot(d, [r["ground_qd"] for r in rows], "s-", color="#2c7fb8",
           label="standing on the ground")
-  ax.set_xlabel("commanded action delay  [ms]   (1 control step = 20 ms)")
+  ax.set_xlabel("commanded action delay  [ms]   (1 control step = 20 ms)"
+                if kind == "delay" else "multiplicative command noise  [std, fraction]")
   ax.set_ylabel("sum |joint velocity|  [rad/s]")
-  ax.set_title("Action delay is what makes the legs shake -- but only in the air")
+  ax.set_title(f"Airborne shaking vs {kind} -- one variable at a time")
   ax.legend(fontsize=9)
   ax.grid(alpha=0.3)
   fig.tight_layout()
@@ -294,7 +309,7 @@ def sweep_plot(path, rows) -> None:
   plt.close(fig)
 
 
-def plot(path, names, ground, air, hold) -> None:
+def plot(path, names, ground, air, hold, delay: float = 0.0) -> None:
   """그림 한 장. **라벨은 영어로** 씁니다 — 한글은 이 환경에서 두부(tofu)로 깨집니다."""
   import matplotlib
   matplotlib.use("Agg")
@@ -319,7 +334,11 @@ def plot(path, names, ground, air, hold) -> None:
   ax[1].plot(t, np.abs(air["qvel"]).sum(axis=1), label=f"lifted ({hold})", color="#e08214")
   ax[1].set_xlabel("time [s]")
   ax[1].set_ylabel("sum |joint velocity|  [rad/s]")
-  ax[1].set_title("Leg motion -- the shaking the user reported does NOT appear in sim")
+  shook = np.abs(air["qvel"]).sum(axis=1).max() > 10.0 * (
+    np.abs(ground["qvel"]).sum(axis=1).max() + 1e-9)
+  ax[1].set_title(
+    f"Leg motion  (action delay {delay * 20.0:.0f} ms)  -- "
+    + ("legs DO shake when lifted" if shook else "no shaking in either case"))
   ax[1].legend(fontsize=8)
   ax[1].grid(alpha=0.3)
   fig.tight_layout()
@@ -338,6 +357,10 @@ def main(argv=None) -> int:
   ap.add_argument("--env", action="append", default=[], metavar="KEY=VALUE",
                   help="런의 토글 위에 **덧씌울** 환경변수. 학습 때는 없었던 것을 "
                        "켜 보고 차이를 재는 데 쓴다 (예: PYG_ACTION_DELAY=1.0)")
+  ap.add_argument("--obs-noise", action="store_true",
+                  help="관찰 잡음을 학습과 같이 켠다. play 모드는 기본으로 꺼 둔다")
+  ap.add_argument("--sweep-kind", choices=("delay", "noise"), default="delay",
+                  help="무엇을 쓸어볼 것인가. **한 번에 하나만** 바꾼다")
   ap.add_argument("--sweep", default="",
                   help="명령 지연을 쉼표로 나열해 쓸어본다 (예: 0,0.25,0.5,1.0). "
                        "지연이 흔들림의 원인인지 **한 변인만 바꿔** 확인하는 용도")
@@ -350,7 +373,9 @@ def main(argv=None) -> int:
     os.environ[k] = v
     envd[k] = v
     print(f"[air] 덧씌움: {k}={v}", flush=True)
-  env, envw, policy, torch = build(n.checkpoint)
+  env, envw, policy, torch = build(n.checkpoint, obs_noise=n.obs_noise)
+  if n.obs_noise:
+    print("[air] 관찰 잡음 ON — 학습과 같은 조건 (실물 센서 잡음에 해당)", flush=True)
   # 2026-09-17: 처음엔 **행동 항목의 관절 순서**로 이름을 붙였는데, `actuator_force` 는
   # **액추에이터(ctrl) 순서**입니다. 두 순서가 같다는 보장이 없어 이름표가 어긋납니다.
   # 그 열에 붙은 이름이 틀리면 "왼다리가 힘을 안 쓴다" 같은 엉뚱한 결론이 나옵니다.
@@ -405,7 +430,7 @@ def main(argv=None) -> int:
   OUT.mkdir(parents=True, exist_ok=True)
   p = OUT / f"{n.tag}.json"
   p.write_text(json.dumps(dict(checkpoint=n.checkpoint, seconds=n.seconds, lift=n.lift,
-                               hold=n.hold,
+                               hold=n.hold, overrides=dict(kv.split('=', 1) for kv in n.env),
                                joints=rows, detectors=det_rows,
                                best=best["name"], direction=best["direction"],
                                separation=best["separation"], threshold=thr),
@@ -413,7 +438,8 @@ def main(argv=None) -> int:
   np.savez(OUT / f"{n.tag}.npz", act_names=np.array(act_names),
            ground_tau=ground["tau"], air_tau=air["tau"],
            ground_qvel=ground["qvel"], air_qvel=air["qvel"])
-  plot(OUT / f"{n.tag}.png", act_names, ground, air, n.hold)
+  plot(OUT / f"{n.tag}.png", act_names, ground, air, n.hold,
+       float(os.environ.get("PYG_ACTION_DELAY", 0.0) or 0.0))
   print(f"기록: {p}, {OUT / (n.tag + '.npz')}, {OUT / (n.tag + '.png')}")
   return 0
 

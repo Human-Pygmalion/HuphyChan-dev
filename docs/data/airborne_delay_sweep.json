@@ -1,0 +1,41 @@
+{
+  "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+  "hold": "hands",
+  "rows": [
+    {
+      "delay_steps": 0.0,
+      "delay_ms": 0.0,
+      "ground_qd": 0.0011399750364944339,
+      "air_qd": 0.008247166872024536,
+      "air_qd_max": 0.012828866951167583
+    },
+    {
+      "delay_steps": 0.25,
+      "delay_ms": 5.0,
+      "ground_qd": 0.0013570957817137241,
+      "air_qd": 0.007733446545898914,
+      "air_qd_max": 0.012319131754338741
+    },
+    {
+      "delay_steps": 0.5,
+      "delay_ms": 10.0,
+      "ground_qd": 0.0013361340388655663,
+      "air_qd": 0.0078150425106287,
+      "air_qd_max": 0.013470688834786415
+    },
+    {
+      "delay_steps": 0.75,
+      "delay_ms": 15.0,
+      "ground_qd": 0.0014506685547530651,
+      "air_qd": 0.007777445949614048,
+      "air_qd_max": 0.0193403922021389
+    },
+    {
+      "delay_steps": 1.0,
+      "delay_ms": 20.0,
+      "ground_qd": 0.0020079088862985373,
+      "air_qd": 0.0073389532044529915,
+      "air_qd_max": 0.013604450970888138
+    }
+  ]
+}
