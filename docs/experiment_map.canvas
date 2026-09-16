@@ -1795,6 +1795,16 @@
       "height": 300,
       "text": "**좌우 비대칭: 왼다리는 무릎, 오른다리는 발목** (§11)\n\n| 관절 | 토크 왼/오른 | 차이 |\n|---|--:|--:|\n| **무릎** | 11.76 / 10.02 | **+16.0 %** |\n| **crank_B** | 7.55 / 10.11 | **−29.0 %** |\n| hip_yaw 폭 | 10.3 / 11.5° | −10.7 % |\n| **지면반력 RMS** | 313 / 434 N | **−32.2 %** |\n\n오른다리가 더 많이 받고 발목으로 버티며, 왼다리는 무릎으로 버틴다.\n§2h 의 1.2 m/s 좌우차 −39.7 % 와 **부호가 같다**(오른쪽이 큼).\n\n**떨림은 없다** — 지지상 발목 지령의 5 Hz 이상 파워 6.2~7.8 %(기준 25 %).",
       "color": "4"
+    },
+    {
+      "id": "n_turn_inherited",
+      "type": "text",
+      "x": 31200,
+      "y": 2960,
+      "width": 560,
+      "height": 340,
+      "text": "**회전 고장은 물려받은 것이다** (§3c-1, 2026-09-17)\n\n같은 도구(`measure_turn.py`)·같은 8개 요 속도·각자 자기 자세:\n\n| | 중앙 달성률 | 반대로 돈 블록 |\n|---|--:|--:|\n| v5 | **16 %** | 2 / 8 |\n| v6b | **12 %** | 3 / 8 |\n\n**Mann-Whitney p = 0.56 — 구별되지 않는다.** 둘 다 망가져 있다.\n\n★**정정**: 앞서 \"v6b 7 % 대 v5 16 %\" 는 **도구를 섞은 비교**였다(전체 스윕 vs 전용 스윕 — 블록 진입 상태가 다름). 내가 §2f·§2h 에서 세운 규칙을 이 항목에서 어겼다.\n\n원인 가설: `PYG_REL_HEADING=0.8` — 다섯 중 넷에서 요 명령이 방향오차 계산값. **v7(0.3)이 2×2 를 완성하면 답이 나온다.**",
+      "color": "5"
     }
   ],
   "edges": [
@@ -3511,6 +3521,22 @@
       "toNode": "n_v6b_symmetry",
       "toSide": "top",
       "label": "좌우"
+    },
+    {
+      "id": "e_yawdead_to_inherited",
+      "fromNode": "n_v6b_yaw_dead",
+      "fromSide": "right",
+      "toNode": "n_turn_inherited",
+      "toSide": "left",
+      "label": "v5 대조"
+    },
+    {
+      "id": "e_inherited_to_v5",
+      "fromNode": "n_turn_inherited",
+      "fromSide": "top",
+      "toNode": "n_legonly_v6_standing",
+      "toSide": "right",
+      "label": "v5 에서 이미 죽어 있었다"
     }
   ]
 }
