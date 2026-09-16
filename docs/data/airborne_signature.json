@@ -1,0 +1,146 @@
+{
+  "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+  "seconds": 10.0,
+  "lift": 0.6,
+  "hold": "hands",
+  "joints": [
+    {
+      "joint": "R_crank_A_joint",
+      "ground": 5.4521589279174805,
+      "air": 8.905284881591797
+    },
+    {
+      "joint": "R_crank_B_joint",
+      "ground": 6.638338088989258,
+      "air": 8.068490982055664
+    },
+    {
+      "joint": "L_crank_A_joint",
+      "ground": 5.001977443695068,
+      "air": 8.917976379394531
+    },
+    {
+      "joint": "L_crank_B_joint",
+      "ground": 4.888186454772949,
+      "air": 8.054300308227539
+    },
+    {
+      "joint": "R_hip_yaw_joint",
+      "ground": 0.38732731342315674,
+      "air": 0.016168508678674698
+    },
+    {
+      "joint": "L_hip_yaw_joint",
+      "ground": 0.07980972528457642,
+      "air": 0.08816913515329361
+    },
+    {
+      "joint": "R_hip_pitch_joint",
+      "ground": 0.8900873064994812,
+      "air": 0.1818550080060959
+    },
+    {
+      "joint": "R_hip_roll_joint",
+      "ground": 1.3518884181976318,
+      "air": 0.29428979754447937
+    },
+    {
+      "joint": "L_hip_pitch_joint",
+      "ground": 0.8704809546470642,
+      "air": 0.07663524895906448
+    },
+    {
+      "joint": "L_hip_roll_joint",
+      "ground": 0.4616101086139679,
+      "air": 0.23299406468868256
+    },
+    {
+      "joint": "R_knee_joint",
+      "ground": 0.2845979928970337,
+      "air": 0.14959405362606049
+    },
+    {
+      "joint": "L_knee_joint",
+      "ground": 1.5378376245498657,
+      "air": 0.15694960951805115
+    }
+  ],
+  "detectors": [
+    {
+      "name": "tau_all",
+      "ground_min": 27.570213317871094,
+      "ground_mean": 27.84429931640625,
+      "ground_max": 28.43400001525879,
+      "air_min": 34.75617980957031,
+      "air_mean": 35.142704010009766,
+      "air_max": 35.638797760009766,
+      "direction": "air>ground",
+      "separation": 13.836003781830932,
+      "threshold": 31.595088958740234
+    },
+    {
+      "name": "tau_ankle_crank",
+      "ground_min": 21.85349464416504,
+      "ground_mean": 21.980661392211914,
+      "ground_max": 21.99258041381836,
+      "air_min": 33.94316864013672,
+      "air_mean": 33.946048736572266,
+      "air_max": 33.95120620727539,
+      "direction": "air>ground",
+      "separation": 476.24012825383306,
+      "threshold": 27.96787452697754
+    },
+    {
+      "name": "tau_hip_roll",
+      "ground_min": 1.6725667715072632,
+      "ground_mean": 1.8134984970092773,
+      "ground_max": 1.8335089683532715,
+      "air_min": 0.10994060337543488,
+      "air_mean": 0.5272839069366455,
+      "air_max": 0.9594473838806152,
+      "direction": "ground>air",
+      "separation": 2.2892096112623648,
+      "threshold": 1.316007137298584
+    },
+    {
+      "name": "tau_knee",
+      "ground_min": 1.8183022737503052,
+      "ground_mean": 1.8224356174468994,
+      "ground_max": 1.8520413637161255,
+      "air_min": 0.16059470176696777,
+      "air_mean": 0.3065436780452728,
+      "air_max": 0.4956568479537964,
+      "direction": "ground>air",
+      "separation": 11.877168287410637,
+      "threshold": 1.1569795608520508
+    },
+    {
+      "name": "qd_all",
+      "ground_min": 0.00038281557499431074,
+      "ground_mean": 0.0011929520405828953,
+      "ground_max": 0.006335527170449495,
+      "air_min": 0.004650409333407879,
+      "air_mean": 0.008246798068284988,
+      "air_max": 0.012823528610169888,
+      "direction": "air>ground",
+      "separation": -0.45678238782190655,
+      "threshold": 0.005492968484759331
+    },
+    {
+      "name": "qerr_all",
+      "ground_min": 1.0207569599151611,
+      "ground_mean": 1.0224438905715942,
+      "ground_max": 1.0244123935699463,
+      "air_min": 1.5297555923461914,
+      "air_mean": 1.5321561098098755,
+      "air_max": 1.5351152420043945,
+      "direction": "air>ground",
+      "separation": 195.35661562154453,
+      "threshold": 1.2770839929580688
+    }
+  ],
+  "best": "tau_ankle_crank",
+  "direction": "air>ground",
+  "separation": 476.24012825383306,
+  "threshold": 27.96787452697754
+}
