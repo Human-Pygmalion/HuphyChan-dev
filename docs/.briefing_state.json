@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "v6b 정지 판정 통과 — 다음은 전체 명령 범위 하중 측정과 영상",
-  "detail": "정지 판정이 끝났고 네 기준을 전부 크게 넘겼습니다. 남은 숙제 하나: 이동 거리가 양극단입니다. 8번 중 4번은 사실상 완벽하고(1~6cm, 발을 한 번도 안 뗌) 4번은 발을 디디며 34~86cm를 갑니다. 왜 절반만 되는지는 아직 모르며 영상으로 확인합니다. 이제 이 프로젝트의 최종 목적인 하중 측정으로 갑니다 - 전체 명령 범위를 격자로 훑으며 명령마다 15초씩 머물러 관절 토크와 링크에 걸리는 힘을 재고, 그 숫자가 실제 모터와 부품 크기를 정합니다. 다른 세션의 v7(전 환경 정지) 학습이 그래픽카드를 쓰고 있으므로 측정은 전부 중앙처리장치에서 돌립니다.",
-  "since": "2026-09-16 20:10"
+  "title": "v6b 종합 판정: 부분 성공 — 정지 대성공·하중 개선·보행 후퇴. 다음 세대 설계로",
+  "detail": "이번 세대는 서 있는 환경 비율을 10%에서 30%로 올린 것이 유일한 설정 변인이었습니다(발바닥 수정 포함). 결과는 셋으로 갈립니다. 첫째, 본래 목표인 정지는 크게 성공했습니다 - 죽어 있던 자세 추종 보상이 367배 살아나고 다리 벌어짐·관절 한계 붙음·제자리걸음이 함께 사라졌습니다. 둘째, 이 프로젝트의 최종 목적인 하중은 모두 좋아졌습니다 - 착지 힘 -5.4%, 미끄러짐 -30.7%, 모터 열 부하 -21.2%. 셋째, 지키기만 하면 됐던 걷기는 어겼습니다 - 좌우 대칭이 깨져 부호까지 뒤집히고, 앞으로 나아가는 것보다 몸통을 비트는 데 엉덩이 회전을 더 쓰며, 15초 방향 표류가 2.8배로 늘었습니다. 정지 구간에 학습을 몰아준 만큼 걷는 구간 표본이 90%에서 70%로 줄었고 그 대가가 여기서 나왔습니다. 다음 세대는 비율을 0.15~0.2 사이에서 찾거나, 몸통을 비트는 성분을 직접 벌주는 항을 추가해야 합니다(보상 변경이므로 연구 노트가 먼저입니다). 이번 정책은 정지 시연과 하중 측정에는 쓰되 보행 배포용으로는 쓰지 않습니다.",
+  "since": "2026-09-17 01:26"
  },
  "items": {
   "shouldermesh": {
@@ -218,30 +218,6 @@
    "section": "blocked",
    "changed": "2026-09-01 20:13"
   },
-  "huphy_mjcf_viewer": {
-   "id": "huphy_mjcf_viewer",
-   "created": "2026-09-02 21:08",
-   "title": "팀원 huphy_mjcf 저장소용 별도 관절뷰어(8099)",
-   "why": "팀원이 별도 저장소(github.com/Human-Pygmalion/huphy_mjcf)에 독립적으로 만든 HUPHY 하드웨어측 MJCF를 우리 쪽에서도 슬라이더로 검토하고 싶어함",
-   "finding": "tools/viewer/mjcf_joint_viewer.py에 --xml 제네릭 모드 추가(폐루프 없는 임의 flat-hinge MJCF용, L_/R_ 접두사로 자동 그룹핑). huphy_mjcf를 /home/syaro/external_repos/huphy_mjcf에 클론(스크래치패드 아님, 세션 간 보존). 8099에 별도 기동, 8098(자사 Pygmalion FullDoF)과 동시 열람 가능. .claude/launch.json에 huphy-mjcf-joint-viewer로 등록. huphy.xml은 다리 전용 12관절(폐루프 없음) + 자체 actuator gear 부호(예: R_hip_pitch gear=-1, L_hip_pitch gear=1)를 이미 포함 — 우리 motor_sign_convention.json과는 별개 감사이므로 배지는 대부분 '감사없음'으로 뜸(정상)",
-   "media": [
-    "/tmp/claude-1000/-home-syaro-MikuchanRemote-Human-Pygmalion/01825d90-7012-449e-90b8-6fa311dce98d/scratchpad/huphy_render.png"
-   ],
-   "section": "done",
-   "changed": "2026-09-02 21:08",
-   "collapsed": true
-  },
-  "ebimu_x_axis_flip": {
-   "id": "ebimu_x_axis_flip",
-   "created": "2026-09-02 21:09",
-   "title": "EBIMU 축 불일치 원인 확정 — X축 가속도만 부호 반대, HUPHY 코드는 결백",
-   "why": "정지 상태에서 자세(쿼터니언)와 가속도계가 가리키는 '아래' 방향이 15~16도 어긋나는 것을 발견해, 사용자가 직접 센서를 돌리며 원인을 찾아달라고 요청.",
-   "finding": "90초 동안 센서를 여러 방향으로 돌리며 2053개 지점을 기록했습니다. 앞뒤(X)축만 정확히 부호가 반대로 나오는 관계가 전체의 94.6%에서 그대로 유지됐습니다(좌우/상하 축은 오차 0.001 수준으로 정상). GitHub의 HUPHY 원본 코드와 이 프로젝트가 쓰는 사본을 한 글자도 다르지 않게 diff로 대조했고, 가속도 값에는 축 변환/부호처리가 아예 없습니다(쿼터니언만 순서를 바꿔 받음) — 즉 원인은 HUPHY 소프트웨어가 아니라 센서 자체(펌웨어의 쿼터니언 기준축과 가속도 원본축이 다르거나, 실장 방향)입니다.",
-   "number": "X축 불일치 재현율 94.6%(2053개 중), Y·Z축 오차 평균 0.0005/-0.0008 (거의 0), 소스코드 diff 결과 완전 동일(0줄 차이)",
-   "section": "done",
-   "changed": "2026-09-02 21:09",
-   "collapsed": true
-  },
   "joint_sign_body_fix": {
    "id": "joint_sign_body_fix",
    "created": "2026-09-02 21:24",
@@ -265,17 +241,6 @@
    "section": "blocked",
    "changed": "2026-09-02 21:25"
   },
-  "ebimu_x_correction_applied": {
-   "id": "ebimu_x_correction_applied",
-   "created": "2026-09-02 21:42",
-   "title": "X축 보정 적용 + 동작중 오차 분리 확인",
-   "why": "사용자가 실시간으로 센서를 돌리다 'Projected Gravity가 이상하다'고 지적, X축 부호보정 적용 및 원인 재검토 요청.",
-   "finding": "확인해보니 두 가지가 섞여 있었습니다: (1) 가만히 있을 때도 있는 작은 고정 오차(X축, 이미 확정됨) (2) 빠르게 돌리는 동안에는 가속도계가 중력 외의 실제 회전운동도 같이 재서 생기는 노이즈 — 이게 19배 더 큽니다(정지 0.03 vs 회전중 0.60). 실제 정책이 쓰는 'Projected Gravity' 값 자체는 가속도계와 무관하게 쿼터니언에서만 계산되어(코드 확인), 이번 X축 보정과는 별개입니다. 뷰어에 X축 보정을 반영하고, 화면에 지금이 '정지 판정 가능 구간'인지 '운동중이라 판정 불가'인지 표시를 추가했습니다.",
-   "number": "정지 상태 오차평균 0.032, 빠른 회전 중 오차평균 0.604(19배)",
-   "section": "done",
-   "changed": "2026-09-02 21:42",
-   "collapsed": true
-  },
   "joint_fix_round2": {
    "id": "joint_fix_round2",
    "created": "2026-09-02 22:07",
@@ -289,41 +254,6 @@
    "changed": "2026-09-02 22:33",
    "was": "IMU 메시는 Fusion 재연결 전까지 불가(89개 캐시에 원래 없었음, huphy_mjcf도 이름 없는 병합 메시라 신뢰성 있게 추출 불가)",
    "now_": "사용자가 직접 Fusion MCP 브리지 LAN 주소(192.168.20.161:27182) 도달성을 curl로 확인해줌 — 재확인해보니 실제로 살아있었음(mcp_client.py 기본값 127.0.0.1:27182는 리버스터널 미가동 상태라 refused였을 뿐). FUSION_MCP=http://192.168.20.161:27182/mcp + FUSION_MCP_HOST=127.0.0.1:27182(윈도우 portproxy가 Host 헤더로 loopback authority를 검증)로 접속 성공. 추가로 meshes_fusion_full.py의 LIST_SCRIPT 자체가 'E2Box-IMU'를 하드코드된 block 리스트에 넣어 라이브 조회 단계에서부터 걸러내고 있던 것 발견(classify() 수정과 별개 문제) — 제거 후 실제 IMU 5바디 fetch 성공, pelvis에 실장"
-  },
-  "ebimu_viewer_reflection_bug": {
-   "id": "ebimu_viewer_reflection_bug",
-   "created": "2026-09-02 22:12",
-   "title": "웹뷰어 화면표시 버그 발견·수정 — 회전방향이 거꾸로 보이던 원인",
-   "why": "사용자가 IMU를 실제 X축 기준으로 돌렸는데 화면에서는 반대 방향으로 도는 것을 발견, 재확인 요청.",
-   "finding": "제 3D 뷰어 코드 안에 진짜 버그가 있었습니다 — Z축이 위인 센서 좌표를 화면용(Y축이 위)으로 바꾸면서 단순히 두 축을 맞바꿨는데, 이건 회전이 아니라 거울에 비친 것처럼 좌우가 뒤집히는 변환이었습니다(행렬식 -1). 그 결과 화면에서 회전 방향만 거꾸로 보였습니다. 부호 하나를 추가해 진짜 회전(행렬식 +1)으로 고쳤습니다. 단, 이건 화면표시 코드에만 있던 문제라 앞서 확정한 X축 데이터 불일치(가속도계 vs 자세)는 이 코드를 거치지 않고 확인한 것이라 그대로 유효합니다.",
-   "number": "수정 전 변환 행렬식 -1(반사) → 수정 후 +1(정상 회전)",
-   "section": "done",
-   "changed": "2026-09-02 22:12",
-   "collapsed": true
-  },
-  "imu_real_mesh": {
-   "id": "imu_real_mesh",
-   "created": "2026-09-02 22:33",
-   "title": "IMU 실제 메시 확보 완료(Fusion 재연결)",
-   "why": "huphy_mjcf 추출은 신뢰성 없어 대신 우리 CAD(E2Box-IMU 그룹)에서 직접 가져오기로 함 — 마침 Fusion이 재연결 가능한 상태였음",
-   "finding": "Fusion MCP 브리지 도달 방법 확정: FUSION_MCP=http://192.168.20.161:27182/mcp FUSION_MCP_HOST=127.0.0.1:27182 (윈도우 portproxy, Host 헤더로 loopback 인증 우회). meshes_fusion_full.py의 LIST_SCRIPT 하드코드 block에서 E2Box-IMU 제거 후 라이브 재fetch: 91/91 바디(기존 86 캐시+신규 IMU 5개), pelvis 11 parts로 증가. 렌더로 실제 보드 형상 확인(작은 사각 PCB+커넥터 노치). 프로덕션 반영·컴파일 확인·8098 재기동 완료",
-   "media": [
-    "/tmp/claude-1000/-home-syaro-MikuchanRemote-Human-Pygmalion/01825d90-7012-449e-90b8-6fa311dce98d/scratchpad/pelvis_bottom_imu.png"
-   ],
-   "section": "done",
-   "changed": "2026-09-02 22:33",
-   "collapsed": true
-  },
-  "ebimu_viewer_axes_collision": {
-   "id": "ebimu_viewer_axes_collision",
-   "created": "2026-09-02 22:35",
-   "title": "뷰어 축 색상 충돌 발견 + 축 정면뷰 버튼 추가",
-   "why": "사용자가 새로고침 후에도 Y·Z 회전방향이 반대로 보인다고 재확인 요청. 라이브 데이터로 재검증.",
-   "finding": "실제 회전 중 213개 지점을 캡처해 데이터 자체(오른손좌표계 성립 여부)를 매 순간 검산 — 오차 0.0003 이내로 항상 정상, 데이터/변환 코드는 결백. 대신 화면에 안 움직이는 기준축(고정, 빨강/초록/파랑)과 실제로 움직이는 센서축(회전, 똑같이 빨강/초록/파랑)이 같은 색으로 원점에 겹쳐 그려지고 있던 걸 발견 — 착시의 유력한 원인. 기준축은 회색으로 바꾸고, 각 축을 원근왜곡 없이 정면으로 보는 버튼(-X/-Y/-Z) 3개를 추가해 눈으로 직접, 애매함 없이 재확인할 수 있게 했습니다. 미완성으로 방치돼 있던 '카메라 추적' 체크박스(아무 동작 안 함)도 제거.",
-   "number": "실측 213개 지점에서 body_x×body_y=body_z 오차 최대 0.0003 (오른손좌표계 항상 성립)",
-   "section": "done",
-   "changed": "2026-09-02 22:35",
-   "collapsed": true
   },
   "joint_fix_round3": {
    "id": "joint_fix_round3",
@@ -339,20 +269,6 @@
    "changed": "2026-09-02 22:45",
    "was": "Torso2ShoulderP를 classify()에서 torso로 라우팅하면 양쪽 다 나오는 줄 알았음",
    "now_": "torso도 pelvis와 같은 '좌우공유 단일바디'라 한쪽 CAD 데이터를 그대로 넣으면 한쪽만 생김(HipPitchFlange와 동일 함정). Shoulder_Pitch 모터에 이미 있던 torso 미러 규칙에 Torso2ShoulderP 추가(질량), 메시도 동일한 post-link_mesh 스플라이스 기법 재사용(HipPitchFlange 때 만든 splice_mirror 헬퍼로 일반화). 원본/미러 사본 중심좌표 Y=∓88.8mm로 대칭 수학적 확인 후 반영"
-  },
-  "joint_fix_round4": {
-   "id": "joint_fix_round4",
-   "created": "2026-09-02 22:50",
-   "title": "6차: 어깨 ROM 방향 재반전(pitch 양쪽 + roll R만)",
-   "why": "세션 교체 후에도 뷰어 프로세스가 죽어있어 재기동 필요했고, 사용자가 재확인: L(R)_shoulder_pitch·R_shoulder_roll 모터방향은 맞는데 ROM 방향이 반대",
-   "finding": "shoulder_pitch: 직전 라운드에 사용자 제공 표 값(-60,170)을 L에 그대로 적용했으나, 그 표의 부호규약 자체가 현재 축과 반대였음 — negate-swap 한 번 더 적용(L=(-170,60), R은 기존 메커니즘으로 자동 대응(-60,170), negate-swap이 대합(involution)이라 공식 재사용만으로 양쪽 다 해결). shoulder_roll: L은 정상 확인, R만 별도 반전 필요 — SHOULDER_ROLL_R_CAP=(-130,15) 신설(hip_roll과 동일 패턴: 축 불변·range만 R전용)",
-   "number": "shoulder_pitch: L(-60,170)→(-170,60), R(-170,60)→(-60,170). shoulder_roll: R만 (-15,130)→(-130,15), L 불변",
-   "media": [
-    "/tmp/claude-1000/-home-syaro-MikuchanRemote-Human-Pygmalion/01825d90-7012-449e-90b8-6fa311dce98d/scratchpad/fulldof_zero_pose.png"
-   ],
-   "section": "done",
-   "changed": "2026-09-02 22:50",
-   "collapsed": true
   },
   "legonly_smoke_launch": {
    "id": "legonly_smoke_launch",
@@ -2658,7 +2574,8 @@
    "finding": "안 하고 있었습니다. 22분 동안 조작한 값이 어디에도 남지 않았습니다. 제어 프로그램은 받은 개수만 세고 세기 변경만 적고 있었습니다. 지금은 바뀐 목표를 전부 적고, 거부된 입력도 적고, 열두 모터의 각도·목표·힘·온도를 초당 스무 번 파일로 기록합니다. 영상도 다시 켰습니다.",
    "number": "기록 파일 System_ID/data/2026-09-13_operator.csv · 초당 20줄 · 모터 12개",
    "section": "done",
-   "changed": "2026-09-12 23:21"
+   "changed": "2026-09-12 23:21",
+   "collapsed": true
   },
   "cleanup_plan": {
    "id": "cleanup_plan",
@@ -3113,6 +3030,19 @@
    "media": [
     "docs/img/standing_v5_vs_v6b.png"
    ]
+  },
+  "v6b_walk": {
+   "id": "v6b_walk",
+   "created": "2026-09-17 01:26",
+   "title": "v6b 보행 회귀 직접 확인",
+   "why": "정지만 좋아지고 걷기가 망가졌는지 사용자가 물었습니다. 학습 로그의 환경 평균은 걷기 회귀를 숨길 수 있어 직접 굴려 재야 합니다.",
+   "section": "done",
+   "changed": "2026-09-17 01:26",
+   "finding": "사용자의 의심이 맞았습니다. 걷기는 실제로 후퇴했습니다 - 세 기준 중 셋을 어겼고, 특히 로봇이 앞으로 나아가는 데 쓰는 것보다 몸통을 비트는 데 엉덩이 회전을 더 씁니다. 정지를 얻은 대가입니다.",
+   "number": "속도 1.215 → 1.173 m/s(-3.5%) · 엉덩이 회전 좌우차 +18.4% → -39.7%(목표 ±20% 실패, 부호까지 뒤집힘) · 비틀기/걸음 비율 0.96 → 1.49(목표 0.5 실패) · 15초 방향 표류 14.5도 → 40.4도(목표 30도 실패, 2.8배) · 굴림 6개씩, 범위가 어디서도 겹치지 않음",
+   "media": [
+    "docs/img/walking_v5_vs_v6b.png"
+   ]
   }
  },
  "order": [
@@ -3138,17 +3068,10 @@
   "aluminum10_mass",
   "teacher_contract",
   "contact_reward_200hz",
-  "huphy_mjcf_viewer",
-  "ebimu_x_axis_flip",
   "joint_sign_body_fix",
   "crank_ab_sign",
-  "ebimu_x_correction_applied",
   "joint_fix_round2",
-  "ebimu_viewer_reflection_bug",
-  "imu_real_mesh",
-  "ebimu_viewer_axes_collision",
   "joint_fix_round3",
-  "joint_fix_round4",
   "legonly_smoke_launch",
   "dr_fastener_bodyfix_merge",
   "gap-recovery",
@@ -3378,7 +3301,8 @@
   "fullstack-no-sign-manipulation",
   "single-source-motor-params",
   "v6b_done",
-  "v6b_stand"
+  "v6b_stand",
+  "v6b_walk"
  ],
- "updated": "2026-09-16 20:10"
+ "updated": "2026-09-17 01:26"
 }
