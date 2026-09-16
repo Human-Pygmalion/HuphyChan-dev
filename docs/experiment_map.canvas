@@ -1705,6 +1705,16 @@
       "height": 300,
       "text": "**세대 비교의 세 번째 함정 — 기준 자세** (2026-09-16, mjlab `bb54aff7`)\n\n발바닥 수정이 **v5 가 학습한 기준값 자체**를 바꿨다:\n발목 +20.627° → **+10.027°** · 크랭크 4개 **약 8.8°** · 리셋 높이 −6.5 mm\n\n정책은 `관측 = q − 기준값`, `지령 = 기준값 + 0.25 × 행동` 을 배운다.\n기준값이 8.8° 움직이면 **같은 정책이 다른 로봇을 조종**한다.\n\n→ `PYG_BENT_KEYFRAME_FILE=<경로>` (측정 전용, 모터의 `PYG_MOTOR_MEAS_LEGACY` 와 같은 꼴)\n→ v5 시절 파일을 git `8401ead` 에서 복원해 보관\n→ `analysis/standing_verdict.py` = 시드 여러 개의 **평균 ± 퍼짐**으로만 판정",
       "color": "5"
+    },
+    {
+      "id": "n_v6b_standing_verdict",
+      "type": "text",
+      "x": 27900,
+      "y": 2560,
+      "width": 560,
+      "height": 400,
+      "text": "**★ v6b 정지 판정 — 네 기준 전부 통과** (2026-09-16 20:30)\n\n각자 **자기 시절 웅크림 자세**로 재생, 같은 도구, 시드 8개씩, 12초 창.\n\n| 기준 | v5 | **v6b** | 목표 |\n|---|--:|--:|---|\n| 자세 추종 보상 | 0.0023 | **0.8444** | ≥0.05 → **367배** |\n| 발 뗀 시간 | 16.2 % | **5.0 %** | ≤40 % |\n| 엉덩이회전 왼/오른 | +14.4/−13.6° | **+0.0/+0.2°** | 5° 이내 |\n| 액션 한계 포화 | 28.6/20.5 % | **0.0/0.0 %** | ≤10 % |\n\n전 항목 p ≤ 0.0064. **엉덩이회전은 범위가 아예 안 겹친다**(v5 최선 2.2° > v6b 최악 0.9°).\n\n**죽은 보상 하나를 되살리자 네 증상이 동시에 사라졌다.**\n\n남은 것: 이동 거리가 양극단(8회 중 4회 완벽, 4회 제자리걸음) — 영상에서 확인.",
+      "color": "6"
     }
   ],
   "edges": [
@@ -3325,6 +3335,22 @@
       "toNode": "n_keyframe_legacy",
       "toSide": "bottom",
       "label": "v5 와 비교하려다 발견"
+    },
+    {
+      "id": "e_done_to_verdict",
+      "fromNode": "n_v6b_done",
+      "fromSide": "right",
+      "toNode": "n_v6b_standing_verdict",
+      "toSide": "left",
+      "label": "본래 목표의 판정"
+    },
+    {
+      "id": "e_keyframe_to_verdict",
+      "fromNode": "n_keyframe_legacy",
+      "fromSide": "bottom",
+      "toNode": "n_v6b_standing_verdict",
+      "toSide": "top",
+      "label": "이 장치 덕에 공정 비교"
     }
   ]
 }
