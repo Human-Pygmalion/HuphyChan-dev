@@ -1,0 +1,147 @@
+{
+  "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_23-49-54_legonly_ab_v7b_robust_stand_p2/model_8998.pt",
+  "seconds": 10.0,
+  "lift": 0.6,
+  "hold": "hands",
+  "overrides": {},
+  "joints": [
+    {
+      "joint": "R_crank_A_joint",
+      "ground": 5.160222053527832,
+      "air": 6.90555477142334
+    },
+    {
+      "joint": "R_crank_B_joint",
+      "ground": 5.092849254608154,
+      "air": 6.4550323486328125
+    },
+    {
+      "joint": "L_crank_A_joint",
+      "ground": 4.697570323944092,
+      "air": 6.227028846740723
+    },
+    {
+      "joint": "L_crank_B_joint",
+      "ground": 5.429797172546387,
+      "air": 5.952793121337891
+    },
+    {
+      "joint": "R_hip_yaw_joint",
+      "ground": 1.8044465780258179,
+      "air": 15.90624713897705
+    },
+    {
+      "joint": "L_hip_yaw_joint",
+      "ground": 2.1352896690368652,
+      "air": 17.15401840209961
+    },
+    {
+      "joint": "R_hip_pitch_joint",
+      "ground": 2.9584009647369385,
+      "air": 37.23724365234375
+    },
+    {
+      "joint": "R_hip_roll_joint",
+      "ground": 4.982882022857666,
+      "air": 34.159912109375
+    },
+    {
+      "joint": "L_hip_pitch_joint",
+      "ground": 2.991304397583008,
+      "air": 35.59060287475586
+    },
+    {
+      "joint": "L_hip_roll_joint",
+      "ground": 5.246035099029541,
+      "air": 35.748165130615234
+    },
+    {
+      "joint": "R_knee_joint",
+      "ground": 3.4923782348632812,
+      "air": 33.1727180480957
+    },
+    {
+      "joint": "L_knee_joint",
+      "ground": 2.724315881729126,
+      "air": 37.161190032958984
+    }
+  ],
+  "detectors": [
+    {
+      "name": "tau_all",
+      "ground_min": 23.94139862060547,
+      "ground_mean": 46.71548843383789,
+      "ground_max": 96.41202545166016,
+      "air_min": 10.683130264282227,
+      "air_mean": 271.6705017089844,
+      "air_max": 759.2467651367188,
+      "direction": "air>ground",
+      "separation": -0.4451237285145107,
+      "threshold": 53.547576904296875
+    },
+    {
+      "name": "tau_ankle_crank",
+      "ground_min": 7.554177284240723,
+      "ground_mean": 20.38043975830078,
+      "ground_max": 34.888893127441406,
+      "air_min": 0.8310756683349609,
+      "air_mean": 25.5404109954834,
+      "air_max": 70.37615966796875,
+      "direction": "air>ground",
+      "separation": -1.9330379881539324,
+      "threshold": 17.8599853515625
+    },
+    {
+      "name": "tau_hip_roll",
+      "ground_min": 0.6894761323928833,
+      "ground_mean": 10.22891616821289,
+      "ground_max": 26.63770294189453,
+      "air_min": 0.7867734432220459,
+      "air_mean": 69.90807342529297,
+      "air_max": 240.0,
+      "direction": "air>ground",
+      "separation": -0.3685035473681177,
+      "threshold": 13.712238311767578
+    },
+    {
+      "name": "tau_knee",
+      "ground_min": 0.12227198481559753,
+      "ground_mean": 6.216694355010986,
+      "ground_max": 19.291563034057617,
+      "air_min": 0.609184741973877,
+      "air_mean": 70.33390808105469,
+      "air_max": 240.0,
+      "direction": "air>ground",
+      "separation": -0.3037664389083155,
+      "threshold": 9.950373649597168
+    },
+    {
+      "name": "qd_all",
+      "ground_min": 0.10910572111606598,
+      "ground_mean": 0.7663266062736511,
+      "ground_max": 2.1924633979797363,
+      "air_min": 3.1007304191589355,
+      "air_mean": 43.494869232177734,
+      "air_max": 158.83551025390625,
+      "direction": "air>ground",
+      "separation": 0.03685938432841742,
+      "threshold": 2.646596908569336
+    },
+    {
+      "name": "qerr_all",
+      "ground_min": 0.47332847118377686,
+      "ground_mean": 1.0822116136550903,
+      "ground_max": 1.7236545085906982,
+      "air_min": 0.19092991948127747,
+      "air_mean": 3.536571741104126,
+      "air_max": 10.852262496948242,
+      "direction": "air>ground",
+      "separation": -0.7051401074703875,
+      "threshold": 0.9572921991348267
+    }
+  ],
+  "best": "qd_all",
+  "direction": "air>ground",
+  "separation": 0.03685938432841742,
+  "threshold": 2.646596908569336
+}

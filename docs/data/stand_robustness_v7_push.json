@@ -1,0 +1,86 @@
+{
+  "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+  "label": "v7",
+  "mode": "push",
+  "num_envs": 64,
+  "seconds": 20.0,
+  "rows": [
+    {
+      "push_mps": 0.0,
+      "falls": 0,
+      "pushes": 0,
+      "falls_per_robot_minute": 0.0,
+      "tilt_mean": 0.36222437024116516,
+      "tilt_p95": 0.4869846701622009,
+      "height_mean": 0.8929715156555176,
+      "crank_tau_mean": 5.4943013191223145,
+      "crank_tau_p99": 7.196646690368652
+    },
+    {
+      "push_mps": 0.5,
+      "falls": 29,
+      "pushes": 6,
+      "falls_per_robot_minute": 1.5104166666666667,
+      "tilt_mean": 0.9582560658454895,
+      "tilt_p95": 3.3167271614074707,
+      "height_mean": 0.8930041790008545,
+      "crank_tau_mean": 5.841626167297363,
+      "crank_tau_p99": 16.88189697265625
+    },
+    {
+      "push_mps": 1.0,
+      "falls": 232,
+      "pushes": 6,
+      "falls_per_robot_minute": 12.083333333333334,
+      "tilt_mean": 3.1218771934509277,
+      "tilt_p95": 18.358808517456055,
+      "height_mean": 0.8902061581611633,
+      "crank_tau_mean": 5.927213191986084,
+      "crank_tau_p99": 22.00973129272461
+    },
+    {
+      "push_mps": 1.5,
+      "falls": 317,
+      "pushes": 6,
+      "falls_per_robot_minute": 16.510416666666668,
+      "tilt_mean": 3.3285515308380127,
+      "tilt_p95": 22.069963455200195,
+      "height_mean": 0.8892704248428345,
+      "crank_tau_mean": 5.869404315948486,
+      "crank_tau_p99": 22.099288940429688
+    },
+    {
+      "push_mps": 2.0,
+      "falls": 350,
+      "pushes": 6,
+      "falls_per_robot_minute": 18.229166666666668,
+      "tilt_mean": 3.2082622051239014,
+      "tilt_p95": 22.089773178100586,
+      "height_mean": 0.889349639415741,
+      "crank_tau_mean": 5.744770050048828,
+      "crank_tau_p99": 20.759572982788086
+    },
+    {
+      "push_mps": 2.5,
+      "falls": 357,
+      "pushes": 6,
+      "falls_per_robot_minute": 18.59375,
+      "tilt_mean": 2.904794931411743,
+      "tilt_p95": 20.822315216064453,
+      "height_mean": 0.8899435997009277,
+      "crank_tau_mean": 5.736227035522461,
+      "crank_tau_p99": 20.38330841064453
+    },
+    {
+      "push_mps": 3.0,
+      "falls": 369,
+      "pushes": 6,
+      "falls_per_robot_minute": 19.21875,
+      "tilt_mean": 2.9014089107513428,
+      "tilt_p95": 21.20476531982422,
+      "height_mean": 0.8902479410171509,
+      "crank_tau_mean": 5.694123268127441,
+      "crank_tau_p99": 19.361886978149414
+    }
+  ]
+}

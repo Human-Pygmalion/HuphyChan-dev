@@ -166,7 +166,7 @@ def rollout(env, envw, policy, torch, seconds: float, lift: float | None,
   n, n0 = int(seconds * 50), int(settle_s * 50)
   aterm = env.action_manager.get_term("joint_pos")
   jids = np.asarray(aterm._target_ids).reshape(-1)
-  taus, qvels, qerrs, heights, ndone = [], [], [], [], 0
+  taus, qs, qvels, qerrs, heights, ndone = [], [], [], [], [], 0
   for k in range(n):
     if lift is not None:                                        # 들기 = 매 스텝 붙잡기
       if hold == "rigid":
@@ -193,11 +193,13 @@ def rollout(env, envw, policy, torch, seconds: float, lift: float | None,
       # 이 액추에이터의 `ctrl` 은 **토크**라 q-tau 라는 뜻 없는 값이 나왔습니다
       # (tau_all 과 qerr_all 이 27 로 거의 같아서 들켰습니다).
       tgt = aterm._processed_actions[0].clone().cpu().numpy()
+      qs.append(q.copy())
       qvels.append(qd.copy())
       qerrs.append((q - tgt).copy())
       heights.append(float(robot.data.root_link_pos_w[0, 2]))
-  return dict(tau=np.array(taus), qvel=np.array(qvels), qerr=np.array(qerrs),
-              z=np.array(heights), resets=ndone)
+  return dict(tau=np.array(taus), q=np.array(qs), qvel=np.array(qvels),
+              qerr=np.array(qerrs), z=np.array(heights), resets=ndone,
+              act_joint_names=[list(robot.joint_names)[i] for i in jids])
 
 
 # ---------------------------------------------------------------- 판정 후보
@@ -436,7 +438,9 @@ def main(argv=None) -> int:
                                separation=best["separation"], threshold=thr),
                           ensure_ascii=False, indent=2, default=float), encoding="utf-8")
   np.savez(OUT / f"{n.tag}.npz", act_names=np.array(act_names),
+           joint_names=np.array(ground["act_joint_names"]),
            ground_tau=ground["tau"], air_tau=air["tau"],
+           ground_q=ground["q"], air_q=air["q"],
            ground_qvel=ground["qvel"], air_qvel=air["qvel"])
   plot(OUT / f"{n.tag}.png", act_names, ground, air, n.hold,
        float(os.environ.get("PYG_ACTION_DELAY", 0.0) or 0.0))
