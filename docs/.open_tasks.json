@@ -37,7 +37,7 @@
   {
     "id": 8,
     "text": "v7b 강건화 학습 완주 후 각도/토크 재측정 (크랭크 토크 70% 가 내려가는지)",
-    "state": "doing",
+    "state": "done",
     "added": 1789566662.0164833,
     "why": ""
   },
@@ -128,7 +128,7 @@
   {
     "id": 21,
     "text": "stand_robustness.py 에 시드 반복 넣기 - 프로젝트 규칙(추첨은 결정적이지 않다). 지금은 64환경 통계만 씀",
-    "state": "doing",
+    "state": "done",
     "added": 1789621352.3557818,
     "why": ""
   },
@@ -144,6 +144,13 @@
     "text": "v8(원격 10.8.0.14) 결과 주기 회수 — logs/rsl_rl/.../2026-09-17_14-19-15_legonly_ab_v8_standing_mid_p1 와 analysis/out/v2_scratch_legonly_ab_v8_standing_mid.{log,json} 을 rsync 로 당겨오기. 원격 디스크에만 쌓임",
     "state": "open",
     "added": 1789622494.131149,
+    "why": ""
+  },
+  {
+    "id": 24,
+    "text": "정책의 떨림 방지·안전·안정성 확보 방법 일반화 정리 (논문 레퍼런스 + 내용정리). 사용자 지시 2026-09-17",
+    "state": "open",
+    "added": 1789623577.5353482,
     "why": ""
   }
 ]

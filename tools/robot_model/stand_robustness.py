@@ -28,8 +28,19 @@
 크랭크(발목) 토크입니다. v7 에서 **정격의 70%** 까지 갔던 것이 v7b 에서 내려갔는지가
 이 학습의 숨은 관심사였습니다.
 
+## 왜 같은 칸을 여러 번 도나 — 씨앗
+
+로봇 64마리를 한 번에 세우면 **한 순간의 표본은 64개**지만, 그 64마리가 어떤 자세로
+시작하고 어느 방향으로 밀릴지는 **한 번의 추첨**으로 정해집니다. 추첨이 운 좋게 순하면
+"안 넘어진다" 가 나옵니다.
+
+프로젝트 규칙이 이걸 명시합니다 — *"관절값은 결정적이나 무작위화 추첨은 아니다"*.
+같은 저장본이 같은 조건에서 0.00초와 4.58초로 갈린 전례가 있습니다. 그래서 칸마다
+**씨앗을 바꿔 여러 번** 돌리고, 평균과 함께 **칸 사이 흔들림(표준편차)** 을 같이 냅니다.
+흔들림이 차이보다 크면 그 차이는 아직 아무 말도 안 하는 것입니다.
+
     stand_robustness.py --checkpoint <ckpt.pt> --label v7b --mode push
-    stand_robustness.py --checkpoint <ckpt.pt> --label v7b --mode init
+    stand_robustness.py --checkpoint <ckpt.pt> --label v7b --mode init --repeats 3
 """
 
 from __future__ import annotations
@@ -111,6 +122,29 @@ def set_init_noise(env, joint_rad: float, tilt_rad: float) -> None:
       pr["pitch"] = (-tilt_rad, tilt_rad)
   except (KeyError, ValueError):
     pass
+
+
+def set_seed(torch, seed: int) -> None:
+  """이 칸의 추첨을 정한다. **환경을 다시 만들지 않고** 난수만 갈아 끼운다."""
+  import random
+
+  random.seed(seed)
+  np.random.seed(seed)
+  torch.manual_seed(seed)
+
+
+def merge(rows: list[dict]) -> dict:
+  """같은 칸의 여러 씨앗 결과를 합친다. 평균과 **칸 사이 표준편차**를 같이 낸다."""
+  out = dict(rows[0])
+  out["repeats"] = len(rows)
+  for k in ("falls_per_robot_minute", "tilt_mean", "tilt_p95", "tilt_max", "recover_s",
+            "qd_sum_mean", "qd_sum_p95", "tau_rms", "pose_err_deg",
+            "crank_tau_mean", "crank_tau_p99", "height_mean"):
+    v = np.array([r[k] for r in rows], dtype=float)
+    out[k] = float(v.mean())
+    out[k + "_sd"] = float(v.std(ddof=1)) if len(v) > 1 else 0.0
+  out["seeds"] = [r.get("seed") for r in rows]
+  return out
 
 
 def run_cell(env, envw, policy, torch, seconds: float, push_mps: float,
@@ -198,6 +232,9 @@ def main(argv=None) -> int:
   ap.add_argument("--mode", choices=("push", "init"), default="push")
   ap.add_argument("--num-envs", type=int, default=64)
   ap.add_argument("--seconds", type=float, default=20.0)
+  ap.add_argument("--repeats", type=int, default=3,
+                  help="칸마다 씨앗을 바꿔 몇 번 돌릴지. 1 이면 옛날처럼 한 번만")
+  ap.add_argument("--seed0", type=int, default=0, help="첫 씨앗")
   n = ap.parse_args(argv)
 
   envd = apply_run_env(n.checkpoint)
@@ -210,7 +247,7 @@ def main(argv=None) -> int:
     bid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "base_link")
   print(f"[stand] {n.label}  {n.checkpoint}", flush=True)
   print(f"[stand] 학습 토글 {len(envd)}개, 로봇 {n.num_envs}마리, "
-        f"칸마다 {n.seconds:.0f}초", flush=True)
+        f"칸마다 {n.seconds:.0f}초 x 씨앗 {n.repeats}개", flush=True)
 
   rows = []
   if n.mode == "push":
@@ -219,9 +256,16 @@ def main(argv=None) -> int:
           f"{'떨림|qd|평균':>14}{'떨림 95%':>11}{'토크RMS':>10}"
           f"{'자세오차[도]':>13}{'크랭크 99%':>12}")
     for p in PUSH_STEPS:
-      r = run_cell(env, envw, policy, torch, n.seconds, p, bid)
+      reps = []
+      for i in range(max(1, n.repeats)):
+        set_seed(torch, n.seed0 + i)
+        c = run_cell(env, envw, policy, torch, n.seconds, p, bid)
+        c["seed"] = n.seed0 + i
+        reps.append(c)
+      r = merge(reps)
       rows.append(r)
-      print(f"{p:>14.1f}{r['falls_per_robot_minute']:>16.2f}{r['tilt_p95']:>12.1f}"
+      print(f"{p:>14.1f}{r['falls_per_robot_minute']:>10.2f}"
+            f"+-{r['falls_per_robot_minute_sd']:<5.2f}{r['tilt_p95']:>12.1f}"
             f"{r['qd_sum_mean']:>14.3f}{r['qd_sum_p95']:>11.3f}{r['tau_rms']:>10.2f}"
             f"{r['pose_err_deg']:>13.2f}{r['crank_tau_p99']:>12.2f}", flush=True)
   else:
@@ -230,10 +274,17 @@ def main(argv=None) -> int:
           f"{'자세오차[도]':>13}{'크랭크 99%':>12}")
     for j in INIT_STEPS:
       set_init_noise(env, j, j * 0.8)      # 기울기는 관절보다 조금 작게
-      r = run_cell(env, envw, policy, torch, n.seconds, 0.0, bid, settle_s=0.0)
+      reps = []
+      for i in range(max(1, n.repeats)):
+        set_seed(torch, n.seed0 + i)
+        c = run_cell(env, envw, policy, torch, n.seconds, 0.0, bid, settle_s=0.0)
+        c["seed"] = n.seed0 + i
+        reps.append(c)
+      r = merge(reps)
       r["init_rad"], r["init_deg"] = j, float(np.degrees(j))
       rows.append(r)
-      print(f"{np.degrees(j):>14.1f}{r['falls_per_robot_minute']:>16.2f}"
+      print(f"{np.degrees(j):>14.1f}{r['falls_per_robot_minute']:>10.2f}"
+            f"+-{r['falls_per_robot_minute_sd']:<5.2f}"
             f"{r['tilt_max']:>12.1f}{r['recover_s']:>13.2f}{r['qd_sum_mean']:>14.3f}"
             f"{r['tau_rms']:>10.2f}{r['pose_err_deg']:>13.2f}"
             f"{r['crank_tau_p99']:>12.2f}", flush=True)
@@ -241,7 +292,8 @@ def main(argv=None) -> int:
   OUT.mkdir(parents=True, exist_ok=True)
   p = OUT / f"stand_robustness_{n.label}_{n.mode}.json"
   p.write_text(json.dumps(dict(checkpoint=n.checkpoint, label=n.label, mode=n.mode,
-                               num_envs=n.num_envs, seconds=n.seconds, rows=rows),
+                               num_envs=n.num_envs, seconds=n.seconds,
+                               repeats=n.repeats, seed0=n.seed0, rows=rows),
                           ensure_ascii=False, indent=2, default=float), encoding="utf-8")
   print(f"기록: {p}")
   return 0
