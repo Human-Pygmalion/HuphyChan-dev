@@ -1925,6 +1925,24 @@
       "width": 440,
       "height": 150,
       "color": "6"
+    },
+    {
+      "id": "n_v9_caps",
+      "type": "file",
+      "x": 24120,
+      "y": 1060,
+      "width": 420,
+      "height": 150,
+      "file": "experiments/2026-09-18_legonly_ab_v9_caps.md"
+    },
+    {
+      "id": "n_v9_lcp",
+      "type": "file",
+      "x": 24560,
+      "y": 1060,
+      "width": 420,
+      "height": 150,
+      "file": "experiments/2026-09-18_legonly_ab_v9_lcp.md"
     }
   ],
   "edges": [
@@ -3833,6 +3851,30 @@
       "toNode": "n_gate_2x2_closed",
       "toSide": "bottom",
       "label": "정지 0.175 + 제외장치 켬 — 기준선은 공정해졌으나 역시 5,400 강제"
+    },
+    {
+      "id": "e_v7b_caps",
+      "fromNode": "n_v7b_robust",
+      "fromSide": "bottom",
+      "toNode": "n_v9_caps",
+      "toSide": "top",
+      "label": "A/B 한쪽 — CAPS 상태축 정규화만 추가"
+    },
+    {
+      "id": "e_v7b_lcp",
+      "fromNode": "n_v7b_robust",
+      "fromSide": "bottom",
+      "toNode": "n_v9_lcp",
+      "toSide": "top",
+      "label": "A/B 다른쪽 — 립시츠 기울기 벌점만 추가"
+    },
+    {
+      "id": "e_caps_lcp",
+      "fromNode": "n_v9_caps",
+      "fromSide": "right",
+      "toNode": "n_v9_lcp",
+      "toSide": "left",
+      "label": "서로의 대조군: 같은 목표를 다른 방법으로"
     }
   ]
 }
