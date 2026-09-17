@@ -335,3 +335,11 @@ v8 의 숫자가 큰 것은 **더 못해서가 아니라 쉬운 표본을 빼고
   `analysis/measure_turn.py`
 - 코드: `PYG_REL_STANDING`·`PYG_GATE_EXCLUDE_STANDING`
   (`src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py`)
+
+## §2c 학습 중 리뷰 (게이트마다 스냅샷, docs/27 체크리스트)
+
+![progress](mujoco/assets/legonly_ab_v8_standing_mid_p1_progress.png)
+
+| 시각 | iter | reward | ep_len | noise σ | value loss | entropy | surrogate / LR | fell / low_base | err_vel xy / yaw | dr_factor / vx_max | thermal | 판정(docs/27) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 09-17 15:13 | 1016 | 113.0 (50avg 114.3) | 986 | 0.195 | 0.0186 | -5.90 | -0.0005 / 2.0e-04 | 0.000 / 0.083 | 0.562 / 0.491 | 0.00 / 1.2 | 1.30 | (자동 스냅샷, 판정은 게이트 리뷰에서) |
