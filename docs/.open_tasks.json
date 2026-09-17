@@ -93,14 +93,14 @@
   {
     "id": 15,
     "text": "[걷기세션 전달] 제자리 회전이 명령의 12~16% 만 됨(v5/v6b 동일, p=0.56). 가설: PYG_REL_HEADING=0.8 이라 80% 환경이 '저쪽을 봐라' 명령. 기본값 0.3. 0.3 A/B 로 검증 필요 - 우리 세션은 서기 담당이라 전달만",
-    "state": "open",
+    "state": "blocked",
     "added": 1789613632.6224897,
-    "why": ""
+    "why": "중복 방지 — 이 검증 런은 2026-09-17 11:58 에 이미 발사됨: legonly_ab_v7_heading_revert (PYG_REL_HEADING 0.8->0.3, 나머지 v6b와 동일). 노트 docs/experiments/2026-09-15_legonly_ab_v7_heading_revert.md, 대장·계보도 등록 완료. 그래픽카드 잠금을 쥐고 있으니 별도 발사 금지"
   },
   {
     "id": 16,
     "text": "회전 채널 검증 런 발사: PYG_REL_HEADING 0.8 -> 0.3, 나머지 v6b와 동일(단일 변인). 2x2 완성. 완주 후 measure_turn으로 제자리 회전 달성률 비교",
-    "state": "open",
+    "state": "done",
     "added": 1789613678.3992312,
     "why": ""
   }

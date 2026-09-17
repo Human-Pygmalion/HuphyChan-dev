@@ -56,8 +56,22 @@ def touch(s, tid, **kw):
     return it
 
 
+def dedupe_order(s):
+    """Two sessions writing the state at once can append the same id twice, and prune()
+    then deletes the item on the first copy and raises KeyError on the second. Cheap to
+    make idempotent here rather than guard every reader."""
+    seen, keep = set(), []
+    for tid in s['order']:
+        if tid in seen or tid not in s['items']:
+            continue
+        seen.add(tid)
+        keep.append(tid)
+    s['order'] = keep
+
+
 def prune(s):
     """Collapse old completed work, drop what nobody will audit any more."""
+    dedupe_order(s)
     done = [t for t in s['order'] if s['items'][t].get('section') == 'done']
     for tid in done[:-DONE_KEEP] if len(done) > DONE_KEEP else []:
         s['items'][tid]['collapsed'] = True
