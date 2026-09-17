@@ -1835,6 +1835,26 @@
       "height": 380,
       "text": "**발사를 놓쳤다 — 37분** (2026-09-17, v7 §1a-1)\n\n11:58 발사 → **4초 뒤 \"발사됨\"이라 보고** → 11:58:43 런처가 `PRE-FLIGHT BLOCKED` 로 자체 거부 → **12:34 첫 30분 점검에서야 발견**.\n\n거부는 옳았다 — 메모리 큰 측정(v5 전체 상자)이 돌고 있었다.\n\n**왜 못 봤나 — 셋이 겹쳤다**\n1. 프로세스 존재를 발사의 증거로 씀. 사전검사는 27초 뒤에 끝난다.\n2. **거부는 런처 자기 로그에 안 들어간다** — 표준출력에만(자기 로그 0건 / 표준출력 1건). 내가 본 건 자기 로그.\n3. 감시기의 `pgrep -f \"<패턴>\"` 이 **자기 자신을 셈** → 죽음을 알릴 수 없음. 존재하지 않는 런으로 실증함.\n\n**고침**: 생존 확인 `kill -0 $PID` + 로그 15분 정체 경보 · 발사 판정 = **반복 수 증가 + 체크포인트 디렉터리**",
       "color": "1"
+    },
+    {
+      "id": "n_legonly_v8_standing_mid",
+      "type": "file",
+      "x": 31900,
+      "y": 4200,
+      "width": 440,
+      "height": 180,
+      "file": "experiments/2026-09-17_legonly_ab_v8_standing_mid.md",
+      "color": "6"
+    },
+    {
+      "id": "n_v8_design",
+      "type": "text",
+      "x": 31900,
+      "y": 4440,
+      "width": 560,
+      "height": 340,
+      "text": "**v8 정지 비율 중간값 — 원격 기계에서 병렬** (2026-09-17)\n\n**유일 변인: `PYG_REL_STANDING` 0.3 → 0.175** (방향유지 0.8 유지)\n\n**0.1 은 정지가 죽고 0.3 은 보행이 상한다.** 사이를 찾는다.\n\n기계: **10.8.0.14 · RTX 3090 24 GB** (로컬 16 GB보다 큼)\n★파일시스템 **별개** — 표식 파일로 확인. 잠금을 원격에 따로 만들었다.\n★발사 전 함정: `pygmalion_locomotion`·`Motor_Spec` 이 원격에 **없었다** → 동기화 후 발목 +10.027° 확인.\n\n★게이트 플래그 **켬** — 이 런의 변인이 게이트 지표를 움직이므로.\n(v7 은 안 움직이므로 끔)\n\nv7 과 **직교** → 병렬 실행이 해석을 깨지 않는다.",
+      "color": "6"
     }
   ],
   "edges": [
@@ -3599,6 +3619,30 @@
       "toNode": "n_v7_launch_miss",
       "toSide": "left",
       "label": "발사 기록"
+    },
+    {
+      "id": "e_v6b_to_v8",
+      "fromNode": "n_v6b_final",
+      "fromSide": "bottom",
+      "toNode": "n_legonly_v8_standing_mid",
+      "toSide": "top",
+      "label": "유일 변인 후속 (표본 배분)"
+    },
+    {
+      "id": "e_v8note_to_design",
+      "fromNode": "n_legonly_v8_standing_mid",
+      "fromSide": "bottom",
+      "toNode": "n_v8_design",
+      "toSide": "top",
+      "label": "설계"
+    },
+    {
+      "id": "e_v7_v8_parallel",
+      "fromNode": "n_v7_design",
+      "fromSide": "bottom",
+      "toNode": "n_v8_design",
+      "toSide": "top",
+      "label": "직교 변인 · 병렬"
     }
   ]
 }
