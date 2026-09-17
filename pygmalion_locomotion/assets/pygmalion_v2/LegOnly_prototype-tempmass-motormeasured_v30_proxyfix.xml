@@ -71,28 +71,28 @@
       <site name="imu_in_base" pos="-1e-06 0.007078 -0.0695" size="0.03"/>
       <body name="R_hip_pitch_link" pos="0 -0.1237 0">
         <inertial pos="0.00146395 0.0065483 0.000882133" quat="0.668364 0.743806 0.00280769 0.00584302" mass="1.8769" diaginertia="0.00430604 0.00305555 0.00274725"/>
-        <joint name="R_hip_pitch_joint" pos="0 0 0" axis="0 1 0" range="-2.0944 0.436332"/>
+        <joint name="R_hip_pitch_joint" pos="0 0 0" axis="0 1 0" range="-2.0944 0.436332" armature="0.0773" damping="0.0275" frictionloss="0.519"/>
         <geom class="visual" mesh="R_hip_pitch_link"/>
         <geom name="R_hip_pitch_link_hull" class="hull" mesh="R_hip_pitch_link_hull"/>
         <geom name="R_hip_roll_motor" class="visual" size="0.06 0.0278" pos="0.00317 0.00061 0.00049" quat="0.707107 0 -0.707107 0" type="cylinder" material="black"/>
         <geom name="R_hip_pitch_link_collision" class="collision" size="0.0623 0.005" pos="-0.001 0.0058 0.0004" quat="0.707107 0.707107 0 0"/>
         <body name="R_hip_roll_link">
           <inertial pos="0.000943657 -0.00140392 -0.120315" quat="0.634677 0.0622969 0.0108681 0.770186" mass="1.3263" diaginertia="0.00334816 0.00328209 0.00191959"/>
-          <joint name="R_hip_roll_joint" pos="0 0 0" axis="1 0 0" range="-1.48353 0.436332"/>
+          <joint name="R_hip_roll_joint" pos="0 0 0" axis="1 0 0" range="-1.48353 0.436332" armature="0.0773" damping="0.0275" frictionloss="0.519"/>
           <geom class="visual" mesh="R_hip_roll_link"/>
           <geom name="R_hip_roll_link_hull" class="hull" mesh="R_hip_roll_link_hull"/>
           <geom name="R_hip_yaw_motor" class="visual" size="0.0495 0.0283" pos="6e-05 3e-05 -0.13303" type="cylinder" material="black"/>
           <geom name="R_hip_roll_link_collision" class="collision" size="0.0492276 0.0172" pos="0.0011 -0.0121 -0.0277" quat="0 1 0 0"/>
           <body name="R_thigh_link">
             <inertial pos="-0.0359249 -0.00144369 -0.335541" quat="0.703821 0.0841076 0.0898665 0.699633" mass="2.1644" diaginertia="0.0151133 0.0135846 0.00340589"/>
-            <joint name="R_hip_yaw_joint" pos="0 0 0" axis="0 0 -1" range="-0.785398 0.785398"/>
+            <joint name="R_hip_yaw_joint" pos="0 0 0" axis="0 0 -1" range="-0.785398 0.785398" armature="0.0638" damping="0.0252" frictionloss="0.251"/>
             <geom class="visual" mesh="R_thigh"/>
             <geom name="R_thigh_link_hull" class="hull" mesh="R_thigh_hull"/>
             <geom name="R_knee_motor" class="visual" size="0.06 0.0278" pos="-0.04495 -0.00318 -0.36922" quat="0.707107 -0.707107 0 0" type="cylinder" material="black"/>
             <geom name="R_thigh_link_collision" class="collision" size="0.0684 0.0712" pos="-0.0111 0.0005 -0.2896" quat="0 1 0 0"/>
             <body name="R_shin_link" pos="-0.045 0 -0.37">
               <inertial pos="-0.030074 -0.000320098 -0.236277" quat="0.7077 0.0285397 0.034552 0.705091" mass="2.8649" diaginertia="0.0248226 0.0237818 0.00390564"/>
-              <joint name="R_knee_joint" pos="0 0 0" axis="0 -1 0" range="-2.0944 0"/>
+              <joint name="R_knee_joint" pos="0 0 0" axis="0 -1 0" range="-2.0944 0" armature="0.0773" damping="0.0275" frictionloss="0.519"/>
               <geom class="visual" mesh="R_shin"/>
               <geom name="R_shin_link_hull" class="hull" mesh="R_shin_hull"/>
               <geom name="R_ankle_b_motor" class="visual" size="0.0495 0.0283" pos="-0.02994 -0.00172 -0.19003" quat="0.707107 -0.707107 0 0" type="cylinder" material="black"/>
@@ -116,28 +116,28 @@
       </body>
       <body name="L_hip_pitch_link" pos="0 0.1237 0">
         <inertial pos="0.00146395 -0.0065483 0.000882133" quat="0.743806 0.668364 -0.00584302 -0.00280769" mass="1.8769" diaginertia="0.00430604 0.00305555 0.00274725"/>
-        <joint name="L_hip_pitch_joint" pos="0 0 0" axis="0 1 0" range="-2.0944 0.436332"/>
+        <joint name="L_hip_pitch_joint" pos="0 0 0" axis="0 1 0" range="-2.0944 0.436332" armature="0.0773" damping="0.0275" frictionloss="0.519"/>
         <geom class="visual" mesh="L_hip_pitch_link"/>
         <geom name="L_hip_pitch_link_hull" class="hull" mesh="L_hip_pitch_link_hull"/>
         <geom name="L_hip_roll_motor" class="visual" size="0.06 0.0278" pos="0.00317 -0.00061 0.00049" quat="0.707107 0 -0.707107 0" type="cylinder" material="black"/>
         <geom name="L_hip_pitch_link_collision" class="collision" size="0.0623 0.005" pos="-0.001 -0.0058 0.0004" quat="0.707107 0.707107 0 0"/>
         <body name="L_hip_roll_link">
           <inertial pos="0.000943657 0.00140392 -0.120315" quat="0.770186 0.0108681 0.0622969 0.634677" mass="1.3263" diaginertia="0.00334816 0.00328209 0.00191959"/>
-          <joint name="L_hip_roll_joint" pos="0 0 0" axis="-1 0 0" range="-1.48353 0.436332"/>
+          <joint name="L_hip_roll_joint" pos="0 0 0" axis="-1 0 0" range="-1.48353 0.436332" armature="0.0773" damping="0.0275" frictionloss="0.519"/>
           <geom class="visual" mesh="L_hip_roll_link"/>
           <geom name="L_hip_roll_link_hull" class="hull" mesh="L_hip_roll_link_hull"/>
           <geom name="L_hip_yaw_motor" class="visual" size="0.0495 0.0283" pos="6e-05 -3e-05 -0.13303" type="cylinder" material="black"/>
           <geom name="L_hip_roll_link_collision" class="collision" size="0.0490291 0.0172" pos="0.0011 0.0121 -0.0277" quat="0 1 0 0"/>
           <body name="L_thigh_link">
             <inertial pos="-0.0359249 0.00144369 -0.335541" quat="0.699633 0.0898665 0.0841076 0.703821" mass="2.1644" diaginertia="0.0151133 0.0135846 0.00340589"/>
-            <joint name="L_hip_yaw_joint" pos="0 0 0" axis="0 0 -1" range="-0.785398 0.785398"/>
+            <joint name="L_hip_yaw_joint" pos="0 0 0" axis="0 0 -1" range="-0.785398 0.785398" armature="0.0638" damping="0.0252" frictionloss="0.251"/>
             <geom class="visual" mesh="L_thigh"/>
             <geom name="L_thigh_link_hull" class="hull" mesh="L_thigh_hull"/>
             <geom name="L_knee_motor" class="visual" size="0.06 0.0278" pos="-0.04495 0.00318 -0.36922" quat="0.707107 0.707107 0 0" type="cylinder" material="black"/>
             <geom name="L_thigh_link_collision" class="collision" size="0.0684 0.0712" pos="-0.0111 -0.0005 -0.2896" quat="0 1 0 0"/>
             <body name="L_shin_link" pos="-0.045 0 -0.37">
               <inertial pos="-0.030074 0.000320098 -0.236277" quat="0.705091 0.034552 0.0285397 0.7077" mass="2.8649" diaginertia="0.0248226 0.0237818 0.00390564"/>
-              <joint name="L_knee_joint" pos="0 0 0" axis="0 -1 0" range="-2.0944 0"/>
+              <joint name="L_knee_joint" pos="0 0 0" axis="0 -1 0" range="-2.0944 0" armature="0.0773" damping="0.0275" frictionloss="0.519"/>
               <geom class="visual" mesh="L_shin"/>
               <geom name="L_shin_link_hull" class="hull" mesh="L_shin_hull"/>
               <geom name="L_ankle_b_motor" class="visual" size="0.0495 0.0283" pos="-0.02994 0.00172 -0.19003" quat="0.707107 0.707107 0 0" type="cylinder" material="black"/>
