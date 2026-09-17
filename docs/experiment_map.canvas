@@ -3809,6 +3809,30 @@
       "toNode": "n_v7_standonly",
       "toSide": "left",
       "label": "명령 0 만 주고 서기"
+    },
+    {
+      "id": "e_v6b_to_2x2",
+      "fromNode": "n_v6b_run",
+      "fromSide": "bottom",
+      "toNode": "n_gate_2x2_closed",
+      "toSide": "left",
+      "label": "정지 0.3·방향 0.8 칸 — 5,400 강제"
+    },
+    {
+      "id": "e_v7heading_to_2x2",
+      "fromNode": "n_legonly_v7_heading",
+      "fromSide": "bottom",
+      "toNode": "n_gate_2x2_closed",
+      "toSide": "top",
+      "label": "정지 0.3·방향 0.3 칸 — 방향만 바꿔도 똑같이 5,400 강제"
+    },
+    {
+      "id": "e_v8_to_2x2",
+      "fromNode": "n_legonly_v8_standing_mid",
+      "fromSide": "right",
+      "toNode": "n_gate_2x2_closed",
+      "toSide": "bottom",
+      "label": "정지 0.175 + 제외장치 켬 — 기준선은 공정해졌으나 역시 5,400 강제"
     }
   ]
 }
