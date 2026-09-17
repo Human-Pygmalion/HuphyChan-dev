@@ -1805,6 +1805,26 @@
       "height": 340,
       "text": "**회전 고장은 물려받은 것이다** (§3c-1, 2026-09-17)\n\n같은 도구(`measure_turn.py`)·같은 8개 요 속도·각자 자기 자세:\n\n| | 중앙 달성률 | 반대로 돈 블록 |\n|---|--:|--:|\n| v5 | **16 %** | 2 / 8 |\n| v6b | **12 %** | 3 / 8 |\n\n**Mann-Whitney p = 0.56 — 구별되지 않는다.** 둘 다 망가져 있다.\n\n★**정정**: 앞서 \"v6b 7 % 대 v5 16 %\" 는 **도구를 섞은 비교**였다(전체 스윕 vs 전용 스윕 — 블록 진입 상태가 다름). 내가 §2f·§2h 에서 세운 규칙을 이 항목에서 어겼다.\n\n원인 가설: `PYG_REL_HEADING=0.8` — 다섯 중 넷에서 요 명령이 방향오차 계산값. **v7(0.3)이 2×2 를 완성하면 답이 나온다.**",
       "color": "5"
+    },
+    {
+      "id": "n_legonly_v7_heading",
+      "type": "file",
+      "x": 31900,
+      "y": 3420,
+      "width": 440,
+      "height": 180,
+      "file": "experiments/2026-09-15_legonly_ab_v7_heading_revert.md",
+      "color": "6"
+    },
+    {
+      "id": "n_v7_design",
+      "type": "text",
+      "x": 31900,
+      "y": 3660,
+      "width": 560,
+      "height": 340,
+      "text": "**v7 방향유지 되돌리기 — 2×2 완성** (2026-09-17 발사)\n\n**유일 변인: `PYG_REL_HEADING` 0.8 → 0.3** (v6b 대비 한 줄)\n\n| | 정지 0.1 | 정지 0.3 |\n|---|---|---|\n| **방향유지 0.3** | v4 | **v7 ← 이번** |\n| **방향유지 0.8** | v5 | v6b |\n\n★**주 질문 = 회전 채널**. 요 속도 명령을 보는 환경이 **20 % → 70 %(3.5배)**.\n목표: 제자리 회전 달성률 중앙값 **50 % 이상**, 반대로 돈 블록 **0/8**.\n\n올라가면 가설 성립 → 방향유지 비율이 회전을 먹고 있었다.\n안 올라가면 **기각** → 보상 쪽에서 원인을 찾는다(연구노트 선행).\n\n부수 확인: 정지(v6b 성과 유지되는가) · 보행(v6b 가 어긴 3항목 회복되는가).\n\n`PYG_GATE_EXCLUDE_STANDING` 은 **일부러 끔** — 단일 변인 유지.",
+      "color": "6"
     }
   ],
   "edges": [
@@ -3537,6 +3557,30 @@
       "toNode": "n_legonly_v6_standing",
       "toSide": "right",
       "label": "v5 에서 이미 죽어 있었다"
+    },
+    {
+      "id": "e_v6b_to_v7",
+      "fromNode": "n_v6b_final",
+      "fromSide": "right",
+      "toNode": "n_legonly_v7_heading",
+      "toSide": "left",
+      "label": "유일 변인 후속"
+    },
+    {
+      "id": "e_v7note_to_design",
+      "fromNode": "n_legonly_v7_heading",
+      "fromSide": "bottom",
+      "toNode": "n_v7_design",
+      "toSide": "top",
+      "label": "설계"
+    },
+    {
+      "id": "e_turn_to_v7",
+      "fromNode": "n_turn_inherited",
+      "fromSide": "bottom",
+      "toNode": "n_v7_design",
+      "toSide": "top",
+      "label": "이 가설을 시험한다"
     }
   ]
 }
