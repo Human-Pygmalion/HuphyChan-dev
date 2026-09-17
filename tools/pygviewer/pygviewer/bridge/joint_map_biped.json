@@ -1,152 +1,298 @@
 {
-  "_comment": "Explicit HUPHY biped-branch limb/motor -> sim joint map (docs/121 section 12, docs/123 section 11: biped structure migration). Supersedes joint_map_huphy.json as the bridge DEFAULT - joint_map_huphy.json is kept on disk unchanged for the legacy left/right vocabulary (still loadable explicitly, still read by some tests). limb names here are `left_leg`/`right_leg` - HUPHY biped's own `Leg.id` (`robots/biped.py`: 'limb name is Leg.id - robot.yaml's limbs key comes through verbatim'), NOT the bare 'left'/'right' the pre-biped fork used. NO regex, no default fallback: a (limb, motor) pair the bridge sees on the wire that is not one of the 12 rows below is a HARD FAILURE, logged and counted, never guessed. sign/offset_rad are user-calibratable per the verification protocol (docs/121 section 5, step 2); until then side_mapping_verified stays false and the UI shows the UNVERIFIED banner (user-asserted L=left, docs/121 section 1).",
-  "side_mapping_verified": false,
-  "motors": [
-    {
-      "limb": "left_leg",
-      "motor": "hip_pitch",
-      "sim_joint": "L_hip_pitch_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "left_leg",
-      "motor": "hip_roll",
-      "sim_joint": "L_hip_roll_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "left_leg",
-      "motor": "hip_yaw",
-      "sim_joint": "L_hip_yaw_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "left_leg",
-      "motor": "knee",
-      "sim_joint": "L_knee_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "left_leg",
-      "motor": "ankle_a",
-      "sim_joint": "L_crank_A_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "left_leg",
-      "motor": "ankle_b",
-      "sim_joint": "L_crank_B_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "motor": "hip_pitch",
-      "sim_joint": "R_hip_pitch_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "motor": "hip_roll",
-      "sim_joint": "R_hip_roll_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "motor": "hip_yaw",
-      "sim_joint": "R_hip_yaw_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "motor": "knee",
-      "sim_joint": "R_knee_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "motor": "ankle_a",
-      "sim_joint": "R_crank_A_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "motor": "ankle_b",
-      "sim_joint": "R_crank_B_joint",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "motor_model": "RS03",
-      "rom_deg": null
-    }
-  ],
-  "ankle_joints": [
-    {
-      "limb": "left_leg",
-      "joint": "ankle_pitch",
-      "side": "L",
-      "field": "pitch",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "rom_deg": null
-    },
-    {
-      "limb": "left_leg",
-      "joint": "ankle_roll",
-      "side": "L",
-      "field": "roll",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "joint": "ankle_pitch",
-      "side": "R",
-      "field": "pitch",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "rom_deg": null
-    },
-    {
-      "limb": "right_leg",
-      "joint": "ankle_roll",
-      "side": "R",
-      "field": "roll",
-      "sign": 1,
-      "offset_rad": 0.0,
-      "rom_deg": null
-    }
-  ]
+ "_comment": "Explicit HUPHY biped-branch limb/motor -> sim joint map (docs/121 section 12, docs/123 section 11: biped structure migration). Supersedes joint_map_huphy.json as the bridge DEFAULT - joint_map_huphy.json is kept on disk unchanged for the legacy left/right vocabulary (still loadable explicitly, still read by some tests). limb names here are `left_leg`/`right_leg` - HUPHY biped's own `Leg.id` (`robots/biped.py`: 'limb name is Leg.id - robot.yaml's limbs key comes through verbatim'), NOT the bare 'left'/'right' the pre-biped fork used. NO regex, no default fallback: a (limb, motor) pair the bridge sees on the wire that is not one of the 12 rows below is a HARD FAILURE, logged and counted, never guessed. sign/offset_rad are user-calibratable per the verification protocol (docs/121 section 5, step 2); until then side_mapping_verified stays false and the UI shows the UNVERIFIED banner (user-asserted L=left, docs/121 section 1).",
+ "side_mapping_verified": false,
+ "motors": [
+  {
+   "limb": "left_leg",
+   "motor": "hip_pitch",
+   "sim_joint": "L_hip_pitch_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -25.0,
+    120.0
+   ],
+   "min_rad": -0.436332,
+   "max_rad": 2.0944,
+   "rom_measured_deg": [
+    -27.5,
+    108.0
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 2.5 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "left_leg",
+   "motor": "hip_roll",
+   "sim_joint": "L_hip_roll_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -85.0,
+    25.0
+   ],
+   "min_rad": -1.48353,
+   "max_rad": 0.436332,
+   "rom_measured_deg": [
+    -84.1,
+    26.4
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 1.4 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "left_leg",
+   "motor": "hip_yaw",
+   "sim_joint": "L_hip_yaw_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -45.0,
+    45.0
+   ],
+   "min_rad": -0.785398,
+   "max_rad": 0.785398,
+   "rom_measured_deg": [
+    -46.3,
+    44.0
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 1.3 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "left_leg",
+   "motor": "knee",
+   "sim_joint": "L_knee_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -120.0,
+    0.0
+   ],
+   "min_rad": -2.0944,
+   "max_rad": 0.0,
+   "rom_measured_deg": [
+    -110.9,
+    9.7
+   ],
+   "rom_status": "영점 의심 — 실측이 모델 밖으로 9.7 deg (할 일 #14)"
+  },
+  {
+   "limb": "left_leg",
+   "motor": "ankle_a",
+   "sim_joint": "L_crank_A_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -68.75,
+    68.75
+   ],
+   "min_rad": -1.2,
+   "max_rad": 1.2,
+   "rom_measured_deg": [
+    -46.0,
+    46.0
+   ],
+   "rom_status": "★미검증·과대 의심 — 모델은 ±68.75 deg 를 허용하지만 손으로는 ±46 deg 밖에 안 간다(할 일 #4). 실제 하드스톱을 재기 전까지 이 범위를 그대로 실기에 쓰면 기구를 때린다."
+  },
+  {
+   "limb": "left_leg",
+   "motor": "ankle_b",
+   "sim_joint": "L_crank_B_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -68.75,
+    68.75
+   ],
+   "min_rad": -1.2,
+   "max_rad": 1.2,
+   "rom_measured_deg": [
+    -46.0,
+    46.0
+   ],
+   "rom_status": "★미검증·과대 의심 — 모델은 ±68.75 deg 를 허용하지만 손으로는 ±46 deg 밖에 안 간다(할 일 #4). 실제 하드스톱을 재기 전까지 이 범위를 그대로 실기에 쓰면 기구를 때린다."
+  },
+  {
+   "limb": "right_leg",
+   "motor": "hip_pitch",
+   "sim_joint": "R_hip_pitch_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -120.0,
+    25.0
+   ],
+   "min_rad": -2.0944,
+   "max_rad": 0.436332,
+   "rom_measured_deg": [
+    -121.9,
+    24.4
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 1.9 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "right_leg",
+   "motor": "hip_roll",
+   "sim_joint": "R_hip_roll_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -25.0,
+    85.0
+   ],
+   "min_rad": -0.436332,
+   "max_rad": 1.48353,
+   "rom_measured_deg": [
+    -28.8,
+    81.2
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 3.8 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "right_leg",
+   "motor": "hip_yaw",
+   "sim_joint": "R_hip_yaw_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -45.0,
+    45.0
+   ],
+   "min_rad": -0.785398,
+   "max_rad": 0.785398,
+   "rom_measured_deg": [
+    -45.8,
+    44.7
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 0.8 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "right_leg",
+   "motor": "knee",
+   "sim_joint": "R_knee_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    0.0,
+    120.0
+   ],
+   "min_rad": 0.0,
+   "max_rad": 2.0944,
+   "rom_measured_deg": [
+    -0.5,
+    120.5
+   ],
+   "rom_status": "실측과 일치 (최대 벗어남 0.5 deg, 스톱 탐색 오차 범위)"
+  },
+  {
+   "limb": "right_leg",
+   "motor": "ankle_a",
+   "sim_joint": "R_crank_A_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -68.75,
+    68.75
+   ],
+   "min_rad": -1.2,
+   "max_rad": 1.2,
+   "rom_measured_deg": [
+    -46.0,
+    46.0
+   ],
+   "rom_status": "★미검증·과대 의심 — 모델은 ±68.75 deg 를 허용하지만 손으로는 ±46 deg 밖에 안 간다(할 일 #4). 실제 하드스톱을 재기 전까지 이 범위를 그대로 실기에 쓰면 기구를 때린다."
+  },
+  {
+   "limb": "right_leg",
+   "motor": "ankle_b",
+   "sim_joint": "R_crank_B_joint",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "motor_model": "RS03",
+   "rom_deg": [
+    -68.75,
+    68.75
+   ],
+   "min_rad": -1.2,
+   "max_rad": 1.2,
+   "rom_measured_deg": [
+    -46.0,
+    46.0
+   ],
+   "rom_status": "★미검증·과대 의심 — 모델은 ±68.75 deg 를 허용하지만 손으로는 ±46 deg 밖에 안 간다(할 일 #4). 실제 하드스톱을 재기 전까지 이 범위를 그대로 실기에 쓰면 기구를 때린다."
+  }
+ ],
+ "ankle_joints": [
+  {
+   "limb": "left_leg",
+   "joint": "ankle_pitch",
+   "side": "L",
+   "field": "pitch",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "rom_deg": [
+    -50.0,
+    30.0
+   ],
+   "min_rad": -0.872665,
+   "max_rad": 0.523599,
+   "rom_status": "폐루프 출력 관절 — 크랭크가 구동하므로 독립 한계가 아니다(docs/71·74)"
+  },
+  {
+   "limb": "left_leg",
+   "joint": "ankle_roll",
+   "side": "L",
+   "field": "roll",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "rom_deg": [
+    -20.0,
+    20.0
+   ],
+   "min_rad": -0.349066,
+   "max_rad": 0.349066,
+   "rom_status": "폐루프 출력 관절 — 크랭크가 구동하므로 독립 한계가 아니다(docs/71·74)"
+  },
+  {
+   "limb": "right_leg",
+   "joint": "ankle_pitch",
+   "side": "R",
+   "field": "pitch",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "rom_deg": [
+    -50.0,
+    30.0
+   ],
+   "min_rad": -0.872665,
+   "max_rad": 0.523599,
+   "rom_status": "폐루프 출력 관절 — 크랭크가 구동하므로 독립 한계가 아니다(docs/71·74)"
+  },
+  {
+   "limb": "right_leg",
+   "joint": "ankle_roll",
+   "side": "R",
+   "field": "roll",
+   "sign": 1,
+   "offset_rad": 0.0,
+   "rom_deg": [
+    -20.0,
+    20.0
+   ],
+   "min_rad": -0.349066,
+   "max_rad": 0.349066,
+   "rom_status": "폐루프 출력 관절 — 크랭크가 구동하므로 독립 한계가 아니다(docs/71·74)"
+  }
+ ],
+ "_rom_source": "동작범위는 LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml 의 joint range 를 그대로 옮긴 것 (2026-09-17 자동 추출). 학습이 쓰는 그 모델이다. 부호(sign)는 전부 +1 이고 이것은 자리표시자가 아니라 docs/146 에서 검증된 값이다 — 손으로 스톱까지 돌린 실측이 모형 범위와 맞았고(left_hip_pitch +108.0° 대 모형 +120° 등), 모형 안에서 +0.5 rad 이 실제로 어느 쪽인지도 발 위치로 확인했다. offset_rad 는 아직 0 이다(할 일 #14, 실물 있을 때). side_mapping_verified 도 아직 False 다(할 일 #5). ★motor_model 이 12줄 모두 RS03 으로 적혀 있으나 hip_pitch·hip_roll·knee 는 실제로 RS04 다 — 이번 수정은 사용자 지시대로 방향과 동작범위만 손댔으므로 그 칸은 건드리지 않았다. ★동작범위 검증 상태를 관절마다 `rom_status` 로 적었다. 크랭크 4개는 모델 ±68.75° 대 손 실측 ±46° 로 **약 23° 과대**이며 실제 하드스톱을 재기 전까지 실기에 그대로 쓰면 안 된다(할 일 #4, 안전).",
+ "_rom_updated": "2026-09-17"
 }

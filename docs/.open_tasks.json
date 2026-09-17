@@ -159,5 +159,40 @@
     "state": "open",
     "added": 1789625052.9220703,
     "why": ""
+  },
+  {
+    "id": 26,
+    "text": "세대별 정책 드롭다운으로 고를 수 있는 viser 뷰어 띄워두기 (사용자 지시, 반복 요청). v=0 정지 자세를 세대별로 눈으로 비교할 수 있어야 함",
+    "state": "done",
+    "added": 1789635490.82958,
+    "why": ""
+  },
+  {
+    "id": 27,
+    "text": "viser_generations: 드롭다운 바꿀 때 load()가 두 번 불린다(roll_dd.value 대입이 on_update 를 또 발동). 기능엔 문제없고 낭비만. 한가할 때 정리",
+    "state": "open",
+    "added": 1789636099.4853888,
+    "why": ""
+  },
+  {
+    "id": 28,
+    "text": "순정 viser play 뷰어 띄우기 — 사용자가 직접 vel 값(vx/vy/wz)을 넣어 정책을 조종해 볼 수 있는 것. 녹화 재생 아님. 사용자 정정 2026-09-17",
+    "state": "open",
+    "added": 1789637739.7514732,
+    "why": ""
+  },
+  {
+    "id": 29,
+    "text": "URDF 변경에 맞는 배포 어댑터 확인/작성 — 모터 방향(부호)과 ROM만 손댈 것. 사용자 지시 2026-09-17",
+    "state": "done",
+    "added": 1789638436.4350438,
+    "why": ""
+  },
+  {
+    "id": 30,
+    "text": "joint_map_biped.json 의 motor_model 이 12줄 전부 RS03 인데 hip_pitch·hip_roll·knee 는 RS04 다. 사실 오류 — 2026-09-17 지시가 방향·ROM 만이라 안 건드림",
+    "state": "open",
+    "added": 1789638584.8291063,
+    "why": ""
   }
 ]
