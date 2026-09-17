@@ -23,11 +23,20 @@ NEED=3          # 연속 몇 번 비어 있어야 쏘나
 INTERVAL=30     # 몇 초마다 보나
 : > "$LOG"
 
+# 2026-09-18: 처음엔 그냥 `pgrep -f "run_v2_scratch"` 로 봤는데, **이 감시기 자신의
+# 명령줄에 그 글자가 들어 있습니다** — 발사할 명령을 인자로 들고 있으니까요. 그래서
+# 자기 자신을 학습으로 착각해 영영 안 쏩니다. 실제로 그렇게 났습니다.
+#
+# 그래서 **명령줄이 파이썬으로 시작하는 것만** 셉니다. 진짜 학습은
+# `.venv/bin/python3 -u analysis/...` 로 시작하고, 이 감시기는 `/bin/bash ...`,
+# 원격 점검용 껍데기는 `bash -c ...` 로 시작합니다.
+PAT='^[^ ]*python3.*(train_wandb_video|run_v2_scratch)'
+
 busy() {
   if [ "$HOST" = local ]; then
-    pgrep -f "train_wandb_video|run_v2_scratch" >/dev/null 2>&1
+    pgrep -f "$PAT" >/dev/null 2>&1
   else
-    timeout 20 ssh -o BatchMode=yes "$HOST" 'pgrep -f "train_wandb_video|run_v2_scratch" >/dev/null' 2>/dev/null
+    timeout 20 ssh -o BatchMode=yes "$HOST" "pgrep -f '$PAT' >/dev/null" 2>/dev/null
   fi
 }
 
