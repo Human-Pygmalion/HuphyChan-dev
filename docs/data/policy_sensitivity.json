@@ -1,0 +1,26 @@
+[
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_23-49-54_legonly_ab_v7b_robust_stand_p2/model_8998.pt",
+    "sens_sigma0.05": 3.425889492034912,
+    "sens_sigma0.05_p95": 5.912371635437012,
+    "sens_sigma0.1": 3.412202835083008,
+    "sens_sigma0.1_p95": 6.007553577423096,
+    "sens_sigma0.2": 3.5171194076538086,
+    "sens_sigma0.2_p95": 6.348686695098877,
+    "action_jitter": 2.2738430500030518,
+    "action_rate": 1.5086276531219482,
+    "label": "v7b"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+    "sens_sigma0.05": 0.813284158706665,
+    "sens_sigma0.05_p95": 1.6226537227630615,
+    "sens_sigma0.1": 0.8135597109794617,
+    "sens_sigma0.1_p95": 1.6855367422103882,
+    "sens_sigma0.2": 0.830527663230896,
+    "sens_sigma0.2_p95": 1.6557488441467285,
+    "action_jitter": 0.8171695470809937,
+    "action_rate": 0.6071299910545349,
+    "label": "v7"
+  }
+]
