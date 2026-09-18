@@ -50,3 +50,11 @@ legonly_ab_v7_standonly_p2
 legonly_ab_v7b_robust_stand_p1
 legonly_ab_v7b_robust_stand_p1r
 legonly_ab_v7b_robust_stand_p2
+# legonly_ab_v7_heading_revert_p1/p2 = 2단계 단일 런, 통합노트 2026-09-15_legonly_ab_v7_heading_revert.md 가 커버
+#   (§1b-0 2×2 결말 · §2c 게이트표 · §3a 1단계 종료 정리 · §3b 1단계 경과 영상)
+legonly_ab_v7_heading_revert_p1
+legonly_ab_v7_heading_revert_p2
+# legonly_ab_v8_standing_mid_p1/p2 = 2단계 단일 런, 통합노트 2026-09-17_legonly_ab_v8_standing_mid.md 가 커버
+#   (§1b-0 게이트 숫자 비교 주의 · §2c 게이트표 · §3b 1단계 경과 영상)
+legonly_ab_v8_standing_mid_p1
+legonly_ab_v8_standing_mid_p2
