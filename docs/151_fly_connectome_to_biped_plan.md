@@ -336,6 +336,46 @@ Pugliese 의 앞다리 모형(4,604 뉴런·3.78 M 시냅스)과 크기가 거�
 
 ---
 
+## §7b 적용 사례 조사 (2026-09-18, 사용자 요청) — 무엇을, 어떻게 했나
+
+### 논문·연구 프로젝트
+
+| 사례 | 배선도 | 몸 | 무엇을 학습했나 | 결과·교훈 |
+|---|---|---|---|---|
+| **FlyGM** (Jin 등, arXiv 2602.17997, 2026) | FlyWire 뇌(배쪽신경삭 없음) | flybody 59차원 | 뉴런별 기술자·인코더·디코더; 배선·부호 고정 | 회전 오차 커넥톰 8.29 / 재배선 13.55 / 무작위 125. 직진은 재배선과 2 % 차이. **통제군을 제대로 둔 첫 사례** |
+| **Pugliese 등 2025** (Tuthill·Brunton) | MANC·FANC 앞다리 4,604뉴런 | 없음 | 학습 없음(발화율 시뮬 + 하행뉴런 자극 스크리닝) | DNg100 → 3뉴런 리듬 모티프. **세다리 조율은 안 나옴** — "몸과 결합" 이 다음 과제 |
+| **NCAP 사족보행** (Bhattasali·Pinto·Lindsay, arXiv 2410.07174, 2024) | 배선도가 아니라 **포유류 척수 회로 모티프**(반중심 리듬 생성기·뇌간 명령·패턴 형성·구심성 되먹임)를 손으로 배선 | Unitree A1 시뮬 + **실기** | 리듬 생성기·명령은 고정, 패턴 형성·되먹임 층만 학습 — **매개변수 92개**(MLP 79,372) | "Bumpy/Run 에서 MLP 보다 8 M 스텝 먼저 수렴", 무작위화 없이 실기 보행 성공(MLP 는 즉시 넘어짐), 평지에서는 MLP 보다 조금 낮음(정규화 효과). **우리 질문에 가장 가까운 선례** |
+| **Lappalainen 등 2024** (flyvis) | FlyWire 시각계 | 없음 | 세포유형별 이득·시간상수 (수천 개) | 배선 + 과제 최적화만으로 뉴런 활동 예측 — "세포유형별 이득" 방식의 원조 |
+| **Shiu 등 2024** | FlyWire 뇌 12.5만 | 없음 | 학습 없음(누출 적분발화) | 먹이·몸단장 회로 예측을 광유전학으로 검증 |
+| **NeuroMechFly v2** (EPFL) | 시각계만 커넥톰 제약 | 자체 몸 모델 | 시각 추적 등 | 다리는 손으로 짠 리듬 생성기 |
+| **Neural Circuit Policies** (Lechner 등 2020) / 액체 신경망 드론 (Science Robotics 2023) | 선충 302뉴런 **배선 양식**(수를 흉내, 실제 배선 아님) | 자율주행·DJI 드론 실기 | 전부 학습 | 19뉴런으로 차선 유지, 드론 목표 도달 90 % 이상·분포 밖 일반화. **"작은 회로 + 시간상수 동역학" 이 실기에서 통한 선례** |
+
+### 회사·기사
+
+| 사례 | 무엇을 | 어떻게 | 기사가 부풀린 것 |
+|---|---|---|---|
+| **Eon Systems "파리 업로드"** (2026-03, [발표문](https://eon.systems/updates/embodied-brain-emulation)) | FlyWire 뇌 14만 뉴런 누출 적분발화 + NeuroMechFly v2 몸 | 미각·촉각·시각을 해당 감각뉴런에 주입, 하행뉴런 몇 개(DNa01·DNa02·aDN1·oDN1·거대섬유·MN9)를 "손잡이"로 삼아 **기존 걷기 제어기**에 넘김. 15 ms 동기. 학습 없음 | 기사는 "학습 데이터 한 줄 없이 걷는다"고 썼으나 발표문 원문: "**many of the mappings between brain and body were chosen by hand rather than derived from the connectome**", 걷기는 "slight modifications to existing NeuroMechFly controllers, trained to imitate the walking behavior". 배쪽신경삭 없음 — **우리가 채우는 자리가 정확히 그 빈칸** |
+| **OpenWorm 레고 로봇** (Busch, 2014) | 선충 302뉴런 배선도 | 초음파 → 코 감각뉴런, 근육뉴런 좌/우 합산 → 두 바퀴. 학습 없음 | 코를 건드리면 멈추고 먹이 센서에 전진 — **"배선도 → 로봇" 의 최초 시연**이지만 행동은 반사 두 개 |
+
+### GitHub (2025-10 male CNS 공개 뒤 폭발적으로 늘어남 — [awesome-fly](https://github.com/cobanov/awesome-fly) 목록에서 우리 질문과 닿는 것만)
+
+| 저장소 | 무엇을 | 우리와의 거리 |
+|---|---|---|
+| [nfly](https://github.com/zhengxuyu/nfly) | male CNS v1.0 전체 → 발화율 순환망, Gymnasium PPO | 우리 뉴런 모형·가중치 공식의 출처. 저자 결론 "같은 매개변수면 보통 신경망보다 낫지 않다" |
+| [FlyDoom](https://github.com/eganeganegan/flydoom) | male CNS 부분그래프(1k~10k) → ViZDoom PPO, **통제군 5종**(무작위·재배선·MLP·GRU·LSTM), 고정/학습 모드 | **우리 통제군 설계와 같은 발상**. 결과 미공개 — "영·부정 결과도 답" 이라 명시 |
+| [fly-craftax](https://github.com/liuzihe02/fly-craftax) | 커넥톰 시뮬 + 하행뉴런 선형 판독기만 PPO | "판독기만 학습" 극단 |
+| [AxonWeave](https://github.com/dhakalnirajan/axonweave) | male CNS 를 PyTorch/Keras 층으로(엣지 이득 학습, 위상 고정) | 도구. 제어 예제 없음 |
+| [NeuroFly](https://github.com/seven-monarchs/NeuroFly) | FlyWire 누출 적분발화 + NeuroMechFly, 하행뉴런 좌우차 → **flygym 의 손으로 짠 리듬 생성기**에 회전 편향 | 배쪽신경삭 없음을 명시 — "CPG 하드코딩" |
+| [CHIMERA](https://github.com/caparison1234/chimera) | 유충 커넥톰 1,373뉴런 누출 적분발화 → MuJoCo 12구동기 | 언어모델이 감각 JSON 을 만들어 넣음 — 규칙 기반이 본체 |
+| Doomfly·Fly64·FlyPong·Connectome Fighter·Flyhard 등 | male CNS 부분그래프를 게임에 연결(대개 학습 없음 또는 판독기만) | 시연 위주. 정량 비교 없음 |
+| [fly-brain (Eon)](https://github.com/eonsystemspbc/fly-brain) · [FastFly](https://github.com/eonfathom/FastFly) · [flybrain (annel0)](https://github.com/annel0/flybrain) | GPU 누출 적분발화 시뮬레이터 | 5단계(스파이크 판)에서 검토 |
+
+### 조사에서 얻은 결론 셋
+
+1. **몸을 커넥톰의 다리 회로로 움직인 사례는 아직 없다.** Eon·NeuroFly 는 뇌 커넥톰 → 손잡이 몇 개 → **손으로 짠 걷기 제어기**, FlyGM 은 뇌 커넥톰 → 학습 디코더 → 다리. 배쪽신경삭 다리 회로를 몸에 붙인 것은 Pugliese 가 "다음 과제"로 남긴 그대로 비어 있다.
+2. **"배선이 사전지식인가" 를 통제군으로 물은 것은 FlyGM 하나**(재배선·무작위·MLP)이고, FlyDoom 이 같은 설계를 준비했으나 결과가 없다. 우리 6팔 설계는 여기에 **부호 섞기·같은 매개변수의 GRU** 를 더한 것이다.
+3. **다리 로봇에서 회로 사전지식이 실제로 이긴 것은 NCAP** — 단 배선도가 아니라 **교과서 회로 모티프**를 손으로 배선한 것이고, 리듬 생성기를 고정하고 되먹임만 학습시켰다. 92개 매개변수로 무작위화 없이 실기에 올랐다. 우리 계획의 "볼륨을 원래 값에 묶는 정규화 훑기"(§4-3b)는 NCAP 의 "고정 리듬 생성기" 와 FlyGM 의 "전부 학습" 사이를 잇는 축이다.
+
 ## §7 자료 (읽은 것 · 발췌는 본문에)
 
 - 수컷 중추신경계 커넥톰: [Janelia 소개](https://www.janelia.org/project-team/flyem/male-cns-connectome) · [논문 bioRxiv 2025.10.09.680999](https://www.biorxiv.org/content/10.1101/2025.10.09.680999v1) · [내려받기](https://male-cns.janelia.org/download/)
