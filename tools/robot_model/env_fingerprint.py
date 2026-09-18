@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""**두 컴퓨터가 정말 같은 로봇·같은 규칙으로 학습하는지** 지문 하나로 대조한다.
+"""**두 컴퓨터가 정말 같은 로봇·같은 규칙으로 학습하는지** 설정 해시 하나로 대조한다.
 
 2026-09-17 · 사용자 지시: *"10.8.0.14 에도 GPU 있으니 여기 환경도 활용해서 학습해."*
 
@@ -15,9 +15,9 @@
 옛 값으로 돌아간 일(docs/146), `PYG_INIT_BENT` 를 빼먹어 멀쩡한 정책이 2초 만에
 주저앉은 일(docs/148 §1a). 둘 다 **아무 오류 메시지도 없었습니다.**
 
-## 무엇을 지문으로 삼나
+## 무엇을 설정 해시으로 삼나
 
-학습 결과를 바꿀 수 있는 것만 넣습니다. 바뀌면 안 되는 것이 바뀌면 지문이 달라집니다.
+학습 결과를 바꿀 수 있는 것만 넣습니다. 바뀌면 안 되는 것이 바뀌면 설정 해시이 달라집니다.
 
 * **모형** — 관절 수·자유도·액추에이터 수, 관절 범위, 링크 질량, 기어비, 힘 한계
 * **기준 자세** — `default_q` (행동 오프셋의 바탕. 여기가 다르면 같은 숫자가 다른 각도)
@@ -29,7 +29,7 @@
 일부러 **안** 넣는 것: 무작위 씨앗, 환경 개수, 장치(cpu/cuda), 경로. 이것들은 달라도
 같은 로봇을 같은 규칙으로 학습하는 것입니다.
 
-    env_fingerprint.py                 # 지문 한 줄
+    env_fingerprint.py                 # 설정 해시 한 줄
     env_fingerprint.py --full          # 무엇이 들어갔는지 전부
 """
 
@@ -118,7 +118,7 @@ def fingerprint(play: bool = False) -> dict:
 def main(argv=None) -> int:
   ap = argparse.ArgumentParser(description=__doc__,
                                formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("--full", action="store_true", help="지문에 들어간 내용을 전부 낸다")
+  ap.add_argument("--full", action="store_true", help="설정 해시에 들어간 내용을 전부 낸다")
   ap.add_argument("--play", action="store_true")
   ap.add_argument("--out", default="")
   n = ap.parse_args(argv)
