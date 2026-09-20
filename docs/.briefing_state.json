@@ -2728,6 +2728,20 @@
    "needs": "비교 결과가 나오면 기준(v7b 3.41 / v7 0.81)과 대 보고, 본 학습이 쓴 계수 1.0 이 맞는 선택이었는지 확인",
    "section": "학습",
    "changed": "2026-09-20 19:05"
+  },
+  "v9-stage1-verdict": {
+   "id": "v9-stage1-verdict",
+   "created": "2026-09-20 19:12",
+   "title": "v9 1단계 판정 나옴 — CAPS 1.0 이 잡음 증폭을 4분의 1로 줄였고 대가가 안 보인다",
+   "finding": "떨림 대책 계수 고르기. 같은 500반복끼리 비교하면 아무것도 안 쓴 기준선이 1.224 인데 CAPS 를 1.0 으로 걸면 0.304 로 내려간다. LCP 는 계수를 2.5배 올려도 0.565 에서 0.526 으로 7% 밖에 안 내려가 일찍 포화한다. CAPS 1.0 은 보상도 110.35 로 기준선 107.58 보다 높아, 이 길이에서는 대가가 보이지 않는다. 다만 보상 차이는 시드 하나씩이라 잡음과 구분이 안 되고, 강건성이 깎였는지는 밀기가 2000반복부터 들어오므로 여기서 못 본다.",
+   "number": "민감도 σ=0.1 — 기준선 1.224 · CAPS 0.2 → 0.632 · CAPS 1.0 → 0.304 · LCP 0.002 → 0.565 · LCP 0.005 → 0.526",
+   "needs": "밀기 표 재측정(§7 조건). 본 학습 v9_caps_p1 이 이미 CAPS 1.0 으로 돌고 있어 이 표가 사후 뒷받침이 된다",
+   "media": [
+    "docs/mujoco/assets/v9_stage1_sensitivity.png",
+    "docs/149_policy_safety_and_stability.md"
+   ],
+   "section": "학습",
+   "changed": "2026-09-20 19:12"
   }
  },
  "order": [
@@ -2960,7 +2974,8 @@
   "robot-back-no-huphy",
   "v9-stage1-running",
   "v7-load-clean",
-  "v9-stage1-verdict-missing"
+  "v9-stage1-verdict-missing",
+  "v9-stage1-verdict"
  ],
- "updated": "2026-09-20 19:05"
+ "updated": "2026-09-20 19:12"
 }

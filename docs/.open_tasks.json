@@ -432,5 +432,12 @@
     "state": "open",
     "added": 1789895256.750895,
     "why": ""
+  },
+  {
+    "id": 66,
+    "text": "평가 도구가 스펙트럼 정규화 저장본을 못 읽는다 - policy_sensitivity.py -> airborne_signature.py:129 의 runner.load(strict=True) 가 MLPModel 에 그대로 넣는데, 스펙트럼 정규화는 가중치를 mlp.N.parametrizations.weight.* 로 감싸므로 키가 안 맞아 RuntimeError. #45/#65 의 sn 팔은 어떤 평가도 못 받는다. 저장 시 원본 가중치를 풀어 쓰거나(parametrize.remove_parametrizations) 로드할 때 같은 감싸기를 재현해야 함",
+    "state": "open",
+    "added": 1789898855.8625777,
+    "why": ""
   }
 ]
