@@ -75,10 +75,21 @@ for d in mujoco-sim/mjlab/logs/rsl_rl/*/*/; do
   [ "$l" -lt 1000 ] 2>/dev/null && continue
   [ -n "$(find "$d" -maxdepth 1 -name 'model_*.pt' -mmin -10 2>/dev/null)" ] && continue
   short=$(echo "$run" | cut -d_ -f3-)
+  # 2026-09-21: 단계 접미사(_p1 / _p1r / _p2)를 뗀 이름도 받는다.
+  #
+  # 왜: 런처(run_v2_scratch.py:219)는 `docs/experiments/*<런이름>*.md` 가 **정확히
+  # 하나**여야 발사합니다. 그 런이름에는 단계 접미사가 없습니다. 그런데 학습은
+  # <런이름>_p1 과 <런이름>_p2 두 디렉토리를 만들고, 여기서는 그 이름이 파일명에
+  # 들어가기를 요구했습니다. 한 파일이 _p1 과 _p2 를 동시에 접미사로 가질 수 없고,
+  # 두 파일로 나누면 런처가 막힙니다 — 두 요구가 서로 모순이었습니다.
+  #
+  # 실제로 v6b·v7b·v9 가 전부 이 모양이라 계속 걸렸습니다. 검사를 무르게 하는 것이
+  # 아니라(런마다 노트는 여전히 있어야 함) 두 도구의 이름 규약을 맞추는 것입니다.
+  base=$(echo "$short" | sed -E 's/_p[0-9]+[a-z]*$//')
   ok=0
   for f in docs/experiments/*.md; do
     bn=$(basename "$f")
-    case "$bn" in *"$short"*|*"$run"*) ok=1; break;; esac
+    case "$bn" in *"$short"*|*"$run"*|*"$base"*) ok=1; break;; esac
   done
   # dedicated report may use the short run_name in its body header (legacy runs) —
   # accept a file whose FIRST line mentions the run timestamp (report title format).
