@@ -139,7 +139,8 @@
    ],
    "width": 3,
    "history_frames": 0,
-   "func": "builtin_sensor"
+   "func": "builtin_sensor",
+   "sensor_name": "robot/imu_ang_vel"
   },
   {
    "term": "projected_gravity",
@@ -149,7 +150,8 @@
    ],
    "width": 3,
    "history_frames": 0,
-   "func": "projected_gravity_from_sensor"
+   "func": "projected_gravity_from_sensor",
+   "sensor_name": "robot/imu_upvector"
   },
   {
    "term": "motor_pos_history",
@@ -159,7 +161,21 @@
    ],
    "width": 24,
    "history_frames": 2,
-   "func": "joint_pos_rel"
+   "func": "joint_pos_rel",
+   "joint_names": [
+    "R_hip_pitch_joint",
+    "R_hip_roll_joint",
+    "R_hip_yaw_joint",
+    "R_knee_joint",
+    "R_crank_A_joint",
+    "R_crank_B_joint",
+    "L_hip_pitch_joint",
+    "L_hip_roll_joint",
+    "L_hip_yaw_joint",
+    "L_knee_joint",
+    "L_crank_A_joint",
+    "L_crank_B_joint"
+   ]
   },
   {
    "term": "actions",
