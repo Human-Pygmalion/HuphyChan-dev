@@ -1,0 +1,62 @@
+[
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_17-39-23_v9s1_none/model_499.pt",
+    "sens_sigma0.05": 1.2917057275772095,
+    "sens_sigma0.05_p95": 2.274585247039795,
+    "sens_sigma0.1": 1.2237404584884644,
+    "sens_sigma0.1_p95": 2.2528903484344482,
+    "sens_sigma0.2": 1.2319631576538086,
+    "sens_sigma0.2_p95": 2.2782044410705566,
+    "action_jitter": 0.5798518657684326,
+    "action_rate": 0.36530113220214844,
+    "label": "none"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_15-25-11_v9s1_caps_02/model_499.pt",
+    "sens_sigma0.05": 0.6433181762695312,
+    "sens_sigma0.05_p95": 1.1354124546051025,
+    "sens_sigma0.1": 0.631583034992218,
+    "sens_sigma0.1_p95": 1.1113582849502563,
+    "sens_sigma0.2": 0.609260082244873,
+    "sens_sigma0.2_p95": 1.0145817995071411,
+    "action_jitter": 0.3063746988773346,
+    "action_rate": 0.2097627818584442,
+    "label": "caps_0.2"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_15-43-50_v9s1_caps_10/model_499.pt",
+    "sens_sigma0.05": 0.30445539951324463,
+    "sens_sigma0.05_p95": 0.6218423247337341,
+    "sens_sigma0.1": 0.30437976121902466,
+    "sens_sigma0.1_p95": 0.6362935304641724,
+    "sens_sigma0.2": 0.310395747423172,
+    "sens_sigma0.2_p95": 0.6836068630218506,
+    "action_jitter": 0.23518405854701996,
+    "action_rate": 0.15786132216453552,
+    "label": "caps_1.0"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_16-00-57_v9s1_lcp_0002/model_499.pt",
+    "sens_sigma0.05": 0.5634759068489075,
+    "sens_sigma0.05_p95": 0.9886913895606995,
+    "sens_sigma0.1": 0.5652428269386292,
+    "sens_sigma0.1_p95": 1.0478997230529785,
+    "sens_sigma0.2": 0.5803489089012146,
+    "sens_sigma0.2_p95": 1.0557920932769775,
+    "action_jitter": 0.3194367289543152,
+    "action_rate": 0.21391132473945618,
+    "label": "lcp_0.002"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_16-19-23_v9s1_lcp_0005/model_499.pt",
+    "sens_sigma0.05": 0.5181705951690674,
+    "sens_sigma0.05_p95": 0.9620999097824097,
+    "sens_sigma0.1": 0.5256999135017395,
+    "sens_sigma0.1_p95": 0.9413845539093018,
+    "sens_sigma0.2": 0.5369245409965515,
+    "sens_sigma0.2_p95": 0.983473002910614,
+    "action_jitter": 0.3355548679828644,
+    "action_rate": 0.21452191472053528,
+    "label": "lcp_0.005"
+  }
+]
