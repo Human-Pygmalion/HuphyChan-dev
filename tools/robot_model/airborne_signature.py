@@ -126,6 +126,21 @@ def build(checkpoint: str, obs_noise: bool = False):
   envw = RslRlVecEnvWrapper(env, clip_actions=load_rl_cfg(TASK).clip_actions)
   runner = (load_runner_cls(TASK) or MjlabOnPolicyRunner)(
     envw, asdict(load_rl_cfg(TASK)), device="cpu")
+  # 2026-09-20: 스펙트럼 정규화로 학습한 저장본은 가중치가
+  # `mlp.N.parametrizations.weight.original` 로 감싸여 있어, 평범한 신경망에 그대로
+  # 넣으면 키가 안 맞아 멈춥니다. 그래서 **싣기 전에 같은 감싸기를 재현**합니다.
+  # 어떤 값으로 학습했는지는 그 런의 토글 기록에 있습니다 — 짐작하지 않습니다.
+  _sn = float(os.environ.get("PYG_SN", 0.0) or 0.0)
+  if _sn > 0.0:
+    from mjlab.rl.smooth_ppo import SmoothPPO
+
+    # 보통은 이미 감싸여 있습니다 — 토글이 켜져 있으면 알고리즘이 SmoothPPO 로
+    # 만들어지고 그 생성자가 이미 겁니다. 그때는 0 개가 나오고 아무 일도 안 합니다.
+    # 여기 있는 이유는 알고리즘이 다른 경로로 만들어졌을 때의 그물입니다.
+    n = SmoothPPO._apply_spectral_norm(SmoothPPO, runner.alg.actor, _sn)
+    if n:
+      print(f"[air] 스펙트럼 정규화 저장본 — 층 {n} 개를 여기서 감쌌습니다 (전체 λ={_sn})",
+            flush=True)
   runner.load(checkpoint, load_cfg={"actor": True}, strict=True, map_location="cpu")
   return env, envw, runner.get_inference_policy(device="cpu"), torch
 
