@@ -1,0 +1,38 @@
+[
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_5400.pt",
+    "sens_sigma0.05": 0.5471508502960205,
+    "sens_sigma0.05_p95": 1.0174891948699951,
+    "sens_sigma0.1": 0.5536280870437622,
+    "sens_sigma0.1_p95": 1.048651099205017,
+    "sens_sigma0.2": 0.5467444062232971,
+    "sens_sigma0.2_p95": 0.9899129867553711,
+    "action_jitter": 0.29357433319091797,
+    "action_rate": 0.21936634182929993,
+    "label": "v7_i5400"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_23-49-54_legonly_ab_v7b_robust_stand_p2/model_5400.pt",
+    "sens_sigma0.05": 2.766080379486084,
+    "sens_sigma0.05_p95": 4.838210582733154,
+    "sens_sigma0.1": 2.7548978328704834,
+    "sens_sigma0.1_p95": 4.776491641998291,
+    "sens_sigma0.2": 2.9486677646636963,
+    "sens_sigma0.2_p95": 5.508003234863281,
+    "action_jitter": 2.2251315116882324,
+    "action_rate": 1.358736276626587,
+    "label": "v7b_i5400"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_19-17-25_legonly_ab_v9_caps_p2/model_5400.pt",
+    "sens_sigma0.05": 0.35874632000923157,
+    "sens_sigma0.05_p95": 0.6552740931510925,
+    "sens_sigma0.1": 0.36642003059387207,
+    "sens_sigma0.1_p95": 0.7260604500770569,
+    "sens_sigma0.2": 0.3744715452194214,
+    "sens_sigma0.2_p95": 0.7016283273696899,
+    "action_jitter": 0.30743205547332764,
+    "action_rate": 0.19704630970954895,
+    "label": "caps_i5400"
+  }
+]
