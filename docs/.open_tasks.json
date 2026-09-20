@@ -429,15 +429,22 @@
   {
     "id": 65,
     "text": "스펙트럼 정규화 계수 해석 오류 — 층마다 λ 를 곱해 전체 상한이 λ^4 가 됨(λ=0.2 -> 0.0016). 보상 107->4 로 무너짐. 전체 립시츠 상한 기준으로 고쳐 재시험",
-    "state": "open",
+    "state": "blocked",
     "added": 1789895256.750895,
-    "why": ""
+    "why": "코드는 고침(층마다 λ^(1/층수), 커밋 19dd814). 재시험은 GPU 가 v9_caps 2단계로 차 있어 대기"
   },
   {
     "id": 66,
     "text": "평가 도구가 스펙트럼 정규화 저장본을 못 읽는다 - policy_sensitivity.py -> airborne_signature.py:129 의 runner.load(strict=True) 가 MLPModel 에 그대로 넣는데, 스펙트럼 정규화는 가중치를 mlp.N.parametrizations.weight.* 로 감싸므로 키가 안 맞아 RuntimeError. #45/#65 의 sn 팔은 어떤 평가도 못 받는다. 저장 시 원본 가중치를 풀어 쓰거나(parametrize.remove_parametrizations) 로드할 때 같은 감싸기를 재현해야 함",
-    "state": "open",
+    "state": "done",
     "added": 1789898855.8625777,
+    "why": ""
+  },
+  {
+    "id": 67,
+    "text": "[커넥톰] ★회전이 전 구간 1% — DNa02 인코더 이득과 좌우 비대칭 디코더 경로를 분해해 '구조적으로 막혔나 학습이 못 갔나' 판정 (docs/151 §5i)",
+    "state": "open",
+    "added": 1789923972.2948089,
     "why": ""
   }
 ]
