@@ -359,5 +359,5 @@ mjlab 이 불러올 때 주입하므로 학습·뷰어는 맞지만, **MJCF 파�
 |---|---|
 | `offset_rad` | 전부 0 — 영점 8개가 아직 안 들어갔다(할 일 #14) |
 | `side_mapping_verified` | `False` — 왼무릎만 굽혀 확인 필요(할 일 #5) |
-| `motor_model` | **12줄 전부 `RS03` 인데 hip_pitch·hip_roll·knee 는 실제 RS04** — 사실 오류이나 지시가 방향·범위만이라 그대로 뒀다 |
+| `motor_model` | ~~12줄 전부 `RS03` 인데 hip_pitch·hip_roll·knee 는 실제 RS04 — 사실 오류이나 지시가 방향·범위만이라 그대로 뒀다~~ → **2026-09-20 고침(할 일 #30)**. 출처는 `pygmalion_constants.py` 의 액추에이터 묶음입니다 — `PYG_ACTUATOR_04`(`.*_hip_pitch_joint`·`.*_hip_roll_joint`)와 `PYG_ACTUATOR_04_KNEES`(`.*_knee_joint`)가 `"RS04"`, `PYG_ACTUATOR_03_HIP_YAW`(`.*_hip_yaw_joint`)와 `PYG_ACTUATOR_03_CRANK`(`.*_crank_[AB]_joint`)가 `"RS03"` 입니다. `joint_map_biped.json`·`joint_map_huphy.json` 의 해당 6줄씩을 `RS04` 로 고쳤습니다. 이 칸은 코드가 읽지 않는 기록용이라 동작은 안 바뀌고, 시험도 그대로입니다 |
 
