@@ -450,8 +450,15 @@
   {
     "id": 68,
     "text": "[다른 세션 전달] v9_caps p1/p2 노트 파일명이 런 디렉토리와 안 맞아 audit_notes 가 계속 BLOCK 한다. 이 리포는 과거부터 _p1/_p2 를 파일명에 넣는 관례(2026-07-11_flat25b_bentinit_p1.md 등). 2026-09-18_legonly_ab_v9_caps.md 를 런명 포함으로 바꾸거나 _p1/_p2 노트를 나누면 풀림. 런 자체는 정상(01:54 model_5100, ETA 7.4시간) — 25분마다 저장이라 감사의 10분 창에 걸린 것뿐",
-    "state": "open",
+    "state": "done",
     "added": 1789924533.7536762,
+    "why": ""
+  },
+  {
+    "id": 69,
+    "text": "[커넥톰] 회전 원인 가르기 A/B — 배선·인코더 고정, 디코더만 anatomical -> linear (PYG_CONNECTOME_DECODER=linear) 로 같은 예산 1,500반복. 가설 ⓑ'디코더가 좌우 차이를 평균한다' 판정. docs/151 §5j",
+    "state": "open",
+    "added": 1789926165.1292038,
     "why": ""
   }
 ]
