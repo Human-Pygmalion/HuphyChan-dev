@@ -1,0 +1,48 @@
+# deploy_asset — 실물 로봇에 올리는 정책 꾸러미
+
+학습이 끝난 정책을 **로봇을 모는 컴퓨터로 그대로 가져갈 수 있게** 묶어 둔 곳입니다.
+각 폴더 하나가 독립 꾸러미이고, 시뮬레이터(MuJoCo, mjlab)는 필요 없습니다 —
+`pip install numpy onnxruntime` 이면 돕니다.
+
+## 들어 있는 꾸러미
+
+| 폴더 | 정책 | 무엇에 좋은가 | 무엇이 나쁜가 |
+|---|---|---|---|
+| [`pyg_stand_v7b/`](pyg_stand_v7b/README.md) | `legonly_ab_v7b_robust_stand` (완주 8,998) | **기준자세를 정확히 지킴** — 정지 자세오차 0.46°, 정지 토크 RMS 4.33 N·m. 1.5 m/s 밀기까지 넘어짐 0 | **들어 올리면 다리를 휘두름** — 관절속도 0.79 → 4.14 rad/s, 엉덩이 롤 토크 2 배 |
+| [`pyg_stand_v9_caps/`](pyg_stand_v9_caps/README.md) | `legonly_ab_v9_caps` (완주 8,998) | **떨림이 적고 들어도 얌전함** — 관측 민감도 3.375 → 0.459, 들었을 때 관절속도 4.14 → 0.31 | **기준자세에서 더 벗어나 섬** — 정지 자세오차 3.34°, 정지 토크 RMS 9.03 N·m |
+
+두 정책은 환경 설정 `PYG_*` **38 개가 전부 동일**하고, v9_caps 쪽에만
+`PYG_CAPS_S=1.0`, `PYG_CAPS_SIGMA=0.1` 이 추가된 **단일 변인** 관계입니다.
+관측·행동 공간 명세는 12 관절 전부 항목까지 같으므로, 한쪽으로 짜 둔 로봇 코드는
+다른 쪽에 그대로 씁니다 — 파일만 바꾸면 됩니다.
+
+**어느 것을 고를까**: 자세 정확도와 정지 시 소비 전력이 중요하면 **v7b**,
+테더로 들어 올릴 일이 잦고 떨림이 문제면 **v9_caps**.
+
+`*.tar.gz` 는 같은 폴더를 그대로 묶은 것입니다. 다른 기계로 가져갈 때 쓰십시오.
+
+## 바로 확인하는 법
+
+```bash
+cd pyg_stand_v7b                      # 또는 pyg_stand_v9_caps
+pip install -r requirements.txt
+python3 policy_runner.py --contract deploy_contract.json --onnx policy.onnx --self-test
+python3 example_loop.py --seconds 30  # 가짜 로봇으로 배선·단위·주기 확인
+```
+
+`--self-test` 는 명세에 든 **참조 입출력 16 쌍**으로 이 기계가 학습 기계와 같은 답을
+내는지 봅니다. 기준값은 v7b 2.437e-06, v9_caps 5.738e-07 (허용치 1e-04).
+**여기서 어긋나면 모터를 켜지 마십시오.**
+
+## 각 꾸러미의 `README.md` 에 있는 것
+
+모터 파라미터(Kp/Kd·토크 한계·회전자 관성·정지마찰), 관절별 기준자세와 가동범위,
+추론 흐름 그림, 관측 45 차원과 행동 12 차원의 칸별 정의, 모터를 켜기 전 검사,
+그리고 **이 코드가 일부러 하지 않는 것**(안전 정지·PD 이득 설정 등).
+
+## 관련 문서 (이 저장소)
+
+* `docs/154_standing_policy_deployment_handover.md` — 처음 보는 사람용 전체 안내
+* `docs/deploy/` — 각 꾸러미 README 의 사본
+* `docs/148_air_shake_and_action_delay.md` — 들어 올렸을 때 다리가 떠는 현상의 원인
+* `docs/149_policy_safety_and_stability.md` — 떨림을 줄이는 방법들의 조사
