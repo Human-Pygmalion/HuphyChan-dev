@@ -100,6 +100,7 @@ class StandingPolicy:
     self.warn_period = bool(warn_period)
     self._last_raw = np.zeros(self.adapter.action_dim, dtype=np.float64)
     self._t_prev: float | None = None
+    self._gaps: list[float] = []
     self._warned = False
     self.steps = 0
 
@@ -119,6 +120,7 @@ class StandingPolicy:
     self.adapter.reset()
     self._last_raw[:] = 0.0
     self._t_prev = None
+    self._gaps.clear()
     self._warned = False
     self.steps = 0
 
@@ -148,17 +150,32 @@ class StandingPolicy:
     """직전에 정책이 낸 **날 것의** 값. 기록용 — 되먹임은 이 클래스가 알아서 한다."""
     return self._last_raw.copy()
 
+  # 처음 몇 주기는 재지 않는다. ONNX 첫 호출이 자기 준비를 하느라 느려서, 여기서
+  # 재면 멀쩡한 고리에도 경고가 뜹니다 (2026-09-21 에 예제 고리에서 25.7 ms 로 헛경고).
+  PERIOD_WARMUP_STEPS = 5
+  PERIOD_WINDOW = 51          # 중앙값을 볼 창 (홀수)
+
   def _check_period(self) -> None:
     if not self.warn_period:
       return
     now = time.monotonic()
+    if self.steps < self.PERIOD_WARMUP_STEPS:
+      self._t_prev = now
+      return
     if self._t_prev is not None and not self._warned:
-      gap = now - self._t_prev
-      if abs(gap - self.dt) > 0.2 * self.dt:
-        self._warned = True                              # 한 번만 말한다
-        print(f"[policy_runner] 제어 주기가 {gap * 1e3:.1f} ms 입니다 — 명세는 "
-              f"{self.dt * 1e3:.1f} ms({self.adapter.control_rate_hz:g} Hz) 입니다. "
-              "정책은 이 주기를 전제로 학습했습니다.", flush=True)
+      self._gaps.append(now - self._t_prev)
+      if len(self._gaps) > self.PERIOD_WINDOW:
+        self._gaps.pop(0)
+      # **한 번의 딸꾹질로는 말하지 않는다.** 부하가 걸린 기계에서는 150 주기에 한 번쯤
+      # 4 ms 씩 밀리는 것이 정상이고, 그때마다 경고하면 아무도 안 읽게 됩니다. 창의
+      # **중앙값**을 보면 한 번의 이상치는 무시되고 주기 자체가 틀린 것만 남습니다.
+      if len(self._gaps) == self.PERIOD_WINDOW:
+        mid = sorted(self._gaps)[self.PERIOD_WINDOW // 2]
+        if abs(mid - self.dt) > 0.2 * self.dt:
+          self._warned = True                            # 한 번만 말한다
+          print(f"[policy_runner] 제어 주기의 중앙값이 {mid * 1e3:.1f} ms 입니다 — "
+                f"명세는 {self.dt * 1e3:.1f} ms({self.adapter.control_rate_hz:g} Hz) "
+                "입니다. 정책은 이 주기를 전제로 학습했습니다.", flush=True)
     self._t_prev = now
 
   # ---------------------------------------------------------------- 자가진단
