@@ -4410,7 +4410,7 @@
       "fromSide": "right",
       "toNode": "n_v10b",
       "toSide": "left",
-      "label": "단일 변인: + PYG_STAND_L1=1.0 (같은 카드 동시 학습, env.yaml 차이 실증)"
+      "label": "단일 변인: + PYG_STAND_L1=1.0 (v10a 5060 / v10b 원격 3090, env.yaml 차이 실증)"
     }
   ]
 }
