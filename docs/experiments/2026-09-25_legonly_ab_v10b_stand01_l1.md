@@ -24,6 +24,16 @@
 발사: `run_v2_scratch.sh --run legonly_ab_v10b_stand01_l1 --ankle AB --vy-stages --gate-max-dwell 3000 --allow-concurrent`
 + `PYG_REL_STANDING=0.1 PYG_REL_HEADING=0.3` + `PYG_STAND_L1=1.0`. 짝 팔과 **같은 그래픽카드에서 동시에**.
 
+**실제 발사 (2026-09-25 17:01:13)**: `analysis/launch_v10b_only.sh` — 짝 팔(16:55:46 발사)보다 **5분 27초 늦게**.
+첫 시도는 사전점검이 막았습니다(그래픽 메모리 여유 10.8 GiB < 12.0 GiB). 한 판이 실제로 쓰는 것은
+6.6 GB 라서, 런처에 그 기준 하나만 바꾸는 `--min-gpu-free` 를 추가하고(mjlab ae286188) 7.5 GiB 로
+띄웠습니다. 메모리·디스크 점검은 그대로 적용됐습니다(여유 메모리 13.9 GiB, 디스크 113.8 GiB, 그래픽 8.9 GiB).
+학습 폴더 `logs/rsl_rl/pygmalion_velocity/2026-09-25_17-01-32_legonly_ab_v10b_stand01_l1_p1`.
+
+**단일 변인 실증 (발사 직후)**: 두 팔의 `params/env.yaml` 차이는 `standing_joint_deviation` 보상항 블록
+(가중치 −1.0, 명령 문턱 0.1, 엉덩이·무릎·발목 관절) **하나뿐**이고, `agent.yaml` 차이는 런 이름뿐,
+발사 기록(`repro/launch_manifest.json`)의 `PYG_*` 차이는 `PYG_STAND_L1=1.0` 한 줄뿐입니다.
+
 ## §1c 판정 기준
 
 비교노트 §2 의 사전 등록 예측 P1~P5 와 같은 도구·같은 조건(§3).
