@@ -4380,7 +4380,7 @@
       "fromSide": "bottom",
       "toNode": "n_v10a",
       "toSide": "top",
-      "label": "서 있는 비율 0.3→0.1 (대조)"
+      "label": "서 있는 비율 0.3→0.1 (대조) — 정체 안 풀림: 비율은 원인 아님"
     },
     {
       "id": "e_v7_v10b",
@@ -4396,7 +4396,7 @@
       "fromSide": "bottom",
       "toNode": "n_v10_compare",
       "toSide": "top",
-      "label": "A/B — 3 단계 오차가 v10b 와 같은 모양 (판정 5,400)"
+      "label": "A/B — 3→4 강제 승급 5,400 (오차 0.2400)"
     },
     {
       "id": "e_v10b_cmp",
@@ -4404,7 +4404,7 @@
       "fromSide": "bottom",
       "toNode": "n_v10_compare",
       "toSide": "top",
-      "label": "A/B — 3→4 강제 승급 5,400 (09-25 23:20 중간)"
+      "label": "A/B — 3→4 강제 승급 5,400 (오차 0.2408) · P1 두 팔 모두 틀림"
     },
     {
       "id": "e_asimov_v10b",
