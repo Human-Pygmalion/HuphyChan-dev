@@ -4386,7 +4386,7 @@
       "fromSide": "bottom",
       "toNode": "n_v10_compare",
       "toSide": "top",
-      "label": "A/B"
+      "label": "A/B — 3 단계 오차가 v10b 와 같은 모양 (판정 5,400)"
     },
     {
       "id": "e_v10b_cmp",
@@ -4394,7 +4394,7 @@
       "fromSide": "bottom",
       "toNode": "n_v10_compare",
       "toSide": "top",
-      "label": "A/B"
+      "label": "A/B — 3→4 강제 승급 5,400 (09-25 23:20 중간)"
     },
     {
       "id": "e_asimov_v10b",
