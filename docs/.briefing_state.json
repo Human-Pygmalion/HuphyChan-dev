@@ -2033,7 +2033,8 @@
     "docs/experiments/2026-09-25_ab_v10_stand_l1_compare.md"
    ],
    "section": "done",
-   "changed": "2026-09-25 23:21"
+   "changed": "2026-09-25 23:21",
+   "collapsed": true
   },
   "reward-how-params-0926": {
    "id": "reward-how-params-0926",
@@ -2116,6 +2117,20 @@
    ],
    "section": "done",
    "changed": "2026-09-26 04:46"
+  },
+  "v10-stall-conclusion": {
+   "id": "v10-stall-conclusion",
+   "created": "2026-09-26 05:33",
+   "title": "★ 커리큘럼 정체의 원인 — 정책이 막힌 게 아니라 게이트 숫자가 실력과 반대로 움직였다",
+   "finding": "3→4 단계에서 다섯 런(v6b·v7·v8·v10a·v10b)이 모두 강제 승급한 원인을 네 가지 측정으로 좁혔습니다. 3 단계 초반·후반 저장본을 비교하면 고정 명령 110 개(0.404→0.361), 속도별(2.0 m/s 오차 0.644→0.491), 명령 5 초 전환(0.399→0.344), 학습 때의 행동·관측 잡음을 켠 명령 전환(0.456→0.390) 모두에서 후반이 낫습니다. 그런데 학습 중 게이트 오차는 0.208→0.240 으로 올랐습니다. 즉 게이트가 재는 숫자가 정책 실력과 반대로 움직여 승급이 막혔고, 강제 승급은 해가 없었습니다. 기각된 원인: 서 있는 비율, L1 항, 모터 물리 한계, 정책 악화, 전환 지연, 탐색 잡음. 아직 측정에서 재현하지 않은 학습 조건은 방향유지 명령(환경 30 %)과 서 있는 환경 10 % 뿐입니다. 게이트를 고친다면 후보는 잡음 없는 고정 명령 평가로 판정, 같은 단계 안의 개선이 멈췄는가로 판정, 상대 오차로 판정 — 모두 새 A/B 가 필요합니다. 앞뒤 1.5 m/s 에서 멈추는 것은 학습된 선택이라 보상 균형 쪽 문제입니다.",
+   "number": "고정 0.404→0.361 · 속도 0.644→0.491 · 전환 0.399→0.344 · 잡음 전환 0.456→0.390 · 게이트 0.208→0.240 · 주저앉음 잡음 조건 2~3 %",
+   "media": [
+    "docs/mujoco/assets/v10a_switchnoisy_compare.png",
+    "docs/mujoco/assets/v10a_box_compare.png",
+    "docs/experiments/2026-09-25_ab_v10_stand_l1_compare.md"
+   ],
+   "section": "done",
+   "changed": "2026-09-26 05:33"
   }
  },
  "order": [
@@ -2301,7 +2316,8 @@
   "v10-speed-probe-result",
   "v10-heartbeat-0229",
   "v10-box-probe-result",
-  "v10-switch-probe-result"
+  "v10-switch-probe-result",
+  "v10-stall-conclusion"
  ],
- "updated": "2026-09-26 05:30"
+ "updated": "2026-09-26 05:33"
 }
