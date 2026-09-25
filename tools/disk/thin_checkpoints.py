@@ -96,6 +96,7 @@ def main() -> None:
   ap.add_argument("--keep-every", type=int, default=1000)
   ap.add_argument("--active-hours", type=float, default=6.0)
   ap.add_argument("--apply", action="store_true", help="actually delete (permanent)")
+  ap.add_argument("--list", default="", help="write every path to be removed here")
   a = ap.parse_args()
 
   remove, keep_bytes, active, named = plan(a.repo, a.keep_every, a.active_hours)
@@ -105,11 +106,28 @@ def main() -> None:
   print(f"skipped     {len(active)} run(s) with a checkpoint in the last {a.active_hours} h")
   extra = sorted(i for i in named if i % a.keep_every)
   print(f"also keeps  {len(extra)} iteration(s) named in notes/code: {extra[:40]}")
+  if a.list:
+    with open(a.list, "w") as fh:
+      fh.write("\n".join(remove) + "\n")
+    print(f"full list written to {a.list}")
   if not a.apply:
     print("\nDRY RUN - nothing deleted. Re-run with --apply to delete.")
     return
   freed = 0
+  roots = [os.path.realpath(os.path.join(a.repo, r)) + os.sep for r in ROOTS]
   for f in remove:
+    # Last line of defence before an irreversible call: the file must be a plain
+    # regular file (not a link), its real location must sit inside one of the two log
+    # roots, and its name must be exactly model_<n>.pt. Anything else aborts the run.
+    real = os.path.realpath(f)
+    ok = (
+      os.path.isfile(f)
+      and not os.path.islink(f)
+      and any(real.startswith(r) for r in roots)
+      and CK.search(os.path.basename(real))
+    )
+    if not ok:
+      raise SystemExit(f"REFUSED - outside the expected shape, stopping: {f}")
     s = os.path.getsize(f)
     os.remove(f)
     freed += s
