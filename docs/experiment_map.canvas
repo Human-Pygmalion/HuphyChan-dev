@@ -4396,7 +4396,7 @@
       "fromSide": "bottom",
       "toNode": "n_v10_compare",
       "toSide": "top",
-      "label": "A/B — 3→4 강제 승급 5,400 (오차 0.2400)"
+      "label": "A/B — 3→4 강제 승급 5,400 (0.2400) · 1.5 m/s 한계는 물리 아님"
     },
     {
       "id": "e_v10b_cmp",

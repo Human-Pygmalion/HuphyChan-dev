@@ -2003,7 +2003,8 @@
    "number": "공유 디스크 여유 25.4 → 113.8 GiB · 로그 압축 9.78 GB → 0.27 GB(112개, 대조 실패 0) · 콘다 환경 39 GiB 잔존",
    "needs": "콘다 환경 삭제는 사람이: rm -rf /home/syaro/MikuchanRemote/Human-Pygmalion/sim/miniforge3 (재설치 목록은 docs/env_manifests/ 에 보존)",
    "section": "done",
-   "changed": "2026-09-25 17:04"
+   "changed": "2026-09-25 17:04",
+   "collapsed": true
   },
   "v10-split-gpus": {
    "id": "v10-split-gpus",
@@ -2091,6 +2092,19 @@
    ],
    "section": "done",
    "changed": "2026-09-26 01:42"
+  },
+  "v10-speed-probe-result": {
+   "id": "v10-speed-probe-result",
+   "created": "2026-09-26 01:57",
+   "title": "정체 원인 조사 1 — 로봇은 더 빨리 걸을 수 있는데 정책이 1.5 m/s 에서 멈춘다",
+   "finding": "대조 팔 v10a 의 3 단계 초반(2,500)·후반(5,200) 저장본을 앞뒤 명령 여덟 개로 굴렸습니다. 1.2 m/s 까지는 거의 그대로 따라가고, 그보다 빠른 명령에서는 실제 속도가 약 1.5 m/s 에서 멈춥니다(2.0 명령에 1.51, −2.0 명령에 −1.56). 그런데 그때 가장 빠른 관절(무릎)은 무부하 속도의 40 %, 가장 힘든 관절의 토크는 한계의 64 % 이고 한계에 닿는 시간은 0 % 입니다 — 물리 한계가 아니라 정책이 더 빨리 걷기를 고르지 않는 것입니다. 그리고 순수 앞뒤 추종은 체류 동안 오히려 좋아졌습니다(2.0 명령 오차 0.644 → 0.491). 그런데 게이트 오차는 늘었으므로 늘어난 부분은 좌우·섞인 명령에 있어야 합니다. 이를 가리려고 3 단계 명령 상자 전체(111 명령 × 15 초)를 두 저장본으로 재는 중입니다(05:15 예상).",
+   "number": "1.5 m/s 에서 멈춤 · 관절 속도 8.0 / 19.9 rad/s · 토크 0.64 × 한계 · 넘어짐 0/24 · 2.0 명령 오차 0.644→0.491 · 게이트 오차 0.2185→0.2400",
+   "media": [
+    "docs/mujoco/assets/v10a_speed_probe.png",
+    "docs/experiments/2026-09-25_ab_v10_stand_l1_compare.md"
+   ],
+   "section": "done",
+   "changed": "2026-09-26 01:57"
   }
  },
  "order": [
@@ -2274,7 +2288,8 @@
   "v10-interim-2320",
   "reward-how-params-0926",
   "v10-speed-probe-start",
-  "v10-p1-verdict"
+  "v10-p1-verdict",
+  "v10-speed-probe-result"
  ],
- "updated": "2026-09-26 01:42"
+ "updated": "2026-09-26 01:57"
 }
