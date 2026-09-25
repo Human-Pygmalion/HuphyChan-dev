@@ -16,6 +16,8 @@ be generated from that run's own saved config, never retyped.
 Usage:
   python3 tools/notes/backfill_spec_tables.py [--dry-run] [--force] [--only <substr>]
   python3 tools/notes/backfill_spec_tables.py --inventory     # table only, no writes
+  python3 tools/notes/backfill_spec_tables.py --only-1b [--dry-run]
+      # refresh §1b only (e.g. after a reward_gains_table fix); §1b-2/3/4 untouched
 """
 from __future__ import annotations
 
@@ -162,6 +164,9 @@ def find_runs(stem: str, text: str):
     return runs.get(p1), (runs.get(p2) if p2 else None)
 
 
+MARK_BEGIN = "<!-- SPEC-TABLES:BEGIN (analysis/run_spec_tables.py) -->"
+MARK_END = "<!-- SPEC-TABLES:END -->"
+
 POINTER = (
     "<!-- SPEC-TABLES:BEGIN (analysis/run_spec_tables.py) -->\n\n"
     "**§1b-2 / §1b-3 / §1b-4 (설정 명세 표)** — 이 노트는 {why}이라 단일 런의 config가 "
@@ -177,6 +182,9 @@ def main():
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--only", default=None)
     ap.add_argument("--inventory", action="store_true")
+    ap.add_argument("--only-1b", action="store_true",
+                    help="rewrite only §1b (rewards + gains) inside existing blocks; "
+                         "writes nothing else (no pointer or placeholder blocks)")
     a = ap.parse_args()
 
     rows = []
@@ -187,7 +195,7 @@ def main():
         text = note.read_text()
         if note.name in AGGREGATE:
             status = "aggregate"
-            if not (a.inventory or a.dry_run):
+            if not (a.inventory or a.dry_run or a.only_1b):
                 if "SPEC-TABLES:BEGIN" not in text:
                     note.write_text(text.rstrip() + "\n\n"
                                     + POINTER.format(why=AGGREGATE[note.name]) + "\n")
@@ -197,7 +205,8 @@ def main():
         p1, p2 = find_runs(stem, text)
         if p1 is None:
             rows.append((note.name, "—", "런 디렉토리 없음", "원본 설정 소실"))
-            if not (a.inventory or a.dry_run) and "SPEC-TABLES:BEGIN" not in text:
+            if (not (a.inventory or a.dry_run or a.only_1b)
+                    and "SPEC-TABLES:BEGIN" not in text):
                 note.write_text(
                     text.rstrip() + "\n\n<!-- SPEC-TABLES:BEGIN (analysis/run_spec_tables.py) -->"
                     "\n\n**§1b-2 / §1b-3 / §1b-4 (설정 명세 표)** — 이 노트가 가리키는 학습 런의 "
@@ -207,15 +216,33 @@ def main():
             continue
         xml, src = model_rule(p1.name)
         cmd = [str(PY), str(TOOL), str(p1), "--insert", str(note)]
-        # a §1b HEADING is not a §1b TABLE: several notes only point at a sibling
-        # note's tables. Generate the real thing whenever the table is absent.
-        if "| reward | weight |" not in text:
+        # The tool rewrites only what sits between the markers. Keep §1b in the
+        # block whenever it is there now — checking the whole note made --force drop
+        # a generated §1b table — and add it when the note has no reward table.
+        # A §1b HEADING is not a §1b TABLE: several notes only point at a sibling
+        # note's tables.
+        m = re.search(re.escape(MARK_BEGIN) + r".*?" + re.escape(MARK_END), text, re.S)
+        block = m.group(0) if m else ""
+        rest = text.replace(block, "", 1) if block else text
+        table_outside = "| reward | weight |" in rest
+        with_1b = "| reward | weight |" in block or not table_outside
+        b1_sub = bool(re.search(r"^## (?:§)?1b\b", rest, re.M))
+        if a.only_1b and "| reward | weight |" in block:
+            b1_sub = "**§1b-1." in block  # keep the heading style the block has
+        if a.only_1b:
+            # §1b only, inside the existing block; §1b-2/3/4 stay as they are.
+            if not with_1b:
+                rows.append((note.name, p1.name, xml or "(자동)",
+                             "skip (§1b 표가 표식 밖 — 수동/구식 삽입, 손대지 않음)"))
+                continue
+            cmd.append("--only-1b")
+        elif with_1b:
             cmd.append("--with-1b")
-            if re.search(r"^## (?:§)?1b\b", text, re.M):
-                cmd.append("--b1-sub")
-        if p2 is not None:
+        if with_1b and b1_sub:
+            cmd.append("--b1-sub")
+        if p2 is not None and not a.only_1b:
             cmd += ["--p2", str(p2)]
-        if xml:
+        if xml and not a.only_1b:
             cmd += ["--model-xml", xml, "--model-source", src]
         if a.force:
             cmd.append("--force")
@@ -226,6 +253,8 @@ def main():
         out = (r.stdout.splitlines() or [""])[0]
         if r.returncode:
             out = "ERROR: " + (r.stderr.strip().splitlines() or [""])[-1]
+        if table_outside:
+            out += " · §1b 표가 표식 밖(수동/구식 삽입) — 이 도구로 갱신 안 됨"
         rows.append((note.name, p1.name + (f" + {p2.name}" if p2 else ""),
                      xml or "(자동)", out.split(": ", 1)[-1]))
 
