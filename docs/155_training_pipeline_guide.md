@@ -3,6 +3,7 @@
 작성: 2026-09-25 · 사용자 요청: *"학습 전 과정과 학습에 필요한 파라미터들에 무엇이 어떻게 왜 들어가는지
 학습과 이해해 응용할 수 있도록 도와줘"*
 
+> 짝 문서: [[156_mjlab_and_robot_modeling_guide]] — 이 학습이 올라서는 프레임워크(mjlab)와 로봇 모델을 만드는 과정.
 > 약어를 쓰지 않습니다. 처음 나오는 전문 용어는 한국어 풀이 + 표준 영어 용어를 함께 적습니다.
 > **모든 숫자는 지금 돌고 있는 v10a 의 실제 설정 파일**(`logs/rsl_rl/pygmalion_velocity/2026-09-25_16-56-05_legonly_ab_v10a_stand01_p1/params/{env,agent}.yaml`)
 > **과 v7 의 실제 학습 기록에서 뽑았습니다.** 그림은 `tools/notes/training_guide_figures.py` 로 다시 그릴 수 있습니다.
