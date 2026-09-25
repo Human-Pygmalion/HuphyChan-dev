@@ -12,6 +12,10 @@ What it keeps, per run directory:
   * every checkpoint whose iteration is a multiple of --keep-every (default 1000)
   * every checkpoint of any run that wrote a checkpoint in the last --active-hours
     (default 6) - it may still be training
+  * every iteration that is NAMED anywhere in the notes or the analysis code
+    (docs/, mujoco-sim/mjlab/analysis/, tools/) - e.g. model_5400.pt at a forced
+    promotion, model_9000.pt measured in a note. Kept in every run, which is
+    deliberately conservative: a name is cheap to keep and costly to lose.
 It never touches notes, measurements, videos, params or event files.
 
 DRY RUN BY DEFAULT: it only lists what it would remove. Deleting needs --apply, and is
@@ -36,8 +40,31 @@ ROOTS = (
 CK = re.compile(r"model_(\d+)\.pt$")
 
 
+REF_DIRS = ("docs", "mujoco-sim/mjlab/analysis", "tools")
+REF = re.compile(r"model_(\d+)\.pt")
+
+
+def referenced_iterations(repo: str) -> set[int]:
+  """Iterations whose checkpoint file is named in a note or in analysis code."""
+  found: set[int] = set()
+  for d in REF_DIRS:
+    for dp, dns, fns in os.walk(os.path.join(repo, d)):
+      dns[:] = [x for x in dns if x not in ("out", "__pycache__", ".git")]
+      for f in fns:
+        if not f.endswith((".md", ".py", ".sh", ".json", ".yaml", ".txt")):
+          continue
+        try:
+          with open(os.path.join(dp, f), errors="ignore") as fh:
+            for m in REF.finditer(fh.read()):
+              found.add(int(m.group(1)))
+        except OSError:
+          continue
+  return found
+
+
 def plan(repo: str, keep_every: int, active_hours: float):
   now = time.time()
+  named = referenced_iterations(repo)
   remove, keep_bytes, skipped_active = [], 0, []
   for root in ROOTS:
     for d in sorted(glob.glob(os.path.join(repo, root, "*", "*", ""))):
@@ -53,11 +80,11 @@ def plan(repo: str, keep_every: int, active_hours: float):
         continue
       last = max(i for i, _ in cks)
       for i, f in cks:
-        if i == last or i % keep_every == 0:
+        if i == last or i % keep_every == 0 or i in named:
           keep_bytes += os.path.getsize(f)
         else:
           remove.append(f)
-  return remove, keep_bytes, skipped_active
+  return remove, keep_bytes, skipped_active, named
 
 
 def main() -> None:
@@ -71,11 +98,13 @@ def main() -> None:
   ap.add_argument("--apply", action="store_true", help="actually delete (permanent)")
   a = ap.parse_args()
 
-  remove, keep_bytes, active = plan(a.repo, a.keep_every, a.active_hours)
+  remove, keep_bytes, active, named = plan(a.repo, a.keep_every, a.active_hours)
   total = sum(os.path.getsize(f) for f in remove)
   print(f"would remove {len(remove):,} intermediate checkpoints = {total / 2**30:.1f} GiB")
   print(f"keeps       {keep_bytes / 2**30:.1f} GiB (every {a.keep_every} + last per run)")
   print(f"skipped     {len(active)} run(s) with a checkpoint in the last {a.active_hours} h")
+  extra = sorted(i for i in named if i % a.keep_every)
+  print(f"also keeps  {len(extra)} iteration(s) named in notes/code: {extra[:40]}")
   if not a.apply:
     print("\nDRY RUN - nothing deleted. Re-run with --apply to delete.")
     return
