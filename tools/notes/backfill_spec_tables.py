@@ -49,6 +49,7 @@ AGGREGATE = {
     "2026-07-12_bentinit_ab_result.md": "bentinit A/B 2런 비교",
     "2026-08-26_ankleAB_vs_RP_comparison.md": "AB↔RP 계열 비교",
     "2026-08-28_ab_ankle_usage_audit.md": "다수 정책 발목 사용 감사",
+    "2026-09-25_ab_v10_stand_l1_compare.md": "A/B v10 두 팔(v10a·v10b) 비교",
     # 2026-09-09~10 벤치 모터 측정 노트. **학습 런이 아니다** — 실물 모터 한 대를
     # 라즈베리파이에 직결해 잰 기록이라 대응하는 logs/rsl_rl 런 디렉터리가 없고,
     # §1b-2(액추에이터 한계)·§1b-3(ROM/행동창)·§1b-4(PYG_* 플래그)는 학습 설정에서
