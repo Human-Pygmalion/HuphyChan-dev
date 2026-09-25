@@ -2020,7 +2020,8 @@
     "docs/mujoco/assets/mjlab_guide_modeling.png"
    ],
    "section": "done",
-   "changed": "2026-09-25 19:24"
+   "changed": "2026-09-25 19:24",
+   "collapsed": true
   },
   "v10-interim-2320": {
    "id": "v10-interim-2320",
@@ -2102,6 +2103,19 @@
    ],
    "section": "done",
    "changed": "2026-09-26 03:50"
+  },
+  "v10-switch-probe-result": {
+   "id": "v10-switch-probe-result",
+   "created": "2026-09-26 04:46",
+   "title": "정체 원인 조사 3 — 명령이 자주 바뀌어도 정책은 3 단계 동안 좋아졌다",
+   "finding": "학습처럼 명령을 5 초마다 무작위로 바꾸는 측정(150 명령)을 새로 만들어 3 단계 초반·후반 저장본을 비교했습니다. 게이트와 같은 '전환 2 초 뒤부터' 오차가 0.399 → 0.344 로 후반이 더 낫고, 큰 전환 뒤에도 더 낫습니다. 그래서 '전환을 못 따라잡게 됐다'는 설명도 기각입니다. 지금까지 세 측정은 모두 잡음 없는 평균 행동이었으므로, 남은 차이는 학습 중의 행동 잡음(관절별 표준편차 0.07~0.5)과 관측 잡음입니다 — 이 둘을 켜고 같은 측정을 다시 돌리는 중입니다. 그리고 후반 저장본이 두 번째로 주저앉았습니다(초반 저장본은 0 회).",
+   "number": "전환 2 초 뒤 오차 0.399→0.344 · 전환 직후 0.614→0.536 · 주저앉음 5,200 에서 2 회 / 2,500 에서 0 회",
+   "media": [
+    "docs/mujoco/assets/v10a_switch_compare.png",
+    "docs/experiments/2026-09-25_ab_v10_stand_l1_compare.md"
+   ],
+   "section": "done",
+   "changed": "2026-09-26 04:46"
   }
  },
  "order": [
@@ -2286,7 +2300,8 @@
   "v10-p1-verdict",
   "v10-speed-probe-result",
   "v10-heartbeat-0229",
-  "v10-box-probe-result"
+  "v10-box-probe-result",
+  "v10-switch-probe-result"
  ],
- "updated": "2026-09-26 04:31"
+ "updated": "2026-09-26 04:46"
 }
