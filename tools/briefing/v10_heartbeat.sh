@@ -5,7 +5,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 M=mujoco-sim/mjlab
-f() { sed -E 's/.*\[(P[12])\] iter ([0-9]+) stage ([0-9.]+) dwell ([0-9]+) err ([0-9.]+) .*fell ([0-9.]+).*/\1 \2 회 · 단계 \3 · 체류 \4 · 오차 \5 · 넘어짐 \6/'; }
+f() { sed -E -e 's/.*\[(P1)\] iter ([0-9]+) stage ([0-9.]+) dwell ([0-9]+) err ([0-9.]+) .*fell ([0-9.]+).*/\1 \2 회 · 단계 \3 · 체류 \4 · 오차 \5 · 넘어짐 \6/' \
+             -e 's/.*\[(P2)\] iter ([0-9]+)\/([0-9]+) dr_factor ([0-9.]+).*/\1 \2 \/ \3 회 · 무작위화 세기 \4/'; }
 A=$(grep -E "\[P[12]\] iter" $M/analysis/out/v10a_launch.out | tail -1 | f)
 B=$(ssh -o BatchMode=yes -o ConnectTimeout=15 syaro@10.8.0.14 \
   'grep -E "\[P[12]\] iter" ~/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/out/v10b_launch.out | tail -1' | f || echo "원격 응답 없음")
