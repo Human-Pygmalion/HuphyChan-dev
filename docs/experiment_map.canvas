@@ -2229,6 +2229,16 @@
       "height": 200,
       "color": "1",
       "text": "**렌더러 정정 2026-09-27**\n시연 영상 지면 반력 화살표가 AB 발목 모델에서 링크 구속력까지 포함하고 옛 체중 505 N 으로 그려졌음 → `render_loads.py` 수정, v4·bundleV4_AB·v5 영상 `_grffix` 로 재렌더 (원본 보존). 토크·색·패널은 영향 없음."
+    },
+    {
+      "id": "n_v10a_result",
+      "type": "text",
+      "x": 24680,
+      "y": 1600,
+      "width": 420,
+      "height": 200,
+      "color": "4",
+      "text": "**v10a 완주 2026-09-27 21:33** (29,998, 보상 117.8, 넘어짐 0)\n- 배포 계약 통과\n- 학습 지표 v10b 와 5 % 안 (xy 0.278 대 0.281)\n- 완주 측정 원격 진행 중 → P2 판정 대기"
     }
   ],
   "edges": [
@@ -4469,6 +4479,14 @@
       "fromNode": "n_grffix_0927",
       "toNode": "n_bV4_ab",
       "label": "영상 정정"
+    },
+    {
+      "id": "e_v10a_result",
+      "fromNode": "n_v10a",
+      "fromSide": "right",
+      "toNode": "n_v10a_result",
+      "toSide": "left",
+      "label": "완주"
     }
   ]
 }
