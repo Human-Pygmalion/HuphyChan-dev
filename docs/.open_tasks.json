@@ -527,9 +527,9 @@
   {
     "id": 79,
     "text": "1순위 실험: 서기 전용 L1 관절편차 항 + 서 있는 비율 0.1 복귀 (v7 설정 기반, 방향유지 0.3). Asimov 분석(docs/reward_research/2026-09-25) 후속. 사용자 지시 2026-09-25 keep going",
-    "state": "doing",
+    "state": "done",
     "added": 1790314455.0969036,
-    "why": "발사 두 번 다 사전점검 거부 — 공유 디스크 여유 25.4 GiB < 30 GiB. 코드(mjlab 6b72dc43)·노트·사전등록 예측은 준비 완료. 공간이 비면 같은 명령으로 재발사(analysis/out/v10a_launch.out 첫 줄 참조)"
+    "why": ""
   },
   {
     "id": 80,
