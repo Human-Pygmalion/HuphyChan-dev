@@ -2266,6 +2266,16 @@
       "width": 420,
       "height": 200,
       "file": "experiments/2026-10-01_ab_v11_standing_seed43_compare.md"
+    },
+    {
+      "id": "n_v11_interim",
+      "type": "text",
+      "x": 24950,
+      "y": 2350,
+      "width": 420,
+      "height": 180,
+      "color": "3",
+      "text": "**v11 중간 (10-02 00:01)**\n- 두 팔 0→3 단계 800 회마다 자력 승급\n- **3→4 에서 v10 과 똑같이 멈춤** (게이트 오차 상승)\n- 씨앗·서 있는 비율과 무관 → 게이트 숫자 문제 재확인"
     }
   ],
   "edges": [
@@ -4546,6 +4556,12 @@
       "toNode": "n_v11_cmp",
       "toSide": "top",
       "label": "비교"
+    },
+    {
+      "id": "e_v11cmp_interim",
+      "fromNode": "n_v11_cmp",
+      "toNode": "n_v11_interim",
+      "label": "중간"
     }
   ]
 }
