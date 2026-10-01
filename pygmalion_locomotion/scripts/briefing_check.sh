@@ -75,7 +75,15 @@ PY
 # flagged "학습 완료, 채점 중" while the evaluator was busily running - a false positive
 # from our own heuristic, twice in one evening.
 if echo "$cur" | grep -qiE '학습 중|학습중|training|본런|스모크 실행'; then
-  if ! pgrep -f "train_wandb_video|run_training|run_v2_scratch" >/dev/null 2>&1; then
+  # Runs on the remote 3090 (title says 원격) are checked there; an unreachable host is not flagged here
+  # (the run's own watcher reports that).
+  if echo "$cur" | grep -q '원격'; then
+    alive() { timeout 15 ssh -o BatchMode=yes -o ConnectTimeout=5 syaro@10.8.0.14 \
+      'pgrep -f "[t]rain_wandb_video|[r]un_v2_scratch" >/dev/null' 2>/dev/null; [ $? -ne 1 ]; }
+  else
+    alive() { pgrep -f "train_wandb_video|run_training|run_v2_scratch" >/dev/null 2>&1; }
+  fi
+  if ! alive; then
     msg+="  - '지금 하고 있는 일'은 진행 중인 학습을 가리키는데 학습 프로세스가 없습니다 → now 갱신\n"
   fi
 fi
