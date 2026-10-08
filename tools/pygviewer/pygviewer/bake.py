@@ -539,7 +539,7 @@ def _add_terrain(mujoco, np, spec, path: str) -> None:
   t = np.load(path)
   h = t["hfield"].astype(np.float64)
   zmin, zmax = float(h.min()), float(h.max())
-  floor = next(g for g in spec.worldbody.geoms if g.type == mujoco.mjtGeom.mjGEOM_PLANE)
+  floor = next(g for g in spec.geoms if g.type == mujoco.mjtGeom.mjGEOM_PLANE)  # lives in the "terrain" body, not the world body
   floor.pos = [0.0, 0.0, zmin - 2.0]
   ny, nx = h.shape
   hf = spec.add_hfield(name="trail_hfield", size=[float(t["half"][0]), float(t["half"][1]), max(zmax - zmin, 1e-3), 1.0],
@@ -895,7 +895,7 @@ def main(argv: list[str] | None = None) -> int:
       cmd.append("--no-init-bent")
     envv = dict(os.environ, CUDA_VISIBLE_DEVICES="")
     for k in list(envv):
-      if k.startswith("PYG_"):
+      if k.startswith("PYG_") and k != "PYG_BAKE_TERRAIN":  # the opt-in terrain is not a training toggle
         envv.pop(k)
     print(f"--- bake {v} ---", flush=True)
     p = subprocess.run(cmd, cwd=REPO, env=envv)

@@ -7,6 +7,9 @@
 
 The policy only gets a velocity command (vx, wz) - exactly what a planner would send; legs, balance and footholds on the
 uneven ground are the trained policy's own. Physics 200 Hz, policy 50 Hz, real time.
+LiDAR: a generic 32-beam spinning LiDAR on the pelvis casts rays into the same terrain the physics uses (heightfield +
+tree cylinders) at 10 Hz; the robot is not in the ray scene, so it never sees itself; returns are filtered (range 0.3-15 m, 10 cm voxel, grid-minimum ground
+segmentation) and drawn live: ground cyan, obstacles orange.  Optional: the beams, and the map built from all scans.
 run (3090, mjlab venv):  python trail_teleop.py --cache ~/pyg_demo/cache_trail --nav ~/pyg_demo/nav
 """
 import argparse
@@ -31,6 +34,7 @@ ap.add_argument("--policy", default="v11a")
 ap.add_argument("--port", type=int, default=8095)
 ap.add_argument("--key-port", type=int, default=8096)
 ap.add_argument("--cloud", default="010", help="map cloud resolution: 010 (2.2 M points) or 005 (5.3 M)")
+ap.add_argument("--lidar-hz", type=float, default=10.0)
 a = ap.parse_args()
 pygviewer.CACHE_DIR = a.cache
 import mujoco  # noqa: E402
@@ -61,7 +65,11 @@ lock = threading.Lock()
 state = dict(vx=0.0, wz=0.0, fallen=False, follow=True, reset=None, t_cmd=time.time())
 
 
-def do_reset(x=0.0, y=0.0, yaw=0.0):
+PATH0 = np.load(f"{a.nav}/terrain.npz")["path"][:9, :2] - OFF[:2]
+YAW0 = math.atan2(PATH0[8, 1] - PATH0[0, 1], PATH0[8, 0] - PATH0[0, 0])  # first metre of the planned path
+
+
+def do_reset(x=0.0, y=0.0, yaw=YAW0):
     core.reset("knees_bent")
     fa = core.free_adr
     d.qpos[fa + 0] += x
@@ -145,7 +153,14 @@ with srv.gui.add_folder("Drive"):
 with srv.gui.add_folder("View / reset"):
     c_follow = srv.gui.add_checkbox("camera follows robot", True)
     c_mesh = srv.gui.add_checkbox("terrain mesh (= collider)", False)
-    c_cloud = srv.gui.add_checkbox("point cloud", True)
+    c_cloud = srv.gui.add_checkbox("prior map (full LiDAR survey)", True)
+with srv.gui.add_folder("LiDAR (simulated, filtered)"):
+    c_scan = srv.gui.add_checkbox("live scan (filtered)", True)
+    c_beams = srv.gui.add_checkbox("beams", False)
+    c_acc = srv.gui.add_checkbox("map built from scans", False)
+    b_acc0 = srv.gui.add_button("clear built map")
+    lidar_md = srv.gui.add_markdown("LiDAR starting ...")
+with srv.gui.add_folder("Reset"):
     b_r0 = srv.gui.add_button("reset at trail start")
     b_rh = srv.gui.add_button("reset here (get up)")
 status = srv.gui.add_markdown("starting ...")
@@ -180,7 +195,7 @@ def reset_here(_=None):
     set_cmd(0.0, 0.0)
 
 
-b_r0.on_click(lambda _: (state.update(reset=(0.0, 0.0, 0.0)), set_cmd(0.0, 0.0)))
+b_r0.on_click(lambda _: (state.update(reset=(0.0, 0.0, YAW0)), set_cmd(0.0, 0.0)))
 b_rh.on_click(reset_here)
 
 
@@ -219,7 +234,146 @@ class Keys(http.server.BaseHTTPRequestHandler):
 
 
 threading.Thread(target=lambda: http.server.ThreadingHTTPServer(("0.0.0.0", a.key_port), Keys).serve_forever(), daemon=True).start()
+# ---------------- LiDAR: rays into the same terrain the physics uses (heightfield + tree cylinders), robot excluded.
+# mj_multiRay against the 1232 x 2022 heightfield took ~22 s per scan, so the rays are cast here in numpy instead:
+# march each ray over the heightfield in 5 cm steps, refine the crossing linearly, and intersect the tree cylinders exactly.
+LIDAR = dict(beams=32, el=(-35.0, 15.0), az_step=1.0, rmin=0.3, rmax=15.0, mount=(0.0, 0.0, 0.35), noise=0.02,
+             voxel=0.10, ground_cell=0.5, ground_tol=0.15, march=0.05)
+TREES = ST["trees"].astype(np.float64)  # x, y, base z, radius (sim frame); cylinders are 3 m tall as in the bake
+_el = np.deg2rad(np.linspace(*LIDAR["el"], LIDAR["beams"]))
+_az = np.deg2rad(np.arange(0.0, 360.0, LIDAR["az_step"]))
+_E, _A = np.meshgrid(_el, _az, indexing="ij")
+DIRS = np.stack([np.cos(_E) * np.cos(_A), np.cos(_E) * np.sin(_A), np.sin(_E)], -1).reshape(-1, 3)
+BEAM_SUB = ((np.arange(LIDAR["beams"])[:, None] % 8 == 3) & (np.arange(len(_az))[None, :] % 12 == 0)).reshape(-1)  # 4 rings x 30
+TS = np.arange(LIDAR["rmin"], LIDAR["rmax"] + 1e-6, LIDAR["march"], dtype=np.float32)
+HF32 = HF.astype(np.float32)
+# cells more than 1 m from any surveyed ground are the artificial 2 m walls of prep_terrain_mesh.py - not real terrain
+from scipy import ndimage  # noqa: E402
+WALL = ndimage.distance_transform_edt(~np.load(f"{a.nav}/terrain_mesh.npz")["hf_seen"]) * CELL > 1.0
+HX0, HY0 = HC[0] - HH[0], HC[1] - HH[1]
+acc = {}  # built map: voxel key -> (x, y, z, is_ground)
+rng = np.random.default_rng(0)
+lidar_stats = dict(n=len(DIRS), ret=0, wall=0, kept=0, ground=0, obst=0, ms=0.0)
+
+
+def ray_hits(o, V):
+    """Distance along each unit ray V from o to the first heightfield / tree hit; inf for no hit within rmax."""
+    P = o[None, None, :].astype(np.float32) + V[:, None, :].astype(np.float32) * TS[None, :, None]  # rays x steps x 3
+    j = np.clip(((P[..., 0] - HX0) / CELL).astype(np.int32), 0, HF.shape[1] - 1)
+    i = np.clip(((P[..., 1] - HY0) / CELL).astype(np.int32), 0, HF.shape[0] - 1)
+    dz = P[..., 2] - HF32[i, j]  # >0 above ground
+    below = dz <= 0
+    k = np.argmax(below, axis=1)
+    hit = below[np.arange(len(V)), k]
+    t = np.full(len(V), np.inf)
+    kk = np.maximum(k - 1, 0)
+    a0, a1 = dz[np.arange(len(V)), kk], dz[np.arange(len(V)), k]
+    frac = np.where(k > 0, a0 / np.maximum(a0 - a1, 1e-6), 0.0)
+    t[hit] = (TS[kk] + frac * LIDAR["march"])[hit]
+    on_wall = np.zeros(len(V), bool)
+    on_wall[hit] = WALL[i[np.arange(len(V)), k], j[np.arange(len(V)), k]][hit]
+    # trees: vertical cylinders near the sensor, 2D circle intersection + height check
+    near = np.hypot(TREES[:, 0] - o[0], TREES[:, 1] - o[1]) < LIDAR["rmax"] + TREES[:, 3]
+    for cx, cy, cz, r in TREES[near]:
+        dx, dy = o[0] - cx, o[1] - cy
+        A = V[:, 0] ** 2 + V[:, 1] ** 2
+        B = 2 * (dx * V[:, 0] + dy * V[:, 1])
+        C = dx * dx + dy * dy - r * r
+        disc = B * B - 4 * A * C
+        ok = (disc > 0) & (A > 1e-9)
+        tc = np.where(ok, (-B - np.sqrt(np.maximum(disc, 0))) / (2 * np.maximum(A, 1e-9)), np.inf)
+        z = o[2] + V[:, 2] * tc
+        good = ok & (tc > LIDAR["rmin"]) & (z > cz) & (z < cz + 3.0)
+        closer = good & (tc < t)
+        t = np.where(closer, tc, t)
+        on_wall &= ~closer
+    return t, on_wall
+
+
+def voxel_keys(P, v):
+    k = np.floor(P / v).astype(np.int64) + 2 ** 20
+    return (k[:, 0] << 42) | (k[:, 1] << 21) | k[:, 2]
+
+
+def lidar_scan(origin, R):
+    t0 = time.perf_counter()
+    vec = DIRS @ R.T
+    dist, on_wall = ray_hits(origin, vec)
+    # 1. range filter (no return beyond 15 m, nothing closer than 0.3 m; the robot body is not in the ray scene)
+    ok = np.isfinite(dist) & (dist > LIDAR["rmin"]) & (dist < LIDAR["rmax"])
+    n_wall = int((ok & on_wall).sum())
+    ok &= ~on_wall  # 1b. returns on the artificial walls (no survey data there) are not real observations
+    r = dist[ok] + rng.normal(0.0, LIDAR["noise"], ok.sum())  # 2 cm range noise, as a real sensor
+    P = origin + vec[ok] * r[:, None]
+    sub = ok & BEAM_SUB
+    beams = np.stack([np.broadcast_to(origin, (int(sub.sum()), 3)), origin + vec[sub] * dist[sub][:, None]], 1)
+    # 2. 10 cm voxel filter: one point (the mean) per voxel
+    key = voxel_keys(P, LIDAR["voxel"])
+    uk, inv = np.unique(key, return_inverse=True)
+    cnt = np.bincount(inv)
+    Pv = np.stack([np.bincount(inv, P[:, i]) for i in range(3)], 1) / cnt[:, None]
+    # 3. ground segmentation from the scan itself: per 0.5 m column, within 0.15 m of the lowest point = ground
+    gk = voxel_keys(np.c_[Pv[:, :2], np.zeros(len(Pv))], LIDAR["ground_cell"])
+    ug, ginv = np.unique(gk, return_inverse=True)
+    zmin = np.full(len(ug), np.inf)
+    np.minimum.at(zmin, ginv, Pv[:, 2])
+    ground = Pv[:, 2] - zmin[ginv] < LIDAR["ground_tol"]
+    lidar_stats.update(ret=int(ok.sum()), wall=n_wall, kept=len(Pv), ground=int(ground.sum()), obst=int((~ground).sum()),
+                       ms=(time.perf_counter() - t0) * 1000)
+    return Pv, ground, uk, beams
+
+
+h_scan = h_beams = h_acc = None
+C_GROUND, C_OBST = np.array([70, 210, 255], np.uint8), np.array([255, 130, 30], np.uint8)
+
+
+def lidar_loop():
+    global h_scan, h_beams, h_acc
+    n = 0
+    t_prev = time.perf_counter()
+    while True:
+        t0 = time.perf_counter()
+        with lock:
+            fa = core.free_adr
+            p = d.qpos[fa:fa + 3].copy()
+            R = np.zeros(9)
+            mujoco.mju_quat2Mat(R, d.qpos[fa + 3:fa + 7].copy())
+        R = R.reshape(3, 3)
+        origin = p + R @ np.array(LIDAR["mount"])
+        Pv, ground, uk, beams = lidar_scan(origin, R)
+        cols = np.where(ground[:, None], C_GROUND, C_OBST)
+        h_scan = srv.scene.add_point_cloud("/lidar/scan", points=Pv.astype(np.float32), colors=cols, point_size=0.04,
+                                           precision="float32", point_shape="circle", point_shading="flat", visible=c_scan.value)
+        if c_beams.value and len(beams):
+            h_beams = srv.scene.add_line_segments("/lidar/beams", points=beams.astype(np.float32), colors=(255, 230, 120), line_width=1.0)
+        elif h_beams is not None:
+            h_beams.remove()
+            h_beams = None
+        for k, q, g in zip(uk.tolist(), Pv, ground.tolist()):
+            if k not in acc and len(acc) < 1_500_000:
+                acc[k] = (q[0], q[1], q[2], g)
+        n += 1
+        if c_acc.value and n % 10 == 0 and acc:
+            A = np.array(list(acc.values()), np.float32)
+            h_acc = srv.scene.add_point_cloud("/lidar/built_map", points=A[:, :3], colors=np.where(A[:, 3:4] > 0.5, C_GROUND // 2 + 60, C_OBST // 2 + 60),
+                                              point_size=0.035, precision="float32", point_shape="circle", point_shading="flat")
+        elif not c_acc.value and h_acc is not None:
+            h_acc.remove()
+            h_acc = None
+        st = lidar_stats
+        hz = 1.0 / max(time.perf_counter() - t_prev, 1e-3)
+        t_prev = time.perf_counter()
+        lidar_md.content = (f"{LIDAR['beams']} beams x {360 / LIDAR['az_step']:.0f} = {st['n']:,} rays, {hz:.1f} scans/s (cast {st['ms']:.0f} ms)  \n"
+                            f"returns 0.3-15 m: {st['ret']:,} -> 10 cm voxel: {st['kept']:,}  \n"
+                            f"dropped on unsurveyed walls: {st['wall']:,}  \n"
+                            f"ground {st['ground']:,} (cyan) / obstacle {st['obst']:,} (orange)  \n"
+                            f"built map: {len(acc):,} voxels")
+        time.sleep(max(0.0, 1.0 / a.lidar_hz - (time.perf_counter() - t0)))
+
+
+b_acc0.on_click(lambda _: acc.clear())
 threading.Thread(target=physics, daemon=True).start()
+threading.Thread(target=lidar_loop, daemon=True).start()
 print(f"teleop: http://10.8.0.14:{a.port}/  keyboard: http://10.8.0.14:{a.key_port}/", flush=True)
 
 # ---------------- render loop (30 Hz)

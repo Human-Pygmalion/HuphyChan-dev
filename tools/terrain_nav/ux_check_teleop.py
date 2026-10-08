@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Click-through check of the trail teleop (rule: verify UIs on screen, not in code).
 Keyboard page: W x4 -> command 0.4 m/s; 3D page: status text 'walked X m' must grow; screenshot; Space -> stop.
+LiDAR: the panel's ray/return/voxel counts must be non-zero; then 'beams' + 'map built from scans' are switched on and
+'prior map' off, and a second screenshot <out>_lidar.png is taken.
 usage: ux_check_teleop.py [host] [out.png]"""
 import re
 import sys
@@ -32,6 +34,14 @@ with sync_playwright() as p:
     print(f"walked: {w0} -> {w1} m in 10 s", "OK" if (w0 is not None and w1 is not None and w1 - w0 > 2.0) else "FAIL")
     print("status:", re.search(r"(walking[^\n]*|FALLEN[^\n]*)", view.inner_text("body")).group(1))
     view.screenshot(path=out)
+    lid = re.search(r"returns 0.3-15 m: ([\d,]+) -> 10 cm voxel: ([\d,]+)", view.inner_text("body"))
+    print("LiDAR panel:", lid.group(0) if lid else "missing", "OK" if lid and int(lid.group(2).replace(",", "")) > 500 else "FAIL")
+    for label in ("beams", "map built from scans", "prior map (full LiDAR survey)"):
+        view.get_by_text(label, exact=True).click()
+        view.wait_for_timeout(500)
+    view.wait_for_timeout(8000)
+    print("LiDAR panel after toggles:", " | ".join(re.findall(r"(ground [\d,]+[^\n]*|built map: [\d,]+ voxels)", view.inner_text("body"))))
+    view.screenshot(path=out.replace(".png", "_lidar.png"))
     keys.keyboard.press(" ")
     keys.wait_for_timeout(500)
     print("after Space:", keys.inner_text("#s"))
