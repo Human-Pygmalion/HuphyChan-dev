@@ -36,6 +36,7 @@ ap.add_argument("--pelvis", type=float, default=0.86, help="base_link height abo
 ap.add_argument("--text", action="store_true", help="draw the semantic text labels (off by default)")
 ap.add_argument("--label-min", type=float, default=6.0)
 ap.add_argument("--label-max", type=float, default=45.0)
+ap.add_argument("--surface", default="", help="surface.npz from make_display_surface.py: opaque coloured ground under the points (/ground_surface)")
 ap.add_argument("--dots", action="store_true", help="big disc at the robot (for the top-down overview)")
 a = ap.parse_args()
 
@@ -147,7 +148,8 @@ class Scene(Node):
         lat = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL, reliability=ReliabilityPolicy.RELIABLE)
         self.pub = {k: self.create_publisher(t, "/" + k, lat) for k, t in [
             ("terrain_cloud", PointCloud2), ("scan_cloud", PointCloud2), ("semantic", MarkerArray), ("labels", MarkerArray),
-            ("plan", Path), ("plan_line", MarkerArray), ("goal_markers", MarkerArray), ("robot_markers", MarkerArray)]}
+            ("plan", Path), ("plan_line", MarkerArray), ("goal_markers", MarkerArray), ("robot_markers", MarkerArray),
+            ("ground_surface", MarkerArray)]}
         self.p_js = self.create_publisher(JointState, "/joint_states", 10)
         self.tf = TransformBroadcaster(self)
         cl, rgb = T["cloud"], T["cloud_rgb"]
@@ -155,9 +157,21 @@ class Scene(Node):
         self.msgs = {"terrain_cloud": cloud_msg(cl, rgb), "scan_cloud": cloud_msg(cl[near & (cl[:, 2] > self.ground_at(cl) + 0.3) & (cl[:, 2] < self.ground_at(cl) + 3.0)][::2]),
                      "robot_markers": robot_markers(), "semantic": self.semantic(), "labels": self.labels(),
                      "plan": self.plan(), "plan_line": self.plan_line(), "goal_markers": self.goal()}
+        if a.surface:
+            self.msgs["ground_surface"] = self.surface()
         self.create_timer(0.1, self.fast)
         self.create_timer(1.0, self.slow)
         self.slow()
+
+    def surface(self):
+        """opaque ground under everything, so a picture background only shows where there is no ground"""
+        S = np.load(a.surface)
+        V, C, F = S["V"], S["C"].astype(np.float32) / 255.0, S["F"]
+        m = self.mk("ground", 0, Marker.TRIANGLE_LIST, (1, 1, 1, 1), (1, 1, 1))
+        m.points = [Point(x=float(x), y=float(y), z=float(z)) for x, y, z in V[F.reshape(-1)]]
+        m.colors = [ColorRGBA(r=float(r), g=float(g), b=float(b), a=1.0) for r, g, b in C[F.reshape(-1)]]
+        print(f"ground surface: {len(F):,} triangles", flush=True)
+        return MarkerArray(markers=[m])
 
     def ground_at(self, pts):
         r = np.clip(((pts[:, 1] - org[1]) / cell).astype(int), 0, dem.shape[0] - 1)

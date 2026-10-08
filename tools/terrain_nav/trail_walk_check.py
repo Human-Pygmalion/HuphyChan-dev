@@ -26,6 +26,7 @@ ap.add_argument("--seconds", type=float, default=60.0)
 ap.add_argument("--vx", type=float, default=0.5)
 ap.add_argument("--lookahead", type=float, default=1.0)
 ap.add_argument("--out", default="")
+ap.add_argument("--reverse", action="store_true", help="walk the planned path backwards (goal -> start; the trail climbs 9 m that way)")
 a = ap.parse_args()
 pygviewer.CACHE_DIR = a.cache
 import mujoco  # noqa: E402
@@ -36,6 +37,8 @@ ST = np.load(f"{a.nav}/trail_sim_terrain.npz")
 OFF = ST["offset"].astype(float)
 HF, HC, HH, CELL = ST["hfield"], ST["center"].astype(float), ST["half"].astype(float), float(ST["cell"])
 PATH = (np.load(f"{a.nav}/terrain.npz")["path"] - OFF)[:, :2]
+if a.reverse:
+    PATH = PATH[::-1].copy()
 SEG = np.r_[0, np.cumsum(np.linalg.norm(np.diff(PATH, axis=0), axis=1))]
 
 
@@ -53,12 +56,14 @@ m, d = core.m, core.d
 assert m.nhfield == 1, "model has no terrain heightfield - bake with PYG_BAKE_TERRAIN"
 core.reset("knees_bent")
 fa = core.free_adr
+d.qpos[fa:fa + 2] += PATH[0]  # spawn on the first path point (the origin unless --reverse)
+d.qpos[fa + 2] += ground_z(*PATH[0]) - ground_z(0.0, 0.0)
 yaw0 = math.atan2(*(PATH[8] - PATH[0])[::-1])
 d.qpos[fa + 3:fa + 7] = [math.cos(yaw0 / 2), 0, 0, math.sin(yaw0 / 2)]
 mujoco.mj_forward(m, d)
 core.submit({"op": "mode", "value": "policy_sim"})
 
-log = dict(t=[], xyz=[], above=[], tilt=[], s=[], xte=[], cmd=[])
+log = dict(t=[], xyz=[], above=[], tilt=[], s=[], xte=[], cmd=[], qpos=[])  # qpos: full state every policy step (for replay/render)
 fell, k_near = "", 0
 for it in range(int(a.seconds / (core.dt * core.decimation))):
     p = d.qpos[fa:fa + 3]
@@ -78,6 +83,7 @@ for it in range(int(a.seconds / (core.dt * core.decimation))):
     above = float(p[2] - ground_z(p[0], p[1]))
     tilt = math.degrees(math.acos(np.clip(up_z, -1, 1)))
     log["t"].append(d.time); log["xyz"].append(p.copy()); log["above"].append(above); log["tilt"].append(tilt)
+    log["qpos"].append(d.qpos.copy())
     log["s"].append(SEG[k_near]); log["xte"].append(float(np.linalg.norm(PATH[k_near] - p[:2]))); log["cmd"].append((vx, wz))
     if above < 0.45 or tilt > 60:
         fell = f"t={d.time:.1f}s above={above:.2f} m tilt={tilt:.0f} deg"
@@ -92,4 +98,5 @@ print(f"time {L['t'][-1]:.1f} s | along path {L['s'][-1]:.1f} m of {SEG[-1]:.1f}
       f" | base above ground {L['above'].min():.2f}..{L['above'].max():.2f} m | tilt max {L['tilt'].max():.0f} deg"
       f" | {'FELL ' + fell if fell else 'no fall'}")
 if a.out:
-    np.savez(a.out, **L, path=PATH, offset=OFF)
+    np.savez(a.out, **L, path=PATH, offset=OFF, joint_names=np.array([m.joint(j).name for j in range(m.njnt)]),
+             jnt_qposadr=m.jnt_qposadr, free_adr=fa, dt=core.dt * core.decimation)

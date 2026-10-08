@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """Terrain for the MuJoCo teleop: the 10 cm collider + tree cylinders from prep_terrain_mesh.py, shifted so the trail
 start is the world origin with ground height 0 (the robot spawns at the origin on z = 0).
-map coordinates = sim coordinates + offset.   usage: make_sim_terrain.py <terrain.npz> <terrain_mesh.npz> <out.npz>"""
+map coordinates = sim coordinates + offset.
+usage: make_sim_terrain.py <terrain.npz> <terrain_mesh.npz> <out.npz> [smooth sigma in m, default 0 = as scanned]"""
 import sys
 
 import numpy as np
 
 T, M = np.load(sys.argv[1]), np.load(sys.argv[2])
 hf, (x0, y0), c = M["hfield"].astype(np.float64), M["hf_origin"].astype(float), float(M["hf_cell"])
+SMOOTH = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
+if SMOOTH > 0:  # optional extra Gaussian smoothing of the collider (sigma in metres) - a deliberate loss of detail
+    from scipy import ndimage
+    hf = ndimage.gaussian_filter(hf, SMOOTH / c)
 sx, sy = (float(v) for v in T["path"][0, :2])  # first point of the planned path = on the trail
 z0 = float(hf[int((sy - y0) / c), int((sx - x0) / c)])
 ny, nx = hf.shape

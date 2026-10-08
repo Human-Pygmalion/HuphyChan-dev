@@ -10,6 +10,7 @@ ap.add_argument("hero")
 ap.add_argument("top")
 ap.add_argument("out")
 ap.add_argument("--stats", default="")
+ap.add_argument("--border", default="235,238,242", help="inset frame colour r,g,b (dark on light backgrounds)")
 a = ap.parse_args()
 
 CROP = (470, 70, 2540, 1400)  # RViz 3D viewport inside the 2560x1440 capture (panels removed)
@@ -27,7 +28,7 @@ top = top.resize((iw, int(top.height * iw / top.width)), Image.LANCZOS)
 M = 30
 x0, y0 = W - iw - M, M
 img.paste(top, (x0, y0))
-d.rectangle([x0 - 2, y0 - 2, x0 + iw + 1, y0 + top.height + 1], outline=(235, 238, 242, 255), width=2)
+d.rectangle([x0 - 2, y0 - 2, x0 + iw + 1, y0 + top.height + 1], outline=tuple(int(v) for v in a.border.split(",")) + (255,), width=2)
 fc = ImageFont.truetype(FR, 30)
 cap = "Planned route" + (f"  {a.stats}" if a.stats else "")
 l, t, r, b = d.textbbox((0, 0), cap, font=fc)

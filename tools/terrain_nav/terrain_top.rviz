@@ -93,6 +93,15 @@ Visualization Manager:
         Reliability Policy: Reliable
         History Policy: Keep Last
     - Class: rviz_default_plugins/MarkerArray
+      Name: Ground surface
+      Enabled: true
+      Topic:
+        Value: /ground_surface
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/MarkerArray
       Name: Semantic
       Enabled: true
       Topic:

@@ -235,3 +235,89 @@ python3 tools/terrain_nav/compose_terrain.py hero.png top.png layout_trail_auton
 
 파일: `tools/terrain_nav/{prep_terrain_mesh.py, make_sim_terrain.py, trail_teleop.py, web/index.html, web/app.js, trail_walk_check.py, collision_check.py, ux_check_teleop.py, ux_check_joystick.py}`, `tools/pygviewer/pygviewer/bake.py`.
 3090 의 데이터: `~/pyg_demo/nav/{terrain_mesh.npz, terrain_mesh.ply, trail_sim_terrain.npz}`, 구운 모델 `~/pyg_demo/cache_trail/`.
+
+## 6. 기사 그림 배경 변형 — 밝고 차분한 단색 2 가지 + HDRI 산 하늘 5 가지 (2026-10-08)
+
+![[overview_backgrounds.jpg]]
+
+파일: `docs/img/terrain_nav/bg_variants/layout_trail_autonomy_{mist, stone, hdri_<이름>}.png` (2070 × 1330, 장면·글자·작은 지도는 원본과 같음)
+
+| 이름 | 배경 |
+|---|---|
+| `mist` | 옅은 청회색 (228, 234, 240) |
+| `stone` | 옅은 웜그레이 (236, 232, 225) |
+| `hdri_fouriesburg_mountain_midday` · `hdri_rosendal_mountain_midmorning` · `hdri_drakensberg_solitary_mountain` · `hdri_rocky_ridge` · `hdri_kloofendal_48d_partly_cloudy_puresky` | Poly Haven 의 산·하늘 HDRI (무료 CC0, 4k, 3090 `~/pyg_demo/hdri/`) |
+
+만드는 법 (`tools/terrain_nav/compose_backgrounds.py`):
+1. 같은 RViz 장면을 **검은 배경과 흰 배경으로 두 번** 찍는다(`terrain_bg0.rviz`, `terrain_bg255.rviz`). 두 장의 차이가 곧 화소마다 장면이 덮은 정도이므로
+   (검은 = a·F, 흰 = a·F + (1−a)·255), 어떤 배경이든 테두리 번짐 없이 넣는다: 결과 = 검은 + (1−a)·새 배경. 두 장의 어긋남은 0.00 (같은 장면).
+2. 단색은 배경 전체를 바꾼다.
+3. HDRI: 이 장면의 땅은 점과 반투명 분류 칸이라 하늘을 그대로 넣으면 **땅 사이로 하늘이 비쳐 로봇이 떠 보인다**(첫 시도에서 확인).
+   그래서 하늘은 그림 위쪽(나무 너머) 배경으로만 쓰고, 높이 25 % 아래부터 58 % 까지 어두운 땅 색으로 이어지게 했다.
+   하늘 창은 해의 반대쪽(눈부심 없음), 고도 −10°~+40°, 톤 매핑(Reinhard) + 약한 흐림.
+4. 위에서 본 작은 지도는 하늘이 의미 없으므로 단색(mist).
+
+시도했다가 버린 것 (다음 사람이 되풀이하지 않게):
+- 불투명 지면을 깔아 하늘을 땅 밖에만 넣기 — 충돌체 높이의 가는 뾰족 기둥(나무 밑에서 잎을 땅으로 잘못 잡은 곳)과 측량 안 된 회색 벽이 배경을 거의 다 가렸다.
+  `make_display_surface.py --open-m 1.5` 로 1.5 m 보다 가는 뾰족함은 지웠지만, 이 구도(카메라가 24° 내려다봄)에서는 땅이 화면의 97 % 라 하늘이 들어갈 자리가 없었다.
+- 카메라를 수평에 가깝게(기울기 0.15 rad) 낮추기 — 로봇 뒤가 오르막 비탈이라 카메라가 땅 속으로 들어가 땅을 아래에서 보는 그림이 됐다.
+- 캡처 함정: `publish_terrain.py` 에서 `--no-text` 가 빠졌는데(글자는 이제 기본으로 꺼짐) 예전 명령이 그대로 넘겨 발행기가 바로 죽었다 → 위에서 본 그림에 경로선만 찍힘.
+
+다시 만들기 (3090):
+```bash
+cd ~/pyg_demo/terrain && bash capture_bg_pair.sh nosurf    # 검은/흰 배경 4 장 (hero, top), 약 4 분 (tools/terrain_nav/ 에서 복사)
+cd ~/MikuchanRemote/Human-Pygmalion/tools/terrain_nav && ~/isaac/venv311/bin/python compose_backgrounds.py ~/pyg_demo/terrain/nosurf ~/pyg_demo/terrain/bgvar ~/pyg_demo/hdri/*.hdr
+```
+(OpenCV 가 Isaac Sim 쪽 Python 에만 있어서 그걸로 돌린다.)
+
+## 7. 산길 182 m 완주 — 오르막으로는 끝까지 걷는다 (2026-10-08)
+
+평활화 정도 × 방향 훑기 (`trail_walk_check.py`, 0.5 m/s, 최대 600 초, 경로 추종기 → v11a):
+
+| 충돌체 | 내리막 (출발 → 목적지, −9 m) | 오르막 (목적지 → 출발, +9 m) |
+|---|---|---|
+| **스캔 그대로** | 29 m 에서 넘어짐 (§5-2) | **182 m 완주, 499 초, +8.91 m, 넘어지지 않음** |
+| 0.15 m 평활 | 완주 312 초 | 완주 482 초 |
+| 0.3 m 평활 | 완주 307 초 | 출발 7 초 만에 넘어짐 |
+| 0.5 m 평활 | 완주 311 초 | 출발 19 초 만에 넘어짐 |
+
+- **스캔 그대로의 지형에서 오르막 방향은 끝까지 간다.** 내리막의 26~30 m 울퉁불퉁한 구간(10 cm 오르내림)은 오르막으로 지날 때는 넘어지지 않는다.
+  같은 조건을 다시 돌려도 똑같이 499.4 초에 완주(물리·정책이 결정적).
+- 평활을 크게 하면 오르막 출발점(목적지 쪽)에서 오히려 넘어진다 — 출발 자리의 비탈이 넓게 퍼지기 때문으로 보이나 따로 확인하지 않았다.
+- 그래서 완주 영상은 **스캔 그대로 + 오르막** 기록(`~/pyg_demo/video/uphill_run.npz`, 50 Hz 전체 관절 상태)을 쓴다.
+
+### 7-1. 완주 영상 (Isaac Sim RTX, 전신 로봇, HDRI 산 하늘)
+
+![[huphy_trail_uphill_182m.mp4]]
+
+![[trail_video_frames.jpg]]
+
+위: 영상의 5·90·180·270·380·495 초 장면.
+
+| 항목 | 값 |
+|---|---|
+| 파일 | `docs/media/huphy_trail_uphill_182m.mp4` — 1920 × 1080, 25 fps, **499.4 초 = 걷기 499.4 초 (실시간 1 배)**, 12,485 프레임 |
+| 걷기 | MuJoCo 물리, v11a 정책, 스캔 그대로의 10 cm 충돌체, 경로 추종기가 주는 속도 명령(0.5 m/s, 굽은 곳에서 감속)만으로 182 m 오르막 완주, +8.9 m |
+| 그림 | Isaac Sim 5.0 RTX(실시간 광선 추적)가 기록을 프레임마다 다시 그림 — PhysX 는 켜지 않는다 |
+| 로봇 | 전신 쉘 모델(`huphy_full_shell_loop`): 다리 24 관절은 기록된 값, 윗몸(허리·팔)은 기본 자세 그대로(걷기 모델에 윗몸이 없음) |
+| 땅 | 충돌체 높이를 20 cm 마다(`make_display_surface.py --stride 2 --open-m 1.5 --wall-rim-m 0.3`), 측량 색(채도 1.4 배, 0.8 배 어둡게). 그림용으로만 1.5 m 보다 가는 뾰족함을 지움 |
+| 나무 | 지도 점 가운데 땅에서 1 m 넘게 위에 있는 129 만 점(경로 30 m 안)을 4 cm 원판으로. 그림자는 드리우지 않음(드리우면 산길이 거의 검게 됨) |
+| 하늘·빛 | `rosendal_mountain_midmorning` HDRI(하늘 + 주변광, 세기 450) + 그 HDRI 의 해 방향에 둔 직사광(1100) — 로봇 그림자가 해 방향과 맞는다 |
+| 카메라 | 로봇 뒤 3.2 m · 옆 1.2 m, 진행 방향을 약 2 초로 부드럽게 따라감(몸통 흔들림이 화면을 흔들지 않게), 땅에서 1 m 아래로는 내려가지 않음 |
+| 글자 | 위쪽 어두운 띠: 정책 이름·실시간 표시, 시간·경로 진행(m)·올라간 높이·속도 명령 |
+| 렌더 시간 | 3090 에서 0.12 초/프레임, 26 분. 변환(H.264)은 이 PC(3090 에 ffmpeg 없음) |
+
+한계 (정직하게):
+- 카메라가 나무 가까이 지날 때 나무 점이 큰 공처럼 보인다(380 초 부근). 나무는 실제 스캔 점이지 나무 모형이 아니다.
+- 땅은 스캔 색이 흐릿해서 사진처럼 보이지는 않는다. 그 대신 모양은 물리가 쓰는 그 높이다(뾰족함 제거 외).
+- 윗몸은 움직이지 않는다(걷기 정책이 다리만 다룬다).
+- 내리막 방향 완주는 아직 안 된다(§7 표).
+
+다시 만들기 (3090):
+```bash
+cd ~/MikuchanRemote/Human-Pygmalion/tools/terrain_nav
+CUDA_VISIBLE_DEVICES="" ../../mujoco-sim/mjlab/.venv/bin/python3 trail_walk_check.py --cache ~/pyg_demo/cache_trail --nav ~/pyg_demo/nav --seconds 600 --vx 0.5 --reverse --out ~/pyg_demo/video/uphill_run.npz
+../../mujoco-sim/mjlab/.venv/bin/python3 make_display_surface.py ~/pyg_demo/nav/terrain_mesh.npz ~/pyg_demo/nav/map_010.npy ~/pyg_demo/nav/surface_video.npz --stride 2 --open-m 1.5 --wall-rim-m 0.3
+~/isaac/venv311/bin/python trail_video.py --run ~/pyg_demo/video/uphill_run.npz --hdri ~/pyg_demo/hdri/rosendal_mountain_midmorning_4k.hdr --out ~/pyg_demo/video/trail_uphill_full.mp4
+# 시험 프레임만: --stills 20,150,400 --out still
+```
