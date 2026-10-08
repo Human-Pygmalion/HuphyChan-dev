@@ -1,0 +1,146 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Floor grid
+      Enabled: false
+      Cell Size: 1.0
+      Plane Cell Count: 80
+      Line Style:
+        Line Width: 0.02
+        Value: Lines
+      Color: 52; 58; 68
+      Alpha: 0.7
+      Offset:
+        X: -13.0
+        Y: 18.0
+        Z: 0.0
+      Reference Frame: <Fixed Frame>
+    - Class: rviz_default_plugins/Map
+      Name: Costmap
+      Enabled: false
+      Topic:
+        Value: /costmap
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Alpha: 0.45
+      Color Scheme: costmap
+      Draw Behind: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Terrain cloud
+      Enabled: true
+      Topic:
+        Value: /terrain_cloud
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Style: Points
+      Size (Pixels): 1
+      Color Transformer: RGB8
+      Alpha: 1.0
+      Decay Time: 0
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Live LiDAR scan
+      Enabled: true
+      Topic:
+        Value: /scan_cloud
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Style: Points
+      Size (Pixels): 2
+      Color Transformer: FlatColor
+      Color: 255; 255; 255
+      Alpha: 1.0
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Robot
+      Enabled: true
+      Topic:
+        Value: /robot_markers
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/Path
+      Name: Planned path
+      Enabled: false
+      Topic:
+        Value: /plan
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+      Color: 60; 235; 130
+      Line Style: Billboards
+      Line Width: 0.14
+      Alpha: 1.0
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Goal
+      Enabled: true
+      Topic:
+        Value: /goal_markers
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Semantic
+      Enabled: true
+      Topic:
+        Value: /semantic
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Path line
+      Enabled: true
+      Topic:
+        Value: /plan_line
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Labels
+      Enabled: true
+      Topic:
+        Value: /labels
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+  Global Options:
+    Background Color: 12; 15; 20
+    Fixed Frame: map
+    Frame Rate: 30
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/TopDownOrtho
+      Scale: 13.0
+      X: 42.0
+      Y: 66.0
+      Angle: 1.5708
+      Near Clip Distance: 0.01
+      Target Frame: <Fixed Frame>
+Window Geometry:
+  Displays:
+    collapsed: true
+  Views:
+    collapsed: true
+  Height: 1440
+  Width: 2560
+  X: 0
+  Y: 0
