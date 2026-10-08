@@ -44,5 +44,5 @@ rviz2 -d "$CFG" >/tmp/rviz_cap.log 2>&1 &
 RV=$!
 sleep "$WAIT"
 import -window root "$OUT"
-kill $RV $PB $RS $XP 2>/dev/null
+pkill -P $RS 2>/dev/null; kill $RV $PB $RS $XP 2>/dev/null   # pkill -P: "ros2 run" leaves the robot_state_publisher node running otherwise
 echo "saved $OUT"

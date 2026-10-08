@@ -50,3 +50,26 @@ python3 tools/terrain_nav/compose_terrain.py hero.png top.png layout_trail_auton
 
 카메라는 캡처 스크립트가 로봇 위치·방향을 읽어 로봇 뒤 10 m, 옆으로 30° 에 둔다 (`CAM_D`, `CAM_P`, `CAM_YAW` 로 바꿈).
 원본: `docs/img/terrain_nav/rviz_trail_hero.png`, `rviz_trail_top.png`.
+
+## 4. 지도 전체를 직접 보고 경로 찍어 보기 (대화형 RViz, 2026-10-08)
+
+3090 의 가상 화면에서 RViz2 가 계속 떠 있고, VNC 로 붙어서 직접 돌려 볼 수 있다.
+
+| 항목 | 값 |
+|---|---|
+| 접속 | VNC 뷰어(TightVNC·RealVNC 등) → `10.8.0.14:5901` (0.0.0.0 에 묶임) |
+| 비밀번호 | 3090 의 `~/pyg_demo/nav/VNC_PASSWORD.txt` (syaro 만 읽을 수 있음): `ssh syaro@10.8.0.14 cat ~/pyg_demo/nav/VNC_PASSWORD.txt` |
+| 켜기·끄기 | `ssh syaro@10.8.0.14 'bash ~/pyg_demo/nav/run_nav_viewer.sh'` / `... run_nav_viewer.sh stop` |
+| 출발점 | 위 도구줄 **2D Pose Estimate** 를 누르고 지도를 클릭 |
+| 목적지 | **2D Goal Pose** 를 누르고 클릭 → 0.4 초 안에 A* 가 다시 계획 (경로 길이·높이 차·산길 비율이 목적지 위에 뜬다) |
+| 지도 층 | `Map 10 cm`(217만 점, 기본 켬) · `Map 5 cm`(526만) · `Map full`(1,747만, 원본 전부) — 왼쪽 목록에서 켜고 끈다 |
+| 지형 분류 | `Terrain classes`: 노랑 산길 · 주황 거친 땅 · 빨강 가파른 비탈 · 초록 나무 (25 cm 칸) |
+
+- 그래픽 가속이 없는 소프트웨어 렌더라 10 cm 층에서 약 4 fps 다. 5 cm·원본 층은 더 느리니 볼 때만 켠다.
+- 로봇은 출발점에 경로 방향으로 서 있다(관절은 평지 걷기의 한 순간). 경로를 따라 걷는 동작은 아직 없다 — §1.
+- 고친 함정: 예전 캡처 스크립트가 `ros2 run` 겉껍데기만 끄고 안의 `robot_state_publisher` 를 남겨 3090 에 29 개가 쌓여 있었다
+  (로봇 좌표가 서로 충돌). 모두 정리했고, 세 스크립트(`run_nav_viewer.sh`, `capture_terrain.sh`, `isaac_demo/rviz/capture_rviz.sh`)가
+  이제 자식 프로세스까지 끈다. 로봇 표시는 2 초마다 다시 보내서, 시작 순간의 "좌표 없음" 오류가 남지 않게 했다.
+
+파일: `tools/terrain_nav/{nav_server.py, nav.rviz, run_nav_viewer.sh, prep_clouds.py}`. 데이터는 `prep_terrain.py`·`prep_clouds.py` 로 만들어
+3090 `~/pyg_demo/nav/` 에 둔다 (약 400 MB).

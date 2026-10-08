@@ -189,5 +189,6 @@ print(f"{len(labels)} semantic labels")
 np.savez_compressed(
     a.out, labels=np.array([l[0] for l in labels]), label_xyz=np.array([l[1:] for l in labels], np.float32), cloud=cloud, cloud_rgb=crgb, dem=dem_s, cls=cls, slope=slope.astype(np.float32),
     origin=np.array([x0, y0], np.float32), cell=np.float32(a.cell), path=path, path_cls=pc,
-    start=np.array(a.start, np.float32), goal=np.array(a.goal, np.float32), names=np.array(NAMES), cost=COST)
+    start=np.array(a.start, np.float32), goal=np.array(a.goal, np.float32), names=np.array(NAMES), cost=COST,
+    cost_grid=np.where(np.isfinite(cost), cost, -1).astype(np.float32))
 print("saved", a.out)
