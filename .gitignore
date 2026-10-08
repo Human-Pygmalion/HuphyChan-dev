@@ -56,3 +56,6 @@ tools/collision_viewer/robot.json
 # dashboard gallery thumbnails (regenerate with tools/dashboard/gallery.py)
 tools/dashboard/thumbs/
 docs/mujoco/assets/v4demo_loadviz.mp4
+
+# session handoff transcripts (2026-10-08)
+handoff_Rvizvisualize/
