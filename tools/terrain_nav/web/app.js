@@ -212,6 +212,66 @@ const show = (id, obj) => { const f = () => (obj.visible = $(id).checked); $(id)
 show('s_terrain', terrain); show('s_patch', patch); show('s_trees', trees); show('s_path', pathMesh);
 show('s_elev', elev); show('s_scan', scan); show('s_beams', beams);
 
+// ---- joystick: a gamepad (browser Gamepad API - only on secure pages, hence the https port) or the on-screen stick.
+// Both give an absolute command: stick up = forward up to 1.2 m/s, down = backward up to 0.4 m/s, sideways = turn 0.6 rad/s.
+const DEAD = 0.12;
+const dz = (v) => (Math.abs(v) < DEAD ? 0 : (v - Math.sign(v) * DEAD) / (1 - DEAD));
+const stickToCmd = (fwd, turn) => [fwd > 0 ? fwd * 1.2 : fwd * 0.4, -turn * 0.6];
+let sent = [0, 0], tSent = 0, padActive = false;
+function sendStick(vx, wz) {
+  const now = performance.now();
+  const moved = Math.abs(vx - sent[0]) > 0.02 || Math.abs(wz - sent[1]) > 0.02;
+  const back = (vx === 0 && wz === 0) && (sent[0] !== 0 || sent[1] !== 0);
+  if ((moved && now - tSent > 50) || back) {
+    cmd(`vx=${vx.toFixed(2)}&wz=${wz.toFixed(2)}`);
+    sent = [vx, wz]; tSent = now;
+  }
+}
+const prevBtn = [];
+function pollPad() {
+  const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
+  if (!window.isSecureContext) {
+    $('pad').innerHTML = `<span class="bad">gamepad needs the https page:</span> <a href="https://${location.hostname}:8097/">https://${location.hostname}:8097/</a> (accept the certificate warning once). The on-screen stick works here.`;
+  } else if (!pads.length) {
+    $('pad').innerHTML = 'no gamepad yet - plug it in and <b>press any button</b>';
+  } else {
+    const g = pads[0], ax = g.axes;
+    const fwd = -dz(ax[1] || 0), rx = dz(ax[2] || 0), lx = dz(ax[0] || 0);
+    const turn = Math.abs(rx) > 0 ? rx : lx;
+    const [vx, wz] = stickToCmd(fwd, turn);
+    if (fwd !== 0 || turn !== 0 || padActive) sendStick(vx, wz);
+    padActive = fwd !== 0 || turn !== 0;
+    const press = (i) => g.buttons[i] && g.buttons[i].pressed && !prevBtn[i];
+    if (press(0)) cmd('reset=1');
+    if (press(1)) { cmd('stop=1'); sent = [0, 0]; }
+    if (press(2)) { $('s_elev').checked = !$('s_elev').checked; $('s_elev').onchange(); }
+    if (press(3)) $('s_follow').checked = !$('s_follow').checked;
+    if (press(9)) cmd('start=1');
+    g.buttons.forEach((b, i) => (prevBtn[i] = b.pressed));
+    $('pad').innerHTML = `<span class="ok">${g.id.slice(0, 40)}</span><br>stick: forward ${fwd.toFixed(2)}, turn ${turn.toFixed(2)} → ${vx.toFixed(2)} m/s, ${wz.toFixed(2)} rad/s`;
+  }
+  requestAnimationFrame(pollPad);
+}
+pollPad();
+{ // on-screen stick (mouse or touch)
+  const base = $('vstick'), knob = $('knob');
+  let id = null;
+  const move = (e) => {
+    const r = base.getBoundingClientRect(), R = r.width / 2;
+    let x = (e.clientX - r.left - R) / R, y = (e.clientY - r.top - R) / R;
+    const n = Math.hypot(x, y);
+    if (n > 1) { x /= n; y /= n; }
+    knob.style.transform = `translate(${x * R * 0.7}px, ${y * R * 0.7}px)`;
+    const [vx, wz] = stickToCmd(-dz(y), dz(x));
+    sendStick(vx, wz);
+  };
+  base.addEventListener('pointerdown', (e) => { id = e.pointerId; base.setPointerCapture(id); move(e); });
+  base.addEventListener('pointermove', (e) => { if (e.pointerId === id) move(e); });
+  const end = (e) => { if (e.pointerId !== id) return; id = null; knob.style.transform = ''; sendStick(0, 0); };
+  base.addEventListener('pointerup', end);
+  base.addEventListener('pointercancel', end);
+}
+
 // ---- state loop
 const pRobot = new THREE.Vector3();
 let lastP = null, first = true, elevBusy = false, tElev = 0;

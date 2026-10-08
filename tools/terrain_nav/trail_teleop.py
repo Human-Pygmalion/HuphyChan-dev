@@ -40,6 +40,8 @@ ap.add_argument("--nav", required=True, help="dir with trail_sim_terrain.npz, te
 ap.add_argument("--policy", default="v11a")
 ap.add_argument("--port", type=int, default=8095)
 ap.add_argument("--port2", type=int, default=8096, help="second port serving the same page (0 = off)")
+ap.add_argument("--https-port", type=int, default=8097, help="same page over https (browsers allow gamepads only on secure pages); 0 = off")
+ap.add_argument("--tls", default=os.path.expanduser("~/pyg_demo/nav/tls"), help="dir with cert.pem + key.pem (self-signed)")
 ap.add_argument("--three", default=os.path.expanduser("~/pyg_demo/nav/web/three"), help="local three.js (build/, examples/jsm/)")
 ap.add_argument("--lidar-hz", type=float, default=10.0)
 ap.add_argument("--mesh-stride", type=int, default=3, help="whole-map surface: every n-th 10 cm collider vertex")
@@ -477,5 +479,35 @@ for port in [a.port] + ([a.port2] if a.port2 else []):
     srv.daemon_threads = True
     threading.Thread(target=srv.serve_forever, daemon=True).start()
 print(f"teleop page: http://10.8.0.14:{a.port}/" + (f"  (also :{a.port2})" if a.port2 else ""), flush=True)
+if a.https_port and os.path.isfile(f"{a.tls}/cert.pem"):
+    import ssl
+
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(f"{a.tls}/cert.pem", f"{a.tls}/key.pem")
+
+    class TLSServer(http.server.ThreadingHTTPServer):
+        daemon_threads = True
+
+        def handle_error(self, request, client_address):  # failed handshakes (certificate warning page) are normal
+            pass
+
+        def get_request(self):  # handshake per connection in its own thread (a stalled client cannot block accept)
+            sock, addr = super().get_request()
+            return ctx.wrap_socket(sock, server_side=True, do_handshake_on_connect=False), addr
+
+    class TLSHandler(Handler):
+        def setup(self):
+            self.request.do_handshake()
+            super().setup()
+
+        def handle(self):
+            try:
+                super().handle()
+            except (ssl.SSLError, OSError):
+                pass
+
+    srv = TLSServer(("0.0.0.0", a.https_port), TLSHandler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    print(f"teleop page with gamepad: https://10.8.0.14:{a.https_port}/  (self-signed certificate: accept the warning once)", flush=True)
 while True:
     time.sleep(3600)

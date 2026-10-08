@@ -138,7 +138,7 @@ python3 tools/terrain_nav/compose_terrain.py hero.png top.png layout_trail_auton
 
 | 항목 | 값 |
 |---|---|
-| 주소 | `http://10.8.0.14:8095/` (같은 페이지가 `:8096` 에도 뜬다, 0.0.0.0 에 묶임) |
+| 주소 | `http://10.8.0.14:8095/` (같은 페이지가 `:8096` 에도, 게임패드용 https 는 `:8097` — §5-3a. 모두 0.0.0.0 에 묶임) |
 | 여는 시간 | 1.1~1.2 초 (지형 면 1.7 MB, 로봇, 나무 — 이 PC 에서 자동 점검으로 잼). 예전 viser 는 점 217 만 개라 수십 초 |
 | 지형 면 | 전체 지도: 충돌체 높이 지도의 꼭짓점을 30 cm 마다 하나씩(삼각형 22.5 만 개). 로봇 주변 30 m × 30 m: **충돌체 그 자체**(10 cm 꼭짓점 전부), 로봇이 7 m 움직이면 다시 받음. 색 = 그 칸 지면 근처 측량 점의 실제 색 |
 | 측량이 없는 곳 | 어두운 회색. 물리에서는 2 m 벽이라 못 들어간다(전체 지도 그림에서만 벽을 낮춰 그려 가시처럼 솟지 않게 함) |
@@ -157,6 +157,24 @@ python3 tools/terrain_nav/compose_terrain.py hero.png top.png layout_trail_auton
 - 물리 200 Hz, 정책 50 Hz, 실시간. 그래픽 카드 없이 CPU 로 돈다. 3D 그림은 보는 사람 브라우저가 그린다.
 - 넘어짐 판정: 몸통이 그 자리 지면보다 0.45 m 아래로 내려가면 "FALLEN" 으로 표시 → R 로 다시 세운다.
   v11a 는 방향 유지가 약해서, 직진 명령만 주면 굽은 산길에서 옆 비탈로 걸어 나가 넘어진다(점검 중 실제로 9 m 지점에서 그랬다). A/D 로 길을 따라 돌려 줘야 한다.
+
+### 5-3a. 조이스틱으로 조종하기 (2026-10-08)
+
+![[teleop_web_joystick.png]]
+
+위: 화면 왼쪽 아래 둥근 막대(화면 조이스틱)를 위로 끌어 0.79 m/s 로 걷는 중. 오른쪽 판 `Joystick` 칸에 게임패드 상태가 뜬다.
+
+| 방법 | 주소 | 조작 |
+|---|---|---|
+| **게임패드**(Xbox 형 등, 조종하는 PC 에 USB·블루투스로 연결) | **`https://10.8.0.14:8097/`** (0.0.0.0 에 묶임). 처음 한 번 인증서 경고가 뜨면 "고급 → 계속" | 왼쪽 막대 위/아래 = 앞 속도(위로 끝까지 1.2 m/s, 아래로 끝까지 뒤로 0.4 m/s), 오른쪽 막대 좌/우 = 회전(끝까지 0.6 rad/s, 왼쪽 막대 좌/우도 회전), **A** 그 자리에서 다시 세우기, **B** 정지, **X** 라이다 지형 지도 켜기/끄기, **Y** 카메라 따라가기 켜기/끄기, **Start** 산길 출발점으로. 게임패드를 꽂은 뒤 **버튼을 한 번 눌러야** 브라우저가 알아챈다 |
+| **화면 조이스틱**(마우스·터치, 휴대폰도 됨) | `http://10.8.0.14:8095/` 또는 https 주소 | 왼쪽 아래 둥근 막대를 끌기 — 위/아래 = 앞 속도, 좌/우 = 회전, 놓으면 정지 |
+
+- 막대 값은 그대로 속도 명령이 된다(가운데 12 % 는 무시). 막대를 놓아 가운데로 오면 0 을 한 번 보낸다. 키보드·버튼과 함께 써도 된다.
+- 왜 https 인가: 브라우저는 보안 연결(https 또는 localhost) 페이지에서만 게임패드를 읽게 해 준다. 그래서 같은 페이지를 3090 에서 만든 자체 서명 인증서
+  (`~/pyg_demo/nav/tls/`, 주소 192.168.0.13·10.8.0.14 포함, 비밀 키는 syaro 만 읽기)로 8097 에도 띄웠다. http 페이지에서는 게임패드 대신 안내 문구가 뜬다.
+- 점검(`tools/terrain_nav/ux_check_joystick.py`, 이 PC 에서 실제로 눌러 봄): 시험 기계에 실물 게임패드가 없어서 표준 배치의 가짜 게임패드를 페이지에 넣었다.
+  왼쪽 막대 끝까지 위 → 명령 1.20 m/s, 6 초에 7.5 m 이동 · 오른쪽 막대 오른쪽 → 회전 −0.60 rad/s · 가운데 → 0 · B → 정지 ·
+  화면 조이스틱 위로 끌기 → 0.79 m/s 로 걷고 놓으면 0. 실물 게임패드의 축 번호가 표준과 다르면 맞춰야 한다(브라우저가 `mapping: standard` 로 알려 주는 패드는 위와 같다).
 
 ### 5-3b. 충돌이 정말 있나 (`tools/terrain_nav/collision_check.py`, 2026-10-08)
 
@@ -215,5 +233,5 @@ python3 tools/terrain_nav/compose_terrain.py hero.png top.png layout_trail_auton
 - 나무 기둥은 나무 분류 덩어리로 추정한 것이다. 실제 줄기 위치를 잰 것이 아니다.
 - 지형 면 바깥 테두리가 들쭉날쭉한 것은 스캔이 본 영역의 경계이고, 군데군데 떠 보이는 조각은 비탈 쪽 스캔이 듬성한 곳이다.
 
-파일: `tools/terrain_nav/{prep_terrain_mesh.py, make_sim_terrain.py, trail_teleop.py, web/index.html, web/app.js, trail_walk_check.py, collision_check.py, ux_check_teleop.py}`, `tools/pygviewer/pygviewer/bake.py`.
+파일: `tools/terrain_nav/{prep_terrain_mesh.py, make_sim_terrain.py, trail_teleop.py, web/index.html, web/app.js, trail_walk_check.py, collision_check.py, ux_check_teleop.py, ux_check_joystick.py}`, `tools/pygviewer/pygviewer/bake.py`.
 3090 의 데이터: `~/pyg_demo/nav/{terrain_mesh.npz, terrain_mesh.ply, trail_sim_terrain.npz}`, 구운 모델 `~/pyg_demo/cache_trail/`.

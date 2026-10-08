@@ -21,6 +21,10 @@
   #title { font-weight: 700; }
   #load { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); background: #fff; padding: 14px 20px;
           border-radius: 8px; box-shadow: 0 2px 12px rgba(0, 0, 0, .2); font-size: 16px; }
+  #vstick { position: absolute; left: 24px; bottom: 56px; width: 150px; height: 150px; border-radius: 50%; touch-action: none;
+            background: rgba(255, 255, 255, .35); border: 2px solid rgba(255, 255, 255, .8); box-shadow: 0 2px 10px rgba(0, 0, 0, .2); }
+  #knob { position: absolute; left: 50%; top: 50%; width: 62px; height: 62px; margin: -31px 0 0 -31px; border-radius: 50%;
+          background: rgba(43, 125, 233, .85); pointer-events: none; }
   #help { position: absolute; left: 10px; bottom: 10px; background: rgba(255, 255, 255, .85); padding: 6px 10px; border-radius: 6px; font-size: 13px; }
 </style>
 <script type="importmap">
@@ -29,6 +33,7 @@
 </head>
 <body>
 <div id="load">loading terrain ...</div>
+<div id="vstick"><div id="knob"></div></div>
 <div id="help">Keyboard (click the 3D view once): <kbd>W</kbd>/<kbd>↑</kbd> faster &nbsp;<kbd>S</kbd>/<kbd>↓</kbd> slower &nbsp;<kbd>A</kbd>/<kbd>D</kbd> turn &nbsp;<kbd>Space</kbd> stop &nbsp;<kbd>R</kbd> get up &nbsp;· mouse: drag = orbit, wheel = zoom, right-drag = pan</div>
 <div id="panel">
   <div id="title">Huphy · mountain trail · MuJoCo</div>
@@ -41,6 +46,12 @@
     <button data-k="w">faster</button><button data-k="s">slower</button><button data-k="a">left</button><button data-k="d">right</button><button class="stop" data-k=" ">STOP</button>
   </div>
   <div><button class="grey" data-k="r">get up here</button><button class="grey" id="start">back to trail start</button></div>
+
+  <h3>Joystick</h3>
+  <div id="pad" class="dim">-</div>
+  <div class="dim" style="font-size:12px">Gamepad: left stick up/down = forward speed, right stick left/right = turn
+  (left stick left/right also turns), <b>A</b> get up, <b>B</b> stop, <b>X</b> LiDAR map on/off, <b>Y</b> camera follow on/off,
+  <b>Start</b> back to trail start. No gamepad: drag the round stick at the bottom left.</div>
 
   <h3>Contact with the terrain (physics, live)</h3>
   <div id="contact" class="dim">-</div>
