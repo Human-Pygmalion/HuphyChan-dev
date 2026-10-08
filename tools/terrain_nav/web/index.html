@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Huphy trail teleop</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #cdd6e0; font: 14px/1.45 system-ui, sans-serif; color: #1d2228; }
+  canvas { display: block; }
+  #panel { position: absolute; top: 10px; right: 10px; width: 310px; max-height: calc(100vh - 20px); overflow: auto;
+           background: rgba(255, 255, 255, .93); border-radius: 8px; padding: 10px 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, .2); }
+  h3 { margin: 10px 0 4px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: #59616b; }
+  button { margin: 2px 2px 2px 0; padding: 6px 9px; border: 0; border-radius: 5px; background: #2b7de9; color: #fff; cursor: pointer; font: inherit; }
+  button.stop { background: #d64541; }
+  button.grey { background: #6c7682; }
+  .row { display: flex; align-items: center; gap: 6px; }
+  .row input[type=range] { flex: 1; }
+  label { display: block; cursor: pointer; }
+  kbd { border: 1px solid #aab; border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: #f6f7f9; font-size: 12px; }
+  .ok { color: #11843a; font-weight: 600; } .bad { color: #c0392b; font-weight: 600; } .dim { color: #7a828c; }
+  #title { font-weight: 700; }
+  #load { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); background: #fff; padding: 14px 20px;
+          border-radius: 8px; box-shadow: 0 2px 12px rgba(0, 0, 0, .2); font-size: 16px; }
+  #help { position: absolute; left: 10px; bottom: 10px; background: rgba(255, 255, 255, .85); padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "/three/build/three.module.min.js", "three/addons/": "/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="load">loading terrain ...</div>
+<div id="help">Keyboard (click the 3D view once): <kbd>W</kbd>/<kbd>↑</kbd> faster &nbsp;<kbd>S</kbd>/<kbd>↓</kbd> slower &nbsp;<kbd>A</kbd>/<kbd>D</kbd> turn &nbsp;<kbd>Space</kbd> stop &nbsp;<kbd>R</kbd> get up &nbsp;· mouse: drag = orbit, wheel = zoom, right-drag = pan</div>
+<div id="panel">
+  <div id="title">Huphy · mountain trail · MuJoCo</div>
+  <div id="status" class="dim">connecting ...</div>
+
+  <h3>Drive (RL walking policy gets only this velocity command)</h3>
+  <div class="row">forward <input id="vx" type="range" min="-0.4" max="1.2" step="0.05" value="0"><span id="vxv">0.00</span> m/s</div>
+  <div class="row">turn <input id="wz" type="range" min="-0.6" max="0.6" step="0.05" value="0"><span id="wzv">0.00</span> rad/s</div>
+  <div>
+    <button data-k="w">faster</button><button data-k="s">slower</button><button data-k="a">left</button><button data-k="d">right</button><button class="stop" data-k=" ">STOP</button>
+  </div>
+  <div><button class="grey" data-k="r">get up here</button><button class="grey" id="start">back to trail start</button></div>
+
+  <h3>Contact with the terrain (physics, live)</h3>
+  <div id="contact" class="dim">-</div>
+
+  <h3>Show</h3>
+  <label><input type="checkbox" id="s_terrain" checked> terrain surface (collider heights, <span id="stride">30</span> cm)</label>
+  <label><input type="checkbox" id="s_patch" checked> exact collider around robot (10 cm)</label>
+  <label><input type="checkbox" id="s_trees" checked> tree trunks (colliders)</label>
+  <label><input type="checkbox" id="s_path" checked> planned path (A*)</label>
+  <label><input type="checkbox" id="s_elev"> LiDAR terrain map (built from scans)</label>
+  <label><input type="checkbox" id="s_scan" checked> LiDAR points (this scan)</label>
+  <label><input type="checkbox" id="s_beams"> LiDAR beams</label>
+  <label><input type="checkbox" id="s_follow" checked> camera follows robot</label>
+  <div><button class="grey" id="clear">clear LiDAR map</button></div>
+  <div class="dim" style="font-size:12px;margin-top:4px">Dark grey ground = no survey data there (physics puts a 2 m wall).
+  LiDAR map colours: ground by height (blue low → red high), orange = something stands there (trunk, step over 0.3 m).</div>
+
+  <h3>LiDAR (simulated, filtered)</h3>
+  <div id="lidar" class="dim">-</div>
+</div>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

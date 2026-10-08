@@ -548,9 +548,11 @@ def _add_terrain(mujoco, np, spec, path: str) -> None:
                 solref=list(floor.solref), solimp=list(floor.solimp), condim=floor.condim)
   spec.worldbody.add_geom(name="trail_ground", type=mujoco.mjtGeom.mjGEOM_HFIELD, hfieldname=hf.name,
                           pos=[float(t["center"][0]), float(t["center"][1]), zmin], rgba=[0.55, 0.5, 0.4, 1.0], **common)
-  for i, (x, y, z, r) in enumerate(t["trees"]):
-    spec.worldbody.add_geom(name=f"trail_tree{i}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, size=[float(r), 1.5, 0],
-                            pos=[float(x), float(y), float(z) + 1.5], rgba=[0.3, 0.55, 0.3, 1.0], **common)
+  for i, tr in enumerate(t["trees"]):  # x, y, bottom, radius[, top]; without a top the trunk is 3 m tall
+    x, y, z, r = (float(v) for v in tr[:4])
+    top = float(tr[4]) if len(tr) > 4 else z + 3.0
+    spec.worldbody.add_geom(name=f"trail_tree{i}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, size=[r, (top - z) / 2, 0],
+                            pos=[x, y, (z + top) / 2], rgba=[0.3, 0.55, 0.3, 1.0], **common)
 
 
 def _spawn_base_z(mujoco, np, m, names, default_q) -> float:
