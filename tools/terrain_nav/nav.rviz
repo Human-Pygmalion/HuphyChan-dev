@@ -53,9 +53,18 @@ Visualization Manager:
       Color Transformer: RGB8
       Alpha: 1.0
       Decay Time: 0
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Terrain mesh (= collider)
+      Enabled: true
+      Topic:
+        Value: /terrain_mesh
+        Depth: 1
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
     - Class: rviz_default_plugins/PointCloud2
       Name: Terrain classes
-      Enabled: true
+      Enabled: false
       Topic:
         Value: /semantic_cloud
         Depth: 1
@@ -115,15 +124,15 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 150.0
+      Distance: 6.5
       Focal Point:
-        X: 45.0
-        Y: 70.0
-        Z: -3.0
-      Pitch: 0.9
-      Yaw: 3.9
+        X: 0.0
+        Y: 0.0
+        Z: -0.1
+      Pitch: 0.32
+      Yaw: 3.55
       Near Clip Distance: 0.05
-      Target Frame: <Fixed Frame>
+      Target Frame: base_link
 Window Geometry:
   Height: 1080
   Width: 1920

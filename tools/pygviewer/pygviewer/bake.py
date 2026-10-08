@@ -335,6 +335,10 @@ def bake_one(variant: str, cache_dir: str, init_bent: bool = True) -> dict:
   string_tendon.rgba = [0.5, 0.5, 0.5, 0.0]  # sim_core drives colour/alpha at runtime
   string_tendon.wrap_site("pyg_string_anchor")
   string_tendon.wrap_site("pyg_string_hook")
+  # Opt-in static terrain (tools/terrain_nav/make_sim_terrain.py): heightfield + tree cylinders, for the trail teleop.
+  # Unset = no change to the bake.  Only world geoms are added - robot bodies, mass and joints are untouched.
+  if os.environ.get("PYG_BAKE_TERRAIN"):
+    _add_terrain(mujoco, np, spec, os.environ["PYG_BAKE_TERRAIN"])
   m = spec.compile()
 
   # MjSpec leaves equality.data at a type-agnostic default ([0,1,0,0,1,...] - the
@@ -527,6 +531,26 @@ def bake_one(variant: str, cache_dir: str, init_bent: bool = True) -> dict:
     f"sha={contract['contract_sha'][:12]}  {build_s:.1f}s"
   )
   return contract
+
+
+def _add_terrain(mujoco, np, spec, path: str) -> None:
+  """Heightfield + tree cylinders as static world geoms with the floor plane's contact settings; the plane is moved
+  below the lowest terrain point (kept: sim_core needs a plane geom for its ground toggle)."""
+  t = np.load(path)
+  h = t["hfield"].astype(np.float64)
+  zmin, zmax = float(h.min()), float(h.max())
+  floor = next(g for g in spec.worldbody.geoms if g.type == mujoco.mjtGeom.mjGEOM_PLANE)
+  floor.pos = [0.0, 0.0, zmin - 2.0]
+  ny, nx = h.shape
+  hf = spec.add_hfield(name="trail_hfield", size=[float(t["half"][0]), float(t["half"][1]), max(zmax - zmin, 1e-3), 1.0],
+                       nrow=ny, ncol=nx, userdata=((h - zmin) / max(zmax - zmin, 1e-3)).ravel().tolist())
+  common = dict(contype=floor.contype, conaffinity=floor.conaffinity, friction=list(floor.friction),
+                solref=list(floor.solref), solimp=list(floor.solimp), condim=floor.condim)
+  spec.worldbody.add_geom(name="trail_ground", type=mujoco.mjtGeom.mjGEOM_HFIELD, hfieldname=hf.name,
+                          pos=[float(t["center"][0]), float(t["center"][1]), zmin], rgba=[0.55, 0.5, 0.4, 1.0], **common)
+  for i, (x, y, z, r) in enumerate(t["trees"]):
+    spec.worldbody.add_geom(name=f"trail_tree{i}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, size=[float(r), 1.5, 0],
+                            pos=[float(x), float(y), float(z) + 1.5], rgba=[0.3, 0.55, 0.3, 1.0], **common)
 
 
 def _spawn_base_z(mujoco, np, m, names, default_q) -> float:

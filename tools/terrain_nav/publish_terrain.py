@@ -10,6 +10,7 @@ usage: publish_terrain.py --terrain terrain.npz --urdf huphy_rviz.urdf --dump wo
 """
 import argparse
 import math
+import re
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -30,8 +31,9 @@ ap.add_argument("--dump", required=True, help="world_dump.npz from the Isaac wal
 ap.add_argument("--at", type=float, default=0.42, help="robot position as a fraction of the path length")
 ap.add_argument("--scan-radius", type=float, default=7.0)
 ap.add_argument("--corridor", type=float, default=4.5, help="semantic cells drawn within this distance of the path")
+ap.add_argument("--hide", default=r"shell_.*_R\.stl", help="regex of mesh files not drawn (default: the right-side shell)")
 ap.add_argument("--pelvis", type=float, default=0.86, help="base_link height above ground while walking [m]")
-ap.add_argument("--no-text", action="store_true")
+ap.add_argument("--text", action="store_true", help="draw the semantic text labels (off by default)")
 ap.add_argument("--label-min", type=float, default=6.0)
 ap.add_argument("--label-max", type=float, default=45.0)
 ap.add_argument("--dots", action="store_true", help="big disc at the robot (for the top-down overview)")
@@ -124,6 +126,8 @@ def robot_markers():
             m.pose.orientation.w, m.pose.orientation.x, m.pose.orientation.y, m.pose.orientation.z = mat2quat(rpy_to_R(*rpy))
             m.color.r, m.color.g, m.color.b, m.color.a = rgba
             me, cy = geom.find("mesh"), geom.find("cylinder")
+            if me is not None and a.hide and re.search(a.hide, me.get("filename")):
+                continue
             if me is not None:
                 m.type, m.mesh_resource, m.mesh_use_embedded_materials = Marker.MESH_RESOURCE, me.get("filename"), False
                 m.scale.x = m.scale.y = m.scale.z = 1.0
@@ -189,7 +193,7 @@ class Scene(Node):
 
     def labels(self):
         out = MarkerArray()
-        if a.no_text:
+        if not a.text:
             return out
         placed = []
         for i, (txt, xyz) in enumerate(zip(T["labels"], T["label_xyz"])):
@@ -238,7 +242,7 @@ class Scene(Node):
             out.markers.append(self.mk("goal", 5, Marker.CYLINDER, (0.3, 0.85, 1.0, 1.0), (3.0, 3.0, 0.3), (pw[0], pw[1], path[i_at, 2] + 0.3)))
         st = path[0]
         out.markers.append(self.mk("goal", 3, Marker.CYLINDER, (0.3, 0.85, 1.0, 0.7), (1.6, 1.6, 0.05), (st[0], st[1], st[2] + 0.05)))
-        if not a.no_text:
+        if a.text:
             t = self.mk("goal", 4, Marker.TEXT_VIEW_FACING, (1.0, 0.72, 0.15, 1.0), (0, 0, 1.0), (g[0], g[1], g[2] + 3.1))
             t.text = "GOAL"
             out.markers.append(t)

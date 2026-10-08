@@ -12,6 +12,7 @@ usage: nav_server.py --data <dir with terrain.npz, map_*.npy> --urdf huphy_rviz.
 import argparse
 import heapq
 import math
+import re
 import time
 import xml.etree.ElementTree as ET
 
@@ -22,6 +23,7 @@ from nav_msgs.msg import Path
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import JointState, PointCloud2, PointField
+from std_msgs.msg import ColorRGBA
 from tf2_ros import TransformBroadcaster
 from visualization_msgs.msg import Marker, MarkerArray
 
@@ -29,6 +31,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--data", required=True)
 ap.add_argument("--urdf", required=True)
 ap.add_argument("--dump", required=True, help="world_dump.npz: joint angles of a real v11a walking step (Isaac walk)")
+ap.add_argument("--hide", default=r"shell_.*_R\.stl", help="regex of mesh files not drawn (default: the right-side shell)")
 ap.add_argument("--pelvis", type=float, default=0.86)
 a = ap.parse_args()
 
@@ -163,6 +166,8 @@ def robot_markers():
             m.pose.orientation.w, m.pose.orientation.x, m.pose.orientation.y, m.pose.orientation.z = mat2quat(rpy_to_R(*rpy))
             m.color.r, m.color.g, m.color.b, m.color.a = rgba
             me, cy = geom.find("mesh"), geom.find("cylinder")
+            if me is not None and a.hide and re.search(a.hide, me.get("filename")):
+                continue
             if me is not None:
                 m.type, m.mesh_resource, m.mesh_use_embedded_materials = Marker.MESH_RESOURCE, me.get("filename"), False
                 m.scale.x = m.scale.y = m.scale.z = 1.0
@@ -183,7 +188,7 @@ class Nav(Node):
         self.pub = {k: self.create_publisher(t, "/" + k, lat) for k, t in [
             ("map_cloud_010", PointCloud2), ("map_cloud_005", PointCloud2), ("map_cloud_full", PointCloud2),
             ("semantic_cloud", PointCloud2), ("plan", Path), ("plan_line", MarkerArray), ("nav_markers", MarkerArray),
-            ("robot_markers", MarkerArray)]}
+            ("robot_markers", MarkerArray), ("terrain_mesh", MarkerArray)]}
         self.p_js = self.create_publisher(JointState, "/joint_states", 10)
         self.tf = TransformBroadcaster(self)
         self.create_subscription(PoseStamped, "/goal_pose", self.on_goal, 10)
@@ -196,6 +201,7 @@ class Nav(Node):
         rgb = CLS_RGB[cls[rr, cc]]
         packed = ((rgb[:, 0] << 16) | (rgb[:, 1] << 8) | rgb[:, 2]).astype(np.uint32).view(np.float32)
         self.pub["semantic_cloud"].publish(cloud(np.column_stack([sem.astype(np.float32), packed]), "semantic_cloud"))
+        self.pub["terrain_mesh"].publish(self.terrain_mesh())
         self.rmk = robot_markers()
         # re-sent every 2 s: RViz keeps a marker's "no transform" error until the marker arrives again after TF exists
         self.create_timer(2.0, lambda: self.pub["robot_markers"].publish(self.rmk))
@@ -204,6 +210,18 @@ class Nav(Node):
         self.pw, self.qw = np.array([self.start[0], self.start[1], 0.0]), (1.0, 0.0, 0.0, 0.0)
         self.plan()
         self.create_timer(0.1, self.tick)
+
+    def terrain_mesh(self):
+        """ground surface (prep_terrain_mesh.py) as one coloured TRIANGLE_LIST - the same heights MuJoCo collides with"""
+        M = np.load(f"{a.data}/terrain_mesh.npz")
+        V, VC, F = M["mesh_v"], M["mesh_c"].astype(np.float32) / 255.0, M["mesh_f"]
+        m = self.mk("terrain", 0, Marker.TRIANGLE_LIST, (1, 1, 1, 1), (1, 1, 1))
+        tri = V[F.reshape(-1)]
+        col = VC[F.reshape(-1)]
+        m.points = [Point(x=float(x), y=float(y), z=float(z)) for x, y, z in tri]
+        m.colors = [ColorRGBA(r=float(r), g=float(g), b=float(b), a=1.0) for r, g, b in col]
+        print(f"terrain_mesh: {len(F):,} triangles", flush=True)
+        return MarkerArray(markers=[m])
 
     def on_start(self, msg):
         self.start = (msg.pose.pose.position.x, msg.pose.pose.position.y)
@@ -261,9 +279,6 @@ class Nav(Node):
         out.markers += [self.mk("nav", 0, Marker.CYLINDER, (1, 1, 1, 1), (0.1, 0.1, 3.0), (ge[0], ge[1], ge[2] + 1.5)),
                         self.mk("nav", 1, Marker.CYLINDER, (1.0, 0.72, 0.15, 0.7), (2.5, 2.5, 0.06), (ge[0], ge[1], ge[2] + 0.05)),
                         self.mk("nav", 2, Marker.CYLINDER, (0.3, 0.85, 1.0, 0.7), (2.0, 2.0, 0.06), (path[0, 0], path[0, 1], path[0, 2] + 0.05))]
-        txt = self.mk("nav", 3, Marker.TEXT_VIEW_FACING, (1.0, 0.85, 0.4, 1.0), (0, 0, 1.6), (ge[0], ge[1], ge[2] + 4.2))
-        txt.text = f"GOAL  {L:.0f} m  |  climb {path[:, 2].max() - path[:, 2].min():.1f} m  |  trail {share['TRAIL'] * 100:.0f}%"
-        out.markers.append(txt)
         self.pub["nav_markers"].publish(out)
 
     def tick(self):
