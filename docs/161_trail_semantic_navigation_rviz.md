@@ -296,7 +296,7 @@ cd ~/MikuchanRemote/Human-Pygmalion/tools/terrain_nav && ~/isaac/venv311/bin/pyt
 
 | 항목 | 값 |
 |---|---|
-| 파일 | `docs/media/huphy_trail_uphill_182m.mp4` — 1920 × 1080, 25 fps, **499.4 초 = 걷기 499.4 초 (실시간 1 배)**, 12,485 프레임 |
+| 파일 | `docs/media/huphy_trail_uphill_182m.mp4` — 1920 × 1080, 25 fps, H.264 (CRF 30, 크기 우선), **499.4 초 = 걷기 499.4 초 (실시간 1 배)**, 12,485 프레임 |
 | 걷기 | MuJoCo 물리, v11a 정책, 스캔 그대로의 10 cm 충돌체, 경로 추종기가 주는 속도 명령(0.5 m/s, 굽은 곳에서 감속)만으로 182 m 오르막 완주, +8.9 m |
 | 그림 | Isaac Sim 5.0 RTX(실시간 광선 추적)가 기록을 프레임마다 다시 그림 — PhysX 는 켜지 않는다 |
 | 로봇 | 전신 쉘 모델(`huphy_full_shell_loop`): 다리 24 관절은 기록된 값, 윗몸(허리·팔)은 기본 자세 그대로(걷기 모델에 윗몸이 없음) |
