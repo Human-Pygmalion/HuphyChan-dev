@@ -41,6 +41,7 @@ ap.add_argument("--t1", type=float, default=1e9)
 ap.add_argument("--stills", default="", help="comma list of run seconds: write PNGs <out>_<t>.png and exit")
 ap.add_argument("--updates", type=int, default=2, help="renderer updates per frame (more = cleaner lighting, slower)")
 ap.add_argument("--label", default="uphill", help="word for the overlay: uphill / downhill")
+ap.add_argument("--policy-label", default="RL walking policy (v11a)", help="policy name for the overlay")
 a = ap.parse_args()
 
 os.environ.setdefault("OMNI_KIT_ACCEPT_EULA", "YES")
@@ -117,6 +118,7 @@ def parse_urdf(path):
 # ----------------------------------------------------------------------------- data
 R_ = np.load(a.run)
 QP, DT = R_["qpos"], float(R_["dt"])
+FELL = bool(len(R_["above"]) and (R_["above"][-1] < 0.45 or R_["tilt"][-1] > 60))  # trail_walk_check's fall test
 OFF = R_["offset"].astype(float)
 FA = int(R_["free_adr"])
 run_adr = {str(n).split("/")[-1]: int(ad) for n, ad in zip(R_["joint_names"], R_["jnt_qposadr"])}  # "robot/R_knee_joint" -> "R_knee_joint"
@@ -334,8 +336,11 @@ def overlay(img, k):
     t = k * DT
     climbed = xyz[k, 2] - xyz[0, 2]
     s_along = float(R_["s"][min(k, len(R_["s"]) - 1)])
-    lines = [f"Huphy  |  RL walking policy (v11a), MuJoCo physics on the scanned trail  |  real time 1x",
+    lines = [f"Huphy  |  {a.policy_label}, MuJoCo physics on the scanned trail  |  real time 1x",
              f"t {t:5.1f} s   {a.label} trail {s_along:5.1f} / 182 m   height {climbed:+.1f} m   command {R_['cmd'][min(k, len(R_['cmd']) - 1)][0]:.2f} m/s"]
+    if FELL and k >= len(QP) - 1 - 2 * step:  # the recording stops at the fall: say so on its last frames
+        cv2.rectangle(img, (W // 2 - 260, H // 2 - 70), (W // 2 + 260, H // 2 + 70), (20, 20, 160), -1)
+        cv2.putText(img, "FELL", (W // 2 - 110, H // 2 + 35), FONT, 3.0, (255, 255, 255), 6, cv2.LINE_AA)
     band = img[0:92].astype(np.float32) * 0.45  # dark band so the text reads on any sky or ground
     img[0:92] = band.astype(np.uint8)
     for i, s_ in enumerate(lines):
