@@ -2323,6 +2323,51 @@
       "y": 3320,
       "width": 420,
       "height": 160
+    },
+    {
+      "id": "n_rough_turn_t1",
+      "type": "file",
+      "file": "experiments/2026-10-11_rough_turn_ent002_v11a.md",
+      "x": 24760,
+      "y": 3620,
+      "width": 420,
+      "height": 160
+    },
+    {
+      "id": "n_rough_turn_t2",
+      "type": "file",
+      "file": "experiments/2026-10-11_rough_turn_ent002_yaw15_v11a.md",
+      "x": 24260,
+      "y": 3860,
+      "width": 420,
+      "height": 160
+    },
+    {
+      "id": "n_rough_turn_c3k",
+      "type": "file",
+      "file": "experiments/2026-10-11_rough_turn_ent002_yaw15_v11a_c3k.md",
+      "x": 24260,
+      "y": 4080,
+      "width": 420,
+      "height": 160
+    },
+    {
+      "id": "n_rough_turn_t3",
+      "type": "file",
+      "file": "experiments/2026-10-11_rough_turn_ent002_cw300_v11a.md",
+      "x": 24760,
+      "y": 3860,
+      "width": 420,
+      "height": 160
+    },
+    {
+      "id": "n_rough_turn_t4",
+      "type": "file",
+      "file": "experiments/2026-10-11_rough_turn_ent005_v11a.md",
+      "x": 25260,
+      "y": 3860,
+      "width": 420,
+      "height": 160
     }
   ],
   "edges": [
@@ -4665,6 +4710,46 @@
       "toNode": "n_rough_stag_ab",
       "toSide": "bottom",
       "label": "compare"
+    },
+    {
+      "id": "e_rough_b_turn_t1",
+      "fromNode": "n_rough_stag_b",
+      "fromSide": "bottom",
+      "toNode": "n_rough_turn_t1",
+      "toSide": "top",
+      "label": "warm-start, entropy"
+    },
+    {
+      "id": "e_rough_b_turn_t4",
+      "fromNode": "n_rough_stag_b",
+      "fromSide": "right",
+      "toNode": "n_rough_turn_t4",
+      "toSide": "top",
+      "label": "warm-start, entropy"
+    },
+    {
+      "id": "e_rough_turn_t1_t2",
+      "fromNode": "n_rough_turn_t1",
+      "fromSide": "left",
+      "toNode": "n_rough_turn_t2",
+      "toSide": "top",
+      "label": "+ yaw-only 15%"
+    },
+    {
+      "id": "e_rough_turn_t2_c3k",
+      "fromNode": "n_rough_turn_t2",
+      "fromSide": "bottom",
+      "toNode": "n_rough_turn_c3k",
+      "toSide": "top",
+      "label": "resume to 3000"
+    },
+    {
+      "id": "e_rough_turn_t1_t3",
+      "fromNode": "n_rough_turn_t1",
+      "fromSide": "bottom",
+      "toNode": "n_rough_turn_t3",
+      "toSide": "top",
+      "label": "+ critic warm-up 300"
     }
   ]
 }
