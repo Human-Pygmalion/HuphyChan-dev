@@ -2276,6 +2276,53 @@
       "height": 180,
       "color": "3",
       "text": "**v11 중간 (10-02 00:01)**\n- 두 팔 0→3 단계 800 회마다 자력 승급\n- **3→4 에서 v10 과 똑같이 멈춤** (게이트 오차 상승)\n- 씨앗·서 있는 비율과 무관 → 게이트 숫자 문제 재확인"
+    },
+    {
+      "id": "n_rough_stag_ab",
+      "type": "file",
+      "file": "experiments/2026-10-10_ab_rough_stagnation_compare.md",
+      "x": 24720,
+      "y": 3060,
+      "width": 440,
+      "height": 200
+    },
+    {
+      "id": "n_rr_term_review",
+      "type": "file",
+      "file": "reward_research/2026-10-09_reward_termination_review.md",
+      "x": 25240,
+      "y": 3320,
+      "width": 420,
+      "height": 140,
+      "color": "3"
+    },
+    {
+      "id": "n_rr_stag_lit",
+      "type": "file",
+      "file": "reward_research/2026-10-09_stagnation_termination_literature.md",
+      "x": 25240,
+      "y": 3500,
+      "width": 420,
+      "height": 140,
+      "color": "3"
+    },
+    {
+      "id": "n_rough_stag_a",
+      "type": "file",
+      "file": "experiments/2026-10-10_rough_stag_ab_a_v11a.md",
+      "x": 24260,
+      "y": 3320,
+      "width": 420,
+      "height": 160
+    },
+    {
+      "id": "n_rough_stag_b",
+      "type": "file",
+      "file": "experiments/2026-10-10_rough_stag_ab_b_v11a.md",
+      "x": 24760,
+      "y": 3320,
+      "width": 420,
+      "height": 160
     }
   ],
   "edges": [
@@ -4562,6 +4609,62 @@
       "fromNode": "n_v11_cmp",
       "toNode": "n_v11_interim",
       "label": "중간"
+    },
+    {
+      "id": "e_v11a_to_rough_stag",
+      "fromNode": "n_v11a",
+      "fromSide": "right",
+      "toNode": "n_rough_stag_ab",
+      "toSide": "left",
+      "label": "배우 신경망만 이어받아 험지로"
+    },
+    {
+      "id": "e_termreview_to_rough_stag",
+      "fromNode": "n_rr_term_review",
+      "fromSide": "left",
+      "toNode": "n_rough_stag_ab",
+      "toSide": "bottom",
+      "label": "종료 조건 재검토"
+    },
+    {
+      "id": "e_staglit_to_rough_stag",
+      "fromNode": "n_rr_stag_lit",
+      "fromSide": "left",
+      "toNode": "n_rough_stag_ab",
+      "toSide": "bottom",
+      "label": "정체 종료 문헌"
+    },
+    {
+      "id": "e_v11a_rough_stag_a",
+      "fromNode": "n_v11a",
+      "fromSide": "bottom",
+      "toNode": "n_rough_stag_a",
+      "toSide": "top",
+      "label": "rough warm-start (actor only)"
+    },
+    {
+      "id": "e_v11a_rough_stag_b",
+      "fromNode": "n_v11a",
+      "fromSide": "bottom",
+      "toNode": "n_rough_stag_b",
+      "toSide": "top",
+      "label": "rough warm-start (actor only)"
+    },
+    {
+      "id": "e_rough_stag_a_cmp",
+      "fromNode": "n_rough_stag_a",
+      "fromSide": "right",
+      "toNode": "n_rough_stag_ab",
+      "toSide": "bottom",
+      "label": "compare"
+    },
+    {
+      "id": "e_rough_stag_b_cmp",
+      "fromNode": "n_rough_stag_b",
+      "fromSide": "top",
+      "toNode": "n_rough_stag_ab",
+      "toSide": "bottom",
+      "label": "compare"
     }
   ]
 }
