@@ -3,7 +3,7 @@
 Runs the baked model at the training rates (physics 200 Hz, control 50 Hz) and drives the
 actuated joints with **the same torque expression the trainer uses**:
 
-    raw = clip(kp * (q_target - q) - kd * qdot,  -effort, +effort)
+    raw = clip(s * kp * (q_target - q) - s * kd * qdot,  -effort, +effort)   # s = Action scale, 1.0 default
     tau = tn_clamp(raw, qdot)              # measured T-N curve, speed-dependent ceiling
     qfrc_applied[dof] = tau
 
@@ -300,6 +300,11 @@ class SimCore:
     self.gains_source = "train"
     self.gains_overrides: dict[str, dict] = {}
     self._kp_train, self._kd_train = self.kp.copy(), self.kd.copy()
+    # "Action scale" (2026-10-12, user request): ONE factor on every joint's Kp AND Kd, applied
+    # where the motor torque is computed (_substep) and to the gains the TX wrapper is handed.
+    # It is not the policy's action scale (0.25 rad/unit) and never touches joint targets.
+    # 1.0 multiplies exactly (IEEE), so the torques are bit-identical to the unscaled path.
+    self.gain_scale = 1.0
 
     # ---------------------------------------------------------------- violations (A2, 09-04)
     # ONE shared record log for every place in this process that clamps/refuses a joint
@@ -691,6 +696,24 @@ class SimCore:
       self.kd[i] = float(o.get("kd", self.kd[i]))
     return self.gains_table()
 
+  GAIN_SCALE_MIN, GAIN_SCALE_MAX = 0.05, 1.0  # the viser slider's range (never boost above 1)
+
+  def set_gain_scale(self, scale: float) -> float:
+    """Set the live Kp/Kd multiplier (see ``gain_scale``); returns the value now in force.
+    Out of range or non-finite is refused, not clamped - a typo must not silently soften the
+    robot to a value nobody chose."""
+    s = float(scale)
+    if not (self.GAIN_SCALE_MIN - 1e-9 <= s <= self.GAIN_SCALE_MAX + 1e-9):
+      raise ValueError(
+        f"gain scale must be in [{self.GAIN_SCALE_MIN}, {self.GAIN_SCALE_MAX}], got {scale!r}"
+      )
+    self.gain_scale = round(s, 4)
+    return self.gain_scale
+
+  def effective_gains(self) -> tuple[np.ndarray, np.ndarray]:
+    """(kp, kd) as the motors see them: the table gains times ``gain_scale``."""
+    return self.gain_scale * self.kp, self.gain_scale * self.kd
+
   def gains_table(self) -> dict:
     """P4/R7 adds the RECEIVED hardware gains (when any have arrived over telemetry) next to
     the sim ones, per joint, with the ratio flagged when it is off by more than 5% - a
@@ -826,7 +849,8 @@ class SimCore:
   def _substep(self) -> None:
     q = self.d.qpos[self.a_q]
     qv = self.d.qvel[self.a_d]
-    raw = np.clip(self.kp * (self.target - q) - self.kd * qv, -self.eff, self.eff)
+    kp, kd = self.effective_gains()  # Action scale: gain_scale * Kp, gain_scale * Kd
+    raw = np.clip(kp * (self.target - q) - kd * qv, -self.eff, self.eff)
     tau = self._tn_clamp(raw, qv)
     direct_now = getattr(self, "_replay_direct_now", None)
     if direct_now:
@@ -984,6 +1008,8 @@ class SimCore:
       self.cmd = np.asarray(cmd["value"], dtype=float).reshape(3)
     elif op == "gains":
       self.set_gains(cmd.get("source"), cmd.get("overrides"), cmd.get("clear_overrides", False))
+    elif op == "gain_scale":
+      self.set_gain_scale(cmd["value"])
     elif op == "obs_source":
       if self.obs_mux is None:
         raise RuntimeError("no policy loaded; there are no observation terms to route")
@@ -1022,11 +1048,12 @@ class SimCore:
       # The ONLY thing ever handed to the TX wrapper is the current manual/script target -
       # never a policy action, which is a different attribute entirely (self.last_action /
       # self._policy_target) and is simply never read here (docs/123 section 4).
+      kp_tx, kd_tx = self.effective_gains()  # same Action scale as the sim torque
       self.tx.on_control_tick(
         self.mode,
         {n: float(self.target[i]) for i, n in enumerate(self.act_names)},
-        {n: float(self.kp[i]) for i, n in enumerate(self.act_names)},
-        {n: float(self.kd[i]) for i, n in enumerate(self.act_names)},
+        {n: float(kp_tx[i]) for i, n in enumerate(self.act_names)},
+        {n: float(kd_tx[i]) for i, n in enumerate(self.act_names)},
       )
     if self.policy is not None and self.mode.startswith("policy"):
       self._policy_tick()
@@ -1157,6 +1184,7 @@ class SimCore:
       ),
       warnings=self._warnings(q_all),
       gains_source=self.gains_source,
+      gain_scale=self.gain_scale,
       telemetry=self._telemetry_status(),
       sign_sanity=self.real.sign_sanity(),
     )

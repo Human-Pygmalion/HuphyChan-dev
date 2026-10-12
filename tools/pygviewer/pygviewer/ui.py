@@ -452,6 +452,41 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
     vx = gui.add_slider("vx [m/s]", min=-1.0, max=2.5, step=0.05, initial_value=0.0)
     vy = gui.add_slider("vy [m/s]", min=-0.5, max=0.5, step=0.05, initial_value=0.0)
     wz = gui.add_slider("wz [rad/s]", min=-1.5, max=1.5, step=0.05, initial_value=0.0)
+    # Action scale (2026-10-12, user request): multiplies Kp AND Kd of every actuated joint where the
+    # motor torque is computed (SimCore._substep), live, no reload.  Not the policy's 0.25 rad/unit.
+    gain_scale = gui.add_slider(
+      "Action scale (Kp·Kd ×)", min=0.05, max=1.0, step=0.05,
+      initial_value=float(getattr(core, "gain_scale", 1.0)),
+    )
+    gain_md = gui.add_markdown("")
+
+    def _gain_scale_md() -> str:
+      c_ = state["core"]
+      s_ = c_.gain_scale
+      t_ = c_.gains_table()
+      rows = []
+      # one representative joint per motor group (R side): the readout, not the whole table
+      for key, label in (("knee", "knee"), ("hip_pitch", "hip pitch"), ("crank_A", "crank")):
+        n_ = next((n for n in t_ if key in n and n.startswith("R_")), None)
+        if n_ is not None:
+          g_ = t_[n_]
+          rows.append(
+            f"{label} Kp {g_['kp']:g}→{g_['kp'] * s_:.4g}, Kd {g_['kd']:g}→{g_['kd'] * s_:.3g}"
+          )
+      return f"**×{s_:.2f}** on every joint's Kp and Kd  \n" + "  \n".join(rows)
+
+    gain_md.content = _gain_scale_md()
+
+    @gain_scale.on_update
+    def _(_evt):
+      try:
+        state["core"].set_gain_scale(gain_scale.value)
+      except Exception as exc:
+        gain_scale.value = state["core"].gain_scale
+        gain_md.content = f"**{exc}**"
+        return
+      gain_md.content = _gain_scale_md()
+
     shadow_follow_cb = gui.add_checkbox(
       "shadow_follow (policy_shadow only, local sim)", initial_value=core.shadow_follow
     )
@@ -1000,6 +1035,7 @@ def _swap_variant(server: viser.ViserServer, state: dict, want: str) -> None:
   old.stop()
   c = load_contract(CACHE_DIR, want)
   new = SimCore(c)
+  new.gain_scale = old.gain_scale  # Action scale survives a model swap (the slider is rebuilt from it)
   server.scene.reset()
   server.gui.reset()
   state["core"] = new
