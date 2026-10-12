@@ -1,458 +1,255 @@
-# 감사 문서: 험지 보행 정책의 학습 구성 (실행 이름 `rough_box_main_v11a`)
+# Audit: `rough_box_main_v11a` 학습 구성
 
 | 항목 | 내용 |
 |---|---|
-| 문서 종류 | 학습 구성 감사 (설명 + 지적 사항) |
-| 작성 규칙 | ASD-STE100 단순 기술 영어의 원칙을 한국어에 적용 (0.3 참고). 영어 원본: [README.md](README.md) |
-| 날짜 | 2026-10-12 |
-| 감사 대상 | 정책 1 개. 실행 폴더 `2026-10-11_23-35-20_rough_box_main_v11a` 의 저장본 `model_11999.pt` (12,000 번 반복 중 마지막 저장본). 이 문서는 이 정책을 "대상 정책" 이라 부른다. |
-| 요청 | 이 프로젝트의 책임자(문서에서는 "사용자"), 2026-10-12. 범위: 학습 환경, 원본 코드 수정, 커리큘럼, 무작위화, 로봇 모형, 관절별 Kp·Kd |
-| 방법 | 읽기 전용 조사 5 건(근거 조사 A~E)을 나란히 수행. 모든 사실에 출처(`파일:줄`, 커밋, 문서 절, 명령 출력)를 붙임 |
+| 대상 | run `2026-10-11_23-35-20_rough_box_main_v11a`, checkpoint `model_11999.pt` |
+| 독자 | RL·mjlab 을 아는 개발자. 이 저장소의 이력은 모른다고 가정한다. |
+| 형식 | ASD-STE100 원칙(한 문장 한 사실, 능동형, 표 우선). 영어판: [README.md](README.md) |
+| 작성일 | 2026-10-12 |
+| 표기 | 모든 사실에 출처(`파일:줄`, commit, 문서)를 붙인다. "미검증" = 이 audit 이 확인하지 못함. "출처 없음" = 값의 근거 기록이 없음. |
 
 ---
 
-## 읽기 전에
+## 0. 개요
 
-이 문서는 이 저장소의 이력을 모르는 개발자를 위해 쓴 독립 기록이다.
-앞선 대화나 다른 문서를 읽었다고 가정하지 않는다.
-처음 나오는 전문 용어는 바로 아래 "용어 정리" 에서 한 문장으로 설명한다.
+### 0.1 로봇과 정책
 
-### 로봇
-
-- 로봇 이름은 Pygmalion 이다. 사람 모양의 두 다리로 걷는 하체 로봇(이족 보행 로봇)이다.
-- 학습에 쓴 모형은 몸통(골반)과 다리 두 개만 있다. 상체와 팔은 없다.
-- 모형 전체 질량은 23.630 kg 이다 (4.4 절).
-- 구동 관절은 12 개다. 다리 하나에 6 개다.
-  - 엉덩이 앞뒤(pitch), 엉덩이 옆(roll), 엉덩이 비틀기(yaw), 무릎: 각 1 개.
-  - 발목 크랭크 모터 A, B: 각 1 개. 이 모터 두 개가 연결봉으로 발목을 움직인다.
-- 발목 앞뒤 관절과 발목 옆 관절에는 모터가 없다 (수동 관절). 크랭크 모터 두 개가 병렬 기구(2-RSU)로 이 두 관절을 구동한다 (4.3 절).
-
-### 정책이 하는 일
-
-- 정책은 속도 명령을 받아 걷는다.
-- 입력은 명령(앞뒤 속도, 옆 속도, 제자리 회전 각속도)과 센서 값이다.
-- 출력은 관절 12 개의 목표 각도다. 정책은 1 초에 50 번 출력한다 (50 Hz).
-- 관절 제어기가 목표 각도를 토크로 바꾼다 (PD 제어, 5 절).
-
-### 학습에 쓴 소프트웨어
-
-- mjlab: MuJoCo 와 MuJoCo Warp 물리 엔진 위에서 로봇 강화학습 환경을 만드는 프레임워크. 이 프로젝트는 `https://github.com/mujocolab/mjlab` 를 포크해서 고쳐 썼다 (1.10 절).
-- rsl_rl: 강화학습 알고리즘 PPO 를 구현한 라이브러리. 수정 없이 썼다 (0.4 절).
-
-### 학습 순서
-
-1. 먼저 평지에서만 걷는 정책을 30,000 번 반복 학습했다. 이 정책을 "부모 정책" 이라 부른다.
-2. 대상 정책은 부모 정책의 행위자 신경망(정책의 판단 부분) 가중치에서 시작했다. 평가자 신경망은 새로 시작했다 (1.9 절).
-3. 상자로 만든 험지(계단, 고르지 않은 바닥, 기울어진 판)에서 12,000 번 더 학습했다 (1.2 절).
-
-### 이 문서가 다루는 것과 결과 요약
-
-- 다루는 것: 대상 정책의 학습 설정, 각 설정의 동작 논리, 각 값의 출처.
-- 다루지 않는 것: 정책의 보행 성능 평가. 이 문서는 설정만 감사한다.
-- 지적 사항은 20 건이다: 높음 3, 중간 8, 낮음 8, 참고 1 (6 절).
-- 가장 중요한 지적 3 건 (높음):
-  - F1: 학습에 쓴 PD 게인이 문서에 적힌 실기 로봇 게인보다 15~22 배 크다.
-  - F2: 학습 중 센서 영점 오차 무작위화(±0.86°)가 실측 오차(최대 9.4°)보다 훨씬 작다.
-  - F3: 통신 지연, 관성센서 편향, 게인, 모터 세기, 관절 동역학은 무작위화하지 않았다.
-
----
-
-## 용어 정리
-
-각 용어는 이 문서에서 쓰는 뜻으로 한 문장씩 설명한다.
-
-### 강화학습
-
-| 용어 | 뜻 |
-|---|---|
-| 정책(policy) | 관측 값을 받아 행동을 내는 신경망이다. 이 문서에서 정책은 로봇을 걷게 하는 신경망이다. |
-| 환경(environment) | 시뮬레이션 안의 로봇 한 대와 그 주변이다. 이 학습은 환경 4,096 개를 동시에 돌린다. |
-| 걸음(step) | 정책이 행동을 한 번 내는 단위다. 0.02 초에 해당한다. |
-| 에피소드(episode) | 환경을 초기화한 뒤 종료 조건이 나올 때까지의 한 번의 시도다. |
-| 행위자(actor) | 정책 신경망이다. 관측을 받아 행동을 낸다. 학습이 끝난 뒤 로봇에 배치하는 쪽이다. |
-| 평가자(critic) | 지금 상태가 앞으로 얼마나 좋을지 추정하는 신경망이다. 학습 중에만 쓴다. |
-| 비대칭 행위자-평가자 | 행위자와 평가자가 서로 다른 관측을 받는 구성이다. 평가자가 더 많은 정보를 본다. |
-| PPO | Proximal Policy Optimization 의 약자다. 정책을 조금씩만 바꾸며 보상을 높이는 강화학습 알고리즘이다. |
-| 반복(iteration) | 학습의 한 주기다. 환경마다 24 걸음을 모은 뒤 신경망을 한 번 갱신한다. |
-| 저장본(checkpoint) | 학습 중간이나 끝에 저장한 신경망 가중치 파일이다. |
-| 씨앗(seed) | 난수 생성기의 시작 값이다. 같은 값이면 같은 난수 열이 나온다. |
-| 보상, 벌점 | 걸음마다 정책에 주는 점수다. 가중치가 양수이면 보상, 음수이면 벌점이다. 정책은 합계를 높이도록 배운다. |
-| 종료 조건 | 에피소드를 끝내는 규칙이다. 예: 로봇이 넘어짐. |
-| 엔트로피 계수 | 정책이 행동을 무작위로 고르도록 장려하는 항의 가중치다. 클수록 행동 잡음이 커진다. |
-| 행동 잡음 크기 | 정책이 행동 값에 섞는 무작위 잡음의 표준편차다. 학습 중 탐색의 크기를 뜻한다. |
-| 커리큘럼(curriculum) | 학습 난이도를 단계적으로 올리는 규칙이다. |
-| 무작위화(domain randomization) | 학습 중 질량, 마찰, 밀기 같은 물리 값을 매번 다르게 뽑아서 정책이 한 가지 값에 맞춰지지 않게 하는 방법이다. |
-| 이어 학습(warm start) | 이전 학습의 신경망 가중치로 새 학습을 시작하는 방법이다. |
-| 관측 정규화 | 관측 값의 평균과 분산을 계속 추정해서 입력을 같은 크기로 맞추는 처리다. |
-| 부트스트랩(bootstrap) | 에피소드가 시간 제한으로 끝났을 때, 끝 이후의 가치를 평가자의 추정으로 이어 가는 처리다. |
-| KL (Kullback-Leibler 발산) | 갱신 전후 정책의 차이를 재는 값이다. 적응형 학습률은 이 값을 목표 근처로 유지하도록 학습률을 바꾼다. |
-
-### 제어와 센서
-
-| 용어 | 뜻 |
-|---|---|
-| PD 제어 | 목표 각도와 현재 각도의 차이, 그리고 각속도로 토크를 계산하는 제어다 (5.1 절의 식). |
-| Kp | PD 제어에서 각도 차이에 곱하는 계수다. 클수록 관절이 목표로 세게 당겨진다. 단위는 N·m/rad 다. |
-| Kd | PD 제어에서 각속도에 곱하는 계수다. 클수록 관절 움직임을 세게 막는다. 단위는 N·m·s/rad 다. |
-| 토크-속도 곡선 | 모터가 회전 속도마다 낼 수 있는 최대 토크를 나타낸 곡선이다. |
-| 아마추어(armature) | 모터 회전자가 관절 쪽으로 환산되어 더하는 관성이다. MuJoCo 의 관절 속성이다. |
-| 점성(viscous), 마찰(friction) | 관절의 저항이다. 점성은 속도에 비례하고, 마찰은 일정한 크기다. |
-| 고유 진동수, 감쇠비 | 관절이 목표 주변에서 흔들리는 빠르기(Hz)와, 그 흔들림이 줄어드는 정도다. 감쇠비 1 보다 작으면 흔들린다. |
-| 엔코더 | 관절 각도를 재는 센서다. |
-| 영점 오차 | 엔코더가 0 을 가리킬 때의 실제 각도와 0 의 차이다. |
-| 관성센서(IMU) | Inertial Measurement Unit 이다. 몸통의 각속도(자이로)와 기울기(중력 방향)를 잰다. |
-| 시뮬-실기 격차(sim-to-real gap) | 시뮬레이션과 실제 로봇의 차이다. |
-
-### 로봇과 모형
-
-| 용어 | 뜻 |
-|---|---|
-| 몸통(base, base_link) | 모형의 골반 링크다. 다리 두 개가 여기에 붙는다. |
-| 엉덩이 앞뒤, 옆, 비틀기 | 엉덩이 관절 세 축이다. 코드 이름은 hip_pitch, hip_roll, hip_yaw 다. |
-| 크랭크 A, B | 발목 쪽 정강이에 달린 모터 두 개의 출력 팔이다. 연결봉으로 발을 민다. 코드 이름은 crank_A, crank_B 다. |
-| 2-RSU 발목 | 회전(Revolute)-구면(Spherical)-유니버설(Universal) 연결 사슬 2 개가 발을 정강이에 잇는 병렬 기구다. 모터 두 개가 발목 앞뒤와 옆 두 방향을 함께 움직인다. |
-| 수동 관절 | 모터가 직접 구동하지 않는 관절이다. 발목 앞뒤와 옆이 이에 해당한다. |
-| 고리 구속(loop closure) | 닫힌 연결 기구(발목)를 시뮬레이션에서 닫아 주는 구속 조건이다. MuJoCo 의 `connect` 구속을 쓴다. |
-| RS03, RS04 | 이 로봇에 쓰는 모터 모델 이름이다. RS04 는 토크 한계 ±120 N·m, RS03 은 ±60 N·m 다 (4.5 절). |
-| Unitree G1, K-Bot | 다른 휴머노이드 로봇이다. 5.2 절에서 이 로봇들의 공개 게인을 참고한다. |
-| 무게중심(CoM) | Center of Mass. 질량의 중심 위치다. |
-
-### 시뮬레이션과 파일
-
-| 용어 | 뜻 |
-|---|---|
-| MuJoCo, MuJoCo Warp | 물리 엔진과, 그 엔진을 GPU 에서 병렬로 돌리는 구현이다. |
-| MJCF | MuJoCo 가 읽는 로봇 모형 XML 형식이다. 학습은 이 형식만 읽는다. |
-| URDF | 로봇 모형의 다른 XML 형식이다. 학습은 읽지 않는다 (4.1 절). |
-| 높이 지도(heightfield) | 격자 점마다 높이를 준 지형 표현이다. 이 학습은 쓰지 않는다 (1.2 절). |
-| 물리 걸음, 제어 주기 | 물리 계산은 0.005 초마다 한 번이다. 정책은 물리 4 번마다 한 번 행동을 낸다 (0.02 초). |
-| 메시, STL | 3 차원 모양을 삼각형으로 나타낸 자료와 그 파일 형식이다. |
-
-### 이 프로젝트의 코드와 기록
-
-| 용어 | 뜻 |
-|---|---|
-| 원본(순정, upstream)과 포크 | 원본은 `mujocolab/mjlab` 저장소의 코드다. 포크는 이 프로젝트가 원본을 복사해서 고친 코드다. |
-| 하위 모듈(git submodule) | 한 git 저장소 안에 다른 git 저장소를 넣는 방식이다. 이 저장소의 `mujoco-sim/mjlab` 이 포크다. |
-| `PYG_*` 플래그 | 이 프로젝트가 포크에 추가한 기능마다 있는 환경 변수다. 지정하지 않으면 그 기능은 꺼진다. |
-| 부모 정책 | 이 정책이 가중치를 가져온 이전 정책이다. 평지에서만 30,000 번 반복 학습했다. 저장본은 `2026-10-02_23-52-14_legonly_ab_v11a_stand01_s43_p2/model_29998.pt` 다. |
-| 발사 스크립트(launcher) | 학습을 시작하는 스크립트다. 플래그와 부모 저장본을 정해서 학습 스크립트를 부른다. |
-| 실행(run) | 학습 한 번이다. 실행마다 폴더가 하나 생긴다. |
-| 텐서보드, 콘솔 기록 | 학습 중 지표를 저장한 파일과, 학습 프로세스가 화면에 출력한 글이다. |
-| 지문(해시) | 파일 내용에서 계산한 짧은 식별 문자열이다. 두 파일의 지문이 같으면 내용이 같다. |
-| 하중 측정 | 학습이 끝난 정책으로 로봇을 걷게 하면서 관절과 발에 걸리는 힘을 재는 일이다. 이 프로젝트에서 정책의 용도다. |
-| 되돌림(snap-back) | 프로젝트 문서가 쓰는 이름이다. 이어 학습을 시작하자마자 명령 속도 범위를 부모 정책의 마지막 범위로 한꺼번에 올리는 방법이다 (2.1 절). |
-| 근거 조사 A~E | 이 감사를 쓰려고 2026-10-12 에 한 읽기 전용 조사 5 건이다. 주제는 7 절 표에 있다. |
-| `docs/번호_이름.md` | 이 저장소의 `docs/` 아래 내부 문서다. 이 문서는 출처로 인용만 한다. 본문은 그 문서를 읽지 않아도 이해되게 쓴다. |
-| 실행 이름의 꼬리표 | 폴더 이름의 `rough`(험지 과제), `box`(상자 지형)는 설정을 뜻한다. `main`, `v11a`, `stand01`, `s43`, `p2` 는 작성자가 붙인 이름표다. 이 문서는 이 이름표를 설정값으로 쓰지 않는다. |
-| 모형 파일 이름의 꼬리표 | 모형 XML 이름 `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop` 의 각 부분이다. 아래 표에 정리했다. |
-
-모형 파일 이름의 꼬리표:
-
-| 꼬리표 | 뜻 | 상세 |
-|---|---|---|
-| `LegOnly` | 다리만 있는 모형이다. | 읽기 전에 |
-| `prototype` | 시제품 로봇의 모형이다. | 두 문서에 더 자세한 정의 없음 |
-| `tempmass` | 임시 질량(temporary mass)이다. 알루미늄 부품 9 개를 실측이 아닌 CAD 밀도 추정값으로 둔 질량이다. | 4.2 절 2b 단계 |
-| `motormeasured` | 모터 값을 실측해서 XML 에 쓴 모형이다. | 4.2 절 8 단계, 4.4 절 |
-| `armfix` | 어깨 하우징 부품 2 개를 팔 링크 소속으로 옮긴 수정. 다리만 있는 모형(LegOnly)에는 영향이 없다. | `docs/112` §1 |
-| `v30` | CAD 원본 버전 30 이다 (Fusion 360, 2026-09-01). | 4.2 절 0 단계 |
-| `proxyfix` | 모터를 대신하는 원기둥(proxy)의 위치를 실제 CAD 에서 다시 읽어 고친 수정이다. | 4.2 절 4 단계 |
-| `loop` | 발목의 닫힌 고리를 구속 조건으로 닫은 모형 파일이다. | 4.3 절 |
-| `fastener50` (질량 무작위화 파일 이름) | CAD 에 실제 나사의 50~100 % 만 들어 있을 수 있다고 보는 체결구 보정이다. | 3.3 절 2 단계 |
-
----
-
-## 0. 일반
-
-### 0.1 목적
-
-이 문서는 대상 정책을 어떻게 학습했는지 기록한다.
-각 설정의 동작 논리와 각 값의 출처를 적는다.
-6 절에 감사 지적 사항을 적는다.
+- 로봇: Pygmalion 하체 이족. Actuated joint 12 개 (다리마다 hip pitch/roll/yaw, knee, ankle crank A/B).
+- Ankle pitch/roll 은 passive joint 다. 두 crank 모터가 2-RSU 병렬 링크로 구동한다 (이 저장소에서 "AB mode").
+- 모델 질량 23.63 kg.
+- 정책: velocity-command 보행 정책. 입력 명령 (vx, vy, wz), 출력 joint position target, 50 Hz.
+- 학습 순서: flat terrain 정책(30,000 iter)의 actor 를 가져와, box-only rough terrain 에서 12,000 iter 추가 학습했다.
 
 ### 0.2 경로 약칭
 
-| 약칭 | 실제 경로 |
+| 약칭 | 경로 |
 |---|---|
-| `MJ` | `mujoco-sim/mjlab` (git 하위 모듈, `https://github.com/mujocolab/mjlab` 의 포크) |
-| `ENVCFG` | `MJ/src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py` (Pygmalion 학습 환경 설정 코드) |
-| `CONST` | `MJ/src/mjlab/asset_zoo/robots/pygmalion/pygmalion_constants.py` (로봇 상수: 게인, 시작 자세, 액추에이터) |
-| `XML` | `MJ/src/mjlab/asset_zoo/robots/pygmalion/xmls/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml` (로봇 모형 MJCF) |
-| `RUN` | 호스트 10.8.0.14 의 `MJ/logs/rsl_rl/pygmalion_velocity/2026-10-11_23-35-20_rough_box_main_v11a/` (학습을 돌린 원격 컴퓨터의 실행 폴더) |
-| `ENV.yaml` | `RUN/params/env.yaml` (이 실행에 실제 적용된 환경 설정 전체) |
-| `MANIFEST` | `RUN/repro/launch_manifest.json` (플래그, 명령, 부모 저장본, 소스 지문을 기록한 파일) |
+| `MJ` | `mujoco-sim/mjlab` (git submodule, `github.com/mujocolab/mjlab` 의 fork) |
+| `ENVCFG` | `MJ/src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py` |
+| `CONST` | `MJ/src/mjlab/asset_zoo/robots/pygmalion/pygmalion_constants.py` |
+| `XML` | `MJ/src/mjlab/asset_zoo/robots/pygmalion/xmls/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml` |
+| `RUN` | 10.8.0.14 의 `MJ/logs/rsl_rl/pygmalion_velocity/2026-10-11_23-35-20_rough_box_main_v11a/` |
+| `ENV.yaml` | `RUN/params/env.yaml` (resolved env cfg) |
+| `MANIFEST` | `RUN/repro/launch_manifest.json` (flag, command, parent, source hash) |
 
-나머지 경로는 저장소 루트 `/home/syaro/MikuchanRemote/Human-Pygmalion` 기준이다.
-"로컬" 은 이 저장소가 있는 컴퓨터다. "원격" 은 학습을 돌린 컴퓨터 10.8.0.14 다.
+### 0.3 `PYG_*` flag
 
-### 0.3 작성 규칙
+이 fork 는 Pygmalion 전용 기능을 환경변수 `PYG_*` 로 켜고 끈다.
+Flag 는 import 시점에 `ENVCFG`·`CONST` 가 읽는다. 따라서 같은 task id 도 flag 에 따라 다른 env 가 된다.
+이 run 의 flag 전체는 `MANIFEST` 가 정본이다 (§0.5).
 
-이 문서는 ASD-STE100 의 원칙을 한국어에 맞춰 따른다.
-
-- 한 문장에 한 가지 내용만 쓴다. 설명 문장은 짧게 쓴다.
-- 능동형으로 쓴다. 사실은 현재형, 지난 사건은 과거형으로 쓴다.
-- 표준 기술 용어(PPO, MJCF, 아마추어 등)만 쓴다. 처음 나올 때 뜻을 붙인다.
-- 긴 문장 대신 표와 목록을 쓴다.
-- "미검증" 은 이 감사가 증명하지 못한 내용이다.
-- "출처 없음" 은 값이 어디서 왔는지 기록이 없는 경우다.
-
-### 0.4 정책 식별
+### 0.4 식별 정보
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 과제(mjlab 의 task 이름) | `Mjlab-Velocity-Rough-Pygmalion` (속도 명령 추종, 험지, Pygmalion 로봇) | `MANIFEST` 명령 |
-| 발사 스크립트 | `MJ/analysis/launch_rough_main.py` (커밋 `baccb01b`) | `MANIFEST` |
-| 학습 스크립트 | `MJ/analysis/train_actor_warmstart.py` | `MANIFEST` 명령 |
-| 시작점 | 부모 정책(평지 30,000 번 반복 학습)의 저장본 `2026-10-02_23-52-14_legonly_ab_v11a_stand01_s43_p2/model_29998.pt` 에서 행위자 가중치만 이어받음 | `MANIFEST` 부모 항목 |
-| 규모 | 12,000 반복, 환경 4,096 개, 반복마다 환경당 24 걸음 | `RUN/params/agent.yaml`; 콘솔 기록 |
-| 씨앗 | 43 | `MANIFEST` 명령 |
-| 장비 | RTX 3090 그래픽 카드 1 장, 호스트 10.8.0.14 | 콘솔 기록 |
-| 소프트웨어 | mjlab 1.5.0(포크, 편집 설치: 소스 폴더를 직접 가리키는 설치), rsl_rl 5.4.0, mujoco 3.10.0, mujoco_warp 3.10.0.1, warp 1.14.0, torch 2.9.0 | 가상환경 패키지 기록 |
-| 외부 패키지 | rsl_rl 과 mujoco_warp 는 수정 없음 (설치 기록 `RECORD` 의 파일 지문이 전부 일치) | 근거 조사 A |
+| Task | `Mjlab-Velocity-Rough-Pygmalion` | `MANIFEST` |
+| Launcher | `MJ/analysis/launch_rough_main.py` (commit `baccb01b`) | `MANIFEST` |
+| Train script | `MJ/analysis/train_actor_warmstart.py` (actor-only load) | `MANIFEST` |
+| Parent | `2026-10-02_23-52-14_legonly_ab_v11a_stand01_s43_p2/model_29998.pt` (flat task, 30,000 iter) | `MANIFEST` parent |
+| 규모 | 12,000 iter, 4,096 env, 24 step/env/iter, seed 43 | `RUN/params/agent.yaml` |
+| 하드웨어 | RTX 3090 1 장 (10.8.0.14) | console log |
+| SW | mjlab 1.5.0 (fork, editable), rsl_rl 5.4.0, mujoco 3.10.0, mujoco_warp 3.10.0.1, warp 1.14.0, torch 2.9.0 | venv |
+| 외부 패키지 수정 | rsl_rl·mujoco_warp 수정 없음 (RECORD hash 전부 일치) | survey A |
 
-### 0.5 실행 플래그 (`PYG_*`)
+### 0.5 Flag 목록
 
-`MANIFEST` 가 정본이다.
-아래 표는 켜진 플래그를 묶음별로 나눈다. 각 플래그의 동작은 "관련 절" 에 있다.
+| 분류 | Flag |
+|---|---|
+| 모델 | `V2=1`, `ANKLE_MODE=AB`, `MODEL_TAG=LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix`, `MOTOR_MEAS=1`, `TN=1`, `ARM_ABD_DEG=15` (LegOnly 에는 무효), `SAFE_TARGET_CLIP=1` |
+| 초기 자세 | `INIT_BENT=1`, `INIT_MID=1` |
+| Observation | `STUDENT_TEACHER=1`, `CRITIC_DR_OBS=1`, `OBS_NAN_GUARD=1` |
+| DR | `INERTIAL_DR=1`, `MASS_DR_JSON=tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json`, `DR_START_ITER=2000`, `DR_END_ITER=8000` |
+| Curriculum | `GATED_CURRICULUM=1`, `GATE_ERR_RATIO=1.1`, `GATE_FELL_MAX=0.005`, `GATE_MIN_DWELL=0`, `GATE_MAX_DWELL=0`, `GATE_MIN_EPISODES=64`, `GATE_WINDOW=100`, `CMD_VY_STAGES=1`, `FRESH_STEPS=1` |
+| Command | `REL_STANDING=0.1`, `REL_HEADING=0.3` |
+| Terrain | `BOX_TERRAIN=1` |
+| Reward | `SOFT_LANDING=1`, `SOFT_LANDING_MODE=half`, `KNEE_EXT=1`, `KNEE_EXT_DEG=25`, `KNEE_EXT_W=2.0`, `REWARD_TERM_CLAMP=50` |
+| Termination | `LOW_BASE_REL=1`, `NAN_TERM=1`, `BLOWUP_TERM=1`, `STAGNATION=1` |
+| Optimizer | `ENTROPY_ANNEAL=1` (coef 0.002 고정), `CRITIC_WARMUP_ITERS=300` |
 
-| 묶음 | 플래그 | 관련 절 |
+꺼진 flag: `NO_DR`, `DR_STRONG`, `DR_STARTUP`, `PD_GAIN_DR`, `ACTION_DELAY`, `ACTION_NOISE`, `RESET_JOINT_NOISE`, `RESET_TILT`, `BEYONDMIMIC`, `REL_YAW_ONLY`, `CMD_NORM_CAP`, `UNEVEN`.
+
+### 0.6 모델 파일명 tag
+
+| Tag | 의미 | 출처 |
 |---|---|---|
-| 로봇 모형 | `V2=1`, `ANKLE_MODE=AB`, `MODEL_TAG=LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix`, `MOTOR_MEAS=1`, `TN=1`, `ARM_ABD_DEG=15`(다리만 있는 모형이라 효과 없음), `SAFE_TARGET_CLIP=1` | 1.4, 4 |
-| 시작 자세 | `INIT_BENT=1`, `INIT_MID=1` | 4.3 (시작 자세) |
-| 관측 | `STUDENT_TEACHER=1`, `CRITIC_DR_OBS=1`, `OBS_NAN_GUARD=1` | 1.3 |
-| 무작위화 | `INERTIAL_DR=1`, `MASS_DR_JSON=tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json`, `DR_START_ITER=2000`, `DR_END_ITER=8000` | 2.3, 3 |
-| 커리큘럼 | `GATED_CURRICULUM=1`, `GATE_ERR_RATIO=1.1`, `GATE_FELL_MAX=0.005`, `GATE_MIN_DWELL=0`, `GATE_MAX_DWELL=0`, `GATE_MIN_EPISODES=64`, `GATE_WINDOW=100`, `CMD_VY_STAGES=1`, `FRESH_STEPS=1` | 2.1, 1.9 |
-| 명령 | `REL_STANDING=0.1`, `REL_HEADING=0.3` | 1.5 |
-| 지형 | `BOX_TERRAIN=1` | 1.2 |
-| 보상 | `SOFT_LANDING=1`, `SOFT_LANDING_MODE=half`, `KNEE_EXT=1`, `KNEE_EXT_DEG=25`, `KNEE_EXT_W=2.0`, `REWARD_TERM_CLAMP=50` | 1.6 |
-| 종료 | `LOW_BASE_REL=1`, `NAN_TERM=1`, `BLOWUP_TERM=1`, `STAGNATION=1` | 1.7 |
-| 최적화 | `ENTROPY_ANNEAL=1` (엔트로피 계수의 시작 값과 끝 값 0.002, 일정의 시작·끝 반복 0), `CRITIC_WARMUP_ITERS=300` | 2.4, 2.5, 1.9 |
-
-켜지 않은 플래그: `NO_DR`, `DR_STRONG`, `DR_STARTUP`, `PD_GAIN_DR`, `ACTION_DELAY`, `ACTION_NOISE`, `RESET_JOINT_NOISE`, `RESET_TILT`, `BEYONDMIMIC`, `REL_YAW_ONLY`, `CMD_NORM_CAP`, `UNEVEN`.
+| `LegOnly` | 하체만 (상체 body 없음). Waist-yaw 모터 질량은 base 에 포함 | `massprops_fusion.py:92-99` |
+| `prototype-tempmass` | Aluminium body 9 개/다리의 질량이 실측이 아닌 CAD 밀도 추정값 | `tools/robot_model/prototype_tempmass.py` |
+| `motormeasured` | 모터 질량 실측값 (RS04 1.514 kg, RS03 0.9195 kg). 이후 bench 측정 armature·friction 도 XML 에 기록됨 | `XML:9`; commit `691ea902` |
+| `armfix` | 어깨 housing body 소속 수정. LegOnly 에는 영향 없음 | `docs/112` §1 |
+| `v30` | Fusion 360 CAD revision v30 | `docs/111` §1 |
+| `proxyfix` | Motor cylinder (visual, non-colliding) 위치를 live CAD 에서 재추출 | `docs/114` §1, §4 |
+| `_loop` | Ankle 2-RSU 를 `equality/connect` 4 개로 닫은 버전 | `CONST:85-89` |
 
 ---
 
-## 1. 학습 환경과 원본 코드 수정
+## 1. 학습 환경과 stock code 수정
 
-### 1.1 시뮬레이션
-
-| 항목 | 값 | 출처 |
-|---|---|---|
-| 물리 시간 간격 | 0.005 초 (200 Hz) | `ENV.yaml:2357`; `MJ/src/mjlab/tasks/velocity/velocity_env_cfg.py:455` |
-| 제어 주기 | 물리 4 걸음마다 1 번, 0.02 초 (50 Hz) | `ENV.yaml:1`; `velocity_env_cfg.py:460` |
-| 에피소드 길이 | 20 초 (정책 1,000 걸음) | `ENV.yaml:2398` |
-| 풀이기 | 접촉·구속을 푸는 알고리즘. 뉴턴법, implicitfast 적분, 피라미드 마찰원뿔, impratio 1.0 | `ENV.yaml:2358-2362` |
-| 풀이기 한도 | 반복 10, 선탐색 반복 20, 허용오차 1e-8 | `ENV.yaml:2363-2366` |
-| 접촉 버퍼 | 충돌 검출(ccd) 반복 100, 최대 접촉 수(nconmax) 150, 최대 구속 수(njmax) 1500, 접촉센서 일치 한도 500 | `ENV.yaml:2352-2367`; `ENVCFG:52-56` |
-| 원본 기본값 (이 설정이 덮어씀) | 시간 간격 0.002, 반복 100, 선탐색 50, ccd 50 | `MJ/src/mjlab/sim/sim.py:90-104` |
-
-### 1.2 지형
-
-플래그 `PYG_BOX_TERRAIN=1` 이 `BOX_TERRAINS_CFG` 를 고른다 (`MJ/src/mjlab/terrains/config.py:336-352`, 커밋 `9af9bae3`).
-모든 지형을 상자로 만든다. 높이 지도 지형은 없다.
-
-이유: MuJoCo Warp 의 높이 지도 접촉에서 걷는 발이 미끄러졌다. 완전히 평평한 높이 지도에서도 그랬다.
-평평한 높이 지도에서는 로봇 64 대 중 28~43 대만 계속 걸었다. 평평한 상자 지형에서는 64 대 모두 계속 걸었다.
-출처: `docs/experiments/2026-10-11_flat_vs_rough_policy_compare.md` §2b; 험지 정책 계획 문서 `docs/162_next_plan_rough_policy.md` 단계 2.
-
-난이도 t 는 지형 격자의 행 번호를 9 로 나눈 값이다. 행 0 이 가장 쉽고(t = 0), 행 9 가 가장 어렵다(t = 1).
-
-| 하위 지형 (코드 이름) | 비율 | 난이도 t 에 따른 모양 |
-|---|---|---|
-| 평지 (`flat`) | 0.2 | 변화 없음 |
-| 피라미드 오르는 계단 (`pyramid_stairs`) | 0.2 | 단 높이 0.1·t m, 단 폭 0.3 m, 전체 높이 0.6·t m |
-| 피라미드 내리는 계단 (`pyramid_stairs_inv`) | 0.2 | 같은 단, 구덩이 깊이 0.6·t m |
-| 고르지 않은 블록 (`box_random_grid`) | 0.2 | 0.4 m 칸, 칸 높이 ±0.12·t m 안에서 균등 |
-| 기울어진 판 (`tilted_grid`) | 0.2 | 1.0 m 판, 기울기 ±15·t 도 안에서 균등, 높이 잡음 ±0.1·t m |
-
-격자: 10 행, 하위 지형마다 1 열, 타일 8 × 8 m, 테두리 20 m.
-출처: `config.py:338-352`; `MJ/src/mjlab/terrains/primitive_terrains.py` (79-81, 449, 507, 1488-1489 줄).
-
-### 1.3 관측
-
-행위자와 평가자의 관측이 다르다 (비대칭 행위자-평가자).
-평가자는 학습 중에만 쓰므로 실기에서 얻을 수 없는 값도 본다.
-
-**행위자 (45 개 값, 잡음 켜짐):**
-
-| 항목 (코드 이름) | 크기 | 잡음 (균등 분포, ±) | 출처 |
-|---|---|---|---|
-| 몸통 각속도, 관성센서 자이로 (`base_ang_vel`) | 3 | 0.2 rad/s | `ENV.yaml:797-815` |
-| 중력 방향, 관성센서 위쪽 벡터 (`projected_gravity`) | 3 | 0.05 | `ENV.yaml:816-834` |
-| 모터 관절각 기록, 모터 관절 12 개 × 2 프레임 (`motor_pos_history`) | 24 | 0.01 rad | `ENV.yaml:835-908`; `ENVCFG:157-185` |
-| 직전 행동, 가공 전 값 (`actions`) | 12 | 없음 | `ENV.yaml:909` |
-| 명령 vx, vy, wz (`command`) | 3 | 없음 | `ENV.yaml:923` |
-
-행위자는 몸통 선속도, 관절 속도, 지면 높이 측정을 보지 않는다.
-플래그 `PYG_STUDENT_TEACHER` 가 이것들을 뺀다 (`ENVCFG:150-185`). 이유는 `docs/110_prototype_tempmass_student_teacher_report.md` §2 에 있다.
-
-**평가자 (269 개 값, 잡음 꺼짐):**
-- 몸 상태: 몸통 선속도·각속도, 중력 방향, 관절 16 개의 각도·속도, 행동, 명령.
-- 지형과 발: 지면 높이 측정(광선 187 개, 배율 0.2), 발 높이, 공중 시간, 접촉 여부, 접촉 힘.
-- 무작위화 상태: 마찰, 질량, 무게중심, 밀기, 무작위화 강도(`dr_factor`, 2.3 절).
-
-출처: 콘솔 관측 표; `ENVCFG:857-884`; `MJ/src/mjlab/tasks/velocity/mdp/observations.py:55-215`.
-
-### 1.4 행동
+### 1.1 Simulation
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 종류 | 관절 목표 각도, 12 개 | `ENV.yaml:1497-1548` |
-| 계산식 | 목표 = 기본 자세 + 0.25 × 행동 | `CONST:1121-1132`; `MJ/src/mjlab/envs/mdp/actions/actions.py:157,218` |
-| 제한 | 목표를 관절 범위 중심 ± 0.9/2 × 범위로 자른다 (`PYG_SAFE_TARGET_CLIP`) | `ENVCFG:118-130`; `CONST:1074-1099` |
-| 제한 값 (rad) | 크랭크 ±1.08; 엉덩이 비틀기 ±0.707; 오른 엉덩이 앞뒤 −1.968~0.310; 오른 엉덩이 옆 −0.340~1.388; 오른 무릎 0.105~1.990 (왼쪽은 거울상) | `ENV.yaml:1499-1535` |
-| 지연 | 0 (행동 지연 없음) | `ENV.yaml` 액추에이터 지연 항목(`delay_*`) = 0 |
+| timestep / decimation | 0.005 s / 4 → policy 50 Hz | `ENV.yaml:1,2357`; `velocity_env_cfg.py:455,460` |
+| Episode | 20 s (1,000 step) | `ENV.yaml:2398` |
+| Solver | Newton, implicitfast, pyramidal cone, impratio 1.0, iterations 10, ls_iterations 20, tolerance 1e-8 | `ENV.yaml:2358-2366` |
+| Contact buffer | ccd_iterations 100, nconmax 150, njmax 1500, contact_sensor_maxmatch 500 | `ENVCFG:52-56` |
+| Stock 기본값 (덮어씀) | timestep 0.002, iterations 100, ls_iterations 50, ccd 50 | `MJ/src/mjlab/sim/sim.py:90-104` |
 
-### 1.5 명령
+### 1.2 Terrain
 
-명령은 정책에 주는 목표 속도다. vx 는 앞뒤 속도, vy 는 옆 속도, wz 는 제자리 회전 각속도다.
+`PYG_BOX_TERRAIN=1` 이 `BOX_TERRAINS_CFG` 를 선택한다 (`MJ/src/mjlab/terrains/config.py:336-352`, commit `9af9bae3`). Heightfield sub-terrain 은 없다.
+
+근거: MuJoCo-Warp heightfield contact 에서 보행 중 발이 미끄러진다. Flat heightfield 에서 64 대 중 28~43 대만 보행을 유지했고, flat box 에서는 64/64 였다 (`docs/experiments/2026-10-11_flat_vs_rough_policy_compare.md` §2b).
+
+| Sub-terrain | 비율 | difficulty t (= row/9) 에 따른 형상 |
+|---|---|---|
+| flat | 0.2 | — |
+| pyramid_stairs | 0.2 | step 0.1·t m, width 0.3 m, 총 높이 0.6·t m |
+| pyramid_stairs_inv | 0.2 | 동일 step, pit 깊이 0.6·t m |
+| box_random_grid | 0.2 | 0.4 m cell, 높이 U(±0.12·t) m |
+| tilted_grid | 0.2 | 1.0 m plate, tilt U(±15·t)°, 높이 noise ±0.1·t m |
+
+10 row × 5 col (curriculum mode 는 sub-terrain 당 1 col), tile 8×8 m, border 20 m (`config.py:338-352`; `primitive_terrains.py:79-81,449,507,1488-1489`).
+
+### 1.3 Observation
+
+**Actor (45 dim, `enable_corruption=True`):**
+
+| Term | Dim | Noise (uniform ±) | 출처 |
+|---|---|---|---|
+| `base_ang_vel` (`robot/imu_ang_vel`) | 3 | 0.2 rad/s | `ENV.yaml:797-815` |
+| `projected_gravity` (`robot/imu_upvector`, 부호 반전) | 3 | 0.05 | `ENV.yaml:816-834` |
+| `motor_pos_history` (`joint_pos_rel`, motor joint 12 개, `history_length=2`, [q(t−1), q(t)]) | 24 | 0.01 rad | `ENV.yaml:835-908`; `ENVCFG:157-185` |
+| `actions` (`last_action`, raw) | 12 | 없음 | `ENV.yaml:909` |
+| `command` (twist) | 3 | 없음 | `ENV.yaml:923` |
+
+`PYG_STUDENT_TEACHER` 가 actor group 을 위 5 개 term 으로 재구성한다. Base lin vel, joint vel, height scan 은 actor 에 없다 (`ENVCFG:150-185`; 근거 `docs/110` §2).
+
+**Critic (269 dim, `enable_corruption=False`):** base lin/ang vel, projected gravity, joint pos/vel (16 joint), actions, command, height_scan (187 ray, scale 0.2), foot height/air time/contact/contact force, DR state (`dr_friction`, `dr_mass`, `dr_com`, `dr_push`, `dr_factor`) (`ENVCFG:857-884`; `MJ/src/mjlab/tasks/velocity/mdp/observations.py:55-215`).
+
+### 1.4 Action
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 실제 사용 범위 | 앞뒤 −2.0~2.5 m/s, 옆 ±1.0 m/s, 회전 ±1.0 rad/s (2.1 절 참고) | 텐서보드 `Curriculum/command_vel/*` |
-| 명령 바꾸는 간격 | 3~8 초 | `ENV.yaml:3089-3117` |
-| 서기 비율 | 0.1 (명령 전부 0, 로봇은 서 있어야 함) | `ENV.yaml`; `ENVCFG:218-228` |
-| 방향 맞추기 비율 | 0.3. 목표 방향을 주고, 회전 명령 = 0.5 × 방향 오차 (범위로 자름) | 같은 곳 |
-| 직진 전용 비율 | 0.2. 앞으로 ≥ 0.3, 옆·회전 0 | 같은 곳; `velocity_command.py` |
+| Term | `JointPositionActionCfg`, 12 dim, `use_default_offset=True` | `ENV.yaml:1497-1548` |
+| Target | `default_joint_pos + 0.25 × a` | `CONST:1121-1132`; `actions.py:157,218` |
+| Clip | `PYG_SAFE_TARGET_CLIP`: joint 별 centre ± 0.9/2 × range | `ENVCFG:118-130`; `CONST:1074-1099` |
+| Clip 값 (rad, R; L 은 mirror) | crank ±1.08, hip_yaw ±0.707, hip_pitch −1.968~0.310, hip_roll −0.340~1.388, knee 0.105~1.990 | `ENV.yaml:1499-1535` |
+| Delay | 0 | actuator `delay_*` = 0 |
 
-### 1.6 보상
-
-보상 항목은 22 개다. 가중치가 0 이 아닌 항목은 21 개다.
-"출신" 열의 "순정" 은 원본 mjlab 에 있는 항목이다. "포크" 는 이 프로젝트가 추가한 항목이다.
-보상 관리자가 가중치를 곱한 각 항목을 걸음마다 ±50·dt (dt = 0.02 초이므로 ±1.0) 로 자른다 (`PYG_REWARD_TERM_CLAMP=50`).
-출처: `MJ/src/mjlab/managers/reward_manager.py:65-67,134-135`; `ENV.yaml:3347`.
-
-"폭" 은 목표와의 오차를 점수로 바꾸는 종 모양 함수의 폭(표준편차)이다.
-
-| 항목 (코드 이름) | 가중치 | 출신 | 주요 값 |
-|---|---|---|---|
-| 선속도 추종 (`track_linear_velocity`) | 2.0 | 순정 | 폭 0.866 (순정 0.5; `ENVCFG:314`) |
-| 각속도 추종 (`track_angular_velocity`) | 2.0 | 순정 | 폭 0.707 |
-| 똑바로 서기 (`upright`) | 1.0 | 순정 | 폭 0.447 |
-| 자세, 속도별 자세 (`pose`, `variable_posture`) | 1.0 | 순정 | 서기 폭 0.05, 걷기 폭은 관절별 |
-| 몸통 각속도 벌점 (`body_ang_vel`) | −0.05 | 순정 | |
-| 각운동량 벌점 (`angular_momentum`) | −0.02 | 순정 | |
-| 관절 한계 벌점 (`dof_pos_limits`) | −1.0 | 순정 | |
-| 행동 변화율 벌점 (`action_rate_l2`) | −0.1 | 순정 | |
-| 발 공중 시간 (`air_time`) | 1.0 | 순정 | 0.05~0.5 초 |
-| 발 높이 여유 (`foot_clearance`) | −2.0 | 순정 | 목표 0.1 m |
-| 발 흔들기 높이 (`foot_swing_height`) | −0.25 | 순정 | 목표 0.1 m |
-| 발 미끄럼 (`foot_slip`) | −0.1 | 순정 | |
-| 부드러운 착지 (`soft_landing`) | −1e-5 | 순정 | |
-| 선속도 진행 (`track_lin_vel_progress`) | 1.0 | 포크 | `rewards.py:48` |
-| 가만히 서기 벌점 (`stand_still_penalty`) | −1.0 | 포크 | 불감대 0.3 (`rewards.py:77`) |
-| 무릎 과속 (`knee_overspeed`) | −0.5 | 포크 | 한계 19.9 rad/s (`rewards.py:121`) |
-| 자기 충돌 (`self_collisions`) | −1.0 | 순정 | 문턱 10 N |
-| 토크 한계 (`torque_limit`) | 0 | 포크 | 가중치 0 이라 계산 안 함 |
-| 접촉력 상한 (`contact_force_cap`) | −0.01 | 포크 | 문턱 420 N, 자름 560 N (`ENVCFG:403-404`) |
-| 발 착지 속도 (`foot_impact_velocity`) | −0.5 | 포크 | 절반 강도 (`ENVCFG:389-424,557`) |
-| 발열 부하 (`thermal_effort`) | −0.02 | 포크 | 정격 토크 표 (`ENVCFG:411-433`) |
-| 디딤발 무릎 펴짐 (`stance_knee_extension`) | −2.0 | 포크 | 목표 25° (`ENVCFG:564-575`) |
-
-### 1.7 종료 조건
-
-"시간 제한형?" 열이 "예" 이면 에피소드가 끝나도 학습기가 끝 이후의 가치를 이어서 추정한다 (부트스트랩). "아니오" 이면 진짜 실패로 취급한다.
-
-| 항목 (코드 이름) | 규칙 | 시간 제한형? | 출처 |
-|---|---|---|---|
-| 시간 초과 (`time_out`) | 20 초 | 예 | 순정 |
-| 넘어짐 (`fell_over`) | 기울기 > 70° | 아니오 | `ENV.yaml:3056-3060` |
-| 지형 밖 (`out_of_terrain_bounds`) | 격자 밖 (여유 0.3 m) | 예 | 순정 |
-| 몸통 낮음 (`low_base`) | 몸통이 발밑 지형보다 0.7 m 미만 (반경 0.25 m 안 광선의 중앙값) | 아니오 | 포크, `terminations.py:152` |
-| 숫자 오류 (`nan_detection`) | 상태에 NaN(숫자가 아닌 값) | 아니오 | `ENVCFG:918-919` |
-| 물리 폭주 (`physics_blowup`) | 관절 속도 > 100 rad/s, 몸통 속도 > 10 m/s, 또는 무한값 | 아니오 | 포크, `terminations.py:175` |
-| 정체 (`stagnation`) | 3 초 동안, 명령 ≥ 0.2 m/s 인데 진행 < 0.10 m 이고 명령의 0.2 배 미만 | 아니오 | 포크, `terminations.py:105` |
-
-### 1.8 PPO 와 신경망
+### 1.5 Command (`UniformVelocityCommand`)
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 행위자·평가자 | 다층 신경망(MLP) 512-256-128, 활성 함수 ELU, 관측 정규화 켬 | `RUN/params/agent.yaml`; `rl_cfg.py:12-70` |
-| 알고리즘 | 원본 rsl_rl PPO (포크가 추가한 변형 SmoothPPO 는 안 씀) | `agent.yaml` |
-| 에포크, 미니배치 | 5, 4 (모은 자료를 5 번 반복해서 4 조각으로 나눠 학습) | 같은 곳 |
-| 학습률 | 시작 1e-3, 적응형 (목표 KL 0.01, 범위 1e-5~1e-2) | 같은 곳; `ppo.py:246-249` |
-| 감마(할인율), 람다(GAE), 자름(PPO 자름 범위) | 0.99, 0.95, 0.2 | 같은 곳 |
-| 엔트로피 계수 | 전 구간 0.002 (2.4 절 참고). `agent.yaml` 의 0.01 은 쓰지 않음 | `MJ/src/mjlab/rl/runner.py:167-225`; 콘솔 275 줄 |
+| 학습에 실제 사용된 range | vx −2.0~2.5, vy ±1.0, wz ±1.0 (§2.1) | TensorBoard `Curriculum/command_vel/*` |
+| resampling_time_range | 3~8 s | `ENV.yaml:3089-3117` |
+| rel_standing_envs / rel_heading_envs / rel_forward_envs | 0.1 / 0.3 (stiffness 0.5) / 0.2 | `ENV.yaml`; `ENVCFG:218-228` |
 
-### 1.9 이어 학습
+### 1.6 Reward
 
-1. 발사 스크립트가 부모 저장본에서 행위자만 읽는다. 평가자, 최적화기, 반복 번호는 새로 시작한다.
-   이유: 험지 평가자는 입력이 269 개다. 평지 부모 정책의 평가자는 입력이 더 적다.
-   출처: `MJ/analysis/train_actor_warmstart.py:23-42`.
-2. 플래그 `PYG_FRESH_STEPS=1` 이 읽은 뒤 환경 걸음 수를 0 으로 되돌린다. 걸음 수에 묶인 일정이 모두 처음부터 다시 시작한다 (예: 2.3 절의 무작위화 경사).
-   출처: `train_actor_warmstart.py:47-51`; 콘솔 273 줄.
-3. 플래그 `PYG_CRITIC_WARMUP_ITERS=300` 이 처음 300 번 갱신 동안 행위자 가중치와 행동 잡음 크기를 고정한다. 이 기간에는 평가자만 배운다.
-   출처: `train_actor_warmstart.py:56-86`.
-   증명: 저장본 0·100·200 의 행위자 가중치가 부모 정책과 같다 (차이 0.0).
-   예외: 이 기간에도 관측 정규화 통계는 계속 갱신된다. 최대 변화는 8e-4 다. 코드 주석은 정규화도 고정한다고 적었다. 이 주석은 틀렸다 (지적 F13).
+22 term (weight ≠ 0 인 것 21). `PYG_REWARD_TERM_CLAMP=50`: reward manager 가 term 별 weighted 값을 step 당 ±50·dt (= ±1.0) 로 clamp 한다 (`MJ/src/mjlab/managers/reward_manager.py:65-67,134-135`).
 
-### 1.10 원본 코드 수정
-
-기준: 원본 mjlab 저장소의 커밋 `20f10e96` (2026-06-28). 포크는 그 뒤 커밋 137 개가 있다.
-포크는 `src/` 아래 기존 파일 27 개를 고쳤다 (+1,379 / −80 줄). 나머지 변경은 새 파일이다.
-
-**이 실행에서 켜진 수정:**
-
-| 파일 | 수정 내용 | 플래그 | 커밋 |
+| Term | Weight | 구분 | 주요 param |
 |---|---|---|---|
-| `src/mjlab/rl/runner.py` | 엔트로피 계수 일정 | `ENTROPY_ANNEAL` | `ba200351` |
-| `src/mjlab/managers/reward_manager.py:65-67,134-135` | 보상 항목별 상한 | `REWARD_TERM_CLAMP` | `19b63f6e` |
-| `src/mjlab/envs/mdp/events.py:340-398` | 밀기 + 밀기 기록 (평가자용) | `CRITIC_DR_OBS` | `ba200351` |
-| `src/mjlab/tasks/velocity/velocity_env_cfg.py` | 지형 묶음 선택; 행위자 지면 측정 제거 | `BOX_TERRAIN`; 제거는 플래그 없음 | `e4b1f6ff`, `9af9bae3` |
-| `src/mjlab/terrains/config.py:301-352` | 상자 전용 지형 묶음 | `BOX_TERRAIN` | `9af9bae3` |
-| `src/mjlab/tasks/velocity/mdp/terminations.py:105-195` | 정체, 지형 기준 몸통 낮음, 물리 폭주 종료 조건 | `STAGNATION`, `LOW_BASE_REL`, `BLOWUP_TERM` | `ea1b6373`, `19b63f6e` |
-| `src/mjlab/tasks/velocity/mdp/curriculums.py` | 무작위화 경사(2.3 절); 관문형 명령 커리큘럼(2.1 절) | `DR_*`, `GATED_CURRICULUM` | `e4b1f6ff` 외 |
-| `src/mjlab/tasks/velocity/mdp/rewards.py` | 새 보상 8 개 (1.6 표의 "포크") | 여러 개 | 여러 개 |
-| `src/mjlab/tasks/velocity/mdp/observations.py` | 평가자용 무작위화 상태 관측 | `CRITIC_DR_OBS` | `e4b1f6ff`, `ba200351` |
-| `src/mjlab/tasks/velocity/mdp/velocity_command.py` | 관문용 오차 지표 추가 | 없음 | `0f330399` |
-| `analysis/train_actor_warmstart.py` (`src/` 밖) | 행위자만 읽기, 걸음 수 초기화, 평가자 예열 | `FRESH_STEPS`, `CRITIC_WARMUP_ITERS` | `7b2bc390` 외 |
+| track_linear_velocity | 2.0 | stock | std 0.866 (stock 0.5, `ENVCFG:314`) |
+| track_angular_velocity | 2.0 | stock | std 0.707 |
+| upright | 1.0 | stock | std 0.447 |
+| pose (variable_posture) | 1.0 | stock | standing std 0.05, walking std joint 별 |
+| body_ang_vel | −0.05 | stock | |
+| angular_momentum | −0.02 | stock | |
+| dof_pos_limits | −1.0 | stock | |
+| action_rate_l2 | −0.1 | stock | |
+| air_time | 1.0 | stock | 0.05~0.5 s |
+| foot_clearance | −2.0 | stock | target 0.1 m |
+| foot_swing_height | −0.25 | stock | target 0.1 m |
+| foot_slip | −0.1 | stock | |
+| soft_landing | −1e-5 | stock | |
+| track_lin_vel_progress | 1.0 | fork | `rewards.py:48` |
+| stand_still_penalty | −1.0 | fork | deadband 0.3 (`rewards.py:77`) |
+| knee_overspeed | −0.5 | fork | limit 19.9 rad/s (`rewards.py:121`) |
+| self_collisions | −1.0 | stock | threshold 10 N |
+| torque_limit | 0 | fork | 계산 안 함 |
+| contact_force_cap | −0.01 | fork | threshold 420 N, clip 560 N (`ENVCFG:403-404`) |
+| foot_impact_velocity | −0.5 | fork | half mode (`ENVCFG:389-424,557`) |
+| thermal_effort | −0.02 | fork | rated torque table (`ENVCFG:411-433`) |
+| stance_knee_extension | −2.0 | fork | target 25° (`ENVCFG:564-575`) |
 
-**이 실행에서 꺼진 수정:**
-- `rl/smooth_ppo.py`, `rl/connectome_policy.py`, `config/pygmalion/delayed_action.py`.
-- `evaluation/` 묶음.
-- 켜지 않은 플래그(0.5 목록)에 묶인 코드.
+### 1.7 Termination
 
-**원본 코드의 실수 되돌림 (지적 F6):** 커밋 `d0c85448` (2026-09-05) 가 원본 파일 4 개를 옛 내용으로 되돌렸다.
-이 커밋은 "파일별 검토 안 함" 이라고 적힌 일괄 저장이다.
-되돌림 때문에 원본 저장소의 변경 세 개가 사라졌다: #1076 (`MeshCfg` 클래스), #1063 (`ls_parallel` 옵션 제거), #1069 (내용은 두 문서에 없음).
-대상 정책의 학습은 이 기능들을 쓰지 않는다. 시험 파일 `tests/test_spec_config.py:13` 은 아직 `MeshCfg` 를 불러온다. 이 시험이 실패하는지는 미검증이다.
+| Term | 조건 | time_out | 출처 |
+|---|---|---|---|
+| time_out | 20 s | yes | stock |
+| fell_over | tilt > 70° | no | `ENV.yaml:3056-3060` |
+| out_of_terrain_bounds | grid 밖 (margin 0.3 m) | yes | stock |
+| low_base | 발 아래 terrain 대비 base < 0.7 m (반경 0.25 m ray 의 median) | no | fork, `terminations.py:152` |
+| nan_detection | state NaN | no | `ENVCFG:918-919` |
+| physics_blowup | joint vel > 100 rad/s, base vel > 10 m/s, 또는 non-finite | no | fork, `terminations.py:175` |
+| stagnation | 3 s window, cmd ≥ 0.2 m/s 인데 progress < 0.10 m 이고 < 0.2 × commanded | no | fork, `terminations.py:105` |
 
-**새 파일:** Pygmalion 과제 설정(`config/pygmalion/`), 로봇 묶음(`asset_zoo/robots/pygmalion/`, XML 31 개, STL 15 개), 평가 도구.
+### 1.8 PPO / network
 
-### 1.11 재현성 점검
+| 항목 | 값 | 출처 |
+|---|---|---|
+| Actor / critic | MLP 512-256-128, ELU, obs normalization on | `agent.yaml`; `rl_cfg.py:12-70` |
+| Algorithm | stock rsl_rl `PPO` (fork 의 SmoothPPO 미사용) | `agent.yaml` |
+| epochs / mini-batches | 5 / 4 | 같음 |
+| LR | 1e-3, adaptive (desired_kl 0.01, bounds 1e-5~1e-2) | 같음; `ppo.py:246-249` |
+| gamma / lam / clip | 0.99 / 0.95 / 0.2 | 같음 |
+| entropy_coef | 0.002 고정 (§2.4). `agent.yaml` 의 0.01 은 runner 가 매 update 덮어씀 | `MJ/src/mjlab/rl/runner.py:167-225`; console line 275 |
 
-| 점검 | 결과 |
+### 1.9 Warm start (`train_actor_warmstart.py`)
+
+1. `MjlabOnPolicyRunner.load` 를 patch 해 actor 만 load 한다. Critic, optimizer, iteration 은 새로 시작한다. 이유: rough critic 입력(269)이 flat parent 와 다르다 (`train_actor_warmstart.py:23-42`).
+2. `PYG_FRESH_STEPS=1`: load 후 `common_step_counter` 를 0 으로 되돌린다. Step 기준 schedule 이 모두 처음부터 시작한다 (`:47-51`).
+3. `PYG_CRITIC_WARMUP_ITERS=300`: 처음 300 update 동안 PPO update 후 actor `state_dict` 를 복원한다. Actor weight 와 action std 는 고정되고 critic 만 학습한다 (`:56-86`).
+   - 확인: checkpoint 0·100·200 의 actor weight 가 parent 와 동일 (차이 0.0).
+   - 예외: obs normalizer 통계는 rollout 중 계속 갱신된다 (최대 drift 8e-4). 코드 주석은 normalizer 도 고정된다고 적었으나 틀리다 (F13).
+
+### 1.10 Stock mjlab 대비 수정
+
+기준: upstream `20f10e96` (2026-06-28). Fork 는 이후 137 commit. 기존 `src/` 파일 27 개 수정 (+1,379/−80), 나머지는 신규 파일.
+
+**이 run 에서 active:**
+
+| 파일 | 변경 | Flag | Commit |
+|---|---|---|---|
+| `rl/runner.py` | `learn()` override, entropy coef schedule | `ENTROPY_ANNEAL` | `ba200351` |
+| `managers/reward_manager.py:65-67,134-135` | term 별 per-step clamp | `REWARD_TERM_CLAMP` | `19b63f6e` |
+| `envs/mdp/events.py:340-398` | `push_by_setting_velocity_logged`, `push_age_tracker` (critic 용 push 기록) | `CRITIC_DR_OBS` | `ba200351` |
+| `tasks/velocity/velocity_env_cfg.py` | terrain set 선택자; actor `height_scan` 제거 (flag 없음) | `BOX_TERRAIN` | `e4b1f6ff`, `9af9bae3` |
+| `terrains/config.py:301-352` | `BOX_TERRAINS_CFG` | `BOX_TERRAIN` | `9af9bae3` |
+| `tasks/velocity/mdp/terminations.py:105-195` | `stagnation`, `base_height_above_terrain_below`, `physics_blowup` | `STAGNATION`, `LOW_BASE_REL`, `BLOWUP_TERM` | `ea1b6373`, `19b63f6e` |
+| `tasks/velocity/mdp/curriculums.py` | `dr_levels`, `commands_vel_gated` | `DR_*`, `GATED_CURRICULUM` | `e4b1f6ff` 외 |
+| `tasks/velocity/mdp/rewards.py` | 신규 reward 8 개 (§1.6 "fork") | 여러 개 | 여러 개 |
+| `tasks/velocity/mdp/observations.py` | critic DR-state term | `CRITIC_DR_OBS` | `e4b1f6ff`, `ba200351` |
+| `tasks/velocity/mdp/velocity_command.py` | gate 용 error metric | 없음 | `0f330399` |
+| `analysis/train_actor_warmstart.py` (`src/` 밖) | actor-only load, step reset, critic warm-up | `FRESH_STEPS`, `CRITIC_WARMUP_ITERS` | `7b2bc390` 외 |
+
+**Inactive:** `rl/smooth_ppo.py`, `rl/connectome_policy.py`, `config/pygmalion/delayed_action.py`, `evaluation/` package, 꺼진 flag (§0.5) 에 묶인 코드.
+
+**Upstream 의 의도치 않은 revert (F6):** commit `d0c85448` (2026-09-05, 일괄 snapshot commit) 이 stock 파일 4 개를 이전 내용으로 되돌렸다. Upstream `MeshCfg`(#1076), `ls_parallel` 제거(#1063), #1069 가 사라졌다. 이 run 은 해당 기능을 쓰지 않는다. `tests/test_spec_config.py:13` 이 아직 `MeshCfg` 를 import 한다 (test 실패 여부 미검증).
+
+**신규 파일:** `config/pygmalion/` (task cfg), `asset_zoo/robots/pygmalion/` (XML 31, STL 15), evaluation 도구.
+
+### 1.11 재현성
+
+| 확인 | 결과 |
 |---|---|
-| `MANIFEST` 의 소스 지문 10 개 대 로컬·원격 파일 | 전부 같음 |
-| 모든 `src/**/*.py` 와 `*.xml`, 로컬 대 원격 | 같음 (쓰지 않는 미추적 `*_shell*.xml` 4 개만 다름) |
-| 질량 무작위화 파일, 시작 자세 파일, `validation.json` | 같음 (로컬·원격) |
-| 발사 뒤에 바뀐 소스 | 없음 |
-| 실행의 git 기록 | 없음. 원격 사본은 git 저장소가 아니고 `RUN/git/` 이 비어 있다 (지적 F7) |
-| 상위 저장소가 기록한 하위 모듈 포인터 | `27d16f82` (2026-10-11 13:25). 학습 시작(2026-10-11 23:35, 실행 폴더 이름)보다 앞서므로 실행 코드보다 오래되었다 (지적 F7) |
+| `MANIFEST` source hash 10 개 vs local·remote 파일 | 전부 일치 |
+| `src/**/*.py`, `*.xml` local vs remote | 일치 (미사용 untracked `*_shell*.xml` 4 개만 다름) |
+| Mass DR json, keyframe json, `validation.json` | 일치 |
+| Launch 이후 변경된 source | 없음 |
+| Run 의 git 기록 | 없음. Remote 사본은 git repo 가 아니고 `RUN/git/` 이 비어 있다 (F7) |
+| 상위 repo 의 submodule pointer | `27d16f82` — run 코드보다 오래됨 (F7) |
 
 ---
 
-## 2. 커리큘럼
+## 2. Curriculum
 
-대상 정책의 학습에는 환경 쪽 일정 3 개와 최적화 쪽 일정 2 개가 있다.
+### 2.1 Command velocity (`commands_vel_gated`)
 
-| 일정 | 위치 | 절 |
-|---|---|---|
-| 명령 속도 커리큘럼 | 환경 | 2.1 |
-| 지형 커리큘럼 | 환경 | 2.2 |
-| 무작위화 경사 | 환경 | 2.3 |
-| 엔트로피 계수 | 최적화 | 2.4 |
-| 평가자 예열 | 최적화 | 2.5 |
+**Stage table** (`ENVCFG:466-488`):
 
-### 2.1 명령 속도 커리큘럼
-
-명령 속도의 범위를 5 단계(0~4)로 나눈다. 단계가 높을수록 범위가 넓다.
-"관문(gate)" 이 성능을 보고 단계를 올린다.
-
-**단계 표** (`ENVCFG:466-488`):
-
-| 단계 | 앞뒤 vx (m/s) | 옆 vy (m/s) | 회전 wz (rad/s) |
+| Stage | vx | vy | wz |
 |---|---|---|---|
 | 0 | ±0.8 | ±0.5 | ±0.5 |
 | 1 | ±1.2 | ±0.6 | ±0.8 |
@@ -460,408 +257,305 @@
 | 3 | ±2.0 | ±0.85 | ±1.0 |
 | 4 | −2.0~+2.5 | ±1.0 | ±1.0 |
 
-값의 출처:
-- 앞뒤·회전: 하중 측정이 요구하는 속도 범위를 덮는다는 방침이다. 문서는 이를 "2.5 m/s 원칙" 이라 부른다. `docs/reward_research/2026-07-10_vx25_curriculum.md`.
-- 옆 단계: `docs/reward_research/2026-08-24_command_box_and_transient.md` §5. 마지막 ±1.0 은 하중 범위를 덮으려고 유지했다 (같은 문서 §3).
+근거: vx·wz 는 하중 측정용 최대 2.5 m/s (`docs/reward_research/2026-07-10_vx25_curriculum.md`). vy 단계는 `docs/reward_research/2026-08-24_command_box_and_transient.md` §5, 최종 ±1.0 은 하중 범위 확보 목적 (같은 문서 §3).
 
-**관문 논리** (`MJ/src/mjlab/tasks/velocity/mdp/curriculums.py:255-397`, 함수 `commands_vel_gated`):
-1. 관문이 최근 100 반복 동안 끝난 에피소드의 정상 상태 속도 오차와 넘어짐 비율을 모은다.
-2. 현재 단계에 머문 반복 수(체류 시간)가 `max_dwell_iters`(최대 체류) 이상이면 한 단계 올린다. 성능을 보지 않으므로 이것을 "강제 승급" 이라 한다.
-3. 아니면 성능을 시험한다. 체류 시간이 `min_dwell_iters`(최소 체류) 이상이고 끝난 에피소드가 64 개 이상이어야 시험한다.
-   오차 ≤ 이전 오차 × 1.1 이고 넘어짐 비율 ≤ 0.005 이면 한 단계 올린다.
-4. 관문 상태는 저장본에 들어가지 않는다. 저장본에서 이어 학습하는 새 프로세스는 항상 단계 0 에서 시작한다.
+**Gate logic** (`curriculums.py:255-397`):
+1. 최근 100 iter 동안 종료된 episode 의 steady velocity error 와 fall rate 를 모은다.
+2. stage dwell ≥ `max_dwell_iters` → 강제 승급.
+3. 그 외 dwell ≥ `min_dwell_iters` 이고 episode ≥ 64 이면 성능 판정: error ≤ 1.1 × 직전 baseline 이고 fall ≤ 0.005 이면 승급.
+4. Gate state 는 checkpoint 에 저장되지 않는다. 새 process 는 stage 0 에서 시작한다.
 
-**이 실행에서 실제로 일어난 일:**
-- 플래그 `GATE_MAX_DWELL=0`, `GATE_MIN_DWELL=0` 이다. 체류 시간은 항상 0 이상이다. 따라서 2 번 조건이 항상 참이다.
-- 결과: 관문은 성능을 시험하지 않았다. 부를 때마다 한 단계씩 올렸다.
-- 콘솔에 반복 0 에서 강제 승급 4 번이 있다 (237, 278-280 줄). 단계 0 에서 단계 4 까지 올랐다.
-- 반복 1 부터 12,000 반복이 끝날 때까지 명령 범위는 단계 4 였다.
-- 의도: 이 방법은 "되돌림(snap-back)" 이다. 관문 상태를 저장하지 않으므로, 새 학습의 명령 범위를 부모 정책이 마지막으로 쓰던 범위(단계 4)로 곧바로 되살린다. 출처: `docs/103_v2_training_plan.md:124,129`. 발사 스크립트가 부모 정책의 플래그를 복사한다 (`launch_rough_main.py:58-60`).
-- 주의: 실행이 저장한 `ENV.yaml:3102-3112` 에는 단계 1 범위(앞뒤 ±1.2 m/s)가 적혀 있다. 학습 환경이 첫 강제 승급 직후에 이 파일을 썼기 때문이다. 이 파일로 학습 범위를 판단하면 안 된다 (지적 F5).
+**이 run 의 실제 동작:**
+- `GATE_MAX_DWELL=0` → 2 번 조건이 항상 참. 성능 판정 없이 호출마다 1 stage 승급.
+- iter 0 에서 강제 승급 4 회 (console line 237, 278-280). iter 1 부터 12,000 iter 내내 stage 4.
+- 의도: gate state 가 저장되지 않으므로 parent 의 최종 range 를 즉시 복원하는 설정 (`docs/103_v2_training_plan.md:124,129`). Launcher 가 parent flag 를 복사한다 (`launch_rough_main.py:58-60`).
+- 주의: `ENV.yaml:3102-3112` 의 command range 는 stage 1 값(vx ±1.2)이다. 첫 강제 승급 직후 dump 되었기 때문이다. 학습 range 판단에 쓰지 말 것 (F5).
+- Parent 의 flat 1단계는 실제 gate (min dwell 800 / max 3000) 로 iter 800·1,600·2,400 에 통과 승급, 5,400 에 강제 승급했다.
 
-**부모 정책을 학습할 때:** 관문이 실제로 작동했다 (최소 체류 800, 최대 체류 3000 반복). 반복 800, 1,600, 2,400 에서 성능 시험을 통과해 올랐다. 반복 5,400 에서 단계 4 로 강제 승급했다.
+### 2.2 Terrain (`terrain_levels_vel`, `curriculums.py:26-81`)
 
-### 2.2 지형 커리큘럼
+1. Reset 시 env origin 에서의 xy 거리를 잰다.
+2. 거리 > 4.0 m (tile 절반) → level +1.
+3. 거리 < |cmd| × 20 s × 0.5 → level −1.
+4. Level 9 초과 시 0~9 중 random level 로 재배치 (`terrain_entity.py:225-230`).
+5. 초기 level: 0~5 uniform (`max_init_terrain_level=5`).
 
-로봇마다 지형 난이도 단계(0~9, 1.2 절의 행 번호)가 있다. 아래 규칙이 단계를 바꾼다.
+Yaw command 는 판정에 쓰지 않는다 (legged_gym·Isaac Lab 과 같은 규칙).
 
-**규칙** (`curriculums.py:26-81`, 함수 `terrain_levels_vel`):
-1. 초기화 때마다 시작점에서 걸어간 거리를 잰다.
-2. 거리 > 4.0 m (타일 폭 8 m 의 절반): 한 단계 올린다.
-3. 거리 < |명령 속도| × 20 초 × 0.5: 한 단계 내린다.
-4. 단계 9 를 넘으면 0~9 중 무작위 단계로 보낸다 (`terrain_entity.py:225-230`).
-5. 시작 단계는 0~5 중 무작위다 (평균 2.5).
-
-이 규칙은 회전 명령(wz)을 보지 않는다. 다른 로봇 강화학습 프레임워크(legged_gym, Isaac Lab)에서 온 규칙이다 (`docs/reward_research/2026-10-11_turn_in_place_recovery_literature.md` §2-1).
-
-**실제 결과** (텐서보드 `Curriculum/terrain_levels/*`):
-
-| 반복 | 0 | 100 | 300 | 1,000 | 4,000 | 11,999 |
+| iter | 0 | 100 | 300 | 1,000 | 4,000 | 11,999 |
 |---|---|---|---|---|---|---|
-| 평균 단계 | 3.43 | 4.12 | 5.01 | 5.76 | 5.97 | 5.97 |
+| mean level | 3.43 | 4.12 | 5.01 | 5.76 | 5.97 | 5.97 |
 
-- 반복 1,000 이후 평균은 5.8~6.1 에 머문다. 최고 단계 9 는 반복 50 부터 나온다.
-- 평지 타일의 평균 단계도 험지 타일과 같다. 따라서 단계는 지형 실력보다 걸은 거리를 보여 준다 (지적 F14).
-- 반복 0 의 평균(3.43)이 시작 분포의 평균(2.5)보다 높다. 원인은 미검증이다 (지적 F14).
+- iter 1,000 이후 5.8~6.1 에서 정체. Max level 9 는 iter 50 부터.
+- flat 타입의 mean level 이 rough 타입과 같다. Level 은 terrain 능력보다 이동 거리를 반영한다 (F14).
+- iter 0 의 mean(3.43) 이 초기 분포(2.5)보다 높다. 원인 미검증 (F14).
 
-### 2.3 무작위화 경사
+### 2.3 DR ramp (`dr_levels`, `curriculums.py:112-202`; `ENVCFG:671-693`)
 
-무작위화 강도(`dr_factor`)는 0 에서 1 사이의 값이다. 이 값을 곱한 만큼만 무작위화가 적용된다.
-강도 0 은 무작위화 없음, 강도 1 은 3 절 표의 전체 범위다.
+- step ≤ 48,000 (iter 2,000): `dr_factor = 0`.
+- step 192,000 (iter 8,000) 까지 선형 증가, 이후 1.
+- Scale 대상: push velocity, foot friction range, encoder bias, inertial DR 7 term 전부.
+- Scale 비대상: observation noise, push interval, reset pose, terrain.
+- 실측 (TensorBoard): iter 1,999 까지 0, 4,000 에 0.333, 6,000 에 0.667, 7,999 부터 1.0.
+- 근거: parent 의 window (iter 15,999~) 를 그대로 쓰면 iter 0 부터 세는 이 run 에서는 DR 이 켜지지 않는다 (`launch_rough_main.py:13-17`).
 
-**논리** (`curriculums.py:112-202`; `ENVCFG:671-693`):
-- 걸음 48,000 (반복 2,000) 전에는 강도 = 0.
-- 걸음 192,000 (반복 8,000) 까지 강도가 선형으로 1 까지 오른다.
-- 그 뒤로는 강도 = 1.
-- 여기서 걸음 수는 반복마다 24 씩 센다 (48,000 / 2,000 = 24).
+### 2.4 Entropy coefficient
 
-**강도를 곱하는 항목:** 밀기 속도, 발 마찰 범위, 엔코더 영점 오차, 관성 무작위화 7 개 전부. 범위는 3 절에 있다.
-**강도를 곱하지 않는 항목:** 관측 잡음, 밀기 간격, 초기 자세, 지형.
+전 구간 0.002 고정 (`runner.py:197-206`).
+근거: 0.01 에서는 action std 가 0.13 → 0.60 으로 증가하고 제자리 회전 추종이 무너졌다. 0.002 에서 회복했다 (`docs/reward_research/2026-10-11_turn_in_place_recovery_literature.md` §7-4).
+결과: action std 0.130 (iter 0) → 0.190 (iter 11,999).
 
-**실제 결과** (텐서보드 `Curriculum/dr_levels/dr_factor`): 반복 1,999 까지 0, 4,000 에서 0.333, 6,000 에서 0.667, 7,999 부터 1.0.
+### 2.5 Critic warm-up
 
-**2,000~8,000 으로 정한 이유:** 이전의 3,000 반복짜리 험지 학습들은 부모 정책의 구간(반복 15,999 부터)을 그대로 썼다. 그 학습들의 반복 번호는 0 부터 셌으므로 3,000 반복 내내 무작위화가 꺼져 있었다. 출처: `launch_rough_main.py:13-17`; `docs/162_next_plan_rough_policy.md:36`.
-
-### 2.4 엔트로피 계수
-
-엔트로피 계수를 전 구간 0.002 로 고정한다 (`runner.py:197-206`).
-이유: 계수 0.01 에서는 행동 잡음 크기가 0.13 에서 0.60 으로 커졌고 제자리 회전이 사라졌다 (제자리 회전 수치 51 % → 1 %; 수치의 정의는 아래 출처 노트에 있다).
-계수를 바꿔 비교한 시험 결과는 용량-반응 관계였다: 0.01 은 회전 없음, 0.005 는 일부, 0.002 는 회복.
-출처: `docs/reward_research/2026-10-11_turn_in_place_recovery_literature.md` §7, §7-4.
-
-결과: 행동 잡음 크기는 0.130 (반복 0) 에서 0.190 (반복 11,999) 으로 변했다.
-
-### 2.5 평가자 예열
-
-1.9 절의 3 번 항목이 이 동작이다.
-이유: 새 평가자에 낮은 엔트로피 계수를 쓰자 서기가 나빠졌다 (서 있는 동안 발이 땅에서 떨어진 시간 비율 29 %). 예열 300 번을 넣자 2.2 % 가 되었다.
-출처: 같은 연구 노트 §7-3, §7-4.
+§1.9-3 참고. 근거: 새 critic + 낮은 entropy 조합에서 standing 이 나빠졌다 (foot-off 29 %). Warm-up 300 으로 2.2 % (같은 문서 §7-3, §7-4).
 
 ---
 
-## 3. 무작위화와 잡음
+## 3. Domain randomization / noise
 
-### 3.1 요약 표
+### 3.1 적용 항목
 
-"경사 적용" 열은 무작위화 강도(2.3 절)를 곱하는지 나타낸다. "최대 강도" 는 강도 1 이다.
-"원본 기본값" 은 원본 mjlab 이 정한 값을 그대로 쓴다는 뜻이다.
+"Ramp" = `dr_factor` (§2.3) 곱함. 범위는 `dr_factor = 1` 기준.
 
-| 대상 | 최대 강도의 범위 | 뽑는 때 | 경사 적용 | 구현 | 값의 출처 |
+| 대상 | 범위 | 샘플 시점 | Ramp | 구현 | 값의 근거 |
 |---|---|---|---|---|---|
-| 자이로 잡음 (행위자) | ±0.2 rad/s, 균등 분포 | 걸음마다 | 아니오 | `ENV.yaml:797-815` | 원본 기본값 (`velocity_env_cfg.py:90`, 커밋 `a61e0fff`). Pygmalion 관성센서 근거는 출처 없음 |
-| 중력 방향 잡음 (행위자) | ±0.05 | 걸음마다 | 아니오 | `ENV.yaml:816-834` | 원본 기본값 (`velocity_env_cfg.py:94`). 출처 없음 |
-| 관절각 잡음 (행위자) | 프레임마다 ±0.01 rad | 걸음마다 | 아니오 | `ENVCFG:173-179` | 원본 기본값 (`velocity_env_cfg.py:98`). 엔코더 분해능 근거는 출처 없음 |
-| 평가자 잡음 | 없음 (잡음 꺼짐) | — | — | `observation_manager.py:436-437` | 설계: 깨끗한 평가자 (`docs/101` §1b) |
-| 엔코더 영점 오차 | 관절마다 ±0.015 rad (±0.86°) | 초기화마다 | 예 | `MJ/src/mjlab/envs/mdp/dr/joint.py:209-241` | 원본 기본값 (`velocity_env_cfg.py:251-258`). 실측 영점 오차는 최대 9.4° (지적 F2) |
-| 발 마찰 | 0.3~1.2, 두 발 같은 값 | 초기화마다 | 예 (중심 0.75) | `MJ/src/mjlab/envs/mdp/dr/geom.py:117-147` | 원본 기본값. `docs/16_dr_expansion.md` 가 legged_gym 을 인용. 실측 바닥 근거는 출처 없음 |
-| 밀기 (몸통 속도를 갑자기 바꿈) | 앞뒤·옆 ±0.7 m/s; 위아래 ±0.4 m/s; 구르기·끄덕이기 ±0.52 rad/s; 비틀기 ±0.78 rad/s | 1~3 초마다 | 예 | `events.py:353-377`; `ENVCFG:614-622` | 사용자가 2026-07-06 에 ±0.5 를 ±0.7 로 올리라고 지시 (`ENVCFG:611-613`). 실제 충격 측정은 출처 없음 |
-| 링크 질량·무게중심·관성 | 표 3.3 | 초기화마다 | 예 | `MJ/src/mjlab/envs/mdp/dr/body.py:423-541`; `ENVCFG:803-845` | `tools/robot_model/mass_dr.py` (3.3 절) |
-| 초기 몸통 자세 | 앞뒤·옆 ±0.5 m; 높이 +0.01~0.05 m; 방향 ±180°; 기울기 없음; 속도 없음 | 초기화마다 | 아니오 | `events.py:111-190` | 원본 기본값 |
-| 초기 관절 자세 | 없음 (정해진 자세) | 초기화마다 | 아니오 | `events.py:279-313` | 플래그 `RESET_JOINT_NOISE` 를 켜지 않음 |
-| 지형 | 상자 묶음 (1.2 절) | 초기화마다 | 아니오 (자체 커리큘럼, 2.2 절) | `config.py:336-352` | `docs/162` 단계 2 |
+| Gyro noise (actor) | U(±0.2) rad/s | 매 step | 아니오 | `ENV.yaml:797-815` | upstream 기본값 (`velocity_env_cfg.py:90`, commit `a61e0fff`). Pygmalion IMU 근거 출처 없음 |
+| Gravity noise (actor) | U(±0.05) | 매 step | 아니오 | `ENV.yaml:816-834` | upstream 기본값 (`velocity_env_cfg.py:94`). 출처 없음 |
+| Joint pos noise (actor) | frame 별 U(±0.01) rad | 매 step | 아니오 | `ENVCFG:173-179` | upstream 기본값 (`velocity_env_cfg.py:98`). Encoder 분해능 근거 출처 없음 |
+| Critic noise | 없음 (corruption off) | — | — | `observation_manager.py:436-437` | 설계상 clean critic (`docs/101` §1b) |
+| Encoder bias | joint 별 U(±0.015) rad (±0.86°) | reset | 예 | `MJ/src/mjlab/envs/mdp/dr/joint.py:209-241` | upstream 기본값 (`velocity_env_cfg.py:251-258`). 실측 zero offset 은 최대 9.4° (F2) |
+| Foot friction | U(0.3, 1.2), 양발 공통 | reset | 예 (중심 0.75) | `dr/geom.py:117-147` | upstream 기본값 (`docs/16_dr_expansion.md` 가 legged_gym 인용). 실측 근거 출처 없음 |
+| Push (root velocity) | xy ±0.7 m/s, z ±0.4, roll/pitch ±0.52 rad/s, yaw ±0.78 | 1~3 s interval | 예 | `events.py:353-377`; `ENVCFG:614-622` | 2026-07-06 사용자 지시로 ±0.5 → ±0.7 (`ENVCFG:611-613`). 하드웨어 측정 출처 없음 |
+| Link mass / CoM / inertia | §3.3 | reset | 예 | `dr/body.py:423-541` (`pseudo_inertia`); `ENVCFG:803-845` | `tools/robot_model/mass_dr.py` (§3.3) |
+| Reset base pose | xy ±0.5 m, z +0.01~0.05 m, yaw ±180°, tilt·velocity 0 | reset | 아니오 | `events.py:111-190` | upstream 기본값 |
+| Reset joint pose | 없음 (keyframe) | reset | 아니오 | `events.py:279-313` | `RESET_JOINT_NOISE` off |
 
-### 3.2 무작위화하지 않은 항목
+### 3.2 미적용 항목
 
-| 항목 | 상태 | 문서에 있는 권고 |
+| 항목 | 상태 | 저장소 내 권고 |
 |---|---|---|
-| 행동 지연, 모터 지연 | 0 | 0~20 ms (`docs/70_sim2real_pd_gains.md` §5.3; `docs/148_air_shake_and_action_delay.md` §3a) |
-| 관성센서 편향·표류·장착 각도 | 없음 (이상적 센서, `XML:84,270-274`) | 측정이 아직 안 된 일로 문서에 남아 있음 (`docs/113:181`; `docs/114` §6 단계 5) |
-| Kp, Kd | 고정 | Kp ×0.9~1.1, Kd ×0.7~1.3 (`docs/70` §5.3) |
-| 토크 한계, 모터 세기 | 고정 | 없음 |
-| 관절 마찰·점성·아마추어 | 고정 (실측값, 4.4 절) | 아마추어 ×0.9~1.1, 마찰 +0~1.5 (`docs/70` §5.3) |
-| 접촉 강성(solref, solimp), 반발 | MuJoCo 기본값 | 출처 없음 |
-| 크랭크·연결봉 질량 | 무작위화 안 함 | 없음 |
+| Action latency / motor delay | 0 | 0~20 ms (`docs/70_sim2real_pd_gains.md` §5.3; `docs/148` §3a) |
+| IMU bias / drift / mount 각도 | 없음 (ideal sensor, `XML:84,270-274`) | 측정 TODO (`docs/113:181`; `docs/114` §6) |
+| Kp / Kd | 고정 | Kp ×0.9~1.1, Kd ×0.7~1.3 (`docs/70` §5.3) |
+| Effort limit / motor strength | 고정 | 없음 |
+| Joint friction / damping / armature | 고정 (실측값, §4.4) | armature ×0.9~1.1, friction +0~1.5 (`docs/70` §5.3) |
+| Contact solref / solimp | MuJoCo 기본값 | 출처 없음 |
+| Crank / rod mass | 없음 | 없음 |
 
-### 3.3 질량 무작위화 파일
+### 3.3 Mass DR (`PYG_MASS_DR_JSON`)
 
-파일: `tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json`. 만드는 스크립트: `tools/robot_model/mass_dr.py`.
-학습은 매 초기화마다 이 파일의 범위 안에서 링크별 질량, 무게중심, 관성 모양을 뽑는다.
+생성: `tools/robot_model/mass_dr.py`.
 
-**방법:**
-1. 스크립트가 CAD 부품마다 종류별 질량 불확도(1σ, 표준편차를 질량의 비율로 나타낸 값)를 준다.
+1. CAD body 별 1σ 질량 불확도를 class 로 부여한다: printed 실측 0.03, printed 평균 0.10 (`docs/89` §1 의 part 편차), printed 공통 0.03, motor 0.02, bearing 0.02, fastener 0.02, aluminium 0.02.
+2. Fastener completeness ("fastener50"): CAD 에 실제 나사의 50~100 % 만 있다고 보고, c ~ U(0.5, 1.0) 으로 CAD fastener 질량에 1/c 를 곱한다 (`docs/114` §5).
+3. 4,000 robot 을 샘플링해 link 별 95 % 구간을 구한다.
+4. 고정 floor 로 넓힌다: link mass ±5 %, CoM ±5 mm, trunk mass +10 %, trunk CoM ±20 mm, d cap 0.02. 코드가 "judgment" 로 명시 (`mass_dr.py:56-69`). 측정 근거 출처 없음.
 
-   | 종류 | σ | 근거 |
-   |---|---|---|
-   | 출력물(3D 프린트 부품), 실측 | 0.03 | 저울 오차 |
-   | 출력물, 평균값 | 0.10 | 부품 조사의 편차 (`docs/89` §1) |
-   | 출력물, 공통 | 0.03 | 출력 묶음 편향 |
-   | 모터 | 0.02 | 카탈로그 공차 |
-   | 베어링 | 0.02 | 카탈로그 공차 |
-   | 체결구(나사) | 0.02 | 길이·개수 |
-   | 알루미늄 | 0.02 | 가공 공차 |
+적용 범위 (mass scale = e^(2α)):
 
-2. 체결구 항목 ("fastener50") 을 더한다. CAD 에는 실제 나사의 50~100 % 만 들어 있을 수 있다.
-   스크립트는 $c \sim U(0.5, 1.0)$ (0.5 와 1.0 사이 균등 분포)을 뽑고 CAD 나사 질량에 $1/c$ 를 곱한다. 출처: `docs/114_huphy_proxyfix_rotation_dr_audit.md` §5.
-3. 로봇 4,000 대를 뽑아 링크마다 95 % 구간을 구한다.
-4. 각 구간을 정해진 바닥값까지 넓힌다.
-   바닥값: 링크 질량 ±5 %, 무게중심 ±5 mm, 몸통 질량 +10 %, 몸통 무게중심 ±20 mm, 모양 상한 0.02.
-   코드는 이 바닥값을 "판단(judgment)" 이라고 적었다 (`mass_dr.py:56-69`). 측정 근거는 출처 없음.
-
-**실제 적용 범위** (질량 배율 = $e^{2\alpha}$, $\alpha$ 는 질량 무작위화 파일의 링크별 값):
-
-| 링크 | 질량 배율 | 무게중심 이동 | 모양 d |
+| Link | Mass scale | CoM shift | d |
 |---|---|---|---|
-| 몸통(`base_link`, 골반) | 0.950~1.150 | ±0.02 m | ±0.0154 |
-| 엉덩이 앞뒤 링크 | 0.950~1.076 | ±0.005 m | ±0.02 |
-| 엉덩이 옆 링크 | 0.950~1.078 | ±0.005 m | ±0.02 |
-| 허벅지 | 0.950~1.095 | ±0.005 m | ±0.0146 |
-| 정강이 | 0.950~1.107 | ±0.005 m | ±0.02 |
-| 발목 링크 | 0.889~1.117 | ±0.005 m | ±0.02 |
-| 발 | 0.950~1.138 | ±0.005 m | ±0.02 |
+| base_link | 0.950~1.150 | ±0.02 m | ±0.0154 |
+| hip_pitch_link | 0.950~1.076 | ±0.005 m | ±0.02 |
+| hip_roll_link | 0.950~1.078 | ±0.005 m | ±0.02 |
+| thigh_link | 0.950~1.095 | ±0.005 m | ±0.0146 |
+| shin_link | 0.950~1.107 | ±0.005 m | ±0.02 |
+| ankle_pitch_link | 0.889~1.117 | ±0.005 m | ±0.02 |
+| foot_link | 0.950~1.138 | ±0.005 m | ±0.02 |
 
-"모양 d" 는 관성 모양 무작위화 변수이고 상한은 0.02 다. 이 변수의 정확한 정의는 두 문서에 없다.
+상한이 하한보다 크다. 평균적으로 로봇을 무겁게 만든다. 전체 질량 약 22.5~26.2 kg (nominal 23.63 kg).
 
-상한이 하한보다 기준에서 멀다. 따라서 이 무작위화는 평균적으로 로봇을 무겁게 만든다.
-로봇 전체: 약 22.5 kg (모두 최소) ~ 26.2 kg (모두 최대), 기준 23.63 kg (근거 조사 C 의 계산).
+### 3.4 Encoder bias 적용 방식
 
-### 3.4 엔코더 영점 오차의 작동 방식
+1. Reset 시 joint 별 bias 를 `encoder_bias` 에 기록한다.
+2. `JointPositionAction.apply_actions` 가 target 에서 bias 를 뺀다 (`actions.py:222-224`).
+3. Observation 은 bias 를 포함하지 않는다 (`joint_pos_rel(biased=False)`, `envs/mdp/observations.py:50-61`).
 
-1. 초기화 때 관절마다 오차를 더한다.
-2. 행동 처리가 목표 각도에서 오차를 뺀다 (`actions.py:222-224`).
-3. 관측에는 오차가 없다 (`joint_pos_rel` 의 `biased=False`, `MJ/src/mjlab/envs/mdp/observations.py:50-61`).
-
-따라서 이 오차는 구동 목표의 어긋남이다. 센서 값의 어긋남이 아니다 (지적 F2).
+즉 sensor offset 이 아니라 actuation target offset 이다 (F2).
 
 ---
 
-## 4. 로봇 모형
+## 4. Robot model
 
 ### 4.1 형식
 
-학습은 MJCF (MuJoCo XML) 를 쓴다. URDF 는 쓰지 않는다.
-`CONST:428` 이 `MjSpec.from_file` 로 XML 을 읽는다. 코드에 URDF 읽기가 없다.
-제작 스크립트는 같은 자료로 URDF 도 쓴다 (`pygmalion_locomotion/assets/pygmalion_v2/LegOnly_..._proxyfix_loop.urdf`). 학습은 이 파일을 읽지 않는다.
-출처: `tools/robot_model/build_robot.py`; `docs/146_where_each_value_lives.md` §0; `docs/145_model_parameter_provenance.md` §2 (URDF 와 MJCF 일치 확인).
+학습은 MJCF 를 쓴다. `CONST:428` 이 `MjSpec.from_file` 로 XML 을 load 한다. URDF loader 는 없다.
+Build script 가 같은 데이터로 URDF 도 생성하지만 학습은 읽지 않는다 (`pygmalion_locomotion/assets/pygmalion_v2/LegOnly_..._proxyfix_loop.urdf`; URDF·MJCF 일치 확인 `docs/145` §2).
+XML sha256 `5a02f8f9…` 는 local, remote, viewer 용 model contract (`~/pyg_demo/cache_trail/LegOnly-AB.model_contract.json`) 에서 동일하다.
 
-파일 선택: 플래그 `ANKLE_MODE=AB` 와 `MODEL_TAG` 로 파일 이름이 `MODEL_TAG + "_loop.xml"` 이 된다 (`CONST:85-89, 211-245`).
-이 XML 의 지문(`5a02f8f9…`)은 로컬·원격 두 컴퓨터와 저장된 모형 계약 파일(`~/pyg_demo/cache_trail/LegOnly-AB.model_contract.json`, 원격 10.8.0.14 — 뷰어용으로 모형을 컴파일해 둔 기록)에서 같다.
+### 4.2 Build pipeline (CAD → MJCF)
 
-### 4.2 제작 단계 (CAD → MJCF)
-
-CAD 는 컴퓨터 지원 설계 파일이다. 모형은 CAD 에서 아래 순서로 만들었다.
-
-| 단계 | 할 일 | 도구 | 출처 |
+| 단계 | 작업 | 도구 | 출처 |
 |---|---|---|---|
-| 0 | CAD 원본 "v30" (Fusion 360, 2026-09-01) 을 쓴다. 원본은 고치지 않는다. | MCP(외부 도구 연결 규약)로 연결한 Fusion 360 | `docs/111_fusion_v30_urdf_rebuild.md` §1 |
-| 1 | 부품마다 질량, 무게중심, 관성, 재질을 뽑는다. | `tools/fusion/dump_bodies.py` | 스크립트 설명 |
-| 2a | 출력 부품 밀도를 고친다 (저울로 잰 부품에서 구한, CAD 대비 평균 비율 0.3287). | `printed_density_snapshot.py` | `docs/89_printed_parts_density_ratio.md` §1 |
-| 2b | 다리마다 알루미늄 부품 9 개를 CAD 밀도 추정값으로 바꾼다 ("tempmass", 임시 질량). 실측값이 아니다. | `prototype_tempmass.py` | `docs/aluminium_parts_3dprint_masses.xlsx` D 열 |
-| 2c | 모터 부품을 실측 질량에 맞춘다: RS04 1.514 kg, RS03 0.9195 kg. | `massprops_fusion.py:60-70` | 커밋 `c394c34` |
-| 3 | 부품을 강체 링크로 묶는다. | `massprops_fusion.py` | 커밋 `bc2526d` |
-| 4 | 모터를 대신하는 원기둥(proxy)의 위치를 실제 CAD 에서 다시 읽는다 ("proxyfix"). | `motor_proxies_fusion.py` | `docs/114` §4 |
-| 5 | 보이는 모양 메시와 외피 메시를 만든다. | `meshes_fusion_full.py` | `docs/156` B4 |
-| 6 | 메시를 움직여 부딪히는 각도(메시 쓸기, sweep)를 재고 관절 범위를 구한다. 설계 상한을 적용한다. | `rom_check.py`; `build_robot.py:121-191` | `docs/107_joint_rom_table.md` |
-| 7 | MJCF 와 URDF 를 쓴다 (캡슐, 상자 3 개 발바닥, 고리 구속 4 개). | `build_robot.py` | 352, 418, 541, 1010 줄 |
-| 8 | 좌우(L/R) 링크 이름을 서로 바꾼다. 실측 모터 값을 XML 에 쓴다. | `swap_leg_names.py`; `write_motor_params_xml.py` | `docs/136_left_right_naming_history.md` §5; 커밋 `691ea902` |
-| 9 | 점검을 돌린다 (검증, URDF 대조, 고리 점검, 시작 자세, 모터 값). | `tools/robot_model/*` | `docs/145` |
-| 10 | 질량 무작위화 파일을 만든다. | `mass_dr.py` | `docs/117` §2 |
+| 0 | CAD master v30 (Fusion 360, 2026-09-01). Master 는 수정하지 않음 | Fusion 360 (MCP) | `docs/111` §1 |
+| 1 | Body 별 mass, CoM, inertia, material dump | `tools/fusion/dump_bodies.py` | |
+| 2a | Printed part 밀도 보정 (CAD 대비 평균 0.3287, 실측 part 기준) | `printed_density_snapshot.py` | `docs/89` §1 |
+| 2b | Aluminium body 9 개/다리를 CAD 밀도 추정값으로 설정 (tempmass, 미실측) | `prototype_tempmass.py` | `docs/aluminium_parts_3dprint_masses.xlsx` |
+| 2c | Motor solid 을 실측 질량으로 scale (RS04 1.514, RS03 0.9195 kg) | `massprops_fusion.py:60-70` | commit `c394c34` |
+| 3 | Body → rigid link 집계 | `massprops_fusion.py` | commit `bc2526d` |
+| 4 | Motor cylinder 위치 재추출 (proxyfix) | `motor_proxies_fusion.py` | `docs/114` §4 |
+| 5 | Visual / hull mesh | `meshes_fusion_full.py` | `docs/156` B4 |
+| 6 | Mesh sweep 으로 joint range 측정 + design cap | `rom_check.py`; `build_robot.py:121-191` | `docs/107` |
+| 7 | MJCF·URDF 생성 (capsule, 3-box sole, loop 4 개) | `build_robot.py` | |
+| 8 | L/R 이름 swap, 실측 모터 값 기록 | `swap_leg_names.py`; `write_motor_params_xml.py` | `docs/136_left_right_naming_history.md` §5; commit `691ea902` |
+| 9 | 검증 (validation, URDF cross-check, loop, keyframe, motor param) | `tools/robot_model/*` | `docs/145` |
+| 10 | Mass DR json 생성 | `mass_dr.py` | `docs/117` §2 |
 
-### 4.3 기구학
+### 4.3 Kinematics
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 좌표 | +X 앞, +Y 왼쪽, +Z 위 | `build_robot.py:11-13` |
-| 엉덩이 | 앞뒤·옆·비틀기 세 축이 한 점 (0, ±0.1237, 0) m 에서 만난다. 두 엉덩이 사이 247.4 mm | `XML:87-101`; 커밋 `42afc086` |
-| 허벅지 | 0.3727 m (무릎 위치 −0.045, 0, −0.37) | `XML:106` |
-| 정강이 | 0.4909 m (발목 위치 −0.03, 0, −0.49) | `XML:138-143` |
-| 엉덩이~발바닥 | 0.903 m | 계산; `validation.json` |
-| 발 충돌체 | 상자 3 개; 발바닥 길이 0.260 m (x −0.080~0.180), 폭 0.100 m | `XML:146-148`; `docs/119_legonly_collision_review.md` §3 |
-| 그 밖의 충돌체 | 캡슐·상자 15 개; 연결봉·크랭크·발목 링크는 충돌체 없음 | `XML`; `docs/119` §1 |
-| 발가락 관절 | 없음 (발은 한 덩어리) | `XML` |
-| 발목 연결 기구 | 2-RSU: 정강이의 크랭크 2 개 (반경 65.0, 61.9 mm), 연결봉 289.0, 195.0 mm, 발의 구면 연결점 | `XML:115-151`; `/home/syaro/pyg_fea/fusion/ankle_loop_points_v3_printed.json` |
-| 고리 닫기 | `connect` 구속 4 개, solref 0.002 (MuJoCo 가 10 ms 로 올림), solimp 0.999/0.9999/0.0001 | `XML:264-267`; `CONST:506-509` |
-| 지렛대 비 | 발목 앞뒤 −1.21, 발목 옆 −1.42 (발목 1° 당 크랭크 각도) | `docs/91_closed_loop_ankle_rl.md` §4.1 |
-| 자유도 | 발목마다 2; 모형 전체 위치 좌표 nq 31, 속도 좌표 nv 30, 액추에이터 12 | 계산 |
-| 시작 자세 | 엉덩이 0.175 rad, 무릎 0.35 rad, 발목 0.175 rad, 몸통 높이 0.8975 m (발바닥이 바닥 위 5 mm) | `CONST:809-858`; 시작 자세 파일 |
+| Frame | +X forward, +Y left, +Z up | `build_robot.py:11-13` |
+| Hip | pitch/roll/yaw 3 축이 한 점 (0, ±0.1237, 0) 에서 교차. 좌우 간격 247.4 mm | `XML:87-101`; commit `42afc086` |
+| Thigh / shank | 0.3727 m / 0.4909 m | `XML:106,138-143` |
+| Hip → sole | 0.903 m | 계산; `validation.json` |
+| Foot collision | box 3 개, sole 0.260 × 0.100 m | `XML:146-148`; `docs/119` §3 |
+| 기타 collision | capsule·box 15 개. Rod, crank, ankle link 는 collision 없음 | `docs/119` §1 |
+| Toe | 없음 (rigid foot) | `XML` |
+| Ankle linkage | 2-RSU: crank 반경 65.0 / 61.9 mm, rod 289.0 / 195.0 mm | `XML:115-151`; `/home/syaro/pyg_fea/fusion/ankle_loop_points_v3_printed.json` |
+| Loop closure | `connect` 4 개, solref 0.002 (MuJoCo 가 10 ms 로 상향), solimp 0.999/0.9999/0.0001 | `XML:264-267`; `CONST:506-509` |
+| Lever ratio | pitch −1.21, roll −1.42 (ankle 1° 당 crank °) | `docs/91` §4.1 |
+| DOF | ankle 당 2. 전체 nq 31, nv 30, nu 12 | 계산 |
+| Init pose | hip 0.175, knee 0.35, ankle 0.175 rad, base z 0.8975 m (sole 이 바닥 위 5 mm) | `CONST:809-858` |
 
-### 4.4 질량과 관절 성질
+### 4.4 Mass / joint 특성
 
-**질량:** 전체 23.630 kg (다리 하나 9.136 kg, 몸통 5.358 kg).
-저울로 잰 실제 하체는 23.25 ± 0.5 kg 이다. 모형이 +1.6 % 무겁다. 출처: `docs/120_design_vs_measured_mass_audit.md` §0.
-종류별 질량: 모터 16.115, 출력물 2.839, 체결구 1.820, 알루미늄 1.851, 베어링 0.865, 기타 0.204 kg (`docs/120` §1).
-이 여섯 값의 합은 23.694 kg 이고 모형 전체 질량과 0.064 kg 다르다 (이 문서를 쓸 때 계산한 값이다. 차이의 원인은 미검증).
+**Mass:** 23.630 kg (다리 9.136 kg × 2, base 5.358 kg). 실측 하체 23.25 ± 0.5 kg 대비 +1.6 % (`docs/120` §0). Class 별: motor 16.115, printed 2.839, fastener 1.820, aluminium 1.851, bearing 0.865, 기타 0.204 kg (`docs/120` §1).
+Foot 0.845 kg 에 미실측 aluminium 추정값 0.618 kg 이 포함된다. 실측 printed plate 는 0.182 kg 이다 (`docs/89` §1; F10).
 
-**부품별 값:** `XML:76-231` (표는 근거 조사 D).
-발은 0.845 kg 이다. 여기에 알루미늄 발판 추정값 0.618 kg ("tempmass") 이 들어 있다.
-실제로 잰 출력물 발판은 0.182 kg 이다 (`docs/89` §1) (지적 F10).
+**Joint range** (R; L 은 mirror. `docs/107`):
 
-**관절 범위** (`docs/107_joint_rom_table.md`; 설계 상한):
-
-| 관절 | 범위 (오른쪽; 왼쪽은 거울상) |
+| Joint | Range |
 |---|---|
-| 엉덩이 앞뒤 (`hip_pitch`) | −120~+25° |
-| 엉덩이 옆 (`hip_roll`) | −25~+85° |
-| 엉덩이 비틀기 (`hip_yaw`) | ±45° |
-| 무릎 (`knee`) | 0~120° |
-| 크랭크 A, B | ±68.75° |
-| 발목 앞뒤 (`ankle_pitch`, 수동) | −50~+30° |
-| 발목 옆 (`ankle_roll`, 수동) | ±20° |
+| hip_pitch | −120~+25° |
+| hip_roll | −25~+85° |
+| hip_yaw | ±45° |
+| knee | 0~120° |
+| crank A, B | ±68.75° |
+| ankle_pitch (passive) | −50~+30° |
+| ankle_roll (passive) | ±20° |
 
-**관절 동역학:**
+**Joint dynamics:**
 
-| 관절 묶음 | 모터 | 아마추어 (kg·m²) | 점성 (N·m·s/rad) | 마찰 (N·m) | 출처 |
+| Joint | Motor | armature (kg·m²) | damping (N·m·s/rad) | frictionloss (N·m) | 출처 |
 |---|---|---|---|---|---|
-| 엉덩이 앞뒤·옆, 무릎 | RS04 | 0.0773 | 0.0275 | 0.519 | 벤치 실측(모터를 작업대에서 단독으로 잼), 2026-09-09/10 |
-| 엉덩이 비틀기, 크랭크 A·B | RS03 | 0.0638 | 0.0252 | 0.251 | 벤치 실측, 2026-09-10 |
-| 연결봉 관절 (8 개) | — | 0.0005 | 0.02 | 0 | 임시값, `build_robot.py:464-465`, 출처 없음 |
-| 발목 앞뒤·옆 (수동) | — | 0 | 0 | 0 | 측정 안 함 (지적 F8) |
+| hip_pitch, hip_roll, knee | RS04 | 0.0773 | 0.0275 | 0.519 | bench 실측 2026-09-09/10 |
+| hip_yaw, crank A/B | RS03 | 0.0638 | 0.0252 | 0.251 | bench 실측 2026-09-10 |
+| rod hinge (8) | — | 0.0005 | 0.02 | 0 | placeholder, `build_robot.py:464-465`, 출처 없음 |
+| ankle pitch/roll (passive) | — | 0 | 0 | 0 | 미측정 (F8) |
 
-모터 값 측정 방법: 부하 없는 출력축, CAN(Controller Area Network, 모터 통신 버스) 직접 통신 약 4 kHz.
-관성은 세 방법으로 구했다 (자유 감속, 토크-가속도 기울기, 토크 제한 가속).
-RS04 값은 77.3 ± 0.6 g·m² 다. 공진 점검: 실측 2.48 Hz, 예측 2.56 Hz.
-출처: `docs/experiments/2026-09-09_motor_friction_retest.md`; `2026-09-09_motor_rotor_inertia.md`; `2026-09-10_motor_value_validity.md`; `2026-09-10_rs03_friction_correction.md`; `docs/131_motor_params_handoff.md` §2-3.
+Bench 측정: 무부하 output shaft, CAN 약 4 kHz. Inertia 는 coast-down, torque–accel slope, torque-limited accel 3 방법 (RS04 77.3 ± 0.6 g·m²). 공진 검증 2.48 Hz 실측 vs 2.56 Hz 예측.
+출처: `docs/experiments/2026-09-09_motor_friction_retest.md`, `2026-09-09_motor_rotor_inertia.md`, `2026-09-10_motor_value_validity.md`, `2026-09-10_rs03_friction_correction.md`; `docs/131` §2-3.
 
-### 4.5 액추에이터
+### 4.5 Actuator
 
-| 관절 | 모터 | 감속비 | 토크 한계 | 토크-속도 한계 |
+| Joint | Motor | Gear | Effort limit | Torque-speed curve |
 |---|---|---|---|---|
-| 엉덩이 앞뒤·옆, 무릎 | RS04 | 9:1 (모형에는 감속기가 없다. 출력축 기준으로 모형화) | ±120 N·m | RS04 48 V 곡선: 95 rpm 까지 120.09 N·m, 200 rpm 에서 0 |
-| 엉덩이 비틀기, 크랭크 A·B | RS03 | 9:1 | ±60 N·m | RS03 48 V 곡선: 120 rpm 까지 59.68 N·m, 200 rpm 에서 0 |
+| hip_pitch, hip_roll, knee | RS04 | 9:1 (output-shaft 모델, gear 미모델링) | ±120 N·m | 48 V: 95 rpm 까지 120.09 N·m, 200 rpm 에서 0 |
+| hip_yaw, crank A/B | RS03 | 9:1 | ±60 N·m | 48 V: 120 rpm 까지 59.68 N·m, 200 rpm 에서 0 |
 
-토크 경로: 액추에이터 코드 `TnPdActuator` 가 5 ms 물리 걸음마다 PD 토크를 계산한다. 그 뒤 모터가 구동하는 구간(토크와 속도의 방향이 같은 구간)에서 토크-속도 곡선으로 토크를 자른다.
-출처: `MJ/src/mjlab/asset_zoo/robots/pygmalion/tn_actuator.py:55-86`; 곡선 `Motor_Spec/RS03_TN_curve_48V.csv`, `RS04_TN_curve_48V.csv` (커밋 `9fb807f`).
+`TnPdActuator` 가 5 ms physics step 마다 PD torque 를 계산하고, motoring quadrant 에서 T-N curve 로 clamp 한다 (`asset_zoo/robots/pygmalion/tn_actuator.py:55-86`; curve `Motor_Spec/RS0{3,4}_TN_curve_48V.csv`, commit `9fb807f`).
 
-### 4.6 접촉 설정
+### 4.6 Contact
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 발 충돌체 | condim 3 (마찰이 있는 접촉), 마찰 0.6, 우선순위 1 | `CONST:1024-1036` |
-| 그 밖의 충돌체 | condim 1 (마찰 없는 접촉, 자기 충돌만) | 같은 곳 |
-| 접촉 solref·solimp (접촉의 부드러움을 정하는 MuJoCo 인자) | MuJoCo 기본값 (0.02, 1; 0.9, 0.95, 0.001) | 컴파일된 모형; 보정 근거 출처 없음 |
-| 관절 한계 | 부드러운 한계 비율 0.9 | `ENV.yaml:630` |
+| Foot geom | condim 3, friction 0.6, priority 1 | `CONST:1024-1036` |
+| 기타 collision geom | condim 1 (self-collision 용) | 같음 |
+| solref / solimp | MuJoCo 기본값 | calibration 출처 없음 |
+| soft_joint_pos_limit_factor | 0.9 | `ENV.yaml:630` |
 
 ---
 
-## 5. 관절별 Kp, Kd
+## 5. Joint 별 Kp / Kd
 
-### 5.1 사용한 값
+### 5.1 적용 값 (L/R 동일, gain DR 없음)
 
-왼쪽·오른쪽 다리가 같다. 게인은 고정이다 (게인 무작위화 없음).
-
-| 관절 | 모터 | Kp (N·m/rad) | Kd (N·m·s/rad) | 토크 한계 (N·m) | 행동 배율 (rad) | 출처 |
+| Joint | Motor | Kp (N·m/rad) | Kd (N·m·s/rad) | Effort (N·m) | Action scale | 출처 |
 |---|---|---|---|---|---|---|
-| 엉덩이 앞뒤 | RS04 | 150 | 6 | 120 | 0.25 | `ENV.yaml:465-481`; `CONST:731-744` |
-| 엉덩이 옆 | RS04 | 150 | 6 | 120 | 0.25 | 같은 곳 |
-| 엉덩이 비틀기 | RS03 | 150 | 6 | 60 | 0.25 | `ENV.yaml:338-353`; `CONST:670-681` |
-| 무릎 | RS04 | 220 | 6 | 120 | 0.25 | `ENV.yaml:548-562`; `CONST:750-757` |
-| 크랭크 A | RS03 | 22.2656 | 1.4141 | 60 | 0.25 | `ENV.yaml:210-225`; `CONST:720-729` |
-| 크랭크 B | RS03 | 22.2656 | 1.4141 | 60 | 0.25 | 같은 곳 |
-| 발목 앞뒤·옆 | 없음 (수동) | — | — | — | — | `CONST:1059-1065` |
+| hip_pitch | RS04 | 150 | 6 | 120 | 0.25 | `ENV.yaml:465-481`; `CONST:731-744` |
+| hip_roll | RS04 | 150 | 6 | 120 | 0.25 | 같음 |
+| hip_yaw | RS03 | 150 | 6 | 60 | 0.25 | `ENV.yaml:338-353`; `CONST:670-681` |
+| knee | RS04 | 220 | 6 | 120 | 0.25 | `ENV.yaml:548-562`; `CONST:750-757` |
+| crank_A / crank_B | RS03 | 22.2656 | 1.4141 | 60 | 0.25 | `ENV.yaml:210-225`; `CONST:720-729` |
+| ankle_pitch / roll | (passive) | — | — | — | — | `CONST:1059-1065` |
 
-제어 법칙: $\tau = K_p (q_{target} - q) - K_d \dot{q}$. 여기서 $\tau$ 는 토크, $q$ 는 현재 관절각, $q_{target}$ 은 목표 각도, $\dot{q}$ 는 각속도다. 계산한 토크는 그 뒤 토크-속도 곡선과 토크 한계로 자른다.
-행동 배율은 1.4 절의 0.25 이다.
+τ = Kp (q_target − q) − Kd q̇, 이후 T-N curve 와 effort limit 로 clamp.
 
-### 5.2 값을 정한 방법
+### 5.2 결정 방법
 
-**엉덩이·무릎 (150/6, 220/6): 다른 로봇의 게인 × 질량비.**
-1. Unitree G1 과 K-Bot (다른 휴머노이드 로봇) 의 게인을 가져온다.
-2. 질량비 $51.5 / 35 = 1.47$ 을 곱한다. 51.5 와 35 가 각각 어느 로봇의 질량인지 이 감사는 확인하지 못했다 (미검증).
-3. 엉덩이: G1 Kp 100, K-Bot Kp 100 에 1.47 을 곱하면 약 147 이다. 사용 값은 150 이다. 무릎: G1 Kp 150 에 1.47 을 곱하면 약 220 이다. 사용 값은 220 이다.
-4. Kd 6 은 G1 게인에서 환산한 3 과 K-Bot 게인에서 환산한 15 사이다.
+**Hip / knee:** reference robot gain 을 질량비로 scale 한 값이다. Inertia 로 계산하지 않았다.
+- Unitree G1·K-Bot gain × (51.5 / 35 = 1.47).
+- Hip: G1 Kp 100, K-Bot Kp 100 → 150. Knee: G1 Kp 150 → 220.
+- Kd 6 은 G1 환산값(3)과 K-Bot 환산값(15) 사이.
+- 출처: `CONST:672-676, 736-739, 746-749`; `docs/mujoco/2026-07-06_kp_kd_history.md` §1a. 51.5 / 35 의 각 값이 무엇인지는 코드 주석에 명시되지 않았다 (미검증).
 
-출처: `CONST:672-676, 736-739, 746-749`; `docs/mujoco/2026-07-06_kp_kd_history.md` §1a.
-이 값들은 관절 관성으로 계산하지 않았다.
+**Crank:** ankle gain 을 linkage 로 환산했다.
+1. 목표 ankle gain: Kp 28.5 N·m/rad, Kd 1.81 (G1 ankle spec, `CONST:627-628`).
+2. Crank 2 개가 lever ratio r = 1.25 (CAD) 로 ankle 1 축을 구동한다.
+3. Virtual work: $K_{ankle} = 2K_{crank}/r^2$ → $K_{crank} = K_{ankle} r^2/2$.
+4. Kp = 28.5 × 1.5625 / 2 = 22.2656, Kd = 1.81 × 1.5625 / 2 = 1.4141 (`CONST:713-721`).
 
-**크랭크 모터 (22.27/1.41): 발목 게인을 연결 기구로 옮김.**
-1. 목표 발목 게인: Kp 28.5 N·m/rad, Kd 1.81 (Unitree G1 발목 사양, `CONST:627-628`).
-2. 크랭크 2 개가 발목 축 하나를 지렛대 비 $r = 1.25$ 로 움직인다 (CAD 값, `docs/87`).
-3. 가상일의 원리로 $K_{ankle} = 2 K_{crank} / r^2$ 이다. 따라서 $K_{crank} = K_{ankle} \cdot r^2 / 2$ 이다.
-4. Kp = $28.5 \times 1.5625 / 2 = 22.2656$. Kd = $1.81 \times 1.5625 / 2 = 1.4141$.
+**실효 ankle 강성** (loop Jacobian 으로 계산): pitch 30.5 N·m/rad (목표 대비 +7 %), roll 22.2 N·m/rad (−22 %). 사용한 Jacobian 파일은 v3 모델 기준이다. v30 적용은 미검증 (F16).
 
-출처: `CONST:713-721`.
+**Dead code:** `NATURAL_FREQ` (10 Hz), `DAMPING_RATIO` (2.0), `STIFFNESS_0x`/`DAMPING_0x` (`CONST:593-604`) 는 어디서도 읽지 않는다.
 
-**실제 발목 강성:** 근거 조사 E 가 고리 야코비안(크랭크 각도와 발목 각도의 관계를 나타내는 미분 행렬)으로 계산했다.
-앞뒤는 30.5 N·m/rad (목표보다 +7 %). 옆은 22.2 N·m/rad (목표보다 −22 %).
-이 야코비안 파일은 v3 모형용이다. v30 에 맞는지는 미검증이다 (지적 F16).
+### 5.3 현재 값의 근거가 된 검증
 
-**쓰지 않는 코드:** `NATURAL_FREQ` (10 Hz), `DAMPING_RATIO` (2.0), `STIFFNESS_0x` / `DAMPING_0x` (`CONST:593-604`) 는 죽은 코드다. 아무 파일도 읽지 않는다.
+- Critical damping Kd (hip pitch/roll 35, hip_yaw 14, knee 16; `PYG_BEYONDMIMIC`, `CONST:658-667`) 는 A/B 에서 joint torque 2.2~3.5 배, foot force peak 2.1 → 6.1 BW 로 기각되었다 (`docs/53_bc_kd_controlled_ab.md`).
+- Motor armature 갱신 (2026-09-11) 후에도 Kp/Kd 를 유지하기로 했다 (`docs/137_training_handoff_motor_params.md` §1, §4-§5).
 
-### 5.3 게인의 역사
+결과 동특성 (`docs/137` §5 inertia 기준 계산):
 
-| 세대 | 날짜 | 게인 (Kp/Kd) | 근거 | 상태 |
-|---|---|---|---|---|
-| 1 | 2026-07-02 | 엉덩이·무릎 28/1.76 | Kp = 회전자 아마추어 × $\omega^2$, 회전자만 계산. 엉덩이 대역폭 0.56 Hz (너무 무름) | 교체됨 |
-| 2 | 2026-07-02 | 엉덩이·무릎 400/28 | 주파수 훑기(chirp) 시험 | 교체됨 |
-| 3 | 2026-07-06/07 | 엉덩이 150/6, 무릎 220/6 | 다른 로봇 게인 × 질량비 (사용자 의견: "엉덩이 게인이 너무 크다") | **사용 중** |
-| 발목 | 2026-07-04 | 발목 축마다 28.5/1.81 | G1 사양 | 사용 중 (크랭크를 거쳐) |
-| 크랭크 | 2026-08-23 | 22.27/1.41 | 5.2 절의 식 | 사용 중 |
-
-출처: `docs/mujoco/2026-07-06_kp_kd_history.md`; `CONST:610-632`; 커밋 `42afc086`, `895cb157`.
-
-**Kd = 6 을 유지한 시험:**
-- 임계 감쇠가 되도록 계산한 Kd (엉덩이 앞뒤·옆 35, 엉덩이 비틀기 14, 무릎 16; `PYG_BEYONDMIMIC`, `CONST:658-667`) 를 2026-07-08 에 통제된 A/B 시험(한 가지 조건만 바꿔 비교)으로 확인했다. 관절 토크가 2.2~3.5 배 늘었다. 발 힘 최고값이 체중의 2.1 배에서 6.1 배로 늘었다. 시험이 이 안을 기각했다. 출처: `docs/53_bc_kd_controlled_ab.md`.
-- 새 모터 아마추어를 반영한 뒤(2026-09-11) Kd 를 올리자는 안이 나왔다가 철회되었다. 사용자 지시: "Kp/Kd 건드리지 마세요". 출처: `docs/137_training_handoff_motor_params.md` §1, §4-§5.
-
-**결과로 나오는 동특성 (`docs/137` §5 의 관성으로 계산):**
-
-| 관절 | 고유 진동수 | 감쇠비 |
+| Joint | Natural freq. | Damping ratio |
 |---|---|---|
-| 엉덩이 앞뒤 | 약 1.5 Hz | 약 0.19 |
-| 무릎 | 3.9 Hz | 0.33 |
-| 엉덩이 옆 | 6.4 Hz | 0.80 |
+| hip_pitch | ~1.5 Hz | ~0.19 |
+| knee | 3.9 Hz | 0.33 |
+| hip_roll | 6.4 Hz | 0.80 |
 
-감쇠비가 1 보다 작으면 관절이 목표 주변에서 흔들린다. 세 관절 모두 1 보다 작다.
+### 5.4 Validation
 
-### 5.4 검증
-
-PD 회귀는 기록한 목표각·관절각·토크에 PD 식을 맞춰 Kp 와 Kd 를 다시 구하는 분석이다.
-
-| 점검 | 결과 | 출처 |
+| 확인 | 결과 | 출처 |
 |---|---|---|
-| 대상 정책 실행의 PD 회귀 | 안 함 | — (지적 F20) |
-| 이전 실행의 PD 회귀 (같은 게인) | 모든 관절 R² = 1.00 (결정계수), 맞춘 Kp·Kd 가 설정과 같음 | `docs/53` 55-62 줄; `docs/55_init_pose_straight_vs_bent.md` |
-| 시뮬 대 벤치 모터 (kp 20, Kd 1, 무부하) | 두 쪽 모두 공진 2.5 Hz; 최고값 실측 1.41, 시뮬 1.32 | `docs/129_mujoco_motor_parameters.md` |
-| 벤치 무릎 계단 응답 kp 220, Kd 6 (무부하) | 넘침 1.3 %, 90 % 도달 39 ms | `docs/137` §4 |
+| 이 run 의 PD regression | 없음 | (F20) |
+| 동일 gain 의 이전 run PD regression | 전 joint R² = 1.00, fit Kp/Kd = 설정값 | `docs/53` 55-62 줄; `docs/55` |
+| Sim vs bench motor (kp 20, Kd 1, 무부하) | 공진 2.5 Hz 양쪽 일치, peak 1.41 (실측) / 1.32 (sim) | `docs/129` |
+| Bench knee step, kp 220 / Kd 6 (무부하) | overshoot 1.3 %, 90 % 도달 39 ms | `docs/137` §4 |
 
-**시뮬과 실기 게인 차이 (지적 F1):**
-- 시뮬레이션(학습): Kp 150~220. 실기 설정: 관절 12 개 모두 kp 10, kd 1. kp 기준 15~22 배 차이.
-- 출처: 이 실기 설정을 `docs/136_legonly_ab_v3_keyfix_sim2real_gaps.md:37-38` 과 `docs/150_real_vs_sim_joint_response_plan.md:20` 이 적는다.
-- 이 문서들이 가리키는 실기 설정 파일 `config/robot_v1.0.yaml` 을 감사가 찾지 못했다. kp 10 은 그 파일에 대해 미검증이다.
-- `docs/150` §5-1 이 선택지 세 개를 적었다. 결정을 적은 문서는 없다.
+**Sim / 실기 gain 차이 (F1):** 실기 설정은 12 joint 모두 kp 10 / kd 1 로 문서화되어 있다 (`docs/136_legonly_ab_v3_keyfix_sim2real_gaps.md:37-38`; `docs/150_real_vs_sim_joint_response_plan.md:20`). 학습 gain 의 1/15~1/22 이다. 해당 설정 파일 `config/robot_v1.0.yaml` 은 이 저장소에서 찾지 못했다 (미검증). 결정 기록은 없다 (`docs/150` §5-1 에 선택지만 있음).
 
 ---
 
-## 6. 감사 지적 사항
+## 6. Findings
 
-심각도: 높음 = 실기에서 실패를 일으킬 수 있음. 중간 = 결과나 재현성의 신뢰를 낮춤. 낮음 = 문서나 작은 오류. 참고 = 정리 대상.
-"절" 은 이 문서의 절이다.
+심각도: High = 실기 실패 가능. Medium = 결과·재현성 신뢰 저하. Low = 문서·경미한 오류. Info = 정리 대상.
 
-| 번호 | 심각도 | 지적 | 근거 | 권고 조치 |
+| ID | 심각도 | 내용 | 근거 | 권고 |
 |---|---|---|---|---|
-| F1 | 높음 | 문서에 적힌 실기 로봇의 모터 제어기 설정은 12 관절 모두 kp 10, kd 1 이다. 학습에 쓴 게인은 kp 150~220 이다. 같은 각도 오차에서 PD 식이 내는 토크가 학습 때보다 15~22 배 작아진다. 정책은 학습 게인으로 배웠다. 실기에서 어느 게인을 쓸지 정한 기록이 없다. | 5.4 절; `docs/136_legonly_ab_v3_keyfix_sim2real_gaps.md:37-38`; `docs/150_real_vs_sim_joint_response_plan.md:20` | 실기에 투입하기 전에 실기 게인을 결정한다. 실기 설정 파일 `config/robot_v1.0.yaml` 을 찾아 kp 10 을 확인한다. |
-| F2 | 높음 | 학습의 엔코더 영점 오차 무작위화 폭은 ±0.86° 다. 실측한 영점 오차는 최대 9.4° (왼 무릎) 로 폭의 약 11 배다. 이 오차는 구동 목표에만 더해지고 정책의 관측에는 없다. | 3.1 절, 3.4 절; `ENVCFG:706-709`; `docs/109:56` | 측정한 영점 오차를 보정값으로 로봇 설정에 적용한다 (프로젝트 내부 작업 번호 #2, #14). 보정 뒤 남는 오차만큼 무작위화 폭을 넓힌다. |
-| F3 | 높음 | 학습이 통신·모터 지연, 관성센서 편향, Kp·Kd, 모터 세기, 관절 동역학을 무작위화하지 않았다. 시뮬레이션과 실기의 차이가 이 항목들에서 생기면 정책이 견디는지 확인되지 않았다. | 3.2 절 | 지연과 관성센서 편향을 잰다. 그 뒤 이 무작위화를 넣는다 (대부분 코드는 이미 있음). |
-| F4 | 중간 | 관측 잡음 값이 원본 mjlab 기본값이다. Pygmalion 센서를 측정한 근거가 없다. | 3.1 절 | 실기 관성센서(문서에는 EBIMU 로 적힘)의 자이로 잡음과 엔코더 잡음을 잰다. ±0.2 rad/s, ±0.01 rad 와 비교한다. |
-| F5 | 중간 | 명령 속도 범위를 단계적으로 넓히는 관문(2.1 절)을 건너뛰었다. `GATE_MAX_DWELL=0` 이라 관문이 성능을 시험하지 않고 반복 0 에서 범위를 바로 최대(단계 4: vx −2.0~2.5 m/s)로 올렸다. 학습이 쉬운 범위에서 어려운 범위로 점진적으로 진행했다는 가정이 성립하지 않는다. 또 실행이 저장한 `ENV.yaml` 에는 학습 범위가 아닌 단계 1 범위(vx ±1.2 m/s)가 적혀 있다. 이 파일만 읽으면 학습 범위를 잘못 알게 된다. | 2.1 절 | 실행 노트에 실제 명령 범위를 적는다. 관문 상태를 저장본에 넣거나, 마지막 범위를 기록한다. |
-| F6 | 중간 | 커밋 `d0c85448` 이 원본 mjlab 의 변경 3 개(#1076, #1063, #1069)를 실수로 되돌렸다. 시험 파일 1 개(`tests/test_spec_config.py`)가 불러오기에서 실패할 수 있다. | 1.10 절 | 원본 코드를 되살린다. `tests/test_spec_config.py` 를 돌린다. |
-| F7 | 중간 | 실행의 git 기록이 없다. 상위 저장소가 기록한 하위 모듈 포인터(`27d16f82`)가 실행 코드보다 오래되었다. 학습에 쓴 mjlab 코드의 커밋을 기록만으로 특정할 수 없다. | 1.11 절 | 하위 모듈 포인터를 커밋한다. 발사 때 mjlab 커밋 지문을 `MANIFEST` 에 적는다. |
-| F8 | 중간 | 수동 발목 관절의 마찰·감쇠·아마추어가 0 이다. 연결봉 관절은 임시값이다. 측정한 적이 없다. | 4.4 절; 프로젝트 내부 작업 번호 #20 | 발목 베어링 마찰을 잰다. 임시값을 바꾼다. |
-| F9 | 중간 | 발목 고리 기하(크랭크와 연결봉 연결점 좌표)가 v3 모형용 파일에서 왔다. 대상 정책의 모형인 CAD v30 에서 다시 뽑지 않았다. | 근거 조사 D §7; `build_robot.py:70,412` | v30 에서 고리 점을 다시 뽑아 비교한다. |
-| F10 | 중간 | 발 질량에 알루미늄 발판 추정값 0.618 kg ("tempmass", 실측 아님) 이 들어 있다. 실측 출력물 발판은 0.182 kg 이다. | 4.4 절; `docs/112` §5 | 실제 발 부품을 잰다. 모형을 고친다. "tempmass" 모형으로 학습한 저장본은 실기에 쓰지 않는다 (`docs/114` §5). |
-| F11 | 중간 | 실기 모터 지도는 12 관절 모두 RS03 이다. 모형은 엉덩이 앞뒤·옆, 무릎에 RS04 를 쓴다. 토크 한계가 2 배(60 대 120 N·m) 다르다. | `docs/136` §3; 4.5 절 | 실기 관절마다 모터 종류를 확인한다. |
-| F12 | 낮음 | 모형의 `left_foot` 지점이 `R_foot_link` 에, `right_foot` 지점이 `L_foot_link` 에 있다 (좌우 링크 이름을 바꾼 결과, 4.2 절 8 단계). 좌우 보상에 미치는 영향은 미검증이다. | `XML:149,222` | 이 지점을 쓰는 보상을 하나씩 확인한다. |
-| F13 | 낮음 | 평가자 예열 코드의 주석은 관측 정규화도 고정한다고 적었다. 실제로는 고정하지 않는다 (변화 ≤ 8e-4). | 1.9 절 | 주석을 고치거나 정규화도 고정한다. |
-| F14 | 낮음 | 지형 단계는 지형 실력보다 걸은 거리를 보여 준다. 반복 0 의 평균 단계가 시작 분포보다 높다 (원인 미검증). | 2.2 절 | 지형 실력은 커리큘럼 단계 대신 같은 지형 평가(`terrain_eval.py`)로 잰다. |
-| F15 | 낮음 | 질량 무작위화 파일의 기준 질량이 XML 과 다르다 (몸통 5.42 대 5.36 kg). 마지막 제작에 쓴 질량 자료 파일이 저장소에 없다. | 3.3 절; 근거 조사 D §7 | 제작 입력을 저장소에 넣는다. 같은 자료로 무작위화 파일을 만든다. |
-| F16 | 낮음 | 실제 발목 옆 강성이 설계 목표보다 약 22 % 낮다 (두 축에 지렛대 비 하나를 씀). | 5.2 절 | 발목 옆 응답이 중요하면 v30 고리 야코비안으로 크랭크 게인을 정한다. |
-| F17 | 낮음 | 접촉 solref·solimp 가 MuJoCo 기본값이고 보정이 없다. | 4.6 절 | 알려진 모형 한계로 기록한다. |
-| F18 | 참고 | 죽은 코드: `NATURAL_FREQ`, `DAMPING_RATIO`, `STIFFNESS_0x`, `DAMPING_0x`, `ElectricActuator.velocity_limit`. | 5.2 절; 근거 조사 E | 지우거나 "쓰지 않음" 으로 표시한다. |
-| F19 | 낮음 | 일부 문서에 옛 값이 있다: 모형 질량 21.086 kg (`docs/111`, `docs/156`; 현재 값은 23.630 kg); RS03 마찰 0.250 (코드는 0.251). | 근거 조사 D §7 | 문서를 고친다. |
-| F20 | 낮음 | 대상 정책 실행에는 PD 회귀와 목표각 대 실제각($q_{target}$ 대 $q$) 분석이 없다. | 5.4 절 | 하중 측정 자료로 `analysis/analyze_qtarget.py` 를 돌린다. 이 도구는 git 에 없으므로 커밋한다. |
+| F1 | High | 문서상 실기 gain (kp 10 / kd 1) 이 학습 gain (150~220) 의 1/15~1/22. 결정 기록 없음 | §5.4 | 배포 전 실기 gain 확정. `config/robot_v1.0.yaml` 확인 |
+| F2 | High | Encoder bias DR ±0.86° vs 실측 zero offset 최대 9.4° (left knee). Bias 는 target 에만 작용, observation 에 없음 | §3.1, §3.4; `ENVCFG:706-709`; `docs/109:56` | Zero calibration 적용 후 잔차만큼 DR 확대 |
+| F3 | High | Latency, IMU bias, Kp/Kd, motor strength, joint dynamics DR 없음 | §3.2 | Latency·IMU bias 측정 후 DR 추가 (대부분 코드 존재) |
+| F4 | Medium | Observation noise 값이 upstream 기본값. Pygmalion sensor 측정 근거 없음 | §3.1 | IMU gyro·encoder noise 측정 후 비교 |
+| F5 | Medium | Command gate 무력화 (`GATE_MAX_DWELL=0`). `ENV.yaml` 에는 학습 range 가 아닌 stage 1 range 가 기록됨 | §2.1 | Run note 에 실제 range 기록. Gate state 를 checkpoint 에 저장하거나 최종 range 를 log |
+| F6 | Medium | Commit `d0c85448` 이 upstream 변경 3 건을 의도치 않게 revert. Test 1 개 import 실패 가능 | §1.10 | Upstream 코드 복원, `tests/test_spec_config.py` 실행 |
+| F7 | Medium | Run 의 git 기록 없음. 상위 repo 의 submodule pointer 가 오래됨 (`27d16f82`) | §1.11 | Submodule pointer commit. Launch 시 mjlab commit hash 를 `MANIFEST` 에 기록 |
+| F8 | Medium | Passive ankle joint 의 friction/damping/armature = 0. Rod hinge 는 placeholder | §4.4 | Ankle bearing friction 측정, placeholder 교체 |
+| F9 | Medium | Ankle loop 형상이 v3 파일 기반. v30 CAD 에서 재추출하지 않음 | `build_robot.py:70,412` | v30 에서 loop point 재추출·비교 |
+| F10 | Medium | Foot 질량에 미실측 aluminium 추정 0.618 kg 포함. 실측 printed plate 0.182 kg | §4.4; `docs/112` §5 | 실제 foot part 계량 후 모델 갱신. tempmass checkpoint 는 실기 미사용 (`docs/114` §5) |
+| F11 | Medium | 실기 motor map 은 12 joint 전부 RS03. 모델은 hip pitch/roll·knee 에 RS04 | `docs/136` §3 | 실기 joint 별 motor 확인 |
+| F12 | Low | Site `left_foot` 이 `R_foot_link`, `right_foot` 이 `L_foot_link` 에 있음. 좌우 reward 영향 미검증 | `XML:149,222` | 해당 site 를 쓰는 reward 확인 |
+| F13 | Low | Critic warm-up 주석은 obs normalizer 도 고정한다고 하나 실제로는 갱신됨 (drift ≤ 8e-4) | §1.9 | 주석 수정 또는 normalizer 고정 |
+| F14 | Low | Terrain level 은 terrain 능력보다 이동 거리를 반영. 초기 level 이 초기 분포보다 높음 (원인 미검증) | §2.2 | Terrain 능력은 `terrain_eval.py` 로 평가 |
+| F15 | Low | Mass DR json 의 nominal mass 가 XML 과 다름 (base 5.42 vs 5.36 kg). 최종 build 입력 massprops 파일이 repo 에 없음 | §3.3 | Build 입력을 repo 에 추가, 같은 snapshot 으로 DR json 생성 |
+| F16 | Low | 실효 ankle roll 강성이 목표 대비 약 −22 % (두 축에 단일 lever ratio 사용) | §5.2 | 필요 시 v30 loop Jacobian 으로 crank gain 설정 |
+| F17 | Low | Contact solref/solimp 미보정 (MuJoCo 기본값) | §4.6 | 모델 한계로 기록 |
+| F18 | Info | Dead code: `NATURAL_FREQ`, `DAMPING_RATIO`, `STIFFNESS_0x`, `DAMPING_0x`, `ElectricActuator.velocity_limit` | §5.2 | 제거 또는 미사용 표시 |
+| F19 | Low | 일부 문서에 구 값: 21.086 kg (`docs/111`, `docs/156`), RS03 friction 0.250 (코드 0.251) | survey D | 문서 수정 |
+| F20 | Low | 이 run 의 PD regression / q-q_target 분석 없음 | §5.4 | 하중 측정 데이터로 `analysis/analyze_qtarget.py` 실행. 해당 도구 commit (현재 untracked) |
 
 ---
 
-## 7. 근거 조사
+## 7. Evidence
 
-2026-10-12 에 읽기 전용 조사 5 건(근거 조사 A~E)이 이 문서의 사실을 모았다.
-조사자는 코드, 설정 파일, 실행 기록, 내부 문서를 읽고 사실마다 출처를 붙였다.
-
-| 조사 | 주제 | 주요 출처 |
-|---|---|---|
-| A | 환경과 원본 코드 수정 | `ENV.yaml`, `agent.yaml`, `git diff 20f10e96 HEAD -- src/`, 소스 지문 |
-| B | 커리큘럼 | `curriculums.py`, `ENVCFG:466-693`, 텐서보드 기록, 콘솔 기록 |
-| C | 무작위화와 잡음 | `ENV.yaml` 이벤트·관측 항목, `MJ/src/mjlab/envs/mdp/dr/*`, 질량 무작위화 파일 |
-| D | 로봇 모형 | `XML`, `tools/robot_model/*`, `docs/107`, `docs/111`~`docs/120`, `docs/145`, `docs/146` |
-| E | Kp·Kd | `CONST`, `ENV.yaml` 액추에이터, `docs/53`, `docs/137`, `docs/150`, `docs/mujoco/2026-07-06_kp_kd_history.md` |
-
-"계산" 표시 값은 컴파일된 모형(mujoco 3.10.0)이나 조사자의 산술에서 나왔다. 프로젝트 문서의 값이 아니다.
+2026-10-12 read-only survey 5 건 (A 환경·stock 수정, B curriculum, C DR, D robot model, E Kp/Kd) 이 이 문서의 사실을 수집했다. 주요 입력: `ENV.yaml`, `agent.yaml`, `git diff 20f10e96 HEAD -- src/`, source hash, `curriculums.py`, TensorBoard·console log, `MJ/src/mjlab/envs/mdp/dr/*`, `XML`, `tools/robot_model/*`, `CONST`, `docs/53`, `docs/107`~`docs/120`, `docs/137`, `docs/145`, `docs/146`, `docs/150`.
+"계산" 표기 값은 compiled model (mujoco 3.10.0) 또는 survey 의 산술 결과이며, 프로젝트 문서의 값이 아니다.
