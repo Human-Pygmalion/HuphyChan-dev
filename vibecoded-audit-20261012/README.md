@@ -77,7 +77,7 @@ Pygmalion 하체 이족 로봇의 보행 RL 학습 환경과, 그것으로 만�
 | 동작 동일성: 같은 seed·명령으로 각 단계의 끝 policy 를 200 step (`rollout_trace.py`) | P1·P2·rough 모두 원 fork 코드와 observation·action·base 위치 **비트 단위 일치** (차이 0.0) |
 | 순정 mjlab 에서 실제 학습 1,000 iter | 원 run 과 곡선 일치. 학습 시작 직후 command 크기 차이 하나 (§5) |
 | **하지 않음:** 순정 mjlab 에서 12,000 iter 전체 재학습 | 약 18 시간. 1,000 iter 곡선 일치까지만 확인 |
-| 처음부터 학습 경로의 짧은 실행 (P1 300 iter, P2 resume 200 iter, rough 20 iter) | 진행 중 — 3090 호스트 통신 두절로 중단 (§5) |
+| 처음부터 학습 경로의 짧은 실행 (P1 300 iter, P2 resume 200 iter, rough 20 iter) | 세 단계가 이어져 돌고, P1·P2 곡선이 원 run 의 같은 구간과 겹친다 (§5) |
 | **하지 않음:** P1→P2→rough 42,000 iter 전체 재학습 | 수일. 단계별 설정 일치·비트 일치·짧은 학습까지만 확인 |
 | **하지 않음:** 실기 | 실기 구동 기록 없음 |
 
@@ -110,7 +110,36 @@ Vert$ 0.63 m/s) 에서 뽑았다. 이 패키지는 처음부터 최종 범위에
 `train_from_scratch.sh` 로 P1 을 처음부터 300 iter, P2 를 원 P1 `model_15999` 에서 resume 해 200 iter, rough 를 그 P2 에서 warm start 해 20 iter 돌려 원 run 의 같은 구간 곡선과 비교한다.
 
 <!-- SCRATCH-RESULT -->
-진행 중. 2026-10-12 P1 이 259/300 iter 까지 진행한 시점에 3090 호스트가 네트워크에서 사라져 중단됐다. 복구 후 다시 돌려 결과를 적는다.
+2026-10-12~13, RTX 3090, 이 브랜치 내용만으로 만든 새 사본 + 새 venv (순정 mjlab `20f10e96`). 원 run 의 같은 iteration 구간 (`reference/*/scalars.csv.gz`) 과 비교했다 (±25 iter 평균, pkg / orig).
+
+**P1 처음부터 300 iter** (16,384 env):
+
+| 지표 | iter 15 | 75 | 150 | 224 | 274 |
+|---|---|---|---|---|---|
+| mean reward | 1.15 / 1.14 | 34.7 / 34.9 | 76.8 / 73.6 | 100.6 / 96.5 | 108.9 / 105.8 |
+| mean episode length | 49 / 47 | 609 / 592 | 959 / 937 | 987 / 972 | 997 / 992 |
+| action std | 0.648 / 0.632 | 0.394 / 0.393 | 0.306 / 0.306 | 0.227 / 0.238 | 0.201 / 0.213 |
+| xy 속도 오차 | 0.071 / 0.070 | 0.550 / 0.505 | 0.644 / 0.652 | 0.509 / 0.529 | 0.482 / 0.496 |
+| command stage | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+![P1 처음부터 300 iter: 이 패키지 vs 원 run](verification/curves_flat_p1_from_scratch_300it.png)
+
+**P2 resume 200 iter** (원 P1 `model_15999` 에서, iter 15,999~16,198):
+
+| 지표 | iter 16,009 | 16,049 | 16,099 | 16,148 | 16,173 |
+|---|---|---|---|---|---|
+| mean reward | 49.2 / 49.2 | 104.7 / 104.5 | 110.9 / 110.7 | 110.6 / 110.3 | 110.4 / 110.2 |
+| action std | 0.258 / 0.259 | 0.263 / 0.264 | 0.268 / 0.269 | 0.271 / 0.272 | 0.271 / 0.272 |
+| dr_factor | 0.002 / 0.002 | 0.005 / 0.005 | 0.010 / 0.010 | 0.015 / 0.015 | 0.018 / 0.018 |
+| command stage | 3.997 / 3.997 | 4 / 4 | 4 / 4 | 4 / 4 | 4 / 4 |
+
+![P2 resume 200 iter: 이 패키지 vs 원 run](verification/curves_flat_p2_resume_200it.png)
+
+**Rough 20 iter**: 위 P2 의 끝 checkpoint 에서 actor-only warm start, critic warm-up 이 동작하고 학습이 진행됨 (단계 연결 확인용).
+
+- 세 단계가 `train_from_scratch.sh` 로 순서대로 이어진다 (P1 → P2 resume → rough warm start).
+- P2 에서 env step counter 가 checkpoint 에서 복원되어 DR ramp (iter 15,999 기준) 와 entropy anneal 이 원 run 과 같은 값으로 진행한다. Command gate 는 원 run 처럼 첫 iteration 에 최종 stage 로 승급한다 (gate 상태는 checkpoint 에 없음).
+- P1 의 command gate 승급 (원 run: iter 800·1,600·2,400·5,400) 은 300 iter 안에 일어나지 않으므로 이번에는 확인하지 않았다. Gate 함수는 원 fork 코드를 그대로 복사했다.
 
 ## 6. 설치
 

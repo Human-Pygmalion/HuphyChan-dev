@@ -26,7 +26,7 @@ STAGES="${STAGES:-p1 p2 rough}"
 P1_ITERS="${P1_ITERS:-16000}"; P2_ITERS="${P2_ITERS:-14000}"; ROUGH_ITERS="${ROUGH_ITERS:-12000}"
 LOGS=logs/rsl_rl/pygmalion_velocity
 VIDEO=(--video True --video-interval 8000 --video-length 500)
-latest() { ls -d "$LOGS"/*_"$1" 2>/dev/null | sort | tail -1; }
+latest() { ls -d "$LOGS"/[0-9]*_"$1" 2>/dev/null | sort | tail -1; }  # date-named run dirs only
 
 for stage in $STAGES; do
   case "$stage" in
