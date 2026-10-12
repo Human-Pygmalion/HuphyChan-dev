@@ -1,0 +1,106 @@
+{
+  "run_name": "legonly_ab_v11a_stand01_s43_p2",
+  "created": "2026-10-02T23:52:20+09:00",
+  "cwd": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab",
+  "command": [
+    ".venv/bin/python3",
+    "analysis/train_wandb_video.py",
+    "Mjlab-Velocity-Flat-Pygmalion",
+    "--video",
+    "True",
+    "--video-interval",
+    "8000",
+    "--video-length",
+    "500",
+    "--env.scene.num-envs",
+    "16384",
+    "--agent.max-iterations",
+    "14000",
+    "--agent.run-name",
+    "legonly_ab_v11a_stand01_s43_p2",
+    "--agent.logger",
+    "tensorboard",
+    "--agent.seed",
+    "43",
+    "--agent.resume",
+    "True",
+    "--agent.load-run",
+    "2026-10-01_17-15-50_legonly_ab_v11a_stand01_s43_p1",
+    "--agent.load-checkpoint",
+    "model_15999.pt"
+  ],
+  "environment": {
+    "PYG_ANKLE_MODE": "AB",
+    "PYG_ARM_ABD_DEG": "15",
+    "PYG_CMD_VY_STAGES": "1",
+    "PYG_CRITIC_DR_OBS": "1",
+    "PYG_DR_END_ITER": "25999",
+    "PYG_DR_START_ITER": "15999",
+    "PYG_ENTROPY_ANNEAL": "1",
+    "PYG_ENTROPY_ANNEAL_END": "29998",
+    "PYG_ENTROPY_ANNEAL_START": "15999",
+    "PYG_ENTROPY_END_COEF": "0.002",
+    "PYG_ENTROPY_START_COEF": "0.01",
+    "PYG_GATED_CURRICULUM": "1",
+    "PYG_GATE_ERR_RATIO": "1.1",
+    "PYG_GATE_FELL_MAX": "0.005",
+    "PYG_GATE_MAX_DWELL": "0",
+    "PYG_GATE_MIN_DWELL": "0",
+    "PYG_GATE_MIN_EPISODES": "64",
+    "PYG_GATE_WINDOW": "100",
+    "PYG_INERTIAL_DR": "1",
+    "PYG_INIT_BENT": "1",
+    "PYG_INIT_MID": "1",
+    "PYG_KNEE_EXT": "1",
+    "PYG_KNEE_EXT_DEG": "25",
+    "PYG_KNEE_EXT_W": "2.0",
+    "PYG_MASS_DR_JSON": "/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json",
+    "PYG_MODEL_TAG": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix",
+    "PYG_MOTOR_MEAS": "1",
+    "PYG_REL_HEADING": "0.3",
+    "PYG_REL_STANDING": "0.1",
+    "PYG_SAFE_TARGET_CLIP": "1",
+    "PYG_SOFT_LANDING": "1",
+    "PYG_SOFT_LANDING_MODE": "half",
+    "PYG_STUDENT_TEACHER": "1",
+    "PYG_TN": "1",
+    "PYG_V2": "1"
+  },
+  "inputs": [
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/run_v2_scratch.py",
+      "snapshot": "run_v2_scratch.py",
+      "sha256": "3416df085a8f368507b560d2d7bf467d44cc817f8e2b587b5301fd311a32e05b"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/run_v2_scratch.sh",
+      "snapshot": "run_v2_scratch.sh",
+      "sha256": "bff8d515ecf1c68a2d4b2d908c8341266ddc40c57d29d55e1852855478a8538c"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py",
+      "snapshot": "env_cfgs.py",
+      "sha256": "a74962a869a672c404302b65aea9bcce2cc7e6db9ec8c5a3b699e9312d37f574"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/config/pygmalion/rl_cfg.py",
+      "snapshot": "rl_cfg.py",
+      "sha256": "71f4850d402bb7f4809d31fd09d7d10ca679e1d2b3c0d5ec8666ea6b5c9c1cce"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/mdp/curriculums.py",
+      "snapshot": "curriculums.py",
+      "sha256": "313153d1606c87fe33c2e0a6c003ee2b5804ca09a04928adecd8e49777bf5932"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+      "snapshot": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml",
+      "sha256": "5a02f8f936522ba3faf2254ce9c72471b1318098af7c5a26a7236c50019b96bb"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json",
+      "snapshot": "mass_dr_legonly_fastener50_prototype-tempmass.json",
+      "sha256": "3438728db3d19dfaf3f3ed1b674f74a59491dcede8ce4c09115403e63d585a9f"
+    }
+  ]
+}

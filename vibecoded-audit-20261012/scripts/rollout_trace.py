@@ -10,7 +10,7 @@ files with --compare.
       --onnx checkpoints/rough_main_model_11999.onnx --out pkg.npz
   # original training code (needs its PYG_* flags; the manifest lists them)
   python scripts/rollout_trace.py --task Mjlab-Velocity-Rough-Pygmalion \\
-      --manifest reference/launch_manifest_reference.json --onnx ... --out fork.npz
+      --manifest reference/rough_main/launch_manifest.json --onnx ... --out fork.npz
   python scripts/rollout_trace.py --compare pkg.npz fork.npz
 
 The command is pinned (no resampling, no standing/heading envs); the terrain level is the

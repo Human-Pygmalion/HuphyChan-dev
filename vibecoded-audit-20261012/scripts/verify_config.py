@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compare this package's resolved env/agent config with the training run's own dump.
 
-reference/env_reference.yaml and reference/agent_reference.yaml are params/env.yaml and
+reference/rough_main/env.yaml and reference/rough_main/agent.yaml are params/env.yaml and
 params/agent.yaml written by mjlab when run 2026-10-11_23-35-20_rough_box_main_v11a started.
 This script builds the package config with stock mjlab, dumps it the same way, and compares
 the two trees value by value.
@@ -129,8 +129,8 @@ def main() -> int:
     env_p, agent_p = Path(d) / "env.yaml", Path(d) / "agent.yaml"
     dump_yaml(env_p, env_cfg)
     dump_yaml(agent_p, agent_cfg)
-    n = compare("env", ROOT / "reference/env_reference.yaml", env_p, EXPECTED_ENV)
-    n += compare("agent", ROOT / "reference/agent_reference.yaml", agent_p, EXPECTED_AGENT)
+    n = compare("env", ROOT / "reference/rough_main/env.yaml", env_p, EXPECTED_ENV)
+    n += compare("agent", ROOT / "reference/rough_main/agent.yaml", agent_p, EXPECTED_AGENT)
   print(f"\nreward terms without the clamp wrapper: {unclamped or 'none'}")
   ok = n == 0 and not unclamped
   print("RESULT: " + ("MATCH (only the expected differences)" if ok else "MISMATCH"))

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Compare the learning curves of two runs over their common iterations (TensorBoard logs).
+"""Compare the learning curves of two runs over their common iterations.
 
-  python scripts/compare_curves.py RUN_DIR_A RUN_DIR_B [--label-a pkg --label-b ref] \\
-      [--upto 1000] [--png curves.png]
+Each run is a TensorBoard log directory or a `scalars.csv.gz` export (as in reference/*/).
+
+  python scripts/compare_curves.py RUN_DIR_A reference/rough_main/scalars.csv.gz \\
+      [--label-a pkg --label-b ref] [--upto 1000] [--png curves.png]
 
 Prints, per tag, the windowed mean of both runs at several iterations, and writes a PNG grid.
 GPU training is not bit-deterministic, so the runs are expected to agree in trend and level,
@@ -31,6 +33,20 @@ TAGS = (
 
 
 def load(run: str, upto: int) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+  if run.endswith(".csv.gz"):
+    import csv
+    import gzip
+
+    with gzip.open(run, "rt") as f:
+      rows = list(csv.reader(f))
+    head, body = rows[0], rows[1:]
+    out = {}
+    for t in TAGS:
+      if t in head:
+        j = head.index(t)
+        pts = [(int(r[0]), float(r[j])) for r in body if r[j] != "" and int(r[0]) <= upto]
+        out[t] = (np.array([p[0] for p in pts]), np.array([p[1] for p in pts]))
+    return out
   ea = EventAccumulator(run, size_guidance={"scalars": 0})
   ea.Reload()
   out = {}
