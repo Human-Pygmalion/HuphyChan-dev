@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
-"""Compare this package's resolved env/agent config with the training run's own dump.
+"""Compare this package's resolved env/agent config with each training run's own dump.
 
-reference/rough_main/env.yaml and reference/rough_main/agent.yaml are params/env.yaml and
-params/agent.yaml written by mjlab when run 2026-10-11_23-35-20_rough_box_main_v11a started.
-This script builds the package config with stock mjlab, dumps it the same way, and compares
-the two trees value by value.
+reference/<stage>/env.yaml and agent.yaml are params/env.yaml and params/agent.yaml written by
+mjlab when the run started (stages: flat_p1, flat_p2, rough_main). This script builds the
+package config for the matching task with stock mjlab, dumps it the same way, and compares the
+two trees value by value.
 
 Normalisation before comparing:
   * function / class references are compared by their final name only (the module path
-    differs: the run used a fork of mjlab, this package keeps its terms in pygmalion_mjlab.mdp);
+    differs: the runs used a fork of mjlab, this package keeps its terms in pygmalion_mjlab.mdp);
   * the `clamped_` prefix added by env_cfg.clamped (per-term reward clamp) is removed.
 
-Before dumping, the two fields mjlab fills in at env construction are set the same way
+Before dumping, the fields mjlab fills in at env construction are set the same way
 (terrain num_envs, sub-terrain size).
 
 Expected differences (reported separately, not counted as failures):
-  * commands.twist.ranges.*  - the reference was dumped after the first forced promotion of
-    the run's command gate (stage 1 range); training used the final range (see env_cfg.py);
-  * curriculum.command_vel   - the gate term itself (removed here);
-  * meshes / sim.ls_parallel - API fields that differ between the fork and stock mjlab;
-  * agent entropy_coef / run bookkeeping fields (run_name, resume, load_run, ...).
+  * all stages: meshes / sim.ls_parallel - API fields that differ between the fork and stock
+    mjlab; agent run bookkeeping (run_name, resume, load_run, load_checkpoint, ...);
+  * rough_main: commands.twist.ranges.* and curriculum.command_vel (the run's gated command
+    curriculum is replaced by its final range, see env_cfg.py), agent entropy_coef;
+  * flat_p2: commands.twist.ranges.* - the reference was dumped after the gate's first forced
+    promotion (stage 1 range); the package starts at stage 0 and the gate promotes the same way.
 
-  python scripts/verify_config.py
+  python scripts/verify_config.py [--stage flat_p1|flat_p2|rough_main|all]
 """
 
 from __future__ import annotations
@@ -35,16 +36,21 @@ sys.path.insert(0, str(ROOT))
 
 import yaml  # noqa: E402
 
-EXPECTED_ENV = (
-  "commands.twist.ranges.", "curriculum.command_vel",
-  # API-only differences between the run's fork and stock mjlab 1.5.0 (no physical effect):
+API_ONLY = (
   "scene.entities.robot.meshes", "scene.terrain.meshes",  # stock MeshCfg field (empty)
   "sim.ls_parallel",  # removed in MuJoCo Warp 3.10; the fork kept a no-op field
 )
-EXPECTED_AGENT = (
-  "algorithm.entropy_coef", "run_name", "resume", "load_run", "load_checkpoint",
-  "wandb_project", "upload_model",
-)
+BOOKKEEPING = ("run_name", "resume", "load_run", "load_checkpoint", "wandb_project", "upload_model")
+EXPECTED_ENV = {
+  "rough_main": ("commands.twist.ranges.", "curriculum.command_vel") + API_ONLY,
+  "flat_p1": API_ONLY,
+  "flat_p2": ("commands.twist.ranges.",) + API_ONLY,
+}
+EXPECTED_AGENT = {
+  "rough_main": ("algorithm.entropy_coef",) + BOOKKEEPING,
+  "flat_p1": BOOKKEEPING,
+  "flat_p2": BOOKKEEPING,
+}
 
 
 class _Loader(yaml.SafeLoader):
@@ -108,33 +114,56 @@ def compare(name: str, ref: Path, mine: Path, expected: tuple[str, ...]) -> int:
   return len(real)
 
 
-def main() -> int:
-  import pygmalion_mjlab  # noqa: F401
+def check_stage(stage: str) -> bool:
+  import pygmalion_mjlab
   from mjlab.tasks.registry import load_env_cfg, load_rl_cfg
   from mjlab.utils.os import dump_yaml
 
-  env_cfg = load_env_cfg(pygmalion_mjlab.TASK_ID)
-  env_cfg.scene.num_envs = 4096
+  task = {v: k for k, v in pygmalion_mjlab.STAGES.items()}[stage]
+  ref_dir = ROOT / "reference" / stage
+  print(f"\n######## {stage}  (task {task}, reference {ref_dir.relative_to(ROOT)})")
+  ref_env = load(ref_dir / "env.yaml")
+  env_cfg = load_env_cfg(task)
+  env_cfg.scene.num_envs = int(ref_env["scene"]["num_envs"])
   env_cfg.seed = 43
-  agent_cfg = load_rl_cfg(pygmalion_mjlab.TASK_ID)
+  agent_cfg = load_rl_cfg(task)
   # Fields mjlab fills in when the env is built (the reference was dumped after that):
   # Scene copies num_envs to the terrain, TerrainGenerator copies its size to each sub-terrain.
   env_cfg.scene.terrain.num_envs = env_cfg.scene.num_envs
-  for sub in env_cfg.scene.terrain.terrain_generator.sub_terrains.values():
-    sub.size = env_cfg.scene.terrain.terrain_generator.size
-  # every non-zero-weight reward term must carry the clamp wrapper
-  unclamped = [n for n, t in env_cfg.rewards.items()
-               if t.weight != 0.0 and not getattr(t.func, "__name__", "").startswith("clamped_")]
+  tg = env_cfg.scene.terrain.terrain_generator
+  if tg is not None:
+    for sub in tg.sub_terrains.values():
+      sub.size = tg.size
+  weighted = [(n, t) for n, t in env_cfg.rewards.items() if t.weight != 0.0]
+  clamped_terms = [n for n, t in weighted if getattr(t.func, "__name__", "").startswith("clamped_")]
   with tempfile.TemporaryDirectory() as d:
     env_p, agent_p = Path(d) / "env.yaml", Path(d) / "agent.yaml"
     dump_yaml(env_p, env_cfg)
     dump_yaml(agent_p, agent_cfg)
-    n = compare("env", ROOT / "reference/rough_main/env.yaml", env_p, EXPECTED_ENV)
-    n += compare("agent", ROOT / "reference/rough_main/agent.yaml", agent_p, EXPECTED_AGENT)
-  print(f"\nreward terms without the clamp wrapper: {unclamped or 'none'}")
-  ok = n == 0 and not unclamped
-  print("RESULT: " + ("MATCH (only the expected differences)" if ok else "MISMATCH"))
-  return 0 if ok else 1
+    n = compare("env", ref_dir / "env.yaml", env_p, EXPECTED_ENV[stage])
+    n += compare("agent", ref_dir / "agent.yaml", agent_p, EXPECTED_AGENT[stage])
+  # The rough run clamped every weighted reward term (PYG_REWARD_TERM_CLAMP=50); the flat runs
+  # did not. The clamp is not visible in env.yaml, so check it here.
+  if stage == "rough_main":
+    bad = [n for n, _ in weighted if n not in clamped_terms]
+    print(f"reward terms without the clamp wrapper (all must have it): {bad or 'none'}")
+  else:
+    bad = clamped_terms
+    print(f"reward terms with a clamp wrapper (none must have it): {bad or 'none'}")
+  ok = n == 0 and not bad
+  print(f"{stage}: " + ("MATCH (only the expected differences)" if ok else "MISMATCH"))
+  return ok
+
+
+def main() -> int:
+  import argparse
+
+  ap = argparse.ArgumentParser()
+  ap.add_argument("--stage", default="all", choices=("all", "flat_p1", "flat_p2", "rough_main"))
+  stages = ("flat_p1", "flat_p2", "rough_main") if (a := ap.parse_args()).stage == "all" else (a.stage,)
+  results = {st: check_stage(st) for st in stages}
+  print("\nRESULT: " + ", ".join(f"{k} {'MATCH' if v else 'MISMATCH'}" for k, v in results.items()))
+  return 0 if all(results.values()) else 1
 
 
 if __name__ == "__main__":

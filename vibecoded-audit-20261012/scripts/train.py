@@ -9,11 +9,18 @@ Extra options (removed from argv before mjlab's own CLI parses the rest):
                            DR ramp (iterations 2,000 -> 8,000) starts from zero.
   --critic-warmup N        for the first N PPO updates keep the actor fixed (its state is
                            restored after each update) so only the new critic learns.
+  --entropy-anneal S E C0 C1
+                           set entropy_coef before every PPO update: C0 up to absolute
+                           iteration S, linear to C1 at iteration E, C1 after (flat P2:
+                           15999 29998 0.01 0.002). Same schedule as the training fork's runner.
 
-The released policy was trained as:
-  python scripts/train.py Pygmalion-Velocity-Rough-Box \\
-      --warmstart-actor checkpoints/parent_flat_actor_model_29998.pt --critic-warmup 300 \\
-      --env.scene.num-envs 4096 --agent.max-iterations 12000 --agent.seed 43
+The released policy was trained in three stages (scripts/train_from_scratch.sh runs all three):
+  python scripts/train.py Pygmalion-Velocity-Flat-P1 --agent.seed 43              # 16,000 it
+  python scripts/train.py Pygmalion-Velocity-Flat-P2 --agent.seed 43 \\
+      --agent.resume True --agent.load-run <P1 run dir name> \\
+      --agent.load-checkpoint model_15999.pt --entropy-anneal 15999 29998 0.01 0.002
+  python scripts/train.py Pygmalion-Velocity-Rough-Box --agent.seed 43 \\
+      --warmstart-actor <P2 run dir>/model_29998.pt --critic-warmup 300
 
 Everything after the task id is passed to mjlab (see `python scripts/train.py --help`).
 """
@@ -34,6 +41,48 @@ def _pop(flag: str):
   val = sys.argv[i + 1]
   del sys.argv[i : i + 2]
   return val
+
+
+def _pop_n(flag: str, n: int):
+  if flag not in sys.argv:
+    return None
+  i = sys.argv.index(flag)
+  vals = sys.argv[i + 1 : i + 1 + n]
+  del sys.argv[i : i + 1 + n]
+  return vals
+
+
+def _install_entropy_anneal(start_it: int, end_it: int, c0: float, c1: float) -> None:
+  from mjlab.rl.runner import MjlabOnPolicyRunner
+
+  orig_learn = MjlabOnPolicyRunner.learn
+
+  def learn(self, *args, **kwargs):
+    alg = self.alg
+    orig_update = alg.update
+    cursor = {"it": self.current_learning_iteration}
+    print(
+      f"[pygmalion] entropy anneal {c0} -> {c1} over iterations {start_it}..{end_it} "
+      f"(this run starts at {cursor['it']})",
+      flush=True,
+    )
+
+    def update(*a, **kw):
+      it = cursor["it"]
+      if it <= start_it:
+        coef = c0
+      elif it >= end_it:
+        coef = c1
+      else:
+        coef = c0 + (c1 - c0) * (it - start_it) / float(max(1, end_it - start_it))
+      alg.entropy_coef = coef
+      cursor["it"] = it + 1
+      return orig_update(*a, **kw)
+
+    alg.update = update
+    return orig_learn(self, *args, **kwargs)
+
+  MjlabOnPolicyRunner.learn = learn
 
 
 def _install_warmstart(actor_ckpt: str | None, critic_warmup: int) -> None:
@@ -83,10 +132,13 @@ def _install_warmstart(actor_ckpt: str | None, critic_warmup: int) -> None:
 def main() -> None:
   actor_ckpt = _pop("--warmstart-actor")
   critic_warmup = int(_pop("--critic-warmup") or 0)
-  import pygmalion_mjlab  # noqa: F401  (registers the task)
+  anneal = _pop_n("--entropy-anneal", 4)
+  import pygmalion_mjlab  # noqa: F401  (registers the tasks)
 
   if actor_ckpt or critic_warmup:
     _install_warmstart(actor_ckpt, critic_warmup)
+  if anneal:
+    _install_entropy_anneal(int(anneal[0]), int(anneal[1]), float(anneal[2]), float(anneal[3]))
   from mjlab.scripts.train import main as mjlab_train
 
   mjlab_train()

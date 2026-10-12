@@ -1,14 +1,26 @@
-"""Pygmalion rough-terrain velocity task on stock mjlab.
+"""Pygmalion velocity tasks on stock mjlab: the three training stages of the released policy.
 
 Built on stock `make_velocity_env_cfg()` (mjlab 1.5.0, upstream commit 20f10e96) plus the
-overrides used by training run 2026-10-11_23-35-20_rough_box_main_v11a. Every value is
-written out here; nothing reads environment variables. scripts/verify_config.py compares the
-resolved config with reference/env_reference.yaml (the run's own dump).
+overrides used by the training runs. Every value is written out here; nothing reads
+environment variables. scripts/verify_config.py compares each resolved config with the
+run's own dump in reference/<stage>/env.yaml.
 
-Differences from the run that are intentional (behaviour-equivalent):
+  stage       run                                                    builder
+  flat_p1     2026-10-01_17-15-50_legonly_ab_v11a_stand01_s43_p1    pygmalion_flat_env_cfg("p1")
+  flat_p2     2026-10-02_23-52-14_legonly_ab_v11a_stand01_s43_p2    pygmalion_flat_env_cfg("p2")
+  rough_main  2026-10-11_23-35-20_rough_box_main_v11a                pygmalion_rough_env_cfg()
+
+The flat stages and the rough stage share robot, actuators, observations, rewards and push /
+friction / encoder DR. Flat differs in: plane terrain (no height scan, no terrain curriculum),
+a performance-gated command curriculum, absolute base-height termination, no NaN / blow-up /
+stagnation terminations, no reward clamp, base CoM DR (P1) or per-link inertial DR (P2), and
+16,384 envs. The section comments below mark each difference.
+
+Differences from the rough run that are intentional:
   * command range: the run's gated curriculum was set to promote with no dwell
     (min/max dwell 0) and reached its last stage in the first iteration. Here the twist
     command uses that last-stage range directly and the command curriculum term is removed.
+    (Only the first command of each env differs: the run drew it from the stage-1 range.)
   * per-term reward clamp: the run clamped each weighted reward term to +-50*dt inside a
     patched RewardManager. Here each term function is wrapped (`clamped`) so stock
     RewardManager gives the same values (see `clamped`).
@@ -18,7 +30,7 @@ from __future__ import annotations
 
 import inspect
 import math
-from dataclasses import replace
+from dataclasses import fields, replace
 
 import torch
 
@@ -53,13 +65,31 @@ from mjlab.terrains.config import (
 from mjlab.terrains.terrain_generator import TerrainGeneratorCfg
 
 from . import robot
+from .mdp import commands as pyg_cmd
 from .mdp import curriculums as pyg_cur
 from .mdp import events as pyg_events
 from .mdp import observations as pyg_obs
 from .mdp import rewards as pyg_rew
 from .mdp import terminations as pyg_term
 
-REWARD_TERM_CLAMP = 50.0  # per step, before the dt scale
+REWARD_TERM_CLAMP = 50.0  # per step, before the dt scale (rough stage only)
+
+# Gated command curriculum of the flat stages (fork env_cfgs.py, PYG_GATED_CURRICULUM=1,
+# PYG_CMD_VY_STAGES=1). "step" is ignored by the gate (kept for the fork's cfg format).
+VELOCITY_STAGES = [
+  {"step": 0, "lin_vel_x": (-0.8, 0.8), "ang_vel_z": (-0.5, 0.5), "lin_vel_y": (-0.5, 0.5)},
+  {"step": 96000, "lin_vel_x": (-1.2, 1.2), "ang_vel_z": (-0.8, 0.8), "lin_vel_y": (-0.6, 0.6)},
+  {"step": 192000, "lin_vel_x": (-1.6, 1.6), "ang_vel_z": (-1.0, 1.0), "lin_vel_y": (-0.7, 0.7)},
+  {"step": 288000, "lin_vel_x": (-2.0, 2.0), "ang_vel_z": (-1.0, 1.0), "lin_vel_y": (-0.85, 0.85)},
+  {"step": 384000, "lin_vel_x": (-2.0, 2.5), "ang_vel_z": (-1.0, 1.0), "lin_vel_y": (-1.0, 1.0)},
+]
+# P1: real gate (dwell 800..3000 iterations). P2: dwell 0 - the gate state is not saved in
+# checkpoints, so the resumed run promotes on every call and is at the last stage from its
+# first iteration.
+GATE = {"window_iters": 100, "err_ratio": 1.1, "fell_max": 0.005, "min_episodes": 64, "steps_per_iter": 24}
+GATE_DWELL = {"p1": (800, 3000), "p2": (0, 0)}
+# DR ramp window in iterations (x24 env steps). P1 never reaches it (DR off).
+FLAT_DR_WINDOW = {"p1": (100_000_000, 100_000_001), "p2": (15_999, 25_999)}
 
 # Box-only rough terrain. MuJoCo-Warp heightfield contact made the walking foot slip even on
 # a flat heightfield tile, so no heightfield sub-terrain is used.
@@ -146,15 +176,40 @@ def clamped(func, weight: float, limit: float = REWARD_TERM_CLAMP):
 
 
 def pygmalion_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
+  """Rough stage (box terrain). The released policy's last 12,000 iterations."""
+  return _pygmalion_env_cfg("rough", play)
+
+
+def pygmalion_flat_env_cfg(stage: str, play: bool = False) -> ManagerBasedRlEnvCfg:
+  """Flat stage "p1" (from scratch, 16,000 iterations) or "p2" (resumed from P1, to 29,998)."""
+  assert stage in ("p1", "p2"), stage
+  return _pygmalion_env_cfg(f"flat_{stage}", play)
+
+
+def _pygmalion_env_cfg(variant: str, play: bool) -> ManagerBasedRlEnvCfg:
+  rough = variant == "rough"
+  stage = variant.removeprefix("flat_")
   cfg = make_velocity_env_cfg()
 
   # --- simulation / scene ---------------------------------------------------------------
-  cfg.sim.mujoco.ccd_iterations = 100
-  cfg.sim.contact_sensor_maxmatch = 500
-  cfg.sim.nconmax = 150
   cfg.scene.entities = {"robot": robot.robot_cfg()}
-  cfg.scene.terrain.terrain_generator = replace(BOX_TERRAINS_CFG)
-  cfg.scene.terrain.terrain_generator.curriculum = True
+  if rough:
+    cfg.sim.mujoco.ccd_iterations = 100
+    cfg.sim.contact_sensor_maxmatch = 500
+    cfg.sim.nconmax = 150
+    cfg.scene.terrain.terrain_generator = replace(BOX_TERRAINS_CFG)
+    cfg.scene.terrain.terrain_generator.curriculum = True
+  else:  # flat: plane, no terrain scan
+    cfg.scene.num_envs = 16384
+    cfg.sim.mujoco.ccd_iterations = 50
+    cfg.sim.contact_sensor_maxmatch = 64
+    cfg.sim.nconmax = None
+    cfg.sim.njmax = 300
+    cfg.scene.terrain.terrain_type = "plane"
+    cfg.scene.terrain.terrain_generator = None
+    cfg.scene.sensors = tuple(s for s in cfg.scene.sensors or () if s.name != "terrain_scan")
+    cfg.observations["critic"].terms.pop("height_scan", None)
+    cfg.curriculum.pop("terrain_levels", None)
 
   for sensor in cfg.scene.sensors or ():
     if sensor.name == "terrain_scan":
@@ -230,10 +285,30 @@ def pygmalion_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   twist.viz.z_offset = 1.0
   twist.rel_standing_envs = 0.1
   twist.rel_heading_envs = 0.3
-  twist.ranges.lin_vel_x = COMMAND_RANGE["lin_vel_x"]
-  twist.ranges.lin_vel_y = COMMAND_RANGE["lin_vel_y"]
-  twist.ranges.ang_vel_z = COMMAND_RANGE["ang_vel_z"]
-  cfg.curriculum.pop("command_vel", None)
+  if rough:
+    twist.ranges.lin_vel_x = COMMAND_RANGE["lin_vel_x"]
+    twist.ranges.lin_vel_y = COMMAND_RANGE["lin_vel_y"]
+    twist.ranges.ang_vel_z = COMMAND_RANGE["ang_vel_z"]
+    cfg.curriculum.pop("command_vel", None)
+  else:  # flat: start at stage 0, the gate widens the range
+    s0 = VELOCITY_STAGES[0]
+    twist.ranges.lin_vel_x, twist.ranges.lin_vel_y, twist.ranges.ang_vel_z = (
+      s0["lin_vel_x"], s0["lin_vel_y"], s0["ang_vel_z"]
+    )
+    cfg.commands["twist"] = pyg_cmd.MetricVelocityCommandCfg(
+      **{f.name: getattr(twist, f.name) for f in fields(twist)}
+    )
+    min_dwell, max_dwell = GATE_DWELL[stage]
+    cfg.curriculum["command_vel"] = CurriculumTermCfg(
+      func=pyg_cur.commands_vel_gated,
+      params={
+        "command_name": "twist",
+        "velocity_stages": [dict(s) for s in VELOCITY_STAGES],
+        "min_dwell_iters": min_dwell,
+        "max_dwell_iters": max_dwell,
+        **GATE,
+      },
+    )
 
   # --- rewards ---------------------------------------------------------------------------
   cfg.events["foot_friction"].params["asset_cfg"].geom_names = robot.FOOT_GEOMS
@@ -322,9 +397,10 @@ def pygmalion_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
       "command_threshold": 0.05,
     },
   )
-  for term in cfg.rewards.values():  # per-term clamp (see `clamped`)
-    if term.weight != 0.0:
-      term.func = clamped(term.func, term.weight)
+  if rough:
+    for term in cfg.rewards.values():  # per-term clamp (see `clamped`)
+      if term.weight != 0.0:
+        term.func = clamped(term.func, term.weight)
 
   # --- events / domain randomization -----------------------------------------------------
   cfg.events["push_robot"].params["velocity_range"] = dict(PUSH_RANGE)
@@ -333,27 +409,28 @@ def pygmalion_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg.curriculum["dr_levels"] = CurriculumTermCfg(
     func=pyg_cur.dr_levels,
     params={
-      # linear 0 -> 1 between env steps 48,000 and 192,000 (iterations 2,000 -> 8,000 at
-      # 24 steps per env per iteration)
-      "start_step": 2000 * 24,
-      "end_step": 8000 * 24,
+      # linear 0 -> 1 between iterations start and end (24 env steps per iteration);
+      # rough: 2,000 -> 8,000, flat P2: 15,999 -> 25,999, flat P1: never
+      "start_step": (2000 if rough else FLAT_DR_WINDOW[stage][0]) * 24,
+      "end_step": (8000 if rough else FLAT_DR_WINDOW[stage][1]) * 24,
       "push_max": dict(PUSH_RANGE),
       "friction_max": (0.3, 1.2),
       "encoder_max": (-0.015, 0.015),
       "com_max": {0: (-0.025, 0.025), 1: (-0.025, 0.025), 2: (-0.03, 0.03)},
     },
   )
-  cfg.events.pop("base_com", None)  # replaced by the per-link inertial DR below
-  inertial_max = {}
-  for link, (bodies, ranges) in INERTIAL_DR.items():
-    name = f"inertial_dr_{link}"
-    inertial_max[name] = dict(ranges)
-    cfg.events[name] = EventTermCfg(
-      mode="reset",
-      func=dr.pseudo_inertia,
-      params={"asset_cfg": SceneEntityCfg("robot", body_names=bodies), **ranges},
-    )
-  cfg.curriculum["dr_levels"].params["inertial_max"] = inertial_max
+  if variant != "flat_p1":  # P1 keeps stock base CoM DR; P2 and rough use per-link inertial DR
+    cfg.events.pop("base_com", None)  # replaced by the per-link inertial DR below
+    inertial_max = {}
+    for link, (bodies, ranges) in INERTIAL_DR.items():
+      name = f"inertial_dr_{link}"
+      inertial_max[name] = dict(ranges)
+      cfg.events[name] = EventTermCfg(
+        mode="reset",
+        func=dr.pseudo_inertia,
+        params={"asset_cfg": SceneEntityCfg("robot", body_names=bodies), **ranges},
+      )
+    cfg.curriculum["dr_levels"].params["inertial_max"] = inertial_max
 
   # Critic-only view of the DR draw.
   critic = cfg.observations["critic"].terms
@@ -379,6 +456,20 @@ def pygmalion_rough_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   )
 
   # --- terminations ----------------------------------------------------------------------
+  if not rough:  # flat: absolute base height, stock terminations only
+    cfg.terminations["low_base"] = TerminationTermCfg(
+      func=envs_mdp.root_height_below_minimum,
+      params={"minimum_height": 0.7, "asset_cfg": SceneEntityCfg("robot")},
+    )
+    cfg.terminations.pop("out_of_terrain_bounds", None)
+    if play:
+      cfg.episode_length_s = int(1e9)
+      cfg.observations["actor"].enable_corruption = False
+      cfg.events.pop("push_robot", None)
+      cfg.curriculum = {}
+      s4, r = VELOCITY_STAGES[-1], cfg.commands["twist"].ranges
+      r.lin_vel_x, r.lin_vel_y, r.ang_vel_z = s4["lin_vel_x"], s4["lin_vel_y"], s4["ang_vel_z"]
+    return cfg
   cfg.terminations["low_base"] = TerminationTermCfg(
     func=pyg_term.base_height_above_terrain_below,
     params={"minimum_height": 0.7, "sensor_name": "terrain_scan"},

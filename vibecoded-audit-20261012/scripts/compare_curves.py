@@ -4,7 +4,9 @@
 Each run is a TensorBoard log directory or a `scalars.csv.gz` export (as in reference/*/).
 
   python scripts/compare_curves.py RUN_DIR_A reference/rough_main/scalars.csv.gz \\
-      [--label-a pkg --label-b ref] [--upto 1000] [--png curves.png]
+      [--label-a pkg --label-b ref] [--from 0] [--upto 1000] [--png curves.png]
+
+--from / --upto are absolute iterations (a resumed run such as flat P2 starts at 15,999).
 
 Prints, per tag, the windowed mean of both runs at several iterations, and writes a PNG grid.
 GPU training is not bit-deterministic, so the runs are expected to agree in trend and level,
@@ -29,10 +31,11 @@ TAGS = (
   "Metrics/twist/error_vel_xy",
   "Metrics/twist/error_vel_yaw",
   "Curriculum/dr_levels/dr_factor",
+  "Curriculum/command_vel/stage",
 )
 
 
-def load(run: str, upto: int) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+def load(run: str, upto: int, start: int = 0) -> dict[str, tuple[np.ndarray, np.ndarray]]:
   if run.endswith(".csv.gz"):
     import csv
     import gzip
@@ -44,7 +47,7 @@ def load(run: str, upto: int) -> dict[str, tuple[np.ndarray, np.ndarray]]:
     for t in TAGS:
       if t in head:
         j = head.index(t)
-        pts = [(int(r[0]), float(r[j])) for r in body if r[j] != "" and int(r[0]) <= upto]
+        pts = [(int(r[0]), float(r[j])) for r in body if r[j] != "" and start <= int(r[0]) <= upto]
         out[t] = (np.array([p[0] for p in pts]), np.array([p[1] for p in pts]))
     return out
   ea = EventAccumulator(run, size_guidance={"scalars": 0})
@@ -52,7 +55,7 @@ def load(run: str, upto: int) -> dict[str, tuple[np.ndarray, np.ndarray]]:
   out = {}
   for t in TAGS:
     if t in ea.Tags()["scalars"]:
-      ev = [e for e in ea.Scalars(t) if e.step <= upto]
+      ev = [e for e in ea.Scalars(t) if start <= e.step <= upto]
       out[t] = (np.array([e.step for e in ev]), np.array([e.value for e in ev]))
   return out
 
@@ -68,11 +71,13 @@ def main() -> None:
   ap.add_argument("b")
   ap.add_argument("--label-a", default="A")
   ap.add_argument("--label-b", default="B")
+  ap.add_argument("--from", dest="start", type=int, default=0)
   ap.add_argument("--upto", type=int, default=1000)
   ap.add_argument("--png", default="")
   args = ap.parse_args()
-  A, B = load(args.a, args.upto), load(args.b, args.upto)
-  marks = [m for m in (50, 300, 500, 750, args.upto - 25) if m <= args.upto]
+  A, B = load(args.a, args.upto, args.start), load(args.b, args.upto, args.start)
+  span = args.upto - args.start
+  marks = sorted({args.start + int(round(f * span)) for f in (0.05, 0.25, 0.5, 0.75)} | {args.upto - 25})
   print(f"{'tag':38s} " + " ".join(f"{'it'+str(m):>17s}" for m in marks))
   for t in TAGS:
     if t not in A or t not in B:
