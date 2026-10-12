@@ -149,11 +149,48 @@ CSS 선택자로는 못 잡고, `<script>` 태그는 `innerHTML` 로 넣으면 �
 다시 불러 주면 됩니다."""
 
 
+def _thin_big_hfields(m) -> list:
+  """A baked trail heightfield (2022 x 1232 at 10 cm) is 5 M triangles - viser takes minutes and
+  the browser stalls.  Return it thinned to every PYG_VIEW_HFIELD_STRIDE-th sample (default 3 =
+  30 cm) for the caller to draw, and hide the full one from mjviser (alpha 0 is display only -
+  physics still collides with the full 10 cm heightfield).  Also shrink the model's display extent
+  (mjviser puts the camera 3 x extent away - a 200 m map put it 300 m off).  Small heightfields are
+  left to mjviser."""
+  import mujoco
+
+  out = []
+  stride = max(1, int(os.environ.get("PYG_VIEW_HFIELD_STRIDE", "3")))
+  for g in range(m.ngeom):
+    if m.geom_type[g] != mujoco.mjtGeom.mjGEOM_HFIELD:
+      continue
+    h = int(m.geom_dataid[g])
+    nr, nc = int(m.hfield_nrow[h]), int(m.hfield_ncol[h])
+    if nr * nc < 200_000:
+      continue
+    off = int(sum(int(m.hfield_nrow[k]) * int(m.hfield_ncol[k]) for k in range(h)))
+    z = m.hfield_data[off : off + nr * nc].reshape(nr, nc)[::stride, ::stride] * m.hfield_size[h, 2]
+    sx, sy = float(m.hfield_size[h, 0]), float(m.hfield_size[h, 1])
+    X, Y = np.meshgrid(np.linspace(-sx, sx, nc)[::stride], np.linspace(-sy, sy, nr)[::stride])
+    V = np.stack([X, Y, z], -1).reshape(-1, 3) + m.geom_pos[g]
+    R, C = z.shape
+    i = (np.arange(R - 1)[:, None] * C + np.arange(C - 1)[None, :]).ravel()
+    F = np.concatenate([np.stack([i, i + 1, i + C], 1), np.stack([i + 1, i + C + 1, i + C], 1)])
+    out.append((f"trail_hfield_{g}", V.astype(np.float32), F.astype(np.uint32)))
+    m.geom_rgba[g, 3] = 0.0  # mjviser skips alpha-0 geoms
+    m.stat.extent = 1.0
+    print(f"[ui] heightfield geom {g}: {nr}x{nc} drawn as {R}x{C} (stride {stride}); collision unchanged",
+          flush=True)
+  return out
+
+
 def _mount(server: viser.ViserServer, state: dict) -> None:
   core = state["core"]
   c = core.c
   gui = server.gui
+  thin = _thin_big_hfields(core.m)
   state["scene"] = ViserMujocoScene(server, core.m, num_envs=1)
+  for name, V, F in thin:  # under /fixed_bodies: camera tracking shifts that frame, not the camera
+    server.scene.add_mesh_simple(f"/fixed_bodies/{name}", vertices=V, faces=F, color=(122, 140, 98))
   state["scene"].update_from_mjdata(core.d)
 
   # --------------------------------------------------------- Panel width

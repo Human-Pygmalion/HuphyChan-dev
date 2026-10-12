@@ -18,6 +18,9 @@ is the ONLY module that imports mjlab/torch; everything else is plain mujoco + n
 viewer stays inside a ~300 MB resident footprint while the GPU trainer runs.
 """
 
+import os
+
+
 __version__ = "0.1.0"
 
 VARIANTS = (
@@ -29,5 +32,7 @@ VARIANTS = (
   "LegOnly-RP",
 )
 
-CACHE_DIR = "/home/syaro/pyg_fea/pygviewer/cache"
+# PYG_VIEW_CACHE (2026-10-12): point the panel's model/policy lists at another bake folder, e.g. the
+# mountain-trail one (~/pyg_demo/cache_trail) - pass the same folder to --cache.
+CACHE_DIR = os.environ.get("PYG_VIEW_CACHE", "/home/syaro/pyg_fea/pygviewer/cache")
 REPO = "/home/syaro/MikuchanRemote/Human-Pygmalion"

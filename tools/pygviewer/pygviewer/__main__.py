@@ -140,6 +140,11 @@ def main(argv: list[str] | None = None) -> int:
   )
   ap.add_argument("--keyframe", default="knees_bent", choices=("home", "knees_bent"))
   ap.add_argument(
+    "--policy", default=None,
+    help="baked policy name in --cache: load it at start and enter policy_sim at once (with "
+    "--base free the robot otherwise falls in ~2 s before anyone reaches the panel)",
+  )
+  ap.add_argument(
     "--shadow-follow", action="store_true",
     help="policy_shadow: let the shadow action step the LOCAL sim (never a real robot). "
     "Off by default: policy_shadow only observes+displays.",
@@ -193,6 +198,13 @@ def main(argv: list[str] | None = None) -> int:
   acquire_pidfile()  # second, PID-liveness-based guard - see PID_FILE's own docstring above
 
   core.start()
+  if args.policy:
+    import json as _json
+
+    pc = _json.loads((Path(args.cache) / f"{args.policy}.policy_contract.json").read_text())
+    core.load_policy(onnx=pc["onnx"], policy_contract=pc)
+    core.submit({"op": "mode", "value": "policy_sim"})
+    print(f"policy {args.policy} loaded, mode policy_sim", flush=True)
   ip = lan_ip()
 
   api_thread = None
