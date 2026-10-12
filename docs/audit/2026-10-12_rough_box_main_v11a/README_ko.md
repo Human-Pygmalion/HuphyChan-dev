@@ -140,7 +140,7 @@ Flag 는 import 시점에 `ENVCFG`·`CONST` 가 읽는다. 따라서 같은 task
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 학습에 실제 사용된 range | vx −2.0~2.5, vy ±1.0, wz ±1.0 (§2.1) | TensorBoard `Curriculum/command_vel/*` |
+| 학습에 실제 사용된 range | vx −2.0~2.5, vy ±1.0, wz ±1.0 (§2.3) | TensorBoard `Curriculum/command_vel/*` |
 | resampling_time_range | 3~8 s | `ENV.yaml:3089-3117` |
 | rel_standing_envs / rel_heading_envs / rel_forward_envs | 0.1 / 0.3 (stiffness 0.5) / 0.2 | `ENV.yaml`; `ENVCFG:218-228` |
 
@@ -172,6 +172,80 @@ Flag 는 import 시점에 `ENVCFG`·`CONST` 가 읽는다. 따라서 같은 task
 | foot_impact_velocity | −0.5 | fork | half mode (`ENVCFG:389-424,557`) |
 | thermal_effort | −0.02 | fork | rated torque table (`ENVCFG:411-433`) |
 | stance_knee_extension | −2.0 | fork | target 25° (`ENVCFG:564-575`) |
+
+### 1.6.1 Reward 합산 규칙
+
+`RewardManager.compute` (`MJ/src/mjlab/managers/reward_manager.py:120-140`) 가 policy step (dt = 0.02 s) 마다 아래를 계산한다.
+
+$$r_t = \sum_k \mathrm{clip}\big(\mathrm{nan2zero}(w_k\, f_k\, dt),\ \pm 50\,dt\big)$$
+
+- $f_k$ = term 함수 출력 (env 별 scalar), $w_k$ = weight. Weight 0 인 term 은 계산하지 않는다.
+- NaN/Inf 는 0 으로 바꾼다 (stock). ±50·dt clamp 는 fork 추가 (§1.10). $f_k$ 기준 상한은 $50/|w_k|$ 다.
+- Total reward 자체에는 clip 이 없다.
+
+### 1.6.2 Term 별 계산식
+
+**기호.** 모든 값은 env 별, 매 policy step.
+
+| 기호 | 정의 | 출처 |
+|---|---|---|
+| $c = (c_x, c_y, c_\omega)$ | twist command (body frame). Heading env (30 %) 는 $c_\omega = \mathrm{clip}(0.5\cdot e_{heading}, \pm1)$ | `velocity_command.py` `_update_command` |
+| $s$ | $\lVert c_{xy}\rVert + \lvert c_\omega\rvert$ (command 크기) | |
+| $g_{0.05}$ | $\mathbb{1}[s > 0.05]$. Standing env (10 %, $c = 0$) 에서 0 | |
+| $v^b, \omega^b$ | base (root link) 선속도·각속도, body frame | |
+| $i \in$ {R, L} | 발 index. Contact sensor, foot site, knee joint 의 순서가 모두 [R, L] 로 같다 (F12, 2026-10-12 확인) | |
+| $F_i$ | 발 $i$ (foot subtree) 와 terrain 사이 net contact force 의 크기 [N], 마지막 physics substep | sensor `feet_ground_contact` (`reduce=netforce`) |
+| $C_i$ | contact 여부 (`found > 0`) | 같은 sensor |
+| $h_i$ | sole site 아래 terrain 까지 높이 [m] (ray, 최대 1 m) | sensor `foot_height_scan` |
+| $u_i$ | sole site 선속도, world frame | `site_lin_vel_w` |
+| $t^{air}_i$ | 발이 떨어진 뒤 경과 시간 (contact 중 0) | `current_air_time` |
+| $L_i$ | 이번 step 에 착지 (contact 이고 contact 시간 < dt) | `compute_first_contact(dt)` |
+
+**Tracking (양의 reward):**
+
+| Term | $f$ | 비고 | 출처 |
+|---|---|---|---|
+| track_linear_velocity | $\exp\!\big(-(\lVert c_{xy} - v^b_{xy}\rVert^2 + (v^b_z)^2)/0.75\big)$ | $v_z$ 도 오차에 포함 | `REW:28-45` |
+| track_angular_velocity | $\exp\!\big(-((c_\omega - \omega^b_z)^2 + \lVert\omega^b_{xy}\rVert^2)/0.5\big)$ | roll·pitch rate 도 오차에 포함 | `REW:145-162` |
+| track_lin_vel_progress | $m = \lVert c_{xy}\rVert$, $p = (v^b_{xy}\cdot c_{xy})/(m+0.1)$. $f = \max(\min(p, m), 0)$, 단 $m \le 0.1$ 이면 0 | command 방향 진행 속도 [m/s]. Command 크기에서 포화. 역방향은 0 | `REW:48-74` |
+| upright | $\exp(-\lVert g^b_{xy}\rVert^2/0.2)$, $g^b$ = base_link frame 의 단위 중력 벡터 | 기준은 world 수직 (terrain normal 아님) | `REW:165-208` |
+| pose | $\exp\!\big(-\frac{1}{12}\sum_j (q_j - q^0_j)^2/\sigma_j^2\big)$ | 아래 표 참고 | `REW:892-972` |
+| air_time | $\mathbb{1}[s > 0.5]\sum_i \mathbb{1}[0.05 < t^{air}_i < 0.5]$ | 공중에 있는 step 마다 발 당 1. 최대 2 | `REW:360-389` |
+
+`pose` 대상 joint 는 12 개다: hip pitch/roll/yaw, knee, passive ankle pitch/roll (좌우). Crank 는 없다. $q^0$ = 초기 자세 (§4.3). $\sigma_j$ 는 $s$ 로 고른다:
+
+| 구간 | hip_pitch | hip_roll | hip_yaw | knee | ankle_pitch | ankle_roll |
+|---|---|---|---|---|---|---|
+| standing ($s < 0.05$) | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 | 0.05 |
+| walking ($0.05 \le s < 1.5$) | 0.3 | 0.4 | 0.15 | 1.2 | 0.25 | 0.1 |
+| running ($s \ge 1.5$) | 0.5 | 0.2 | 0.2 | 1.5 | 0.35 | 0.15 |
+
+**Penalty (weight < 0, $f \ge 0$):**
+
+| Term | $f$ | 비고 | 출처 |
+|---|---|---|---|
+| stand_still_penalty | $\mathbb{1}\big[(m > 0.3 \wedge p' < 0.3m) \vee (\lvert c_\omega\rvert > 0.3 \wedge \mathrm{sgn}(c_\omega)\,\omega^b_z < 0.3\lvert c_\omega\rvert)\big]$, $p' = v^b_{xy}\cdot c_{xy}/(m+10^{-6})$ | 움직이라는 command 를 받고 command 의 30 % 미만으로 진행하면 1 | `REW:77-118` |
+| body_ang_vel | $\lVert\omega_{xy}\rVert^2$, base_link, world frame | yaw rate 는 제외 | `REW:335-344` |
+| angular_momentum | $\lVert \mathbf{L}\rVert^2$, $\mathbf{L}$ = base_link subtree 의 CoM 기준 각운동량 | MuJoCo `subtreeangmom` (`XML:275`) | `REW:347-357` |
+| dof_pos_limits | $\sum_j \big[\max(q^{lo}_j - q_j, 0) + \max(q_j - q^{hi}_j, 0)\big]$ | Soft limit = centre ± 0.9/2 × range. Motor 12 + passive ankle 4. Rod joint 는 limit 없음 (±inf) → 0 | `EREW:81-96` |
+| action_rate_l2 | $\sum_{j=1}^{12}(a_{t,j} - a_{t-1,j})^2$ | Raw policy output (scale 0.25 적용 전) | `EREW:58-65` |
+| knee_overspeed | $\sum_{knee}\max(\lvert\dot q\rvert - 19.9, 0)^2$ | 19.9 rad/s = RS04 무부하 속도 실측 | `REW:121-142` |
+| self_collisions | 이번 policy step 의 4 substep 중, robot 내부 contact force > 10 N 이 하나라도 있는 substep 수 (0~4) | sensor `self_collision` (`history_length=4`) | `REW:260-279` |
+| foot_clearance | $g_{0.05}\sum_i \lvert h_i - 0.1\rvert\cdot\lVert u_{i,xy}\rVert$ | 발이 수평으로 빠를수록 0.1 m 높이에서 벗어난 만큼 비례 | `REW:392-419` |
+| foot_swing_height | 공중에서 $h_i$ 의 최대값 $\hat h_i$ 를 추적. $g_{0.05}\sum_i L_i\,(\hat h_i/0.1 - 1)^2$ 후 착지한 발의 $\hat h_i$ 를 0 으로 | 착지 step 에서만 0 아님 | `REW:422-474` |
+| foot_slip | $g_{0.05}\sum_i C_i\,\lVert u_{i,xy}\rVert^2$ | Contact 중 발 미끄러짐 | `REW:477-504` |
+| soft_landing | $g_{0.05}\sum_i L_i\, F_i$ [N] | 착지 step 의 contact force. Weight −1e-5 | `REW:507-533` |
+| contact_force_cap | $\sum_i \mathrm{clip}(F_i - 420, 0, 560)$ [N] | 420 N = 1.81 BW (23.63 kg). 매 step 적용. Command gate 없음 | `REW:867-889` |
+| foot_impact_velocity | $g_{0.05}\sum_i \mathbb{1}[h_i < 0.10 \wedge F_i < 7]\,\max(-u_{i,z}, 0)^2$ | 착지 직전 (지면 0.1 m 이내, 아직 비접촉) 하강 속도의 제곱. "half" mode = weight −0.5 | `REW:660-705` |
+| thermal_effort | $\sum_j (\tau_j/\tau^{rated}_j)^2$, $\tau$ = `qfrc_actuator` | Rated: hip pitch/roll·knee 40, hip yaw·crank 20 N·m. Passive joint 는 $\tau = 0$. Command gate 없음 | `REW:604-636`; `ENVCFG:411-433` |
+| stance_knee_extension | $g_{0.05}\sum_{i}\mathbb{1}[F_i > 7]\,\max(\lvert q_{knee,i}\rvert - 25°, 0)^2$ [rad²] | 지지 중인 다리의 무릎이 25° 보다 더 굽으면 제곱 penalty. Swing 다리는 제외 | `REW:783-825` |
+| torque_limit | — | Weight 0 → 계산 안 함 | `REW:282-332` |
+
+`REW` = `MJ/src/mjlab/tasks/velocity/mdp/rewards.py`, `EREW` = `MJ/src/mjlab/envs/mdp/rewards.py`.
+
+**Command gate 요약:** foot_clearance, foot_swing_height, foot_slip, soft_landing, foot_impact_velocity, stance_knee_extension 은 $s > 0.05$ 일 때만, air_time 은 $s > 0.5$ 일 때만 0 이 아니다. Standing env 에서는 이 7 개가 꺼지고 pose 가 standing σ (0.05) 를 쓴다.
+
+**Clamp 상한 ($50/|w|$, $f$ 기준):** tracking 4 term 25~50, pose·upright 50, stand_still 50, dof_pos_limits 50, self_collisions 50 (최대 4), stance_knee_extension 25, foot_clearance 25, knee_overspeed·foot_impact_velocity 100, foot_swing_height 200, action_rate·foot_slip 500, body_ang_vel 1,000, angular_momentum·thermal_effort 2,500, contact_force_cap 5,000 (식의 최대 1,120 이므로 닿지 않음), soft_landing 5×10⁶.
 
 ### 1.7 Termination
 
@@ -245,11 +319,121 @@ Flag 는 import 시점에 `ENVCFG`·`CONST` 가 읽는다. 따라서 같은 task
 
 ## 2. Curriculum
 
-### 2.1 Command velocity (`commands_vel_gated`)
+![Curriculum 진행 (원 run TensorBoard)](img/curriculum.png)
 
-**Stage table** (`ENVCFG:466-488`):
+### 2.0 요약
 
-| Stage | vx | vy | wz |
+이 run 에는 학습 중 바뀌는 것이 세 가지 있다. 바뀌는 기준이 각각 다르다.
+
+| Curriculum | 무엇이 바뀌나 | 무엇을 기준으로 | 적용 단위 | 이 run 에서 실제로 |
+|---|---|---|---|---|
+| DR ramp (§2.1) | 외란·모델 오차의 크기 (push, 마찰, encoder bias, link 질량·CoM·관성) | **학습 iteration 수만**. 성능은 보지 않는다 | 모든 env 공통 | iter 2,000 까지 0 → iter 8,000 에 최대 |
+| Terrain (§2.2) | 지형 난이도 level (0~9) | **그 env 가 직전 episode 에 걸은 거리** | env 별 | iter 1,000 이후 평균 level 약 6 에서 정체 |
+| Command (§2.3) | 명령 속도 범위 | gate (성능 판정) | 모든 env 공통 | iter 1 부터 최종 범위로 고정. 사실상 curriculum 없음 |
+
+**학습 구간별로 바뀌는 것:**
+
+| Iteration | Actor | DR | Terrain | Command 범위 |
+|---|---|---|---|---|
+| 0~300 | 고정 (critic warm-up, §2.5). Critic 만 학습 | 없음 (f = 0) | level 0~5 에서 시작해 오르기 시작 | vx −2.0~2.5, vy ±1.0, wz ±1.0 |
+| 300~2,000 | 학습 | 없음 (f = 0) | 평균 level 5.8 까지 상승 (iter 1,000) | 같음 |
+| 2,000~8,000 | 학습 | 0 → 1 선형 증가 | 평균 5.8~6.1 유지 | 같음 |
+| 8,000~12,000 | 학습 | 최대 (f = 1) 유지 | 평균 약 6.0 유지 | 같음 |
+
+### 2.1 DR ramp (`dr_levels`, `curriculums.py:112-202`; `ENVCFG:671-693`)
+
+**기준.** 학습 시간만 본다. 넘어짐·추종 오차 같은 성능 지표는 쓰지 않는다. 모든 env 가 같은 세기를 쓴다.
+
+**계산.** DR 세기 $f$ 는 env step counter (= iteration × 24) 로 정한다.
+
+$$f = \begin{cases} 0 & \text{iter} \le 2{,}000 \\ (\text{iter} - 2{,}000)/6{,}000 & 2{,}000 < \text{iter} < 8{,}000 \\ 1 & \text{iter} \ge 8{,}000 \end{cases}$$
+
+Warm start 후 step counter 를 0 으로 되돌리므로 (`PYG_FRESH_STEPS=1`, §1.9) iteration 은 이 run 의 0 부터 센다.
+
+**적용 시점.**
+1. Env 하나가 reset 될 때마다 curriculum 이 $f$ 를 다시 계산한다 (`MJ/src/mjlab/envs/manager_based_rl_env.py:553-554`).
+2. 각 DR event 의 범위를 "최대 범위 × $f$" 로 덮어쓴다.
+3. Reset 되는 env 는 이 범위에서 다음 episode 의 값 (마찰, bias, 질량 등) 을 새로 뽑는다. 그 값은 episode 가 끝날 때까지 유지된다.
+4. Push 는 episode 중 1~3 s 마다 그 시점의 범위로 뽑는다.
+
+**$f$ 에 따른 값.** 모두 "중심값 ± 폭 × $f$" 다. 아래는 각 항목이 iteration 별로 실제로 갖는 범위다.
+
+| 항목 | iter ≤ 2,000 ($f$=0) | 3,500 (0.25) | 5,000 (0.5) | 6,500 (0.75) | ≥ 8,000 (1.0) |
+|---|---|---|---|---|---|
+| Push, 수평 속도 변화 | 없음 | ±0.175 m/s | ±0.35 | ±0.525 | ±0.70 |
+| Push, 수직 / roll·pitch / yaw rate | 없음 | ±0.1 / ±0.13 / ±0.195 | ±0.2 / ±0.26 / ±0.39 | ±0.3 / ±0.39 / ±0.585 | ±0.4 m/s / ±0.52 / ±0.78 rad/s |
+| 발 마찰 계수 (양발 같은 값) | 0.75 고정 | 0.64~0.86 | 0.53~0.98 | 0.41~1.09 | 0.30~1.20 |
+| Encoder bias (joint 별) | 0 | ±0.21° | ±0.43° | ±0.64° | ±0.86° |
+| 로봇 총질량 | 23.63 kg | 23.33~24.24 | 23.04~24.86 | 22.75~25.50 | 22.47~26.15 |
+| Base 질량 배율 | 1 | 0.987~1.036 | 0.975~1.072 | 0.962~1.111 | 0.950~1.150 |
+| Base CoM 이동 (축별) | 0 | ±5 mm | ±10 | ±15 | ±20 |
+| 다리 link CoM 이동 (축별) | 0 | ±1.25 mm | ±2.5 | ±3.75 | ±5 |
+| Link 관성 모양 $d$ | 0 | ±0.005 | ±0.01 | ±0.015 | ±0.02 |
+
+- 질량은 link 마다 $e^{2\alpha f}$ 배다. $\alpha$ 의 최대 범위는 §3.3 의 link 별 값이다. 총질량 범위는 모든 link 가 동시에 하한·상한일 때의 값이다 (`계산`).
+- 마찰은 중심 0.75 에서 폭만 넓어진다. 그래서 $f = 0$ 구간에도 발 마찰은 XML 의 0.6 이 아니라 0.75 다. 이 event 는 매 reset 에 절대값을 쓴다 (`operation="abs"`).
+- Push 는 base 속도에 더하는 값이다 (`events.py:335-337`). $f = 0$ 이면 0 을 더하므로 push 가 없다.
+
+**$f$ 와 무관하게 iter 0 부터 고정인 것:** observation noise (gyro ±0.2 rad/s, gravity ±0.05, joint ±0.01 rad), push 간격 1~3 s, reset 자세 (xy ±0.5 m, yaw ±180°), terrain 형상.
+
+**Critic 이 보는 것.** Critic observation 에 $f$ 와 이번 episode 의 마찰·질량·CoM·push 값이 들어간다 (§1.3). Actor 는 보지 않는다.
+
+**근거.** Parent run 은 DR window 를 iter 15,999 이후로 잡았다. 이 run 은 iteration 을 0 부터 세므로 그 값을 그대로 쓰면 DR 이 켜지지 않는다. 실제로 앞선 rough run 들은 3,000 iter 내내 $f = 0$ 으로 학습했다. 그래서 2,000~8,000 으로 다시 잡았다 (`launch_rough_main.py:8-11`). 시작점 2,000 과 ramp 길이 6,000 을 고른 정량 근거 기록은 없다 (출처 없음).
+
+### 2.2 Terrain (`terrain_levels_vel`, `curriculums.py:26-81`)
+
+**기준.** 그 env 가 직전 episode 동안 걸은 거리다. Env 마다 따로 판정한다.
+
+**구조.** Terrain 은 10 row × 5 col 의 tile (8 × 8 m) 격자다. Col 은 terrain 종류 5 개 (flat, stairs, inverted stairs, random box, tilted plate), row 는 난이도 level 0~9 다. Env 하나의 종류는 처음에 정해지고 바뀌지 않는다. Level 만 바뀐다.
+
+**절차** (episode 가 끝나 reset 될 때마다, timeout 이든 넘어짐이든):
+1. 거리 $d$ = base 의 xy 위치와 tile 중심 사이의 거리.
+2. $d > 4$ m (tile 절반) 이면 level +1.
+3. 그렇지 않고 $d < 0.5 \times \lVert c_{xy}\rVert \times 20$ s 이면 level −1. $c_{xy}$ 는 reset 시점의 명령이다.
+4. 둘 다 아니면 유지.
+5. Level 9 에서 더 오르면 0~9 중 무작위 level 로 보낸다 (`terrain_entity.py:225-230`).
+6. 처음 level 은 0~5 중 무작위다 (`max_init_terrain_level=5`).
+
+**예:**
+
+| 상황 | 판정 |
+|---|---|
+| 명령 1.0 m/s, 20 s 다 걷고 5 m 이동 | +1 ($d > 4$) |
+| 명령 1.0 m/s, 3 s 만에 넘어져 1 m 이동 | −1 ($1 < 0.5 \times 1.0 \times 20 = 10$) |
+| 명령 0.2 m/s, 3 m 이동 | 유지 ($3 \le 4$, $3 \ge 2$) |
+| 서 있으라는 명령 ($c = 0$) | 내려가지 않는다. 4 m 넘게 흘러가면 +1 |
+
+명령이 0.4 m/s 이상이면 오르지 못한 env (4 m 이하) 는 모두 내려간다. Yaw 명령은 판정에 쓰지 않는다 (legged_gym·Isaac Lab 과 같은 규칙).
+
+**Level 별 지형** ($t$ = level / 9):
+
+| Level | 계단 한 단 높이 | Random box 높이 | Tilted plate 기울기 |
+|---|---|---|---|
+| 0 | 0 | 0 | 0° |
+| 3 | 0.033 m | ±0.04 m | ±5° |
+| 6 | 0.067 m | ±0.08 m | ±10° |
+| 9 | 0.10 m | ±0.12 m | ±15° |
+
+**이 run 의 실제 진행** (그림 B). 초반에 level 이 빠르게 오른다.
+
+| iter | 0 | 10 | 20 | 42 | 84 | 126 | 200 | 300 | 1,000 | 4,000 | 11,999 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 평균 level | 3.43 | 3.15 | 3.10 | 3.33 | 3.92 | 4.36 | 4.82 | 5.01 | 5.76 | 5.97 | 5.97 |
+| 최대 level | 6 | 7 | 8 | 8 | 9 | 9 | 9 | 9 | 9 | 9 | 9 |
+
+구간별 원인:
+1. **iter 0: 2.49 → 3.43 (한 번만 일어나는 가짜 승급).** Env 생성 직후 robot 은 아직 자기 tile 위에 있지 않다. Tile 중심까지 평균 21.6 m 떨어져 있고, 94 % 가 4 m 를 넘는다. 첫 reset 은 robot 을 tile 로 옮기기 전에 curriculum 을 계산하므로, 이 94 % 가 걷지 않고도 +1 을 받는다. 생성 직후 평균 2.486 / 최대 5 가 첫 reset 후 3.430 / 6 이 된다. 이 값은 원 run 의 iter 0 값 (3.43 / 6) 과 같다 (이 꾸러미 env 512 개로 재현, 2026-10-12). Stock mjlab 의 동작이다 (`manager_based_rl_env.py:553-554`; `curriculums.py:42-45`).
+2. **iter 0~20: 소폭 하락 (3.43 → 3.10).** 학습 시작 시 episode 길이를 무작위로 잘라 시작한다 (`init_at_random_ep_len=True`, `MJ/src/mjlab/scripts/train.py:176`). 일찍 끝난 episode 는 이동 거리가 짧아 대부분 내려간다.
+3. **iter 42~300: 빠른 상승 (3.33 → 5.01).** 한 episode 는 20 s = 1,000 step ≈ 42 iter 다. Actor 는 이미 평지를 잘 걷는 parent (30,000 iter) 에서 가져왔다. 낮은 level 은 거의 평지라 대부분의 env 가 매 episode 4 m 를 넘게 걸어 episode 마다 +1 을 받는다.
+4. **iter 1,000 이후: 약 6 에서 정체.** 높은 level 에서 넘어지거나 4 m 를 못 가 내려가는 env 와, level 9 를 넘어 무작위 level 로 돌아가는 env 가 균형을 이룬다.
+
+- Flat 종류의 평균 level 도 다른 종류와 같다 (그림 B). Flat 은 level 이 바뀌어도 지형이 같으므로, 이 정체값은 지형 능력이 아니라 위 규칙의 균형점이다. 지형 능력은 `terrain_eval.py` 로 따로 잰다 (F14).
+
+### 2.3 Command 범위 (`commands_vel_gated`, `curriculums.py:255-397`)
+
+**설계.** 명령 범위를 5 단계로 넓히는 gate 다 (`ENVCFG:466-488`):
+
+| Stage | vx (m/s) | vy (m/s) | wz (rad/s) |
 |---|---|---|---|
 | 0 | ±0.8 | ±0.5 | ±0.5 |
 | 1 | ±1.2 | ±0.6 | ±0.8 |
@@ -257,55 +441,22 @@ Flag 는 import 시점에 `ENVCFG`·`CONST` 가 읽는다. 따라서 같은 task
 | 3 | ±2.0 | ±0.85 | ±1.0 |
 | 4 | −2.0~+2.5 | ±1.0 | ±1.0 |
 
-근거: vx·wz 는 하중 측정용 최대 2.5 m/s (`docs/reward_research/2026-07-10_vx25_curriculum.md`). vy 단계는 `docs/reward_research/2026-08-24_command_box_and_transient.md` §5, 최종 ±1.0 은 하중 범위 확보 목적 (같은 문서 §3).
+Gate 는 최근 100 iter 의 정상상태 속도 오차와 넘어짐 비율로 승급을 판정한다. 오차 ≤ 1.1 × 직전 baseline, 넘어짐 ≤ 0.5 %, episode ≥ 64 개이면 승급한다. 한 stage 에 `max_dwell_iters` 이상 머물면 판정 없이 승급한다.
 
-**Gate logic** (`curriculums.py:255-397`):
-1. 최근 100 iter 동안 종료된 episode 의 steady velocity error 와 fall rate 를 모은다.
-2. stage dwell ≥ `max_dwell_iters` → 강제 승급.
-3. 그 외 dwell ≥ `min_dwell_iters` 이고 episode ≥ 64 이면 성능 판정: error ≤ 1.1 × 직전 baseline 이고 fall ≤ 0.005 이면 승급.
-4. Gate state 는 checkpoint 에 저장되지 않는다. 새 process 는 stage 0 에서 시작한다.
+**이 run 의 실제 동작:** gate 가 꺼져 있다.
+- `GATE_MAX_DWELL=0` 이라 매 호출이 "최대 체류 초과" 로 처리된다. Iter 0 에서 4 번 연속 승급해 iter 1 부터 끝까지 stage 4 다 (그림 C; console line 237, 278-280).
+- 이유: gate 상태는 checkpoint 에 저장되지 않는다. Parent 가 이미 stage 4 까지 학습했으므로 새 process 에서 stage 0 부터 다시 오르지 않게 했다 (`docs/103_v2_training_plan.md:124,129`).
+- Parent (flat) 에서는 gate 가 실제로 동작했다: iter 800·1,600·2,400 에 성능 승급, 5,400 에 강제 승급.
+- `ENV.yaml:3102-3112` 의 command range 는 stage 1 값 (vx ±1.2) 이다. 첫 승급 직후 dump 되었기 때문이다. 학습 범위 판단에 쓰지 말 것 (F5).
+- 범위 근거: vx 2.5 m/s 는 하중 측정용 최대 속도 (`docs/reward_research/2026-07-10_vx25_curriculum.md`). vy 단계와 최종 ±1.0 은 `docs/reward_research/2026-08-24_command_box_and_transient.md` §3, §5.
 
-**이 run 의 실제 동작:**
-- `GATE_MAX_DWELL=0` → 2 번 조건이 항상 참. 성능 판정 없이 호출마다 1 stage 승급.
-- iter 0 에서 강제 승급 4 회 (console line 237, 278-280). iter 1 부터 12,000 iter 내내 stage 4.
-- 의도: gate state 가 저장되지 않으므로 parent 의 최종 range 를 즉시 복원하는 설정 (`docs/103_v2_training_plan.md:124,129`). Launcher 가 parent flag 를 복사한다 (`launch_rough_main.py:58-60`).
-- 주의: `ENV.yaml:3102-3112` 의 command range 는 stage 1 값(vx ±1.2)이다. 첫 강제 승급 직후 dump 되었기 때문이다. 학습 range 판단에 쓰지 말 것 (F5).
-- Parent 의 flat 1단계는 실제 gate (min dwell 800 / max 3000) 로 iter 800·1,600·2,400 에 통과 승급, 5,400 에 강제 승급했다.
-
-### 2.2 Terrain (`terrain_levels_vel`, `curriculums.py:26-81`)
-
-1. Reset 시 env origin 에서의 xy 거리를 잰다.
-2. 거리 > 4.0 m (tile 절반) → level +1.
-3. 거리 < |cmd| × 20 s × 0.5 → level −1.
-4. Level 9 초과 시 0~9 중 random level 로 재배치 (`terrain_entity.py:225-230`).
-5. 초기 level: 0~5 uniform (`max_init_terrain_level=5`).
-
-Yaw command 는 판정에 쓰지 않는다 (legged_gym·Isaac Lab 과 같은 규칙).
-
-| iter | 0 | 100 | 300 | 1,000 | 4,000 | 11,999 |
-|---|---|---|---|---|---|---|
-| mean level | 3.43 | 4.12 | 5.01 | 5.76 | 5.97 | 5.97 |
-
-- iter 1,000 이후 5.8~6.1 에서 정체. Max level 9 는 iter 50 부터.
-- flat 타입의 mean level 이 rough 타입과 같다. Level 은 terrain 능력보다 이동 거리를 반영한다 (F14).
-- iter 0 의 mean(3.43) 이 초기 분포(2.5)보다 높다. 원인 미검증 (F14).
-
-### 2.3 DR ramp (`dr_levels`, `curriculums.py:112-202`; `ENVCFG:671-693`)
-
-- step ≤ 48,000 (iter 2,000): `dr_factor = 0`.
-- step 192,000 (iter 8,000) 까지 선형 증가, 이후 1.
-- Scale 대상: push velocity, foot friction range, encoder bias, inertial DR 7 term 전부.
-- Scale 비대상: observation noise, push interval, reset pose, terrain.
-- 실측 (TensorBoard): iter 1,999 까지 0, 4,000 에 0.333, 6,000 에 0.667, 7,999 부터 1.0.
-- 근거: parent 의 window (iter 15,999~) 를 그대로 쓰면 iter 0 부터 세는 이 run 에서는 DR 이 켜지지 않는다 (`launch_rough_main.py:13-17`).
-
-### 2.4 Entropy coefficient
+### 2.4 Entropy coefficient (curriculum 아님, 고정)
 
 전 구간 0.002 고정 (`runner.py:197-206`).
 근거: 0.01 에서는 action std 가 0.13 → 0.60 으로 증가하고 제자리 회전 추종이 무너졌다. 0.002 에서 회복했다 (`docs/reward_research/2026-10-11_turn_in_place_recovery_literature.md` §7-4).
 결과: action std 0.130 (iter 0) → 0.190 (iter 11,999).
 
-### 2.5 Critic warm-up
+### 2.5 Critic warm-up (iter 0~300)
 
 §1.9-3 참고. 근거: 새 critic + 낮은 entropy 조합에서 standing 이 나빠졌다 (foot-off 29 %). Warm-up 300 으로 2.2 % (같은 문서 §7-3, §7-4).
 
@@ -315,7 +466,7 @@ Yaw command 는 판정에 쓰지 않는다 (legged_gym·Isaac Lab 과 같은 규
 
 ### 3.1 적용 항목
 
-"Ramp" = `dr_factor` (§2.3) 곱함. 범위는 `dr_factor = 1` 기준.
+"Ramp" = `dr_factor` (§2.1) 곱함. 범위는 `dr_factor = 1` 기준.
 
 | 대상 | 범위 | 샘플 시점 | Ramp | 구현 | 값의 근거 |
 |---|---|---|---|---|---|
@@ -536,16 +687,16 @@ Bench 측정: 무부하 output shaft, CAN 약 4 kHz. Inertia 는 coast-down, tor
 | F2 | High | Encoder bias DR ±0.86° vs 실측 zero offset 최대 9.4° (left knee). Bias 는 target 에만 작용, observation 에 없음 | §3.1, §3.4; `ENVCFG:706-709`; `docs/109:56` | Zero calibration 적용 후 잔차만큼 DR 확대 |
 | F3 | High | Latency, IMU bias, Kp/Kd, motor strength, joint dynamics DR 없음 | §3.2 | Latency·IMU bias 측정 후 DR 추가 (대부분 코드 존재) |
 | F4 | Medium | Observation noise 값이 upstream 기본값. Pygmalion sensor 측정 근거 없음 | §3.1 | IMU gyro·encoder noise 측정 후 비교 |
-| F5 | Medium | Command gate 무력화 (`GATE_MAX_DWELL=0`). `ENV.yaml` 에는 학습 range 가 아닌 stage 1 range 가 기록됨 | §2.1 | Run note 에 실제 range 기록. Gate state 를 checkpoint 에 저장하거나 최종 range 를 log |
+| F5 | Medium | Command gate 무력화 (`GATE_MAX_DWELL=0`). `ENV.yaml` 에는 학습 range 가 아닌 stage 1 range 가 기록됨 | §2.3 | Run note 에 실제 range 기록. Gate state 를 checkpoint 에 저장하거나 최종 range 를 log |
 | F6 | Medium | Commit `d0c85448` 이 upstream 변경 3 건을 의도치 않게 revert. Test 1 개 import 실패 가능 | §1.10 | Upstream 코드 복원, `tests/test_spec_config.py` 실행 |
 | F7 | Medium | Run 의 git 기록 없음. 상위 repo 의 submodule pointer 가 오래됨 (`27d16f82`) | §1.11 | Submodule pointer commit. Launch 시 mjlab commit hash 를 `MANIFEST` 에 기록 |
 | F8 | Medium | Passive ankle joint 의 friction/damping/armature = 0. Rod hinge 는 placeholder | §4.4 | Ankle bearing friction 측정, placeholder 교체 |
 | F9 | Medium | Ankle loop 형상이 v3 파일 기반. v30 CAD 에서 재추출하지 않음 | `build_robot.py:70,412` | v30 에서 loop point 재추출·비교 |
 | F10 | Medium | Foot 질량에 미실측 aluminium 추정 0.618 kg 포함. 실측 printed plate 0.182 kg | §4.4; `docs/112` §5 | 실제 foot part 계량 후 모델 갱신. tempmass checkpoint 는 실기 미사용 (`docs/114` §5) |
 | F11 | Medium | 실기 motor map 은 12 joint 전부 RS03. 모델은 hip pitch/roll·knee 에 RS04 | `docs/136` §3 | 실기 joint 별 motor 확인 |
-| F12 | Low | Site `left_foot` 이 `R_foot_link`, `right_foot` 이 `L_foot_link` 에 있음. 좌우 reward 영향 미검증 | `XML:149,222` | 해당 site 를 쓰는 reward 확인 |
+| F12 | Info | Site `left_foot` 이 `R_foot_link`, `right_foot` 이 `L_foot_link` 에 있음 (이름만 반대). Reward 영향 없음: contact sensor (`R_foot_link`, `L_foot_link`), site (`left_foot`, `right_foot`), knee joint (`R_knee`, `L_knee`) 순서가 모두 물리적 [R, L] 로 같아 발 별 짝이 맞는다 (2026-10-12, 생성된 env 에서 확인). 모든 foot term 은 두 발 합이다 | `XML:149,222`; §1.6.2 | Site 이름 정정 (모델 변경이므로 승인 필요) |
 | F13 | Low | Critic warm-up 주석은 obs normalizer 도 고정한다고 하나 실제로는 갱신됨 (drift ≤ 8e-4) | §1.9 | 주석 수정 또는 normalizer 고정 |
-| F14 | Low | Terrain level 은 terrain 능력보다 이동 거리를 반영. 초기 level 이 초기 분포보다 높음 (원인 미검증) | §2.2 | Terrain 능력은 `terrain_eval.py` 로 평가 |
+| F14 | Low | Terrain level 은 terrain 능력보다 이동 거리 규칙의 균형점을 반영 (flat 도 같은 level). iter 0 의 level 상승 (2.49 → 3.43) 은 첫 reset 이 robot 을 tile 로 옮기기 전에 거리를 재서 생기는 가짜 승급이다 (stock 동작, 2026-10-12 재현) | §2.2 | Terrain 능력은 `terrain_eval.py` 로 평가. 필요하면 첫 reset 에서 terrain curriculum 을 건너뛴다 |
 | F15 | Low | Mass DR json 의 nominal mass 가 XML 과 다름 (base 5.42 vs 5.36 kg). 최종 build 입력 massprops 파일이 repo 에 없음 | §3.3 | Build 입력을 repo 에 추가, 같은 snapshot 으로 DR json 생성 |
 | F16 | Low | 실효 ankle roll 강성이 목표 대비 약 −22 % (두 축에 단일 lever ratio 사용) | §5.2 | 필요 시 v30 loop Jacobian 으로 crank gain 설정 |
 | F17 | Low | Contact solref/solimp 미보정 (MuJoCo 기본값) | §4.6 | 모델 한계로 기록 |
