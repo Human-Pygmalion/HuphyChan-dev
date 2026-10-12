@@ -250,6 +250,29 @@ class SimCore:
       int(self.m.geom_contype[self.floor_gid]),
       int(self.m.geom_conaffinity[self.floor_gid]),
     )
+    # Terrain choice (2026-10-12, user: "험지 평지 선택할수있게해줘"): a model baked with
+    # PYG_BAKE_TERRAIN carries the trail heightfield + tree trunks as `trail_*` world geoms (the floor
+    # plane sits below the lowest terrain point).  "flat" switches the trunks' collision off and
+    # levels the heightfield to world z = 0 by rewriting its height samples; "rough" puts both back.
+    # Same baked model, same contract.  (The plane is NOT moved: a static geom moved at run time keeps
+    # its compile-time broadphase box, so the feet find it only by accident - measured, see set_terrain.)
+    self._terrain_gids = [
+      g for g in range(self.m.ngeom)
+      if (mujoco.mj_id2name(self.m, mujoco.mjtObj.mjOBJ_GEOM, g) or "").startswith(("trail_ground", "trail_tree"))
+    ]
+    self._tree_gids = [g for g in self._terrain_gids if self.m.geom_type[g] != mujoco.mjtGeom.mjGEOM_HFIELD]
+    self._tree_con = {g: (int(self.m.geom_contype[g]), int(self.m.geom_conaffinity[g])) for g in self._tree_gids}
+    self._hf_gid = next((g for g in self._terrain_gids if self.m.geom_type[g] == mujoco.mjtGeom.mjGEOM_HFIELD), None)
+    if self._hf_gid is not None:
+      h = int(self.m.geom_dataid[self._hf_gid])
+      off = int(sum(int(self.m.hfield_nrow[k]) * int(self.m.hfield_ncol[k]) for k in range(h)))
+      n = int(self.m.hfield_nrow[h]) * int(self.m.hfield_ncol[h])
+      self._hf_slice = slice(off, off + n)
+      self._hf_rough = self.m.hfield_data[self._hf_slice].copy()
+      # normalised height (0..1 of size_z) at which the surface is world z = 0
+      zspan = float(self.m.hfield_size[h, 2])
+      self._hf_flat_level = float(np.clip(-float(self.m.geom_pos[self._hf_gid][2]) / zspan, 0.0, 1.0))
+    self.terrain = "rough"
 
     s = r["sensors"]
     self._sensor = {
@@ -474,6 +497,42 @@ class SimCore:
     self._apply_base_mode(snap=True)
     self._apply_ground()
     mujoco.mj_forward(self.m, self.d)
+
+  TERRAINS = ("rough", "flat")
+
+  @property
+  def has_terrain(self) -> bool:
+    """True when this model carries the trail heightfield/trees, i.e. there is a choice to make."""
+    return self._hf_gid is not None
+
+  def set_terrain(self, terrain: str) -> str:
+    """Choose ``rough`` (the baked trail: heightfield + trunks collide) or ``flat`` (trunks' collision
+    off, the heightfield levelled to world z = 0 - the trail's own origin height).
+
+    Runs on the sim thread (``_apply_cmd``).  It edits the live MjModel (``hfield_data``, trunk
+    contype/conaffinity), then resets the robot onto the chosen ground in the current mode - the
+    policy, the mode and the Action scale stay as they were.  Both grounds are z = 0 under the spawn
+    point, so the same keyframe stands on either, and flat ground keeps the trail's own contact
+    parameters (friction, solref) because it is the same geom.
+
+    Why not just lift the floor plane (the first design): moving a static geom at run time leaves its
+    compile-time broadphase box behind; measured on this model, with the plane at z = 0 the feet had
+    0-1 contacts and the policy sank (z 0.90 -> 0.15 m in 3 s) instead of standing."""
+    if terrain not in self.TERRAINS:
+      raise ValueError(f"terrain must be one of {self.TERRAINS}, got {terrain!r}")
+    if not self.has_terrain:
+      raise RuntimeError("this model has no trail terrain to switch (bake with PYG_BAKE_TERRAIN)")
+    flat = terrain == "flat"
+    for g, (ct, ca) in self._tree_con.items():
+      self.m.geom_contype[g] = 0 if flat else ct
+      self.m.geom_conaffinity[g] = 0 if flat else ca
+    if flat:
+      self.m.hfield_data[self._hf_slice] = self._hf_flat_level
+    else:
+      self.m.hfield_data[self._hf_slice] = self._hf_rough
+    self.terrain = terrain
+    self.reset("knees_bent")
+    return self.terrain
 
   def _apply_ground(self) -> None:
     ct, ca = self._floor_con if self.ground else (0, 0)
@@ -1008,6 +1067,8 @@ class SimCore:
       self.cmd = np.asarray(cmd["value"], dtype=float).reshape(3)
     elif op == "gains":
       self.set_gains(cmd.get("source"), cmd.get("overrides"), cmd.get("clear_overrides", False))
+    elif op == "terrain":
+      self.set_terrain(cmd["value"])
     elif op == "gain_scale":
       self.set_gain_scale(cmd["value"])
     elif op == "obs_source":
@@ -1185,6 +1246,7 @@ class SimCore:
       warnings=self._warnings(q_all),
       gains_source=self.gains_source,
       gain_scale=self.gain_scale,
+      terrain=self.terrain,
       telemetry=self._telemetry_status(),
       sign_sanity=self.real.sign_sanity(),
     )

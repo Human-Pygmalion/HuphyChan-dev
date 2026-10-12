@@ -29,6 +29,7 @@ import threading
 import time
 from pathlib import Path
 
+import mujoco
 import numpy as np
 import viser
 from mjviser import ViserMujocoScene
@@ -98,6 +99,11 @@ def build_ui(core, host: str, port: int, freshness: dict, base: str = "free") ->
           pass
         try:
           state["sync_run_mode"]()
+        except Exception:
+          pass
+        try:
+          if "sync_terrain" in state:
+            state["sync_terrain"]()
         except Exception:
           pass
         try:
@@ -187,10 +193,28 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
   core = state["core"]
   c = core.c
   gui = server.gui
+  state.pop("sync_terrain", None)  # a model swap rebuilds the panel; the old closure points at dead widgets
   thin = _thin_big_hfields(core.m)
   state["scene"] = ViserMujocoScene(server, core.m, num_envs=1)
+  hf_nodes = []
   for name, V, F in thin:  # under /fixed_bodies: camera tracking shifts that frame, not the camera
-    server.scene.add_mesh_simple(f"/fixed_bodies/{name}", vertices=V, faces=F, color=(122, 140, 98))
+    hf_nodes.append(
+      server.scene.add_mesh_simple(f"/fixed_bodies/{name}", vertices=V, faces=F, color=(122, 140, 98))
+    )
+  state["hf_nodes"] = hf_nodes  # the drawn (thinned) trail surface: hidden in flat terrain
+  # flat terrain's own look: a big opaque ground at z = 0 (same colour as the trail) + grid lines for motion cues
+  flat_nodes = []
+  if core.has_terrain:
+    R_ = 1000.0
+    V_ = np.array([[-R_, -R_, 0], [R_, -R_, 0], [R_, R_, 0], [-R_, R_, 0]], dtype=np.float32)
+    F_ = np.array([[0, 1, 2], [0, 2, 3]], dtype=np.uint32)
+    flat_nodes.append(server.scene.add_mesh_simple(
+      "/fixed_bodies/flat_ground", vertices=V_, faces=F_, color=(122, 140, 98), visible=False))
+    flat_nodes.append(server.scene.add_grid(
+      "/fixed_bodies/flat_grid", infinite_grid=True, fade_distance=50.0, plane_opacity=0.0,
+      position=(0.0, 0.0, 0.002), visible=False))
+  state["flat_nodes"] = flat_nodes
+  state["terrain_drawn"] = "rough"
   state["scene"].update_from_mjdata(core.d)
 
   # --------------------------------------------------------- Panel width
@@ -449,6 +473,42 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
       "mode", ("idle", "manual", "policy_sim", "policy_shadow", "real_replay"),
       initial_value=core.mode,
     )
+    # Terrain (2026-10-12, user: "험지 평지 선택할수있게해줘"): only on a model baked with the trail.
+    # The choice goes to the sim thread as a command (it edits the live model and resets the robot
+    # onto the chosen ground); `sync_terrain`, run from the render loop, redraws to match.
+    if core.has_terrain:
+      terrain_dd = gui.add_dropdown(
+        "Terrain", ("rough (trail)", "flat"),
+        initial_value="flat" if core.terrain == "flat" else "rough (trail)",
+      )
+
+      @terrain_dd.on_update
+      def _(_evt):
+        state["core"].submit(
+          {"op": "terrain", "value": "flat" if terrain_dd.value == "flat" else "rough"}
+        )
+
+      def _sync_terrain():
+        c_ = state["core"]
+        want = c_.terrain
+        if want == state["terrain_drawn"]:
+          return
+        flat_ = want == "flat"
+        want_label = "flat" if flat_ else "rough (trail)"
+        if terrain_dd.value != want_label:
+          terrain_dd.value = want_label
+        m_ = c_.m
+        for g_ in c_._tree_gids:  # trunks: alpha 0 = mjviser skips them
+          m_.geom_rgba[g_, 3] = 0.0 if flat_ else 1.0
+        for h_ in state["hf_nodes"]:
+          h_.visible = not flat_
+        for h_ in state["flat_nodes"]:
+          h_.visible = flat_
+        state["scene"].rebuild_visual_handles()  # redraws the trunks and the floor grid at its new height
+        state["terrain_drawn"] = want
+
+      state["sync_terrain"] = _sync_terrain
+
     vx = gui.add_slider("vx [m/s]", min=-1.0, max=2.5, step=0.05, initial_value=0.0)
     vy = gui.add_slider("vy [m/s]", min=-0.5, max=0.5, step=0.05, initial_value=0.0)
     wz = gui.add_slider("wz [rad/s]", min=-1.5, max=1.5, step=0.05, initial_value=0.0)
@@ -906,7 +966,12 @@ def _mount(server: viser.ViserServer, state: dict) -> None:
                      f'border-radius:3px;margin-right:3px;font-size:11px">{label}</span>')
       warns = p.get("shadow_warnings") or []
       mask_md.content = "".join(cells) + ("\n\n**" + "; ".join(warns) + "**" if warns else "")
-    from .api import rss_mb
+    try:
+      from .api import rss_mb
+    except ImportError:  # --no-api on a host without fastapi (the 3090): the whole Status panel used to die here
+      def rss_mb() -> float:
+        with open("/proc/self/status") as f_:
+          return next(int(l_.split()[1]) for l_ in f_ if l_.startswith("VmRSS:")) / 1024.0
 
     lines += ["", f"RSS {rss_mb():.0f} MB  gains `{s.get('gains_source', 'train')}`"]
     if s.get("warnings"):
