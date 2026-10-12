@@ -1,4 +1,4 @@
-# Pygmalion Rough-Terrain Walking Policy - Deployment Handout (2026-10-12)
+# Pygmalion Rough-Terrain Walking Policy - Deployment Handout (package `pyg_rough_main_20261012`)
 
 This package runs the policy `rough_box_main_v11a` (checkpoint 11,999) on the real robot.
 Read this handout before you power on any motor.
@@ -244,7 +244,7 @@ The runner shows one warning if the median cycle time is more than 20 % wrong. I
 
 | Viewer | Command | What it shows |
 |---|---|---|
-| Deploy-code viewer (same `obs_adapter` and `policy.onnx` as the robot) | `cd mujoco-sim/mjlab && .venv/bin/python3 ../../tools/robot_model/viser_stand_viewer.py --contract ../../deploy_asset/pyg_rough_main_v11a/deploy_contract.json --onnx ../../deploy_asset/pyg_rough_main_v11a/policy.onnx --port 8102` | Flat ground, push and lift buttons, noise switch |
+| Deploy-code viewer (same `obs_adapter` and `policy.onnx` as the robot) | `cd mujoco-sim/mjlab && .venv/bin/python3 ../../tools/robot_model/viser_stand_viewer.py --contract ../../deploy_asset/pyg_rough_main_20261012/deploy_contract.json --onnx ../../deploy_asset/pyg_rough_main_20261012/policy.onnx --port 8102` | Flat ground, push and lift buttons, noise switch |
 | Mountain-trail viewer (drive it yourself) | `bash tools/terrain_nav/start_trail_viser.sh roughmain` (host 10.8.0.14, port 8098) | Scanned trail terrain with collision |
 
 ---
