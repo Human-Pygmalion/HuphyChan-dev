@@ -1,0 +1,129 @@
+{
+  "run_name": "rough_box_main_v11a",
+  "created": "2026-10-11T23:35:47+09:00",
+  "cwd": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab",
+  "command": [
+    ".venv/bin/python3",
+    "analysis/train_actor_warmstart.py",
+    "Mjlab-Velocity-Rough-Pygmalion",
+    "--env.scene.num-envs",
+    "4096",
+    "--agent.max-iterations",
+    "12000",
+    "--agent.run-name",
+    "rough_box_main_v11a",
+    "--agent.seed",
+    "43",
+    "--agent.logger",
+    "tensorboard",
+    "--agent.resume",
+    "True",
+    "--agent.load-run",
+    "2026-10-02_23-52-14_legonly_ab_v11a_stand01_s43_p2",
+    "--agent.load-checkpoint",
+    "model_29998.pt"
+  ],
+  "environment": {
+    "PYG_ANKLE_MODE": "AB",
+    "PYG_ARM_ABD_DEG": "15",
+    "PYG_BLOWUP_TERM": "1",
+    "PYG_BOX_TERRAIN": "1",
+    "PYG_CMD_VY_STAGES": "1",
+    "PYG_CRITIC_DR_OBS": "1",
+    "PYG_CRITIC_WARMUP_ITERS": "300",
+    "PYG_DR_END_ITER": "8000",
+    "PYG_DR_START_ITER": "2000",
+    "PYG_ENTROPY_ANNEAL": "1",
+    "PYG_ENTROPY_ANNEAL_END": "0",
+    "PYG_ENTROPY_ANNEAL_START": "0",
+    "PYG_ENTROPY_END_COEF": "0.002",
+    "PYG_ENTROPY_START_COEF": "0.002",
+    "PYG_FRESH_STEPS": "1",
+    "PYG_GATED_CURRICULUM": "1",
+    "PYG_GATE_ERR_RATIO": "1.1",
+    "PYG_GATE_FELL_MAX": "0.005",
+    "PYG_GATE_MAX_DWELL": "0",
+    "PYG_GATE_MIN_DWELL": "0",
+    "PYG_GATE_MIN_EPISODES": "64",
+    "PYG_GATE_WINDOW": "100",
+    "PYG_INERTIAL_DR": "1",
+    "PYG_INIT_BENT": "1",
+    "PYG_INIT_MID": "1",
+    "PYG_KNEE_EXT": "1",
+    "PYG_KNEE_EXT_DEG": "25",
+    "PYG_KNEE_EXT_W": "2.0",
+    "PYG_LOW_BASE_REL": "1",
+    "PYG_MASS_DR_JSON": "/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json",
+    "PYG_MODEL_TAG": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix",
+    "PYG_MOTOR_MEAS": "1",
+    "PYG_NAN_TERM": "1",
+    "PYG_OBS_NAN_GUARD": "1",
+    "PYG_REL_HEADING": "0.3",
+    "PYG_REL_STANDING": "0.1",
+    "PYG_REWARD_TERM_CLAMP": "50",
+    "PYG_SAFE_TARGET_CLIP": "1",
+    "PYG_SOFT_LANDING": "1",
+    "PYG_SOFT_LANDING_MODE": "half",
+    "PYG_STAGNATION": "1",
+    "PYG_STUDENT_TEACHER": "1",
+    "PYG_TN": "1",
+    "PYG_V2": "1"
+  },
+  "parent": {
+    "run": "2026-10-02_23-52-14_legonly_ab_v11a_stand01_s43_p2",
+    "checkpoint": "model_29998.pt",
+    "load": "actor only"
+  },
+  "inputs": [
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/launch_rough_main.py",
+      "snapshot": "launch_rough_main.py",
+      "sha256": "7cf754be76a5e3e9949d4f6c4bd76602cdbe021590a5641440ad4822265d7d3e"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/train_actor_warmstart.py",
+      "snapshot": "train_actor_warmstart.py",
+      "sha256": "9a7b5cb07571cd293ff942d41238ea212157dd8d1b8b0ea1c773411d8dd15e45"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/config/pygmalion/env_cfgs.py",
+      "snapshot": "env_cfgs.py",
+      "sha256": "b7a50a1a1f6bae086bbe46ed95ddcaaf70a05b1c0ddec62cf1b7ff6059f152ab"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/config/pygmalion/rl_cfg.py",
+      "snapshot": "rl_cfg.py",
+      "sha256": "71f4850d402bb7f4809d31fd09d7d10ca679e1d2b3c0d5ec8666ea6b5c9c1cce"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/mdp/curriculums.py",
+      "snapshot": "curriculums.py",
+      "sha256": "313153d1606c87fe33c2e0a6c003ee2b5804ca09a04928adecd8e49777bf5932"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/mdp/terminations.py",
+      "snapshot": "terminations.py",
+      "sha256": "8626af99d09eb7e466967aa238610119b1896fdb228e87b65f95e712f7e34ba1"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/mdp/velocity_command.py",
+      "snapshot": "velocity_command.py",
+      "sha256": "7b209b8a5fa195e7c3908269a736b392b409dd44a84230824de83925e633e3c0"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/tasks/velocity/velocity_env_cfg.py",
+      "snapshot": "velocity_env_cfg.py",
+      "sha256": "11726f3543e371e7bc40c7ab813a9248ceb77df9f6e86a3e1ba469f47de077be"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/terrains/config.py",
+      "snapshot": "config.py",
+      "sha256": "687a2089b4b438c3b821ce97add423874bb6876e47a7359ac69551db4375b3e6"
+    },
+    {
+      "source": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/src/mjlab/rl/runner.py",
+      "snapshot": "runner.py",
+      "sha256": "da4b0e99bdc251d13f4f4eb9180f47c29b217fff79fbda3c56a880e01ebad76e"
+    }
+  ]
+}
