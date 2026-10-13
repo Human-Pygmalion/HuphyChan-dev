@@ -1,0 +1,441 @@
+<title>Pygmalion IMU 좌표계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;800&family=IBM+Plex+Sans+KR:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: instrument bench - live 3D bench on the left, readout panel on the right, worked steps below */
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --ink:#18202b; --muted:#5b6676; --line:#d3d9e1;
+  --sim:#c27c0e; --pol:#c2185b; --ok:#2e7d4f; --bad:#c62828;
+  --ax-x:#d64541; --ax-y:#2f9a4c; --ax-z:#2f6fd6;
+  --stage:#e3e8ee;
+  --f-display:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171e; --panel:#1a212b; --ink:#e4e9f0; --muted:#97a3b3; --line:#2c3644;
+  --sim:#f0a63a; --pol:#ff5c9a; --ok:#5ccf8a; --bad:#ff6b6b;
+  --ax-x:#ff6b66; --ax-y:#5fd37e; --ax-z:#6fa2ff; --stage:#0f141a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171e; --panel:#1a212b; --ink:#e4e9f0; --muted:#97a3b3; --line:#2c3644;
+  --sim:#f0a63a; --pol:#ff5c9a; --ok:#5ccf8a; --bad:#ff6b6b;
+  --ax-x:#ff6b66; --ax-y:#5fd37e; --ax-z:#6fa2ff; --stage:#0f141a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 60px;display:grid;gap:36px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(24px,3.4vw,34px);font-weight:800}
+h2{font-size:21px;font-weight:800}
+h3{font-size:16px;font-weight:800}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);max-width:76ch}
+.mono,code,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+code{font-size:.92em;background:color-mix(in srgb,var(--line) 55%,transparent);padding:1px 5px;border-radius:4px}
+.sim{color:var(--sim)} .pol{color:var(--pol)} .ok{color:var(--ok)} .bad{color:var(--bad)}
+.xc{color:var(--ax-x);font-weight:600} .yc{color:var(--ax-y);font-weight:600} .zc{color:var(--ax-z);font-weight:600}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.verdict div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px}
+.verdict b{font-family:var(--f-display);font-size:15px}
+.tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bench{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.bench{grid-template-columns:1fr}}
+.stage{position:relative;background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden;aspect-ratio:4/3.2;max-width:100%}
+.stage canvas{display:block;width:100%;height:100%}
+.legend{position:absolute;left:10px;top:8px;display:grid;gap:2px;font-size:12px;background:color-mix(in srgb,var(--panel) 82%,transparent);padding:6px 9px;border-radius:6px}
+.legend span{display:flex;gap:6px;align-items:center}
+.sw{width:18px;height:3px;border-radius:2px;display:inline-block}
+.hint{position:absolute;right:10px;bottom:8px;font-size:11px;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:14px;min-width:0}
+.ctl{display:grid;gap:10px}
+.ctl label{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:2px 10px;font-size:13px}
+.ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--pol)}
+.ctl output{font-family:var(--f-mono);text-align:right}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--pol)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--pol);outline-offset:2px}
+.toggles{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px}
+.toggles label{display:flex;gap:5px;align-items:center}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:5px 7px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+thead th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+td.num{font-family:var(--f-mono)}
+td.flag{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);font-weight:600}
+td.good{color:var(--ok)}
+.note{font-size:12.5px;color:var(--muted)}
+.section{display:grid;gap:14px}
+.cards3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;min-width:0}
+.card svg{width:100%;height:auto;max-width:100%}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .mut{fill:var(--muted)}
+.flow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.flow svg{min-width:860px;width:100%;height:auto}
+.chips{display:grid;gap:10px}
+.chiprow{display:grid;grid-template-columns:minmax(150px,230px) repeat(3,minmax(64px,1fr));gap:8px;align-items:center}
+@media (max-width:560px){.chiprow{grid-template-columns:repeat(3,minmax(0,1fr))}.chiprow .lab{grid-column:1/-1}}
+.chip{font-family:var(--f-mono);text-align:center;border:1px solid var(--line);border-radius:6px;padding:6px 4px;background:var(--panel)}
+.chip.flip{border-color:var(--pol);color:var(--pol)}
+.chip.bad{border-color:var(--bad);color:var(--bad);font-weight:600}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lab{font-size:13px}
+.lab small{display:block;color:var(--muted)}
+ol.steps{margin:0;padding-left:20px;display:grid;gap:6px;max-width:80ch}
+</style>
+
+<div class="wrap">
+<header class="section">
+  <span class="tag">Pygmalion · HUPHY biped · EBIMU · 2026-10-13</span>
+  <h1>시뮬레이션과 실기 IMU 의 자이로·투영 중력, 축과 회전 방향</h1>
+  <p class="lede">아래 로봇을 직접 기울여 보세요. <span class="sim">주황 화살표</span>는 시뮬레이션이 정책에 주는 중력(실제 아래 방향), <span class="pol">분홍 화살표와 분홍 반투명 몸통</span>은 지금 HUPHY 가 정책에 주는 중력과, 그 값이 뜻하는 자세입니다. 앞뒤로 기울일 때만 둘이 갈라집니다.</p>
+  <div class="verdict">
+    <div><span class="tag">자이로</span><b class="ok">시뮬레이션과 같음</b><span class="note">센서 좌표계 S 그대로 정책에 들어감. S 가 몸통과 같은 방향으로 붙어 있다는 전제 (실물 미확인)</span></div>
+    <div><span class="tag">투영 중력 z · y</span><b class="ok">시뮬레이션과 같음</b><span class="note">수평 z = −1, 좌우 기울기 맞음. 그래서 "중력 하방 정상" 으로 보였음</span></div>
+    <div><span class="tag">투영 중력 x</span><b class="bad">부호 반대</b><span class="note">자세 좌표계 E 를 센서 좌표계 S 로 바꾸지 않고 계산해서 생김. 앞뒤 기울기를 거꾸로 봄</span></div>
+  </div>
+</header>
+
+<section class="bench" aria-label="3D 시각화">
+  <div class="stage" id="stage">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--sim)"></i>시뮬레이션 중력 (참)</span>
+      <span><i class="sw" style="background:var(--pol)"></i>HUPHY 가 정책에 주는 중력</span>
+      <span><i class="sw" style="background:var(--ink)"></i>각속도 (움직이는 동안)</span>
+    </div>
+    <div class="hint">끌어서 시점 회전 · 휠로 확대</div>
+  </div>
+  <div class="panel">
+    <div class="ctl">
+      <label for="pitch">앞으로 숙임 (몸통 +y 축 회전, 앞쪽 아래로 = +)<output id="pitchV" class="num">0°</output><input type="range" id="pitch" min="-30" max="30" step="1" value="0"></label>
+      <label for="roll">오른쪽으로 기울임 (몸통 +x 축 회전, 오른쪽 아래로 = +)<output id="rollV" class="num">0°</output><input type="range" id="roll" min="-30" max="30" step="1" value="0"></label>
+      <label for="yaw">왼쪽으로 돎 (+z 축 회전, 위에서 반시계 = +)<output id="yawV" class="num">0°</output><input type="range" id="yaw" min="-180" max="180" step="5" value="0"></label>
+    </div>
+    <div class="btns" role="group" aria-label="동작 재생">
+      <button data-go="15,0,keep">앞으로 15° 숙이기</button>
+      <button data-go="-15,0,keep">뒤로 15° 젖히기</button>
+      <button data-go="0,15,keep">오른쪽 15° 기울이기</button>
+      <button data-go="keep,keep,+60">왼쪽으로 60° 돌기</button>
+      <button data-go="0,0,keep">수평으로</button>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="tS" checked> 센서·몸통 축 S (실선)</label>
+      <label><input type="checkbox" id="tE" checked> 자세 축 E (점선)</label>
+      <label><input type="checkbox" id="tG" checked> 정책이 믿는 자세</label>
+    </div>
+    <div class="scroll">
+      <table aria-label="현재 값">
+        <thead><tr><th>값</th><th>x</th><th>y</th><th>z</th></tr></thead>
+        <tbody>
+          <tr><td>자이로, 시뮬레이션 (rad/s)</td><td class="num" id="gs0"></td><td class="num" id="gs1"></td><td class="num" id="gs2"></td></tr>
+          <tr><td>자이로, 실기 S → 정책 (rad/s)</td><td class="num" id="gr0"></td><td class="num" id="gr1"></td><td class="num" id="gr2"></td></tr>
+          <tr><td><span class="sim">투영 중력, 시뮬레이션</span></td><td class="num" id="ss0"></td><td class="num" id="ss1"></td><td class="num" id="ss2"></td></tr>
+          <tr><td><span class="pol">투영 중력, HUPHY → 정책</span></td><td class="num" id="hp0"></td><td class="num" id="hp1"></td><td class="num" id="hp2"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="scroll">
+      <table aria-label="EBIMU 출력">
+        <thead><tr><th>EBIMU 자세 출력 (E 좌표계)</th><th>w</th><th>x</th><th>y</th><th>z</th></tr></thead>
+        <tbody>
+          <tr><td>쿼터니언</td><td class="num" id="q0"></td><td class="num" id="q1"></td><td class="num" id="q2"></td><td class="num" id="q3"></td></tr>
+          <tr><td>오일러 roll / pitch / yaw (°)</td><td></td><td class="num" id="e0"></td><td class="num" id="e1"></td><td class="num" id="e2"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">시뮬레이션과 다른 칸은 빨갛게 표시됩니다. 오일러 pitch 가 숙일 때 −, yaw 가 왼쪽으로 돌 때 − 인 것은 E 좌표계의 정상 동작입니다 (정책은 오일러를 안 씀).</p>
+  </div>
+</section>
+
+<section class="section">
+  <h2>1. 약속: 축과 회전 방향</h2>
+  <p>몸통 좌표계 B 는 <span class="xc">x 앞</span>, <span class="yc">y 왼쪽</span>, <span class="zc">z 위</span>입니다. 회전은 엄지를 축의 + 방향에 두고 나머지 손가락이 감기는 쪽이 + 입니다. 시뮬레이션의 IMU 는 <code>base_link</code> 에 회전 없이 붙어 있어 센서 좌표계가 곧 B 입니다.</p>
+  <div class="cards3">
+    <div class="card">
+      <h3>+y 축 회전 = 앞으로 숙임</h3>
+      <svg viewBox="0 0 260 150" role="img" aria-label="옆에서 본 모습: 앞으로 숙이면 자이로 y 양수, 중력 x 양수">
+        <text x="8" y="16" class="mut" font-size="11">옆에서 본 모습 (앞 = 오른쪽)</text>
+        <line x1="40" y1="120" x2="240" y2="120" stroke="var(--line)" stroke-width="2"/>
+        <g transform="translate(130 80) rotate(18)">
+          <rect x="-55" y="-14" width="110" height="28" rx="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5"/>
+          <line x1="0" y1="0" x2="72" y2="0" stroke="var(--ax-x)" stroke-width="3"/><text x="76" y="4" font-size="12" fill="var(--ax-x)">x</text>
+          <line x1="0" y1="0" x2="0" y2="-48" stroke="var(--ax-z)" stroke-width="3"/><text x="4" y="-50" font-size="12" fill="var(--ax-z)">z</text>
+        </g>
+        <path d="M 196 52 A 70 70 0 0 1 206 92" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M 206 92 l -7 -6 l 9 -1 z" fill="var(--ink)"/>
+        <text x="200" y="40" font-size="12">ω<tspan baseline-shift="sub" font-size="9">y</tspan> &gt; 0</text>
+        <line x1="130" y1="80" x2="130" y2="140" stroke="var(--sim)" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <text x="136" y="146" font-size="11" fill="var(--sim)">아래 → 몸통 기준 앞쪽: g<tspan baseline-shift="sub" font-size="9">x</tspan> &gt; 0</text>
+      </svg>
+      <p class="note">숙이는 동안 자이로 y +, 숙인 뒤 중력 x +.</p>
+    </div>
+    <div class="card">
+      <h3>+x 축 회전 = 오른쪽으로 기울임</h3>
+      <svg viewBox="0 0 260 150" role="img" aria-label="앞에서 본 모습: 오른쪽으로 기울이면 자이로 x 양수, 중력 y 음수">
+        <text x="8" y="16" class="mut" font-size="11">로봇을 마주 본 모습 (로봇의 왼쪽 = 화면 오른쪽)</text>
+        <line x1="40" y1="120" x2="240" y2="120" stroke="var(--line)" stroke-width="2"/>
+        <g transform="translate(130 80) rotate(-18)">
+          <rect x="-55" y="-14" width="110" height="28" rx="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5"/>
+          <line x1="0" y1="0" x2="72" y2="0" stroke="var(--ax-y)" stroke-width="3"/><text x="76" y="4" font-size="12" fill="var(--ax-y)">y (왼)</text>
+          <line x1="0" y1="0" x2="0" y2="-48" stroke="var(--ax-z)" stroke-width="3"/><text x="4" y="-50" font-size="12" fill="var(--ax-z)">z</text>
+        </g>
+        <text x="30" y="40" font-size="12">ω<tspan baseline-shift="sub" font-size="9">x</tspan> &gt; 0</text>
+        <text x="40" y="104" font-size="11" class="mut">오른쪽 내려감</text>
+        <line x1="130" y1="80" x2="130" y2="140" stroke="var(--sim)" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <text x="136" y="146" font-size="11" fill="var(--sim)">아래 → 몸통 기준 오른쪽: g<tspan baseline-shift="sub" font-size="9">y</tspan> &lt; 0</text>
+      </svg>
+      <p class="note">기우는 동안 자이로 x +, 기운 뒤 중력 y −.</p>
+    </div>
+    <div class="card">
+      <h3>+z 축 회전 = 왼쪽으로 돎</h3>
+      <svg viewBox="0 0 260 150" role="img" aria-label="위에서 본 모습: 반시계로 돌면 자이로 z 양수">
+        <text x="8" y="16" class="mut" font-size="11">위에서 본 모습</text>
+        <g transform="translate(130 85) rotate(-25)">
+          <rect x="-40" y="-30" width="80" height="60" rx="6" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.5"/>
+          <line x1="0" y1="0" x2="0" y2="-58" stroke="var(--ax-x)" stroke-width="3"/><text x="4" y="-60" font-size="12" fill="var(--ax-x)">x 앞</text>
+          <line x1="0" y1="0" x2="-58" y2="0" stroke="var(--ax-y)" stroke-width="3"/><text x="-80" y="-4" font-size="12" fill="var(--ax-y)">y 왼</text>
+        </g>
+        <path d="M 196 60 A 70 70 0 0 0 150 22" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M 150 22 l 9 -2 l -4 8 z" fill="var(--ink)"/>
+        <text x="190" y="40" font-size="12">ω<tspan baseline-shift="sub" font-size="9">z</tspan> &gt; 0</text>
+      </svg>
+      <p class="note">중력은 바뀌지 않음. 도는 동안 자이로 z +.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>2. EBIMU 안의 두 좌표계 (데이터시트)</h2>
+  <p>같은 센서가 두 좌표계로 값을 냅니다. 둘 다 오른손 법칙이고, E 는 S 를 x 축으로 180° 돌린 것입니다.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>축</th><th>센서 좌표계 S (자이로·가속도)</th><th>자세 좌표계 E (오일러·쿼터니언)</th></tr></thead>
+    <tbody>
+      <tr><td class="xc">x</td><td>앞</td><td>앞 (같음)</td></tr>
+      <tr><td class="yc">y</td><td>왼쪽</td><td><b>오른쪽</b> (반대)</td></tr>
+      <tr><td class="zc">z</td><td>위 (몸체 위 = +Z)</td><td><b>아래</b> (몸체 위 = −Z), 기준 세계도 z 가 아래</td></tr>
+      <tr><td>앞으로 숙임</td><td>자이로 y +</td><td>pitch −</td></tr>
+      <tr><td>오른쪽 기울임</td><td>자이로 x +</td><td>roll +</td></tr>
+      <tr><td>왼쪽으로 돎</td><td>자이로 z +</td><td>yaw −</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">S 의 x 가 로봇 앞, z 가 위로 붙어 있으면 S = B (시뮬레이션과 같은 축). z 가 위인 것은 수평 가속도로 확인됐고, x 가 앞인지는 손 기울이기로 확인할 일입니다.</p>
+</section>
+
+<section class="section">
+  <h2>3. 정책 입력까지의 흐름</h2>
+  <div class="flow scroll">
+    <svg viewBox="0 0 980 300" role="img" aria-label="시뮬레이션과 실기에서 자이로와 중력이 정책 입력까지 가는 경로">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+      <text x="10" y="26" font-size="14" font-weight="700">시뮬레이션</text>
+      <rect x="10" y="40" width="190" height="56" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="22" y="63" font-size="13">몸통 B 의 IMU</text><text x="22" y="83" font-size="11" class="mut">base_link, 회전 없음</text>
+      <line x1="200" y1="58" x2="420" y2="58" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <text x="230" y="52" font-size="12">각속도 (B)</text>
+      <line x1="200" y1="82" x2="420" y2="82" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <text x="230" y="100" font-size="12">−(위쪽 벡터, B) = 투영 중력</text>
+      <rect x="420" y="40" width="150" height="56" rx="8" fill="var(--panel)" stroke="var(--sim)"/>
+      <text x="432" y="63" font-size="13">정책 입력 0-2</text><text x="432" y="85" font-size="13">정책 입력 3-5</text>
+      <text x="590" y="63" font-size="12" class="mut">이 짝으로 학습함: 숙이면 ω_y +, g_x +</text>
+
+      <text x="10" y="146" font-size="14" font-weight="700">실기 (HUPHY)</text>
+      <rect x="10" y="160" width="190" height="120" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="22" y="183" font-size="13">EBIMU</text>
+      <text x="22" y="210" font-size="12">자이로 (S, 도/초)</text>
+      <text x="22" y="258" font-size="12">쿼터니언 (E)</text>
+      <line x1="200" y1="206" x2="420" y2="206" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <text x="216" y="198" font-size="12">도/초 → rad/s, 축 그대로</text>
+      <line x1="200" y1="254" x2="300" y2="254" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <rect x="300" y="226" width="250" height="56" rx="8" fill="var(--panel)" stroke="var(--pol)"/>
+      <text x="312" y="248" font-size="12">g = Rᵀ (0, 0, −1)  base.py:152</text>
+      <text x="312" y="268" font-size="11" class="mut">가정: 쿼터니언이 S 축, 세계 z 가 위</text>
+      <line x1="550" y1="254" x2="620" y2="254" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <rect x="420" y="180" width="150" height="40" rx="8" fill="var(--panel)" stroke="var(--ok)"/>
+      <text x="432" y="205" font-size="13">정책 입력 0-2</text>
+      <rect x="620" y="232" width="150" height="40" rx="8" fill="var(--panel)" stroke="var(--bad)"/>
+      <text x="632" y="257" font-size="13">정책 입력 3-5</text>
+      <text x="590" y="205" font-size="12" class="ok">✓ 시뮬레이션과 같음</text>
+      <text x="785" y="250" font-size="12" class="bad">✗ x 만 반대</text>
+      <text x="785" y="268" font-size="11" class="mut">빠진 단계: E → S 변환</text>
+    </svg>
+  </div>
+</section>
+
+<section class="section">
+  <h2>4. 왜 x 하나만 틀리나: 두 번 뒤집힘</h2>
+  <p>앞으로 10° 숙였을 때의 실제 수치입니다. 시뮬레이션이 주는 참값에서 시작합니다.</p>
+  <div class="chips">
+    <div class="chiprow"><div class="lab">① 참 중력, S(=B) 좌표계<small>시뮬레이션이 정책에 주는 값</small></div>
+      <div class="chip">+0.174</div><div class="chip">0</div><div class="chip">−0.985</div></div>
+    <div class="chiprow"><div class="lab">② 같은 벡터를 E 좌표계로<small>E 는 y, z 축이 반대 → y, z 부호 바뀜</small></div>
+      <div class="chip">+0.174</div><div class="chip flip">−0</div><div class="chip flip">+0.985</div></div>
+    <div class="chiprow"><div class="lab">③ HUPHY 식 Rᵀ(0, 0, −1)<small>E 의 세계는 z 가 아래라 (0,0,−1) 은 "위". 아래 대신 위를 계산 → 전체 부호 바뀜</small></div>
+      <div class="chip bad">−0.174</div><div class="chip ok">0</div><div class="chip ok">−0.985</div></div>
+  </div>
+  <p>y, z 는 두 번 뒤집혀 원래대로 돌아오고, x 는 ③ 에서 한 번만 뒤집힙니다. 요 각과 상관없이 늘 이렇게 됩니다 (무작위 자세 10,000 개에서 오차 1.1×10⁻¹⁵). 수평에서 z = −1, 좌우 기울기는 맞게 보이므로 앞뒤로 기울여 봐야만 드러납니다.</p>
+</section>
+
+<section class="section">
+  <h2>5. 정책이 실제로 겪은 것</h2>
+  <ol class="steps">
+    <li>로봇이 앞으로 숙음 → 자이로는 "앞으로 숙는 중" (y +, 맞음), 중력은 "뒤로 젖혀져 있음" (x −, 틀림). 학습 때 본 적 없는 서로 모순된 조합입니다.</li>
+    <li>정책이 중력을 믿고 몸을 앞으로 보내려 하면 실제 숙임이 커집니다. 시뮬레이션에서 중력 x 만 뒤집으면 게인 1.0 에서도 2.2 초 안에 8/8 이 넘어졌습니다.</li>
+    <li>실기 로그 시작값: 정책이 받은 중력 x = +0.06~+0.12 ("앞으로 3.5~7° 숙임"). 부호를 바로잡으면 실제로는 <b>뒤로 3.5~7° 젖혀진</b> 상태였습니다.</li>
+    <li>HUPHY 자체 검사 함수(<code>tools/imu_viewer.py</code> 의 <code>analyze</code>)를 실기 로그 6 개에 그대로 돌리면 6 개 모두 "자이로 y, z 가 중력과 반대" 로 판정합니다. 자이로 y·z 반대와 중력 x 반대는 같은 현상을 두 가지로 적은 것입니다.</li>
+  </ol>
+  <h3>손 기울이기 확인 (모터 끔)</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>동작</th><th>시뮬레이션 기준: 중력 (정지 후)</th><th>시뮬레이션 기준: 자이로 (움직이는 동안)</th><th>지금 HUPHY 의 중력</th></tr></thead>
+    <tbody>
+      <tr><td>앞으로 숙임</td><td class="num">x &gt; 0</td><td class="num">y &gt; 0</td><td class="num flag">x &lt; 0</td></tr>
+      <tr><td>뒤로 젖힘</td><td class="num">x &lt; 0</td><td class="num">y &lt; 0</td><td class="num flag">x &gt; 0</td></tr>
+      <tr><td>오른쪽으로 기울임</td><td class="num">y &lt; 0</td><td class="num">x &gt; 0</td><td class="num good">y &lt; 0</td></tr>
+      <tr><td>왼쪽으로 기울임</td><td class="num">y &gt; 0</td><td class="num">x &lt; 0</td><td class="num good">y &gt; 0</td></tr>
+      <tr><td>왼쪽으로 돎</td><td class="num">변화 없음</td><td class="num">z &gt; 0</td><td class="num good">변화 없음</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">수정 후 첫 두 줄의 중력 x 가 시뮬레이션 기준과 같아지고 자이로가 표대로 나오면, 센서 x 가 몸통 앞을 향해 붙어 있다는 것까지 함께 확인됩니다. 근거 문서: <code>docs/sim2real/2026-10-13_sim2real_gap_analysis.md</code> §4.</p>
+</section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+const D=Math.PI/180;
+// ---- 3x3 math (row-major) -------------------------------------------------
+const Rx=a=>[[1,0,0],[0,Math.cos(a),-Math.sin(a)],[0,Math.sin(a),Math.cos(a)]];
+const Ry=a=>[[Math.cos(a),0,Math.sin(a)],[0,1,0],[-Math.sin(a),0,Math.cos(a)]];
+const Rz=a=>[[Math.cos(a),-Math.sin(a),0],[Math.sin(a),Math.cos(a),0],[0,0,1]];
+const mul=(A,B)=>A.map((r,i)=>[0,1,2].map(j=>r[0]*B[0][j]+r[1]*B[1][j]+r[2]*B[2][j]));
+const T=A=>[0,1,2].map(i=>[0,1,2].map(j=>A[j][i]));
+const ap=(A,v)=>A.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]);
+const X180=Rx(Math.PI);
+function quat(R){ // (w,x,y,z), w >= 0
+  const t=R[0][0]+R[1][1]+R[2][2]; let w,x,y,z;
+  if(t>0){const s=Math.sqrt(t+1)*2;w=.25*s;x=(R[2][1]-R[1][2])/s;y=(R[0][2]-R[2][0])/s;z=(R[1][0]-R[0][1])/s}
+  else if(R[0][0]>R[1][1]&&R[0][0]>R[2][2]){const s=Math.sqrt(1+R[0][0]-R[1][1]-R[2][2])*2;w=(R[2][1]-R[1][2])/s;x=.25*s;y=(R[0][1]+R[1][0])/s;z=(R[0][2]+R[2][0])/s}
+  else if(R[1][1]>R[2][2]){const s=Math.sqrt(1+R[1][1]-R[0][0]-R[2][2])*2;w=(R[0][2]-R[2][0])/s;x=(R[0][1]+R[1][0])/s;y=.25*s;z=(R[1][2]+R[2][1])/s}
+  else{const s=Math.sqrt(1+R[2][2]-R[0][0]-R[1][1])*2;w=(R[1][0]-R[0][1])/s;x=(R[0][2]+R[2][0])/s;y=(R[1][2]+R[2][1])/s;z=.25*s}
+  if(w<0){w=-w;x=-x;y=-y;z=-z} return [w,x,y,z];
+}
+const huphy=([w,x,y,z])=>[2*(w*y-x*z),-2*(y*z+w*x),2*(x*x+y*y)-1]; // HUPHY sensors/base.py gravity_from_quat
+const eul=R=>[Math.atan2(R[2][1],R[2][2]),Math.asin(Math.max(-1,Math.min(1,-R[2][0]))),Math.atan2(R[1][0],R[0][0])];
+// body pose: yaw about z, then nose-down pitch about body y, then right-down roll about body x
+const bodyR=(p,r,y)=>mul(Rz(y*D),mul(Ry(p*D),Rx(r*D)));
+
+// ---- three.js scene (z up, robot world: x forward, y left) --------------
+const stage=document.getElementById('stage');
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(38,4/3,.05,50);
+cam.up.set(0,0,1); cam.position.set(1.15,-2.1,1.0);
+const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.target.set(0,0,.05); ctl.enableDamping=true; ctl.update();
+scene.add(new THREE.HemisphereLight(0xffffff,0x667788,1.0));
+const dl=new THREE.DirectionalLight(0xffffff,.6); dl.position.set(2,-3,4); scene.add(dl);
+const floorGrid=new THREE.GridHelper(3,12); floorGrid.rotation.x=Math.PI/2; floorGrid.position.z=-.75; scene.add(floorGrid);
+
+function label(text,color,size){
+  const c=document.createElement('canvas'); c.width=256;c.height=64; const g=c.getContext('2d');
+  g.font='600 34px "JetBrains Mono", monospace'; g.fillStyle=color; g.textBaseline='middle'; g.fillText(text,6,32);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false,transparent:true}));
+  s.scale.set((size||.22)*4,(size||.22),1); s.center.set(0,.5); return s;
+}
+function axisLine(dir,color,len,dashed,text){
+  const g=new THREE.Group();
+  const pts=[new THREE.Vector3(0,0,0),new THREE.Vector3(...dir).multiplyScalar(len)];
+  const geo=new THREE.BufferGeometry().setFromPoints(pts);
+  const mat=dashed?new THREE.LineDashedMaterial({color,dashSize:.04,gapSize:.03,linewidth:2}):new THREE.LineBasicMaterial({color,linewidth:2});
+  const ln=new THREE.Line(geo,mat); if(dashed) ln.computeLineDistances(); g.add(ln);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(.025,.07,12),new THREE.MeshBasicMaterial({color}));
+  cone.position.copy(pts[1]); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...dir)); g.add(cone);
+  const l=label(text,'#'+new THREE.Color(color).getHexString(),.11); l.position.copy(pts[1]).multiplyScalar(1.08); g.add(l);
+  return g;
+}
+let colors={};
+function readColors(){colors={x:css('--ax-x'),y:css('--ax-y'),z:css('--ax-z'),sim:css('--sim'),pol:css('--pol'),ink:css('--ink')}}
+readColors();
+
+const robot=new THREE.Group(); scene.add(robot);
+const bodyMat=new THREE.MeshStandardMaterial({color:0xb9c3cf,roughness:.6,metalness:.1});
+const pelvis=new THREE.Mesh(new THREE.BoxGeometry(.26,.36,.14),bodyMat); robot.add(pelvis);
+const nose=new THREE.Mesh(new THREE.ConeGeometry(.05,.12,16),new THREE.MeshStandardMaterial({color:0x445566}));
+nose.rotation.z=-Math.PI/2; nose.position.set(.19,0,0); robot.add(nose);
+[.11,-.11].forEach(y=>{const leg=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,.5),bodyMat); leg.position.set(0,y,-.32); robot.add(leg);
+  const foot=new THREE.Mesh(new THREE.BoxGeometry(.2,.09,.03),bodyMat); foot.position.set(.04,y,-.58); robot.add(foot);});
+const frameS=new THREE.Group(), frameE=new THREE.Group(); robot.add(frameS); robot.add(frameE);
+const ghost=new THREE.Group(); scene.add(ghost);
+const gm=new THREE.MeshBasicMaterial({color:0xc2185b,transparent:true,opacity:.22,depthWrite:false});
+ghost.add(new THREE.Mesh(new THREE.BoxGeometry(.26,.36,.14),gm));
+const gn=new THREE.Mesh(new THREE.ConeGeometry(.05,.12,16),gm); gn.rotation.z=-Math.PI/2; gn.position.set(.19,0,0); ghost.add(gn);
+[.11,-.11].forEach(y=>{const leg=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,.5),gm); leg.position.set(0,y,-.32); ghost.add(leg);});
+let arrSim,arrPol,arrW,lblSim,lblPol;
+function buildArrows(){
+  frameS.clear(); frameE.clear();
+  frameS.add(axisLine([1,0,0],colors.x,.42,false,'x S')); frameS.add(axisLine([0,1,0],colors.y,.42,false,'y S')); frameS.add(axisLine([0,0,1],colors.z,.42,false,'z S'));
+  frameE.add(axisLine([1,0,0],colors.x,.3,true,'x E')); frameE.add(axisLine([0,-1,0],colors.y,.3,true,'y E')); frameE.add(axisLine([0,0,-1],colors.z,.3,true,'z E'));
+  [arrSim,arrPol,arrW,lblSim,lblPol].forEach(o=>o&&scene.remove(o));
+  arrSim=new THREE.ArrowHelper(new THREE.Vector3(0,0,-1),new THREE.Vector3(0,0,0),.7,new THREE.Color(colors.sim).getHex(),.08,.05);
+  arrPol=new THREE.ArrowHelper(new THREE.Vector3(0,0,-1),new THREE.Vector3(0,0,0),.7,new THREE.Color(colors.pol).getHex(),.08,.05);
+  arrW=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(0,0,0),.01,new THREE.Color(colors.ink).getHex(),.07,.05);
+  lblSim=label('sim g',colors.sim,.1); lblPol=label('HUPHY g',colors.pol,.1);
+  [arrSim,arrPol,arrW,lblSim,lblPol].forEach(o=>scene.add(o));
+  gm.color.set(colors.pol);
+}
+buildArrows();
+const mq=window.matchMedia('(prefers-color-scheme: dark)');
+const retheme=()=>{readColors();buildArrows();update()};
+mq.addEventListener&&mq.addEventListener('change',retheme);
+new MutationObserver(retheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+function setMat(obj,R){const m=new THREE.Matrix4().set(R[0][0],R[0][1],R[0][2],0,R[1][0],R[1][1],R[1][2],0,R[2][0],R[2][1],R[2][2],0,0,0,0,1); obj.quaternion.setFromRotationMatrix(m)}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(stage); resize();
+
+// ---- state ------------------------------------------------------------------
+const el=id=>document.getElementById(id);
+const S={p:0,r:0,y:0}; let omega=[0,0,0]; let prevR=bodyR(0,0,0); let lastT=performance.now(); let anim=null;
+const f3=v=>(Math.abs(v)<5e-4?0:v).toFixed(3).replace('-','−');
+function setCells(prefix,v,ref){v.forEach((x,i)=>{const c=el(prefix+i); c.textContent=f3(x); if(ref){c.classList.toggle('flag',Math.abs(x-ref[i])>2e-3)}})}
+function update(){
+  const R=bodyR(S.p,S.r,S.y); setMat(robot,R);
+  const gSim=ap(T(R),[0,0,-1]);
+  const RE=mul(X180,mul(R,X180)); const q=quat(RE); const h=huphy(q); const e=eul(RE);
+  setCells('ss',gSim); setCells('hp',h,gSim); setCells('gs',omega); setCells('gr',omega,omega);
+  ['q0','q1','q2','q3'].forEach((id,i)=>el(id).textContent=f3(q[i]));
+  e.forEach((v,i)=>el('e'+i).textContent=(v/D).toFixed(1).replace('-','−'));
+  el('pitchV').textContent=S.p+'°'; el('rollV').textContent=S.r+'°'; el('yawV').textContent=S.y+'°';
+  // arrows in the world: true down, and HUPHY's body-frame value rotated back to the world
+  arrSim.setDirection(new THREE.Vector3(0,0,-1)); lblSim.position.set(.02,-.03,-.74);
+  const hw=ap(R,h); arrPol.setDirection(new THREE.Vector3(...hw).normalize()); lblPol.position.set(hw[0]*.78,hw[1]*.78,hw[2]*.78-.04);
+  // the pose the policy believes: same yaw, pitch/roll recovered from HUPHY's gravity
+  const pb=Math.asin(Math.max(-1,Math.min(1,h[0]))), rb=Math.atan2(-h[1],-h[2]);
+  setMat(ghost,mul(Rz(S.y*D),mul(Ry(pb),Rx(rb)))); ghost.visible=el('tG').checked;
+  const ow=ap(R,omega), on=Math.hypot(...ow);
+  arrW.visible=on>1e-3; if(on>1e-3){arrW.setDirection(new THREE.Vector3(...ow).normalize()); arrW.setLength(.25+.3*Math.min(on,1.5),.07,.05)}
+  frameS.visible=el('tS').checked; frameE.visible=el('tE').checked;
+}
+['pitch','roll','yaw'].forEach(k=>el(k).addEventListener('input',ev=>{anim=null;S[{pitch:'p',roll:'r',yaw:'y'}[k]]=+ev.target.value}));
+['tS','tE','tG'].forEach(k=>el(k).addEventListener('change',update));
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{
+  const [p,r,y]=b.dataset.go.split(',');
+  const to={p:p==='keep'?S.p:+p, r:r==='keep'?S.r:+r, y:y==='keep'?S.y:(y.startsWith('+')?Math.max(-180,Math.min(180,S.y+ +y.slice(1))):+y)};
+  anim={from:{...S},to,t0:performance.now(),dur:reduce?1:1400};
+}));
+function tick(now){
+  const dt=Math.max(1e-3,(now-lastT)/1000); lastT=now;
+  if(anim){const u=Math.min(1,(now-anim.t0)/anim.dur), s=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    ['p','r','y'].forEach(k=>S[k]=Math.round((anim.from[k]+(anim.to[k]-anim.from[k])*s)*10)/10);
+    el('pitch').value=S.p; el('roll').value=S.r; el('yaw').value=S.y; if(u>=1) anim=null;}
+  const R=bodyR(S.p,S.r,S.y);
+  // body angular velocity from the change in orientation: skew(Rprev^T R) / dt
+  const Rd=mul(T(prevR),R); omega=[(Rd[2][1]-Rd[1][2])/2/dt,(Rd[0][2]-Rd[2][0])/2/dt,(Rd[1][0]-Rd[0][1])/2/dt];
+  prevR=R; update(); ctl.update(); renderer.render(scene,cam); requestAnimationFrame(tick);
+}
+S.p=10; el('pitch').value=10; prevR=bodyR(S.p,S.r,S.y); update(); requestAnimationFrame(tick);
+})();
+</script>
