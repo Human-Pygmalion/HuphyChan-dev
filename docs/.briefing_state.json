@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "험지 정체 종료 비교 학습 넷째 시도 진행 중 (원격 3090, 10:32 기준 정체 종료 없음 2,100회 · 있음 2,000회 / 3,000회)",
-  "detail": "처음 세 번은 시뮬레이션 결함으로 실패해 고쳤습니다(위 항목). 학습은 이 PC가 아니라 원격 그래픽카드 기계에서 돌기 때문에 이 PC에는 학습 프로그램이 보이지 않습니다. 남은 약 1,000회는 약 1.5시간. 끝나면 미리 정한 네 기준(험지 단계, 정체가 줄었는지, 명령 추종, 산길 182 m)으로 판정합니다. 비교노트 2026-10-10_ab_rough_stagnation_compare",
-  "since": "2026-10-10 10:33"
+  "title": "실기 로그 심층 분석 끝 (docs/sim2real/2026-10-13_sim2real_gap_analysis.md). ① 통신·타이밍(관절 관측 1주기 지연, 39~40 Hz, 가드, 유실 2%)은 게인 1.0 sim 에서 8/8 서기, 영향 없음 ② 0.05~0.1 배율은 sim 에서도 바닥 0.5~0.7초 낙상, 크레인 내리며 실기와 같은 크기 흔들림(행동 p99 5~6.5 대 실기 6~8) — 배율 0.8 미만은 정책 학습 범위 밖 ③ IMU 중력 x 부호 반전: HUPHY protocol.py 쿼터니언 순서 (z,y,x,w) 가 원인(docs/151 가속도계 대조·순서 오독 계산·로그 dg/dt 모순 세 증거 일치), sim 게인 1.0 에서도 2.2초 낙상 8/8. 권고: 순서 수정+손 기울이기 확인 → 배율 1.0 크레인 지지로 시작(sim 8/8 서기)",
+  "detail": "",
+  "since": "2026-10-13 21:45"
  },
  "items": {
   "shouldermesh": {
@@ -1394,67 +1394,6 @@
    "section": "실물 준비",
    "changed": "2026-09-21 13:06"
   },
-  "v10-heartbeat-0229": {
-   "id": "v10-heartbeat-0229",
-   "created": "2026-09-26 02:30",
-   "title": "A/B v10 정기 점검 (00:27) — v10a 학습 중, v10b 완주",
-   "finding": "v10a 가 2단계 학습 중이고 v10b 는 2026-09-26 23:16 에 완주해 최종 측정 중입니다. v10a 최종 상자 하중·전환 측정도 끝났습니다 — 모터 사이징은 두 팔 모두 통과, 지면 반력·전환 성능은 두 팔이 같음. L1 항은 하중 설계값에 영향이 없습니다. 영상 2종 완료, 설계선도·3차원 힘 그림 작성 중.",
-   "number": "v10a: P2 29998 / 29998 회 · 무작위화 세기 1.0 · v10b: P2 29998 / 29998 회 · 무작위화 세기 1.0",
-   "section": "done",
-   "changed": "2026-09-28 00:27",
-   "collapsed": true
-  },
-  "v10a-p2-start": {
-   "id": "v10a-p2-start",
-   "created": "2026-09-26 18:01",
-   "title": "v10a 2 단계 시작 — 런처가 한 번 죽었다가 다시 붙음, 디스크 여유 60 GB 경고",
-   "finding": "대조 팔 v10a 가 17:41 에 1 단계를 15,999 회 상한으로 마쳤습니다(강제 승급 1 회, 넘어짐 0). 2 단계 학습은 정상으로 떴는데, 런처가 새 학습 폴더를 90 초 안에 못 봐서(공유 저장소 목록 캐시) 스스로 죽었습니다. 학습은 계속 돌았고, 같은 인자로 런처를 다시 불러 이미 도는 학습에 붙였습니다(학습 프로그램 1 개 유지 확인). 재현용 기록은 실행 중인 학습 프로그램의 환경변수·명령줄에서 다시 만들었고, 런처의 대기 시간은 300 초로 늘렸습니다. 따로 경고: 공유 저장소 여유가 하루 만에 114→60 GB 로 줄었는데 우리 저장소에서 새로 생긴 큰 파일은 없습니다 — 같은 볼륨의 다른 곳이 먹고 있고, 이 속도면 약 하루 뒤 가득 찹니다(할 일 #46, NAS 관리 화면 확인은 사람이 해야 함).",
-   "number": "v10a P1 끝 15,999 · P2 16,099 회(무작위화 0.01) · v10b P2 약 25,000 회 · 디스크 여유 60 GB (전날 114 GB)",
-   "needs": "디스크: NAS(DSM)에서 볼륨을 채우는 다른 공유폴더·스냅샷 확인 — 하루 약 54 GB 감소",
-   "section": "done",
-   "changed": "2026-09-26 18:01",
-   "collapsed": true
-  },
-  "v10b-complete-0926": {
-   "id": "v10b-complete-0926",
-   "created": "2026-09-26 23:38",
-   "title": "v10b 완주 측정 — 서기 v7 수준, 회전 계보 최고",
-   "finding": "v10b(서 있는 환경 0.1 + 서기 전용 L1 편차 항)가 23:16 에 29,998 회로 완주했습니다. 보상 116.6, 넘어짐 0, 배포 계약 통과. 완주 측정에서 서기는 v7 과 같습니다: 자세추종 0.90, 발 뗀 시간 1.2 퍼센트, 27초 동안 0.39 미터 흘러감. 서 있는 환경을 3분의 1로 줄이고도 서기를 지킨 것이고, 걱정했던 떨림도 없습니다. 제자리 회전 중앙값은 60.6 퍼센트로 이 계보에서 가장 높지만, 작은 회전 명령은 거의 못 따라가고 한 칸은 반대로 돕니다. 이것만으로는 L1 항 덕분인지 서 있는 비율 0.1 덕분인지 가를 수 없어서, 대조군 v10a 가 끝나면(약 28일 01:30) 같은 측정으로 판정합니다. 원격에서 최종 상자 하중 측정과 명령 전환 측정이 돌고 있습니다.",
-   "number": "서기 자세추종 0.901 (v7 0.903) · 발 뗀 1.2 % · 회전 중앙값 60.6 % (v7 46.1 %) · 좌우 비틀기 차이 8.6 % (v7 25.5 %)",
-   "section": "done",
-   "changed": "2026-09-26 23:38",
-   "collapsed": true
-  },
-  "v10b-loads-0927": {
-   "id": "v10b-loads-0927",
-   "created": "2026-09-27 02:03",
-   "title": "v10b 전 명령상자 하중 — 모터 전부 통과, 무릎 속도만 주의",
-   "finding": "v10b 최종 정책을 학습한 명령 상자 전체에서 명령마다 15초씩, 밀기 없이 한 번과 4초마다 밀면서 한 번 측정했습니다. 모터 12개 모두 사이징 기준(실효 토크는 정격 이하, 상위 1퍼센트 토크는 순시 정격 이하)을 통과합니다. 가장 빡빡한 곳은 v7 과 같이 엉덩이 좌우 관절의 발열(정격의 68~70 퍼센트, 정상상태 81~84 도)입니다. 정격을 넘은 순간값은 전부 시뮬레이터가 토크를 자른 값 그대로이고 길어야 0.06초입니다. 하나 주의할 것은 무릎 속도입니다. 가장 빠른 순간이 초당 21.6 라디안인데 실제 모터의 무부하 최고속도는 19.9 라디안이라, 실물에서는 그 순간 토크를 낼 수 없습니다. 드물지만(0.05 퍼센트) v7 도 같습니다. 명령 추종은 v7 보다 세 축 모두 좋아서 앞뒤 95, 옆 69, 회전 61 퍼센트입니다. 영상 두 개는 원격에서 렌더 중입니다.",
-   "number": "hip_roll 열 68~70 % · hip_yaw 순시 68~71 % · 무릎 peak 21.6 > 19.9 rad/s · 추종 95/69/61 % (v7 82/55/7 %)",
-   "section": "done",
-   "changed": "2026-09-27 02:03",
-   "collapsed": true
-  },
-  "v10-p2-verdict-0927": {
-   "id": "v10-p2-verdict-0927",
-   "created": "2026-09-27 21:51",
-   "title": "A/B v10 판정 — 서기 전용 L1 항은 필요 없었다, 대조군이 회전 기준 첫 통과",
-   "finding": "두 팔을 같은 씨앗으로 나란히 쟀습니다. 서기 전용 L1 항을 넣은 v10b 는 관절을 기준자세에 더 붙여 놓지만(씨앗 8개 모두, 자세추종 보상 0.845 대 0.901), 이것은 그 항이 학습 중에 직접 줄이는 양이라 당연한 결과입니다. 실제 서 있는 행동인 흘러간 거리, 발 드는 횟수, 몸통 높이 흔들림은 두 팔이 잡음 범위 안에서 같습니다. 즉 발바닥을 평평하게 고친 뒤에는 서 있는 비율 0.1 만으로도 서기가 v7 수준이고, L1 항은 필요 없었습니다. 더 큰 차이는 회전입니다. 대조군 v10a 가 제자리 회전 중앙값 91 퍼센트, 반대로 도는 명령 0 개로 이 계보에서 처음으로 회전 기준을 통과했습니다. v7 과의 차이가 서 있는 비율 0.3 대 0.1 하나뿐이라, 서 있는 환경을 늘린 것이 회전을 깎아 왔을 가능성이 큽니다(단일 쌍이라 가설). 다음 기본 설정은 v10a 입니다. 하중과 영상 측정은 원격에서 이어서 돌고 있습니다.",
-   "number": "자세추종 0.845 대 0.901 (8/8) · 흘러감 0.41 대 0.39 m (t −1.0) · 회전 91.2 % 대 60.6 % · v7 46.1 %",
-   "section": "done",
-   "changed": "2026-09-27 21:51",
-   "collapsed": true
-  },
-  "v10-complete-0928": {
-   "id": "v10-complete-0928",
-   "created": "2026-09-28 00:32",
-   "title": "A/B v10 두 팔 노트 모두 완료 — 다음 기본 설정은 v10a",
-   "finding": "두 팔(서 있는 비율 0.1 대조군 v10a, 여기에 서기 전용 L1 항을 더한 v10b)의 측정과 노트가 전부 끝났습니다. 서기 행동은 두 팔이 같고, 회전은 v10a 가 91 퍼센트로 계보 처음 기준 통과, 모터 하중은 두 팔 모두 사이징 통과이며 차이가 5 퍼센트 안입니다. 하나 다른 것은 무릎 최고 속도로, v10a 는 밀기 없는 측정에서 실제 모터의 무부하 최고속도 안에 머물렀고 v10b 는 넘었습니다. 다음 학습의 기본 설정은 v10a 로 권합니다.",
-   "number": "회전 91 % 대 61 % · 서기 흘러감 0.41 대 0.39 m · hip_roll 열 70 대 68 % · 무릎 peak 19.1 대 21.6 rad/s",
-   "section": "done",
-   "changed": "2026-09-28 00:32",
-   "collapsed": true
-  },
   "local-gpu-missing-1001": {
    "id": "local-gpu-missing-1001",
    "created": "2026-10-01 15:58",
@@ -1530,7 +1469,8 @@
    "finding": "Windows 쪽 보조 세션이 사용 한도로 끊긴 지점(인수인계 문서 요청)을 대화 기록에서 복구해 문서로 정리했습니다. 어느 기계에서 무엇을 돌리는지, Isaac 창고 데모와 RViz 그림을 다시 만드는 순서, 진짜와 그림용의 구분, 남은 일(진짜 지도·경로 계획, 라이다 기울기 확인 등)을 한 장에 모았습니다.",
    "number": "산출물: 영상 1, 기사용 그림 2, 포스터용 근접 그림 1 · 남은 일 10 건",
    "section": "done",
-   "changed": "2026-10-08 13:51"
+   "changed": "2026-10-08 13:51",
+   "collapsed": true
   },
   "trail-teleop": {
    "id": "trail-teleop",
@@ -1543,7 +1483,8 @@
     "docs/img/terrain_nav/teleop_browser_view.png"
    ],
    "section": "done",
-   "changed": "2026-10-08 14:59"
+   "changed": "2026-10-08 14:59",
+   "collapsed": true
   },
   "trail-flat": {
    "id": "trail-flat",
@@ -1565,7 +1506,8 @@
     "docs/img/terrain_nav/teleop_lidar_built_map.png"
    ],
    "section": "done",
-   "changed": "2026-10-08 15:11"
+   "changed": "2026-10-08 15:11",
+   "collapsed": true
   },
   "trail-web": {
    "id": "trail-web",
@@ -1578,7 +1520,8 @@
     "docs/img/terrain_nav/teleop_web_lidar_map.png"
    ],
    "section": "done",
-   "changed": "2026-10-08 15:28"
+   "changed": "2026-10-08 15:28",
+   "collapsed": true
   },
   "trail-joystick": {
    "id": "trail-joystick",
@@ -1590,7 +1533,8 @@
     "docs/img/terrain_nav/teleop_web_joystick.png"
    ],
    "section": "done",
-   "changed": "2026-10-08 15:49"
+   "changed": "2026-10-08 15:49",
+   "collapsed": true
   },
   "trail-video": {
    "id": "trail-video",
@@ -1603,7 +1547,8 @@
     "docs/img/terrain_nav/bg_variants/overview_backgrounds.jpg"
    ],
    "section": "done",
-   "changed": "2026-10-08 22:14"
+   "changed": "2026-10-08 22:14",
+   "collapsed": true
   },
   "rough-stag-attempts": {
    "id": "rough-stag-attempts",
@@ -1623,6 +1568,88 @@
    "number": "험지 단계 A 5.55 / B 5.43 · 산길 8 조건 모두 완주 · 정체 종료 0.7/회 · 물리 폭주 백만 걸음당 2 번",
    "section": "done",
    "changed": "2026-10-10 12:08"
+  },
+  "audit-rough-main": {
+   "id": "audit-rough-main",
+   "created": "2026-10-12 19:28",
+   "title": "최신 정책 감사 문서 + 배포 꾸러미 완료",
+   "finding": "감사 문서(영어 ASD-STE100 + RL·mjlab 독자용 한글판): 학습 환경·stock mjlab 수정·커리큘럼·무작위화·로봇 모델·관절별 Kp/Kd, 지적 20건(High 3: 실기 게인이 학습 게인의 1/15~1/22, 영점 무작위화 ±0.86° 대 실측 9.4°, 지연·IMU·모터 무작위화 없음). 배포 꾸러미 pyg_rough_main_v11a: 학습 코드와 배포 코드의 관측·출력·관절 목표각을 1,050걸음 비교, 최대 차이 목표각 4.8e-6 rad로 통과",
+   "number": "finding 20 (High 3); I/O 검증 최대 차이 1.9e-5",
+   "media": [
+    "docs/audit/2026-10-12_rough_box_main_v11a/README_ko.md",
+    "deploy_asset/pyg_rough_main_v11a/README.md"
+   ],
+   "section": "done",
+   "changed": "2026-10-12 19:28"
+  },
+  "viser-action-scale": {
+   "id": "viser-action-scale",
+   "created": "2026-10-12 22:18",
+   "title": "viser viewer: Action scale slider (multiplies motor Kp and Kd)",
+   "why": "User asked to soften the simulated/real motor controller live without reloading",
+   "finding": "Slider 0.05-1.0 step 0.05 in the Policy panel; torque = clip(s*Kp*(target-q) - s*Kd*qdot) then the usual effort and torque-speed clamps; at s=1.0 torques are bit-identical to before; at s=0.5 the PD part is exactly half (5 new tests pass). Driven in a real browser on the trail viewer: typed 0.30, readout showed knee Kp 220 to 66, Kd 6 to 1.8, the robot kept running (and collapsed, as expected at 30 percent gains).",
+   "number": "5/5 new tests pass; 36 older failures are identical before and after (stale local cache)",
+   "section": "done",
+   "changed": "2026-10-12 22:18"
+  },
+  "viser-terrain-choice": {
+   "id": "viser-terrain-choice",
+   "created": "2026-10-12 22:38",
+   "title": "viser viewer: Terrain dropdown (rough trail / flat)",
+   "why": "User asked to pick the rough mountain trail or flat ground in the same viewer, live",
+   "finding": "Dropdown 'Terrain' in the Policy panel. Flat levels the trail heightfield to z=0 and turns the tree trunks off, then resets the robot standing; policy, mode and Action scale are kept. Lifting the floor plane (first idea) failed: moving a static geom at run time keeps its old collision box, the robot sank 0.90 to 0.15 m in 3 s. Browser check at vx 0.6 on flat: base height min 0.881 m, x 7.4 to 13.5 over 10 s; back to rough: stands at 0.897 m on the trail.",
+   "number": "3 new tests + 5 gain-scale tests pass on the trail model",
+   "section": "done",
+   "changed": "2026-10-12 22:38"
+  },
+  "foot-sole-survey": {
+   "id": "foot-sole-survey",
+   "created": "2026-10-13 09:32",
+   "title": "휴머노이드 발바닥 설계 서베이 (QDD 계열 최신 로봇)",
+   "finding": "QDD 계열 연구용 휴머노이드의 발은 대부분 단단한 판 위에 얇은 탄성 층을 얹는 단순한 구조다. 재질까지 공개된 것은 AGILOped(발포 TPU), Digit(Vibram 밑창), Atlas(신발형 밑창), EcoWalker-2(2 mm 실리콘)뿐이고 Unitree·Figure·Tesla 는 발바닥 재질 공개 자료를 찾지 못했다. Huphy 는 알루미늄 판 위에 교체형 얇은 고무 밑창부터 붙이고 마찰 범위를 실측으로 맞추는 것을 제안한다(검증 전).",
+   "number": "조사 로봇 10종, 논문·특허 12건 직접 확인; Huphy 발 260x115 mm, 마찰 랜덤화 0.3~1.2 (Berkeley 0.2~1.25, G1 0.1~1.25)",
+   "media": [
+    "docs/img/foot_survey/f01_agiloped_foot_fig3.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-13 09:32"
+  },
+  "battery-bms": {
+   "id": "battery-bms",
+   "created": "2026-10-13 10:24",
+   "title": "전신 배터리·BMS 설계: 저항 해석 정정",
+   "why": "동종 로봇 배터리·소비전력 조사(docs/164)와 기존 raw/robstride-datasheet 노트를 대조",
+   "finding": "서 있기만 해도 걷기 전력의 약 80%를 먹어(무릎이 체중을 받치는 전류 열손실) 런타임은 시간에 비례. 평지 2시간+험지 1시간은 최소 수준에서만 한 팩으로 가능, 여유(+25%)를 두면 약 24kg이라 비현실적. 걷는 동안 배터리로 되돌아오는 전류는 없고, 넘어질 때만 최대 약 5kW가 역류하므로 BMS가 아니라 제동 저항(초퍼)이 먼저 받아야 함",
+   "number": "최소 13S9P(21700 P42A) 1.77kWh·11.9kg·순간 약 130A / 평지 0.8m/s 2시간만이면 13S7P 1.64kWh·9.1kg / 토크 30% 감소 시 권장 팩 15→7kg / 모터 저항 해석에 따라 전력 약 2배 불확실",
+   "media": [
+    "docs/img/battery/fig3_mass_spiral.png"
+   ],
+   "section": "correct",
+   "changed": "2026-10-13 11:01",
+   "was": "모터 저항이 상저항인지 단자 간인지 불명이라 전력이 2배 불확실하다고 적음",
+   "now_": "기존 노트가 이미 단자 간(line) 저항으로 정리했고, 동종 로봇 12종과 비교해도 중심 모델이 맞다(보수 모델은 비현실적). 우리 전력은 동종의 1.3~2배라는 점이 진짜 불확실성"
+  },
+  "battery-peer": {
+   "id": "battery-peer",
+   "created": "2026-10-13 11:25",
+   "title": "배터리 설계 동종 비교·시각화",
+   "why": "우리 배터리·전력 계산이 다른 휴머노이드와 비교해 타당한지 확인",
+   "finding": "전압(13S)과 팩 크기(Minimum)는 동종과 맞음. 서 있을 때 전력은 동종의 약 2배, 걸을 때 1.3~2배라 효율 개선 여지가 큼. 제동 초퍼는 Robstride 제동 모듈로 시작 가능, 전원 보드 기본 ON(64 V)은 모터 한계(60 V)보다 높아 55 V로 낮춰야 함",
+   "number": "35 Wh/kg(우리 Minimum) vs 12~41(동종) / 9.3 W/kg 서기 vs 1.8~4.6 / 운반비 1.65~1.9 vs Cassie 0.7",
+   "media": [
+    "docs/img/battery/fig5_peer_power.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-13 11:25"
+  },
+  "battery-inquiry": {
+   "id": "battery-inquiry",
+   "created": "2026-10-13 14:06",
+   "title": "배터리 업체 문의서 작성",
+   "why": "배터리 제작사에 모터·부하·공간 정보를 한 장으로 전달해 팩 질량·크기를 받기 위해",
+   "finding": "모터 19개(RS04 7, RS03 12), 배터리 제외 39.2 kg, 시뮬레이션 버스 전류(서기·걷기·험지·낙하)와 요구 사양을 정리. 토르소 내부 공간은 CAD 서버가 꺼져 있어 미확정",
+   "section": "done",
+   "changed": "2026-10-13 14:06"
   }
  },
  "order": [
@@ -1752,12 +1779,6 @@
   "robot-can-silent",
   "v9-caps-p2",
   "can-adapter-cornered",
-  "v10-heartbeat-0229",
-  "v10a-p2-start",
-  "v10b-complete-0926",
-  "v10b-loads-0927",
-  "v10-p2-verdict-0927",
-  "v10-complete-0928",
   "local-gpu-missing-1001",
   "v11-heartbeat",
   "model-split-1002",
@@ -1772,7 +1793,14 @@
   "trail-joystick",
   "trail-video",
   "rough-stag-attempts",
-  "rough-stag-ab"
+  "rough-stag-ab",
+  "audit-rough-main",
+  "viser-action-scale",
+  "viser-terrain-choice",
+  "foot-sole-survey",
+  "battery-bms",
+  "battery-peer",
+  "battery-inquiry"
  ],
- "updated": "2026-10-10 12:08"
+ "updated": "2026-10-13 21:45"
 }
