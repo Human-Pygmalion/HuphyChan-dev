@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "sim pelvis(IMU) x·y·z 축 기울임 기준표 취득: docs/sim2real/data/2026-10-14_sim_imu_tilt_table.csv (±5~30°, 투영 중력·자이로·자세각 + EBIMU 예상 출력·HUPHY 예상 중력). y축 +20°(앞으로 숙임) → sim 중력 x +0.342, EBIMU pitch −20°, HUPHY 중력 x −0.342",
+  "title": "sim pelvis(IMU) x·y·z 기울임 영상: docs/video/2026-10-14_sim_imu_tilt_xyz.mp4 (31.5 s, 30 fps 실시간, 20°/s, 축별 정면·측면·위 시점, 반투명 로봇 + 몸통 축·참 중력·HUPHY 예상 중력 화살표, 오른쪽에 투영 중력·자이로·자세각, 반대 부호 빨간 표시)",
   "detail": "",
-  "since": "2026-10-14 12:03"
+  "since": "2026-10-14 12:10"
  },
  "items": {
   "shouldermesh": {
@@ -1802,5 +1802,5 @@
   "battery-peer",
   "battery-inquiry"
  ],
- "updated": "2026-10-14 12:03"
+ "updated": "2026-10-14 12:10"
 }
