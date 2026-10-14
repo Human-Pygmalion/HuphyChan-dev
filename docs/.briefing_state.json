@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "DR 참고자료(docs/sim2real/2026-10-14_dr_reference_latency_imu.md: 실측→mjlab 항목→권장 범위, 관절관측 지연 0~1·명령 지연 0~1 물리스텝·유실 0~5% 유지·IMU 부착각 site_quat ±5°, 부호 반전은 DR 금지)와 다른 세션용 handoff(docs/sim2real/HANDOFF_2026-10-14_dr_latency_imu.md) 작성",
+  "title": "공유 브랜치 추가분 실제 테스트 통과(push 된 폴더 그대로, 3090 순정 mjlab): deploy 자체시험, resume 60회(끝 값 ep 길이 800 대 원 792, 속도오차 1.09 대 1.16), warmstart+옵션 60회, released+gain-dr 20회, from-scratch 3단계+옵션 — 전부 정상 종료, env.yaml 에 옵션 기록·영상 생성. README 기록 push",
   "detail": "",
-  "since": "2026-10-14 15:37"
+  "since": "2026-10-14 17:13"
  },
  "items": {
   "shouldermesh": {
@@ -1646,7 +1646,8 @@
     "docs/img/battery/fig5_peer_power.png"
    ],
    "section": "done",
-   "changed": "2026-10-13 11:25"
+   "changed": "2026-10-13 11:25",
+   "collapsed": true
   },
   "battery-inquiry": {
    "id": "battery-inquiry",
@@ -1721,6 +1722,15 @@
    "number": "크랭크 Kp 22.3 (엉덩이 150, 무릎 220) · 서기 중 크랭크 목표 오차 12~16° · 엉덩이 감쇠비 0.17",
    "section": "done",
    "changed": "2026-10-14 16:46"
+  },
+  "gain-reco-1014": {
+   "id": "gain-reco-1014",
+   "created": "2026-10-14 17:23",
+   "title": "관절 게인 권장값 — 크랭크만 22.3/1.41 → 60/2.5, 나머지 유지",
+   "finding": "기준을 셋으로 잡았습니다: 서 있는 데 필요한 토크를 5도 이하 오차로 낼 것, 다리를 들었을 때 감쇠비 0.3~0.7, 수치 안정. 이 기준을 넘는 관절은 발목 크랭크 하나뿐입니다(서기 오차 14도). 크랭크 Kp 60, Kd 2.5 면 서기 오차 5도·감쇠비 0.62. 엉덩이·무릎은 유지 — 엉덩이 감쇠를 크게 올린 예전 비교에서 하중이 2~3.5배 늘었습니다. 크랭크를 올리면 영점 오차에 더 민감해지므로 영점 보정을 먼저 해야 합니다. 확정은 크랭크 게인만 바꾼 비교 학습으로.",
+   "number": "크랭크 서기 오차 13.9° → 5.2° · 정격 도달 오차 51° → 19°",
+   "section": "done",
+   "changed": "2026-10-14 17:23"
   }
  },
  "order": [
@@ -1877,7 +1887,8 @@
   "stand10-schedule-1014",
   "v7b-realcond",
   "v7b-realcond-1014",
-  "v7b-pd-1014"
+  "v7b-pd-1014",
+  "gain-reco-1014"
  ],
- "updated": "2026-10-14 16:46"
+ "updated": "2026-10-14 17:23"
 }
