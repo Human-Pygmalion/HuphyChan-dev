@@ -194,6 +194,7 @@ class Case:
     pose_note: str = ""
 
     # filled by prepare()
+    pelvis_tilt_deg: float = 0.0
     qpos_placed: np.ndarray | None = None
     floor_geom: int = -1
 
@@ -461,6 +462,177 @@ def build_pyg(crank_kp: float, crank_kd: float, key: str, label: str, hipknee=(1
     return case
 
 
+MENAGERIE = REPO / "third_party" / "mujoco_menagerie_subset"   # sparse checkout, commit d7b481ba, not in git
+MENAGERIE_COMMIT = "d7b481bac63d3d600ab404ee74f7474c5efe8a67"
+_GROUP_ORDER = ("hip_yaw", "hip_roll", "hip_pitch", "knee", "ankle_pitch", "ankle_roll")
+
+# per-robot description: how to map Menagerie joint names to our groups, and the published numbers
+MENAGERIE_ROBOTS = {
+    "h1": dict(
+        xml="unitree_h1/h1.xml", pub="h1",
+        parse=lambda n: ({"hip_yaw": "hip_yaw", "hip_roll": "hip_roll", "hip_pitch": "hip_pitch", "knee": "knee",
+                          "ankle": "ankle_pitch"}.get(n.split("_", 1)[1]), "L" if n.startswith("left") else "R")
+        if n.startswith(("left_hip", "left_knee", "left_ankle", "right_hip", "right_knee", "right_ankle")) else (None, None),
+        gain=lambda g: {"hip_yaw": (150, 2), "hip_roll": (150, 2), "hip_pitch": (150, 2), "knee": (200, 4),
+                        "ankle_pitch": (40, 2)}[g],
+        effort=lambda g: {"hip_yaw": 200, "hip_roll": 200, "hip_pitch": 200, "knee": 300, "ankle_pitch": 40}[g],
+        armature=lambda g: 0.1,            # Menagerie class default (rl_gym sim: 0)
+        damping=0.0, frictionloss=0.0,
+        window=None, scale=0.25, dt=0.005,
+        foot={"L": "left_ankle_link", "R": "right_ankle_link"},
+        joint=lambda grp, side: f"{'left' if side == 'L' else 'right'}_{'ankle' if grp == 'ankle_pitch' else grp}",
+        default={"hip_pitch": -0.1, "knee": 0.3, "ankle_pitch": -0.2},
+        source={"gains": "unitree_rl_gym h1_config.py @276801e4", "effort": "h1.urdf @276801e4",
+                "action_scale": 0.25, "decimation": 4, "dt": 0.005,
+                "armature": "Menagerie 0.1 (rl_gym sim uses 0; UNVERIFIED for hardware)"},
+        clip_note="clip_actions=100 -> no effective clip",
+        pose_note="unitree_rl_gym default_joint_angles (hip_pitch -0.1, knee 0.3, ankle -0.2, rest 0)",
+        note="Torso, shoulders and elbows welded at 0 (the rl_gym H1 URDF has them fixed; its torso/arm gains are unused).",
+    ),
+    "t1": dict(
+        xml="booster_t1/t1.xml", pub="t1",
+        parse=lambda n: (_t1_group(n), "L" if n.startswith("Left") else "R") if n.startswith(("Left_Hip", "Left_Knee", "Left_Ankle", "Right_Hip", "Right_Knee", "Right_Ankle")) else (None, None),
+        gain=lambda g: {"hip_yaw": (200, 5), "hip_roll": (200, 5), "hip_pitch": (200, 5), "knee": (200, 5),
+                        "ankle_pitch": (50, 1), "ankle_roll": (50, 1)}[g],
+        effort=lambda g: {"hip_pitch": 45, "hip_roll": 30, "hip_yaw": 30, "knee": 60, "ankle_pitch": 24,
+                          "ankle_roll": 15}[g],
+        armature=lambda g: 0.005,          # Menagerie class default (booster_gym sim: 0)
+        damping=0.0, frictionloss=0.0,
+        window="scale1", scale=1.0, dt=0.002,
+        foot={"L": "left_foot_link", "R": "right_foot_link"},
+        joint=lambda grp, side: f"{'Left' if side == 'L' else 'Right'}_" + {
+            "hip_yaw": "Hip_Yaw", "hip_roll": "Hip_Roll", "hip_pitch": "Hip_Pitch", "knee": "Knee_Pitch",
+            "ankle_pitch": "Ankle_Pitch", "ankle_roll": "Ankle_Roll"}[grp],
+        default={"hip_pitch": -0.2, "knee": 0.4, "ankle_pitch": -0.25},
+        source={"gains": "booster_gym envs/T1.yaml @da396a06", "effort": "T1_locomotion.urdf @da396a06 (Menagerie has ankle pitch 20)",
+                "action_scale": 1.0, "decimation": 10, "dt": 0.002,
+                "armature": "Menagerie 0.005 (booster_gym sim: 0; UNVERIFIED for hardware)"},
+        clip_note="action_scale 1.0 and clip_actions 1.0 -> target limited to default +- 1 rad",
+        pose_note="booster_gym default_joint_angles (Hip_Pitch -0.2, Knee 0.4, Ankle_Pitch -0.25, rest 0)",
+        note="Waist, arms and head welded at 0 (T1_locomotion.urdf has 12 leg joints only). Joint ranges are Menagerie's.",
+    ),
+    "berkeley": dict(
+        xml="berkeley_humanoid/berkeley_humanoid.xml", pub="berkeley",
+        parse=lambda n: ({"HR": "hip_yaw", "HAA": "hip_roll", "HFE": "hip_pitch", "KFE": "knee", "FFE": "ankle_pitch",
+                          "FAA": "ankle_roll"}[n[3:]], "L" if n.startswith("LL") else "R"),
+        gain=lambda g: {"hip_yaw": (10, 1.5), "hip_roll": (10, 1.5), "hip_pitch": (15, 1.5), "knee": (15, 1.5),
+                        "ankle_pitch": (1, 0.1), "ankle_roll": (1, 0.1)}[g],
+        effort=lambda g: {"hip_yaw": 20, "hip_roll": 20, "hip_pitch": 30, "knee": 30, "ankle_pitch": 20,
+                          "ankle_roll": 5}[g],
+        armature=lambda g: {"hip_yaw": 6.9e-5 * 81, "hip_roll": 6.9e-5 * 81, "hip_pitch": 9.4e-5 * 81,
+                            "knee": 1.5e-4 * 81, "ankle_pitch": 6.9e-5 * 81, "ankle_roll": 6.1e-6 * 81}[g],
+        damping=0.02, frictionloss=None,   # friction_static per group below; dynamic 0.02 as viscous damping
+        frictionloss_by=lambda g: {"hip_yaw": 0.3, "hip_roll": 0.3, "hip_pitch": 0.3, "knee": 0.8, "ankle_pitch": 1.0,
+                                   "ankle_roll": 0.1}[g],
+        window=None, scale=0.5, dt=0.005,
+        foot={"L": "ll_faa", "R": "lr_faa"},
+        joint=lambda grp, side: f"L{side}_" + {"hip_yaw": "HR", "hip_roll": "HAA", "hip_pitch": "HFE", "knee": "KFE",
+                                               "ankle_pitch": "FFE", "ankle_roll": "FAA"}[grp],
+        default={"LL_HR": -0.071, "LR_HR": 0.071, "LL_HAA": 0.103, "LR_HAA": -0.103, "LL_HFE": -0.463,
+                 "LR_HFE": -0.463, "LL_KFE": 0.983, "LR_KFE": 0.983, "LL_FFE": -0.350, "LR_FFE": -0.350,
+                 "LL_FAA": 0.126, "LR_FAA": -0.126},
+        source={"gains": "isaac_berkeley_humanoid berkeley_humanoid.py @ffc7b269", "effort": "same file effort_limit",
+                "action_scale": 0.5, "decimation": 4, "dt": 0.005,
+                "armature": "Isaac config (6.9e-5*81 ...)", "friction": "friction_static 0.3/0.3/0.8/1.0/0.1 as frictionloss"},
+        clip_note="no clip in velocity_env_cfg (scale 0.5, use_default_offset)",
+        pose_note="Isaac init_state joint_pos (HFE -0.463, KFE 0.983, FFE -0.350, ...)",
+        note=("Menagerie's own gains differ from the Isaac config (kfe class kp 1, ffe class kp 1): the published Isaac "
+              "numbers are used. HR/HAA/HFE/KFE/FFE/FAA mapped to hip yaw/roll/pitch/knee/ankle pitch/ankle roll "
+              "(HR = hip rotation, UNVERIFIED mapping). Motor speed-torque saturation of the Isaac DC-motor model is ignored."),
+    ),
+}
+
+
+def _t1_group(n):
+    for key, g in (("Hip_Yaw", "hip_yaw"), ("Hip_Roll", "hip_roll"), ("Hip_Pitch", "hip_pitch"),
+                   ("Knee", "knee"), ("Ankle_Pitch", "ankle_pitch"), ("Ankle_Roll", "ankle_roll")):
+        if key in n:
+            return g
+
+
+def build_menagerie(robot: str, key: str, label: str) -> Case:
+    D = MENAGERIE_ROBOTS[robot]
+    spec = mujoco.MjSpec.from_file(str(MENAGERIE / D["xml"]))
+    for a in list(spec.actuators):
+        spec.delete(a)
+    for k in list(spec.keys):
+        spec.delete(k)
+    _set_sim_options_like_mjlab(spec.option)
+    spec.option.timestep = D["dt"]
+    fl = spec.worldbody.add_geom()
+    fl.name = "floor"
+    fl.type = mujoco.mjtGeom.mjGEOM_PLANE
+    fl.size = [0, 0, 0.05]
+    fl.contype = 1
+    fl.conaffinity = 1
+    fl.friction = [1.0, 0.005, 0.0001]
+    joints, welded, qnamed = [], [], {}
+    for j in spec.joints:
+        n = j.name
+        if not n or j.type == mujoco.mjtJoint.mjJNT_FREE:
+            continue
+        grp, side = D["parse"](n)
+        if grp is None:
+            welded.append(n)
+            qnamed[n] = 0.0
+            joints.append(Jt(n, "held", "", 0.0, 0.0, 0.0, 0.0, 0.0, scored=False))
+            j.damping = [0.0, 0.0, 0.0]
+            j.frictionloss = 0.0
+            continue
+        kp, kd = D["gain"](grp)
+        eff = D["effort"](grp)
+        dflt = D["default"]
+        q0 = dflt.get(n, dflt.get(grp, 0.0)) if robot != "berkeley" else dflt[n]
+        j.armature = D["armature"](grp)
+        j.damping = [D["damping"], 0.0, 0.0]
+        j.frictionloss = D["frictionloss_by"](grp) if D.get("frictionloss_by") else D["frictionloss"]
+        qnamed[n] = q0
+        joints.append(Jt(n, grp, side, float(kp), float(kd), float(eff), D["scale"], q0))
+    for jt in joints:
+        if jt.name in welded:
+            eq = spec.add_equality()
+            eq.type = mujoco.mjtEq.mjEQ_JOINT
+            eq.name1 = jt.name
+            eq.data[:5] = [0, 0, 0, 0, 0]
+            eq.solref = [0.01, 1.0]
+            eq.active = True
+            continue
+        a = spec.add_actuator()
+        a.name = jt.name
+        a.target = jt.name
+        a.trntype = mujoco.mjtTrn.mjTRN_JOINT
+        a.gaintype = mujoco.mjtGain.mjGAIN_FIXED
+        a.biastype = mujoco.mjtBias.mjBIAS_AFFINE
+        a.gainprm[0] = jt.kp
+        a.biasprm[:3] = [0, -jt.kp, -jt.kd]
+        a.forcelimited = mujoco.mjtLimited.mjLIMITED_TRUE
+        a.forcerange = [-jt.effort, jt.effort]
+    m = spec.compile()
+    for jt in joints:
+        if jt.scored:
+            jt.rng = tuple(float(x) for x in m.jnt_range[m.joint(jt.name).id])
+            if D["window"] == "scale1":
+                jt.window = (jt.q0 - 1.0 * D["scale"], jt.q0 + 1.0 * D["scale"])
+    qpos0 = m.qpos0.copy()
+    for n, q in qnamed.items():
+        qpos0[m.jnt_qposadr[m.joint(n).id]] = q
+    qpos0[:7] = [0, 0, 0.8, 1, 0, 0, 0]
+    J = D["joint"]
+    case = Case(
+        key=key, label=label, model=m, qpos0=qpos0, joints=joints, foot_body=dict(D["foot"]),
+        ankle_joint={s: J("ankle_pitch", s) for s in "LR"}, ankle_roll_joint={s: J("ankle_roll", s) for s in "LR"}
+        if robot != "h1" else {s: None for s in "LR"},
+        hip_joint={s: J("hip_pitch", s) for s in "LR"}, hip_roll_joint={s: J("hip_roll", s) for s in "LR"},
+        knee_joint={s: J("knee", s) for s in "LR"}, welded=welded, loop=False,
+    )
+    case.source = D["source"]
+    case.action_clip_note = D["clip_note"]
+    case.pose_note = D["pose_note"]
+    case.notes.append(D["note"])
+    case.notes.append(f"Model: Menagerie {D['xml']} @{MENAGERIE_COMMIT[:8]}")
+    return case
+
+
 CASES = {
     "g1_a": lambda: build_g1("urg", "urg_home", "g1_a", "G1-a (rl_gym gains, rl_gym pose)"),
     "g1_b": lambda: build_g1("mjlab", "mjlab_bent", "g1_b", "G1-b (mjlab gains, mjlab bent pose)"),
@@ -468,6 +640,9 @@ CASES = {
                                    "G1-b, upper body held by mjlab PD gains", upper="pd"),
     "g1_a_bent": lambda: build_g1("urg", "mjlab_bent", "g1_a_bent", "G1-a gains at mjlab bent pose"),
     "g1_b_home": lambda: build_g1("mjlab", "urg_home", "g1_b_home", "G1-b gains at rl_gym pose"),
+    "h1": lambda: build_menagerie("h1", "h1", "H1 (unitree_rl_gym gains)"),
+    "t1": lambda: build_menagerie("t1", "t1", "T1 (booster_gym gains)"),
+    "berkeley": lambda: build_menagerie("berkeley", "berkeley", "Berkeley Humanoid (Isaac config gains)"),
     "pyg_v7b": lambda: build_pyg(22.265625, 1.4140625, "pyg_v7b", "Pygmalion v7b/v11a (crank 22.3/1.41)"),
     "pyg_trial55": lambda: build_pyg(55.0, 2.5, "pyg_trial55", "Pygmalion trial (crank 55/2.5)"),
 }
@@ -498,8 +673,31 @@ def min_floor_distance(m, d, geoms, fid):
     return best
 
 
+def _sole_tilt(case, d):
+    """Mean pitch (rotation about world y) of the flat box soles; 0 when the foot has no box geom
+    (capsule feet of G1 / H1 / Pygmalion are flat in the default pose by construction)."""
+    m = case.model
+    tilts = []
+    for s in "LR":
+        bid = m.body(case.foot_body[s]).id
+        boxes = [g for g in range(m.ngeom) if m.geom_bodyid[g] == bid and m.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX
+                 and (m.geom_contype[g] or m.geom_conaffinity[g])]
+        if not boxes:
+            continue
+        g = max(boxes, key=lambda i: m.geom_size[i][0] * m.geom_size[i][1] * m.geom_size[i][2])
+        ax = int(np.argmin(m.geom_size[g]))
+        n = d.geom_xmat[g].reshape(3, 3)[:, ax].copy()
+        if n[2] < 0:
+            n = -n
+        tilts.append(math.atan2(n[0], n[2]))
+    return float(np.mean(tilts)) if tilts else 0.0
+
+
 def prepare(case: Case):
-    """Fit the base height so that the lowest collision geom just touches the floor."""
+    """Make the default pose a flat-foot pose and fit the base height so the lowest collision geom
+    just touches the floor. If the published joint angles do not sum to a flat foot (T1, Berkeley),
+    the whole robot is pitched about the world y axis until the soles are flat (recorded in
+    case.pelvis_tilt_deg) - otherwise the robot would first have to rock onto its toes."""
     m = case.model
     m.opt.jacobian = mujoco.mjtJacobian.mjJAC_DENSE
     case.floor_geom = floor_id(m)
@@ -508,9 +706,20 @@ def prepare(case: Case):
     q[2] = 1.0
     d.qpos[:] = q
     mujoco.mj_forward(m, d)
+    t = _sole_tilt(case, d)
+    case.pelvis_tilt_deg = 0.0
+    if abs(t) > 1e-3:
+        # rotate the whole robot by R_y(-t) about the world origin
+        quat = np.array([math.cos(-t / 2), 0.0, math.sin(-t / 2), 0.0])
+        q[3:7] = quat
+        q[0:3] = [0, 0, 1.0]
+        d.qpos[:] = q
+        mujoco.mj_forward(m, d)
+        case.pelvis_tilt_deg = math.degrees(-t)
+        case.notes.append(f"default pose is not flat-footed: robot pitched {math.degrees(-t):.2f} deg so both soles lie flat")
     geoms = robot_collision_geoms(m, case.floor_geom)
     dist = min_floor_distance(m, d, geoms, case.floor_geom)
-    q[2] = 1.0 - dist + 5e-4
+    q[2] = q[2] - dist + 5e-4
     case.qpos_placed = q
     d.qpos[:] = q
     mujoco.mj_forward(m, d)
@@ -574,9 +783,10 @@ def act_index(case):
 
 
 class contact_mode:
-    """'trained' keeps the model as built; 'rigid' = dt 0.0025 and contact time constant 0.005 s,
-    which makes the standing threshold independent of the soft-contact compliance (checked:
-    dt 0.001 / tc 0.002 changes it by < 1 %)."""
+    """'trained' keeps the model as built; 'rigid' = dt 0.001 and contact time constant 0.002 s,
+    which makes the standing threshold independent of the soft-contact compliance (G1-a: dt 0.0025 /
+    tc 0.005 gave 6.07, dt 0.001 / tc 0.002 gave 6.05) and keeps wn*dt < 1.2 for the stiffest scaled
+    joint (position stiffness is integrated explicitly, so a larger dt would add numerical instability)."""
 
     def __init__(self, case, mode):
         self.m, self.mode = case.model, mode
@@ -585,8 +795,8 @@ class contact_mode:
         m = self.m
         self.saved = (m.opt.timestep, m.geom_solref.copy())
         if self.mode == "rigid":
-            m.opt.timestep = 0.0025
-            m.geom_solref[:] = [0.005, 1.0]
+            m.opt.timestep = 0.001
+            m.geom_solref[:] = [0.002, 1.0]
         return self
 
     def __exit__(self, *a):
@@ -745,9 +955,10 @@ def ankle_equivalent(case):
     else:
         for s in "LR":
             jp = case.jt(case.ankle_joint[s])
-            jr = case.jt(case.ankle_roll_joint[s])
-            out[s] = {"Kp_pitch": jp.kp, "Kp_roll": jr.kp, "Kd_pitch": jp.kd, "Kd_roll": jr.kd,
-                      "effort_pitch": jp.effort, "effort_roll": jr.effort}
+            jr = case.jt(case.ankle_roll_joint[s]) if case.ankle_roll_joint[s] else None
+            out[s] = {"Kp_pitch": jp.kp, "Kp_roll": jr.kp if jr else 0.0, "Kd_pitch": jp.kd,
+                      "Kd_roll": jr.kd if jr else 0.0, "effort_pitch": jp.effort,
+                      "effort_roll": jr.effort if jr else 0.0}
     return out
 
 
@@ -904,7 +1115,7 @@ def _foot_center(case, d, side):
     return np.mean([d.geom_xpos[i] for i in g], axis=0)
 
 
-def single_leg_pose(case, stance, lift_scale=1.0):
+def single_leg_pose(case, stance, lift_scale=1.0, flip=False):
     """Default pose with the swing leg flexed off the ground and the stance leg leaned (hip roll +
     ankle roll) until the whole-body centre of mass is above the stance foot centre and the pelvis
     is level. Returns (MjData at the pose, info)."""
@@ -924,12 +1135,15 @@ def single_leg_pose(case, stance, lift_scale=1.0):
         d.qpos[:] = q_default
         # swing leg flexion
         hj, kj = case.jt(case.hip_joint[sw]), case.jt(case.knee_joint[sw])
-        d.qpos[jqadr(m, hj.name)] = hj.q0 + math.copysign(0.35 * lift_scale, hj.q0)
-        d.qpos[jqadr(m, kj.name)] = kj.q0 + math.copysign(0.70 * lift_scale, kj.q0)
+        sg = -1.0 if flip else 1.0
+        d.qpos[jqadr(m, hj.name)] = hj.q0 + sg * math.copysign(0.35 * lift_scale, hj.q0)
+        d.qpos[jqadr(m, kj.name)] = kj.q0 + sg * math.copysign(0.70 * lift_scale, kj.q0)
         # stance lean
         hr, ar = case.hip_roll_joint[stance], case.ankle_roll_joint[stance]
-        d.qpos[jqadr(m, hr)] = case.jt(hr).q0 + ph if case.jt(hr) is not None else ph
-        if case.loop:
+        d.qpos[jqadr(m, hr)] = case.jt(hr).q0 + ph
+        if ar is None:
+            pass
+        elif case.loop:
             d.qpos[jqadr(m, ar)] = d0.qpos[jqadr(m, ar)] + pa
             close_loop(case, d, stance)
         else:
@@ -940,17 +1154,18 @@ def single_leg_pose(case, stance, lift_scale=1.0):
         return d, np.array([com[1] - centre0[1], roll])
 
     x = np.zeros(2)
+    free = [0, 1] if case.ankle_roll_joint[stance] else [0]   # H1 has no ankle roll: pelvis stays tilted
     for _ in range(25):
         d, r = build(*x)
-        if np.abs(r).max() < 1e-7:
+        if np.abs(r[free]).max() < 1e-7:
             break
-        Jn = np.zeros((2, 2))
+        Jn = np.zeros((len(free), len(free)))
         eps = 1e-4
-        for k in range(2):
+        for c, k in enumerate(free):
             xp = x.copy()
             xp[k] += eps
-            Jn[:, k] = (build(*xp)[1] - r) / eps
-        x = x - np.linalg.solve(Jn, r)
+            Jn[:, c] = ((build(*xp)[1] - r))[free] / eps
+        x[free] = x[free] - np.linalg.solve(Jn, r[free])
     d, r = build(*x)
     info = {"hip_roll_lean_rad": float(x[0]), "ankle_roll_lean_rad": float(x[1]),
             "com_y_error_m": float(r[0]), "pelvis_roll_rad": float(r[1])}
@@ -982,12 +1197,18 @@ def solve_statics(case, d):
 
 def single_leg_torques(case, stance):
     m = case.model
-    lift = 1.0
-    for _ in range(4):
-        d, info = single_leg_pose(case, stance, lift)
-        if info["swing_clearance_m"] > 0.02:
+    best = None
+    for lift in (1.0, 1.5, 2.0, 2.5):
+        for flip in (False, True):
+            d, info = single_leg_pose(case, stance, lift, flip)
+            if info["swing_clearance_m"] > 0.02:
+                best = (d, info)
+                break
+        if best:
             break
-        lift += 0.5
+    if best is None:
+        raise RuntimeError("no swing-leg lift gives 2 cm clearance")
+    d, info = best
     ntau, names, cols, Jeq = solve_statics(case, d)
     nv = m.nv
     fid = m.body(case.foot_body[stance]).id
@@ -1003,6 +1224,14 @@ def single_leg_torques(case, stance):
     # passive dofs must carry no torque: residual check covers it
     wrench = x[ntau:ntau + 6]
     q = {n: float(d.qpos[jqadr(m, n)]) for n in names}
+    viol = []
+    for jid in range(m.njnt):
+        if m.jnt_type[jid] == mujoco.mjtJoint.mjJNT_HINGE and m.jnt_limited[jid]:
+            v = float(d.qpos[m.jnt_qposadr[jid]])
+            lo, hi = m.jnt_range[jid]
+            if v < lo - 1e-3 or v > hi + 1e-3:
+                viol.append([m.joint(jid).name, v, float(lo), float(hi)])
+    info["range_violations"] = viol
     return {"tau": tau, "q": q, "info": info, "resid": resid,
             "foot_force_z": float(wrench[2]), "weight_N": total_mass(m) * G}
 
@@ -1254,7 +1483,7 @@ def run_case(case, with_trained_contact=True):
            "model_sha256": (hashlib.sha256(PYG_MJB.read_bytes()).hexdigest() if case.loop else
                             hashlib.sha256(G1_XML.read_bytes()).hexdigest()),
            "pose_note": case.pose_note, "action_clip_note": case.action_clip_note,
-           "mass_kg": m_tot, "com_height_above_ankle_m": h, "leg_length_m": L, "dt": m.opt.timestep}
+           "pelvis_tilt_deg": case.pelvis_tilt_deg, "mass_kg": m_tot, "com_height_above_ankle_m": h, "leg_length_m": L, "dt": m.opt.timestep}
     # A1
     hold = elastic_hold(case)
     res["A1_elastic_hold"] = hold
@@ -1304,11 +1533,235 @@ def run_case(case, with_trained_contact=True):
     return res
 
 
+# ---------------------------------------------------------------------------------------
+# Figures (English labels only)  -  python compare_robot_gains.py --plots
+# ---------------------------------------------------------------------------------------
+PLOT_ORDER = ["g1_a", "g1_b", "h1", "t1", "berkeley", "pyg_v7b", "pyg_trial55"]
+PLOT_LABEL = {"g1_a": "G1-a\n(rl_gym)", "g1_b": "G1-b\n(mjlab)", "h1": "H1", "t1": "T1", "berkeley": "Berkeley",
+              "pyg_v7b": "Pygmalion\ncrank 22.3", "pyg_trial55": "Pygmalion\ncrank 55"}
+GROUPS = ["hip_yaw", "hip_roll", "hip_pitch", "knee", "ankle_pitch", "ankle_roll", "crank"]
+
+
+def _load(keys):
+    return {k: json.loads((RESULTS / f"{k}.json").read_text()) for k in keys if (RESULTS / f"{k}.json").exists()}
+
+
+def _group_vals(r, table, field, groups=GROUPS):
+    acc = {}
+    for n, v in table.items():
+        g = r["A5"][n]["kp"] and next((x for x in groups if f"_{x}" in n.lower() or n.lower().endswith(x)), None)
+        acc.setdefault(g, []).append(v[field])
+    return {g: float(np.mean(v)) for g, v in acc.items() if g}
+
+
+def make_plots(outdir: Path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    outdir.mkdir(parents=True, exist_ok=True)
+    R = _load(PLOT_ORDER)
+    keys = [k for k in PLOT_ORDER if k in R]
+    lab = [PLOT_LABEL[k] for k in keys]
+    x = np.arange(len(keys))
+    col = {"all": "#1b6ca8", "ankle": "#e08a1e", "tip": "#2a9d4b", "soft": "#7f7f7f", "push": "#b3392f"}
+
+    # ---- fig 1: PD-only standing multiplier
+    fig, ax = plt.subplots(figsize=(10, 5))
+    w = 0.16
+    cap = 40.0
+    def val(r, key, field="min_refined"):
+        v = r["A2"][key].get(field)
+        return cap if v is None else v
+    series = [("all", "all leg joints scaled (rigid contact)", lambda r: val(r, "no_push")),
+              ("ankle", "ankle only scaled", lambda r: val(r, "ankle_only_no_push")),
+              ("tip", "analytic 1/(K_ankle / m g h)", lambda r: r["A3"]["standing_prediction"]["s_tip"]),
+              ("soft", "all scaled, soft default contact", lambda r: val(r, "no_push_trained_contact")),
+              ("push", "all scaled, 0.3 m/s push", lambda r: val(r, "push_0p3"))]
+    for i, (c, name, f) in enumerate(series):
+        vals = [f(R[k]) for k in keys]
+        bars = ax.bar(x + (i - 2) * w, vals, w, color=col[c], label=name, hatch=None)
+        for b, v in zip(bars, vals):
+            if v >= cap:
+                b.set_hatch("///")
+                b.set_alpha(0.45)
+                ax.text(b.get_x() + b.get_width() / 2, cap * 1.03, "no", ha="center", va="bottom", fontsize=7)
+    ax.axhline(1.0, color="k", ls="--", lw=1)
+    ax.text(-0.45, 1.06, "published gains (x1)", ha="left", fontsize=8)
+    ax.set_yscale("log")
+    ax.set_ylim(0.5, 60)
+    ax.set_xticks(x)
+    ax.set_xticklabels(lab, fontsize=8)
+    ax.set_ylabel("Kp, Kd multiplier needed so PD alone stands 5 s")
+    ax.set_title("PD-only standing in the default pose: every published gain set needs a multiplier above 1\n"
+                 "(hatched = no multiplier up to 32 stands)")
+    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=3)
+    fig.tight_layout()
+    fig.savefig(outdir / "2026-10-14_pd_only_stand_multiplier.png", dpi=140)
+    plt.close(fig)
+
+    # ---- fig 2: ankle stiffness / mgh
+    fig, ax = plt.subplots(figsize=(9, 4.5))
+    vals = [R[k]["A3"]["ratio"] for k in keys]
+    ax.bar(x, vals, 0.55, color=col["all"])
+    for xi, v in zip(x, vals):
+        ax.text(xi, v + 0.03, f"{v:.2f}", ha="center", fontsize=8)
+    ax.axhline(1.0, color="k", ls="--", lw=1)
+    ax.text(-0.45, 1.03, "toppling stiffness m g h (ratio 1)", fontsize=8)
+    ax.axhspan(0.44, 0.93, color="#2a9d4b", alpha=0.18)
+    ax.text(-0.45, 0.86, "human passive ankle stiffness 0.44-0.93 of m g h (Loram 2002, Casadio 2005, Vlutters 2015; docs/169)",
+            ha="left", fontsize=7)
+    ax.set_xticks(x)
+    ax.set_xticklabels(lab, fontsize=8)
+    ax.set_ylabel("sum of both ankle pitch stiffnesses / (m g h)")
+    ax.set_title("Ankle pitch stiffness relative to the toppling stiffness m g h (default pose)")
+    fig.tight_layout()
+    fig.savefig(outdir / "2026-10-14_ankle_stiffness_over_mgh.png", dpi=140)
+    plt.close(fig)
+
+    # ---- fig 3: required error vs action window
+    fig, axs = plt.subplots(1, 2, figsize=(13, 5), sharey=False)
+    gl = ["hip_yaw", "hip_roll", "hip_pitch", "knee", "ankle"]
+    for ax, (title, getter) in zip(axs, [
+        ("Quasi-static single-leg support (stance leg), proxy",
+         lambda r: {n: abs(v["err_deg"]) for n, v in r["B1"]["L"]["rows"].items() if v["role"] == "stance"}),
+        ("Human-gait peak moment x body mass (typical cohort), proxy",
+         lambda r: {n: abs(v["err_deg"]) for n, v in r["B2"]["typical"]["mass"].items()})]):
+        wd = 0.8 / len(keys)
+        for i, k in enumerate(keys):
+            r = R[k]
+            e = getter(r)
+            vals = []
+            for g in gl:
+                cand = []
+                for n, v in e.items():
+                    nl = n.lower().split("/")[-1]
+                    if not (nl.startswith(("l_", "left_", "ll_"))):
+                        continue
+                    if g == "ankle":
+                        if ("ankle_pitch" in nl) or nl.endswith("_ankle") or nl.endswith("_ffe") or ("crank" in nl):
+                            cand.append(v)
+                    elif g == "hip_yaw" and (nl.endswith("hip_yaw") or nl.endswith("hip_yaw_joint") or nl.endswith("_hr")):
+                        cand.append(v)
+                    elif g == "hip_roll" and (nl.endswith("hip_roll") or nl.endswith("hip_roll_joint") or nl.endswith("_haa")):
+                        cand.append(v)
+                    elif g == "hip_pitch" and (nl.endswith("hip_pitch") or nl.endswith("hip_pitch_joint") or nl.endswith("_hfe")):
+                        cand.append(v)
+                    elif g == "knee" and ("knee" in nl or nl.endswith("_kfe")):
+                        cand.append(v)
+                vals.append(np.max(cand) if cand else np.nan)
+            bars = ax.bar(np.arange(len(gl)) + (i - len(keys) / 2 + 0.5) * wd, vals, wd,
+                          label=PLOT_LABEL[k].replace("\n", " "), color=f"C{i}")
+            if k == "h1" and "single-leg" in title:   # lean needs 60 deg hip roll: infeasible, not a result
+                for b in bars:
+                    b.set_hatch("///")
+                    b.set_alpha(0.35)
+        ax.set_xticks(np.arange(len(gl)))
+        ax.set_xticklabels(["hip yaw", "hip roll", "hip pitch", "knee", "ankle pitch\n(crank for Pygmalion)"], fontsize=8)
+        ax.set_ylabel("position error needed = torque / Kp  [deg]")
+        ax.set_title(title, fontsize=9)
+        ax.axhline(57.3, color="k", ls="--", lw=1)
+        ax.text(0.02, 62, "57 deg = 1 rad", fontsize=8)
+        ax.set_yscale("log")
+        ax.set_ylim(0.3, 3000)
+    h_, l_ = axs[0].get_legend_handles_labels()
+    fig.legend(h_, l_, fontsize=8, ncol=7, loc="lower center")
+    fig.suptitle("Position error each joint needs to carry the walking-load proxies (H1 single-leg bars hatched: needs 60 deg hip roll, infeasible)", fontsize=10)
+    fig.tight_layout(rect=[0, 0.07, 1, 0.95])
+    fig.savefig(outdir / "2026-10-14_required_error_vs_window.png", dpi=140)
+    plt.close(fig)
+
+    # ---- fig 4: Kp per kg
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    gl2 = ["hip_yaw", "hip_roll", "hip_pitch", "knee", "ankle_pitch"]
+    wd = 0.8 / len(keys)
+    for i, k in enumerate(keys):
+        r = R[k]
+        vals = []
+        for g in gl2:
+            if g == "ankle_pitch":
+                vals.append(r["A3"]["ankle_equivalent"]["L"]["Kp_pitch"] / r["mass_kg"])
+            else:
+                v = [vv["kp_per_kg"] for n, vv in r["A5"].items()
+                     if n.lower().split("/")[-1].startswith(("l_", "left_", "ll_")) and
+                     (any(n.lower().endswith(s) for s in (g, g + "_joint")) or (g == "knee" and "knee" in n.lower())) or
+                     (g == "hip_yaw" and n.lower().endswith("_hr") and n.startswith("LL")) or
+                     (g == "hip_roll" and n.lower().endswith("_haa") and n.startswith("LL")) or
+                     (g == "hip_pitch" and n.lower().endswith("_hfe") and n.startswith("LL")) or
+                     (g == "knee" and n.lower().endswith("_kfe") and n.startswith("LL"))]
+                vals.append(np.mean(v) if v else np.nan)
+        ax.bar(np.arange(len(gl2)) + (i - len(keys) / 2 + 0.5) * wd, vals, wd, label=PLOT_LABEL[k].replace("\n", " "))
+    ax.set_xticks(np.arange(len(gl2)))
+    ax.set_xticklabels(["hip yaw", "hip roll", "hip pitch", "knee", "ankle pitch (joint-equivalent)"], fontsize=8)
+    ax.set_ylabel("Kp per kg of robot mass  [N m / rad / kg]")
+    ax.set_title("Published Kp divided by whole-robot mass")
+    ax.legend(fontsize=7, ncol=2)
+    fig.tight_layout()
+    fig.savefig(outdir / "2026-10-14_kp_per_kg.png", dpi=140)
+    plt.close(fig)
+
+    # ---- fig 5: which rule is constant across joints (CV of Kp / driver)
+    drivers = ["effort limit", "default-pose gravity torque", "single-leg stance torque", "armature (rotor)",
+               "link inertia, leg in air", "link inertia, standing"]
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    M = np.full((len(drivers), len(keys)), np.nan)
+    for j, k in enumerate(keys):
+        for i, d in enumerate(drivers):
+            e = R[k]["C"].get(d, {})
+            if "ratio_cv" in e and (k != "h1" or d != "armature (rotor)"):
+                M[i, j] = e["ratio_cv"]
+    im = ax.imshow(M, cmap="viridis_r", vmin=0, vmax=1.5, aspect="auto")
+    for i in range(M.shape[0]):
+        for j in range(M.shape[1]):
+            if np.isfinite(M[i, j]):
+                ax.text(j, i, f"{M[i, j]:.2f}", ha="center", va="center", color="w" if M[i, j] > 0.75 else "k", fontsize=8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(lab, fontsize=8)
+    ax.set_yticks(range(len(drivers)))
+    ax.set_yticklabels(drivers, fontsize=8)
+    ax.set_title("Spread of Kp / driver across joint groups (coefficient of variation; small = Kp is proportional to the driver)")
+    fig.colorbar(im, ax=ax, label="coefficient of variation")
+    fig.tight_layout()
+    fig.savefig(outdir / "2026-10-14_rule_constancy.png", dpi=140)
+    plt.close(fig)
+
+    # ---- fig 6: damping ratio and natural frequency
+    fig, axs = plt.subplots(1, 2, figsize=(13, 4.8))
+    for ax, (field, ttl, yl) in zip(axs, [("zeta_rotor", "Damping ratio, rotor inertia only", "damping ratio"),
+                                         ("wn_rotor_hz", "Natural frequency, rotor inertia only", "Hz")]):
+        wd = 0.8 / len(keys)
+        for i, k in enumerate(keys):
+            r = R[k]
+            vals = []
+            for g in gl2:
+                v = [vv[field] for n, vv in r["A4"].items()
+                     if n.lower().split("/")[-1].startswith(("l_", "left_", "ll_")) and
+                     ((g == "ankle_pitch" and ("ankle_pitch" in n.lower() or n.lower().endswith("_ankle") or n.endswith("FFE") or "crank" in n.lower()))
+                      or (g == "hip_yaw" and (n.lower().endswith("hip_yaw") or n.lower().endswith("hip_yaw_joint") or n.endswith("_HR")))
+                      or (g == "hip_roll" and (n.lower().endswith("hip_roll") or n.lower().endswith("hip_roll_joint") or n.endswith("_HAA")))
+                      or (g == "hip_pitch" and (n.lower().endswith("hip_pitch") or n.lower().endswith("hip_pitch_joint") or n.endswith("_HFE")))
+                      or (g == "knee" and ("knee" in n.lower() or n.endswith("_KFE"))))]
+                vals.append(np.mean(v) if v else np.nan)
+            ax.bar(np.arange(len(gl2)) + (i - len(keys) / 2 + 0.5) * wd, vals, wd, label=PLOT_LABEL[k].replace("\n", " "))
+        ax.set_xticks(np.arange(len(gl2)))
+        ax.set_xticklabels(["hip yaw", "hip roll", "hip pitch", "knee", "ankle pitch\n(crank for Pygmalion)"], fontsize=8)
+        ax.set_ylabel(yl)
+        ax.set_title(ttl, fontsize=10)
+    axs[0].axhline(1.0, color="k", ls="--", lw=1)
+    axs[0].legend(fontsize=6, ncol=2)
+    fig.tight_layout()
+    fig.savefig(outdir / "2026-10-14_damping_and_frequency.png", dpi=140)
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--plots", action="store_true", help="only (re)draw figures from results/*.json")
     ap.add_argument("--cases", nargs="+", default=["g1_a", "g1_b", "pyg_v7b", "pyg_trial55"])
     ap.add_argument("--no-trained-contact", action="store_true")
     a = ap.parse_args()
+    if a.plots:
+        make_plots(REPO / "docs" / "img" / "pd_gain")
+        return
     RESULTS.mkdir(exist_ok=True)
     for k in a.cases:
         case = CASES[k]()

@@ -12,11 +12,12 @@
  "notes": [
   "Model keeps the measured joint friction loss (0.52 N m hip/knee, 0.25 N m crank) and viscous damping."
  ],
- "repo_head": "84b4126d31f36351b06649b90963798e036f8ed0",
+ "repo_head": "2ab85cdef6612447c426a30749581ddf40befd99",
  "mujoco": "3.10.0",
  "model_sha256": "8bc466e386c23e79fa215b9ee0aeb0b36aadbb837c633c782050f50df1ccf554",
  "pose_note": "key 0 of the model = env.yaml init_state (PYG_INIT_BENT): hip_pitch 0.175, knee 0.35 (mirrored L/R), ankle pitch 0.175",
  "action_clip_note": "env.yaml actions.clip = absolute target bounds per joint",
+ "pelvis_tilt_deg": 0.0,
  "mass_kg": 23.63014,
  "com_height_above_ankle_m": 0.5655842066877952,
  "leg_length_m": 0.8547440049432473,
@@ -161,9 +162,9 @@
    },
    "min_grid": 3.0,
    "non_monotone": false,
-   "min_refined": 2.3046875,
+   "min_refined": 2.29296875,
    "margin_grid": 0.3333333333333333,
-   "margin_refined": 0.43389830508474575
+   "margin_refined": 0.43611584327086883
   },
   "push_0p3": {
    "grid": {
@@ -187,9 +188,9 @@
    },
    "min_grid": 3.0,
    "non_monotone": false,
-   "min_refined": 2.546875,
+   "min_refined": 2.5390625,
    "margin_grid": 0.3333333333333333,
-   "margin_refined": 0.39263803680981596
+   "margin_refined": 0.39384615384615385
   },
   "ankle_only_no_push": {
    "grid": {
@@ -213,9 +214,9 @@
    },
    "min_grid": 3.0,
    "non_monotone": false,
-   "min_refined": 2.3046875,
+   "min_refined": 2.29296875,
    "margin_grid": 0.3333333333333333,
-   "margin_refined": 0.43389830508474575
+   "margin_refined": 0.43611584327086883
   },
   "hip_knee_only_no_push": {
    "grid": {
@@ -271,23 +272,23 @@
   }
  },
  "A1_sim_check": {
-  "scale": 3.45703125,
+  "scale": 3.439453125,
   "stood": true,
   "tau_sim": {
-   "robot/R_crank_A_joint": -7.642497248048358,
-   "robot/R_crank_B_joint": 7.709944121268479,
-   "robot/L_crank_A_joint": 7.645725568394884,
-   "robot/L_crank_B_joint": -7.7409547212093885,
-   "robot/R_hip_yaw_joint": -0.00693206710767804,
-   "robot/L_hip_yaw_joint": 0.01474673119125233,
-   "robot/R_hip_pitch_joint": 0.051274607029618446,
-   "robot/R_hip_roll_joint": 0.0015719621569447047,
-   "robot/L_hip_pitch_joint": -0.05322844910775576,
-   "robot/L_hip_roll_joint": -0.022346963455334178,
-   "robot/R_knee_joint": 0.27120818913867967,
-   "robot/L_knee_joint": -0.30529359430598435
+   "robot/R_crank_A_joint": -7.635435451992184,
+   "robot/R_crank_B_joint": 7.70679079492678,
+   "robot/L_crank_A_joint": 7.6439512068495254,
+   "robot/L_crank_B_joint": -7.738496636688226,
+   "robot/R_hip_yaw_joint": -0.0055597679064136735,
+   "robot/L_hip_yaw_joint": 0.015942724077087283,
+   "robot/R_hip_pitch_joint": 0.05556906689485506,
+   "robot/R_hip_roll_joint": -0.0027380015719859836,
+   "robot/L_hip_pitch_joint": -0.04883795246869143,
+   "robot/L_hip_roll_joint": -0.016031401455724317,
+   "robot/R_knee_joint": 0.2704967856131339,
+   "robot/L_knee_joint": -0.3029720520918976
   },
-  "z_drop_m": 0.006177625272995257
+  "z_drop_m": 0.006166769007634687
  },
  "A3": {
   "K_ankle_pitch_sum": 152.43764404725243,
@@ -773,7 +774,8 @@
     "ankle_roll_lean_rad": 0.17595188313401602,
     "com_y_error_m": -4.811259154968717e-08,
     "pelvis_roll_rad": 3.588054111301312e-09,
-    "swing_clearance_m": 0.02601144326030355
+    "swing_clearance_m": 0.02601144326030355,
+    "range_violations": []
    },
    "resid": 2.5579538487363607e-13,
    "foot_force_z": 231.81167339999976,
@@ -895,7 +897,8 @@
     "ankle_roll_lean_rad": 0.17522881346744393,
     "com_y_error_m": 3.67995656724851e-08,
     "pelvis_roll_rad": -3.457365843540806e-09,
-    "swing_clearance_m": 0.026098797792935585
+    "swing_clearance_m": 0.026098797792935585,
+    "range_violations": []
    },
    "resid": 1.836308882730009e-13,
    "foot_force_z": 231.8116734000001,

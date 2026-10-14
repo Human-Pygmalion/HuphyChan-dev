@@ -9,11 +9,12 @@
   "dt": 0.005
  },
  "notes": [],
- "repo_head": "84b4126d31f36351b06649b90963798e036f8ed0",
+ "repo_head": "2ab85cdef6612447c426a30749581ddf40befd99",
  "mujoco": "3.10.0",
  "model_sha256": "febdcbeffbbf84051556ae41a5ac1b43fb479a5d76bdb3f54824dbc2721c20aa",
  "pose_note": "mjlab KNEES_BENT_KEYFRAME (hip_pitch -0.312, knee 0.669, ankle_pitch -0.363, elbow 0.6)",
  "action_clip_note": "no clip in the mjlab G1 velocity task",
+ "pelvis_tilt_deg": 0.0,
  "mass_kg": 33.341142000000005,
  "com_height_above_ankle_m": 0.6165489916250398,
  "leg_length_m": 0.6038664526020795,
@@ -175,9 +176,9 @@
    },
    "min_grid": 12.0,
    "non_monotone": false,
-   "min_refined": 10.109375,
+   "min_refined": 9.328125,
    "margin_grid": 0.08333333333333333,
-   "margin_refined": 0.09891808346213292
+   "margin_refined": 0.10720268006700168
   },
   "push_0p3": {
    "grid": {
@@ -285,23 +286,23 @@
   }
  },
  "A1_sim_check": {
-  "scale": 15.1640625,
+  "scale": 13.9921875,
   "stood": true,
   "tau_sim": {
-   "left_hip_pitch_joint": 5.476871292904069,
-   "left_hip_roll_joint": -0.25612411854450856,
-   "left_hip_yaw_joint": 0.056471025641250075,
-   "left_knee_joint": -4.3416999680623105,
-   "left_ankle_pitch_joint": 12.978403923224166,
-   "left_ankle_roll_joint": 0.06542633548042773,
-   "right_hip_pitch_joint": 5.460183545089616,
-   "right_hip_roll_joint": 0.24294580546841615,
-   "right_hip_yaw_joint": -0.05568007371907468,
-   "right_knee_joint": -4.272842537868013,
-   "right_ankle_pitch_joint": 12.969878113743118,
-   "right_ankle_roll_joint": -0.0779922798285455
+   "left_hip_pitch_joint": 5.576640654508661,
+   "left_hip_roll_joint": 0.035081269952622965,
+   "left_hip_yaw_joint": -0.005025915387098497,
+   "left_knee_joint": -4.21018678023911,
+   "left_ankle_pitch_joint": 13.207834397898662,
+   "left_ankle_roll_joint": -0.02045968401346726,
+   "right_hip_pitch_joint": 5.558620353840999,
+   "right_hip_roll_joint": -0.054039121850554254,
+   "right_hip_yaw_joint": 0.009853199721101007,
+   "right_knee_joint": -4.151185147046043,
+   "right_ankle_pitch_joint": 13.218623066367485,
+   "right_ankle_roll_joint": 0.007451515388547108
   },
-  "z_drop_m": 0.0017247194060380222
+  "z_drop_m": 0.0017464560622204583
  },
  "A3": {
   "K_ankle_pitch_sum": 57.00249239475565,
@@ -737,7 +738,8 @@
     "ankle_roll_lean_rad": 0.21579332782542981,
     "com_y_error_m": 5.6461868916390934e-08,
     "pelvis_roll_rad": -1.130324722964196e-09,
-    "swing_clearance_m": 0.05207686424277935
+    "swing_clearance_m": 0.05207686424277935,
+    "range_violations": []
    },
    "resid": 1.1723955140041653e-13,
    "foot_force_z": 327.07660302000016,
@@ -847,7 +849,8 @@
     "ankle_roll_lean_rad": -0.2162247446872563,
     "com_y_error_m": -6.93009055280358e-08,
     "pelvis_roll_rad": 1.2586855409391764e-09,
-    "swing_clearance_m": 0.052018088044997385
+    "swing_clearance_m": 0.052018088044997385,
+    "range_violations": []
    },
    "resid": 2.2737367544323206e-13,
    "foot_force_z": 327.0766030199998,

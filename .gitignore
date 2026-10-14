@@ -59,3 +59,6 @@ docs/mujoco/assets/v4demo_loadviz.mp4
 
 # session handoff transcripts (2026-10-08)
 handoff_Rvizvisualize/
+
+# downloaded third-party robot models (docs/170), not tracked
+third_party/mujoco_menagerie_subset/
