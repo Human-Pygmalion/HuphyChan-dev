@@ -2395,6 +2395,16 @@
       "y": 1120,
       "width": 420,
       "height": 150
+    },
+    {
+      "id": "n_gain_reco",
+      "type": "text",
+      "x": 24640,
+      "y": 1120,
+      "width": 420,
+      "height": 170,
+      "color": "4",
+      "text": "**게인 권장 (10-14)**\n- 크랭크 22.3/1.41 → **60/2.5**\n- 엉덩이·무릎 유지\n- 확정: 크랭크만 바꾼 단일 변인 A/B\n- 실물: 영점 보정 먼저"
     }
   ],
   "edges": [
@@ -4797,6 +4807,12 @@
       "fromNode": "n_stand10_audit",
       "toNode": "n_v7b_pd",
       "label": "게인 점검"
+    },
+    {
+      "id": "e_pd_reco",
+      "fromNode": "n_v7b_pd",
+      "toNode": "n_gain_reco",
+      "label": "권장값"
     }
   ]
 }
