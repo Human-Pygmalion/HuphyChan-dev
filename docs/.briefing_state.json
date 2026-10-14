@@ -1670,7 +1670,8 @@
    "number": "median foot gap v9 caps: 25.0 (iter 1999) -> 48.1 cm (iter 8998)",
    "media": [
     "docs/mujoco/assets/stand10_width_vs_ckpt.png"
-   ]
+   ],
+   "collapsed": true
   },
   "stand10-audit-1014": {
    "id": "stand10-audit-1014",
@@ -1750,6 +1751,18 @@
    "number": "밀기 1~3초마다 (표준 8~15초) · 지연·게인 무작위화 0개 · 겹치는 보상 묶음 4개",
    "section": "done",
    "changed": "2026-10-14 18:08"
+  },
+  "pd-gain-criteria": {
+   "id": "pd-gain-criteria",
+   "created": "2026-10-14 19:06",
+   "title": "Kp/Kd 적정값 기준 조사 — '아슬아슬하게 서는 값'은 어느 문헌도 기준으로 쓰지 않음",
+   "finding": "기준은 양쪽 범위: 아래(하중 오차 예산·행동 창·중력 넘어짐 강성) / 위(잡음·지연·실물 진동·시뮬-실물 차이). 사람도 발목 수동 강성은 mgh 의 0.44~0.93 이고 신경계가 보충(전체 1.33배). 우리 발목은 0.44, 시험 런 크랭크 55 는 1.08",
+   "number": "문헌 58개(원문 발췌 2파일), 우리 mgh 131 N·m/rad",
+   "media": [
+    "docs/img/pd_gain/2026-10-14_gain_criteria.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-14 19:06"
   }
  },
  "order": [
@@ -1909,7 +1922,8 @@
   "v7b-pd-1014",
   "gain-reco-1014",
   "gain-walk-1014",
-  "v11a-plan-1014"
+  "v11a-plan-1014",
+  "pd-gain-criteria"
  ],
- "updated": "2026-10-14 18:28"
+ "updated": "2026-10-14 19:06"
 }
