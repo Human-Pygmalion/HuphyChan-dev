@@ -1582,7 +1582,8 @@
     "deploy_asset/pyg_rough_main_v11a/README.md"
    ],
    "section": "done",
-   "changed": "2026-10-12 19:28"
+   "changed": "2026-10-12 19:28",
+   "collapsed": true
   },
   "viser-action-scale": {
    "id": "viser-action-scale",
@@ -1677,6 +1678,18 @@
    ],
    "section": "done",
    "changed": "2026-10-14 12:32"
+  },
+  "stand10-schedule-1014": {
+   "id": "stand10-schedule-1014",
+   "created": "2026-10-14 15:24",
+   "title": "서기 정책 보상·커리큘럼 그림 — v9_caps 는 자세 보상이 0 으로 무너진 뒤 돌아오지 못했다",
+   "finding": "서기 전용 학습에서 반복 수에 따라 실제로 바뀌는 것은 외력·밀기 세기(1,999→4,999 에서 0→최대, 밀기 1.5 m/s)뿐이고, 보상 가중치는 세 정책 모두 같고 고정입니다. v9_caps 는 자세 보상이 4,000회 0.5 에서 7,000회 0.006 으로 0 에 붙었고, 같은 외력을 받은 v7b 는 0.58 에서 0.69 로 회복했습니다. 자세 보상의 허용폭이 모든 관절 2.86도로 좁아 몇 도만 벗어나도 보상과 그 기울기가 함께 0 이 되어 원래 자세로 당기는 힘이 사라집니다. CAPS 항이 그 문턱을 넘게 민 것으로 보입니다(가설).",
+   "number": "자세 보상 최종: v7b 0.69 · v9_caps 0.004 · 허용폭 0.05 rad(2.86°)",
+   "media": [
+    "docs/mujoco/assets/standonly_reward_terms.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-14 15:24"
   }
  },
  "order": [
@@ -1829,7 +1842,8 @@
   "battery-peer",
   "battery-inquiry",
   "stand10_audit",
-  "stand10-audit-1014"
+  "stand10-audit-1014",
+  "stand10-schedule-1014"
  ],
- "updated": "2026-10-14 12:32"
+ "updated": "2026-10-14 15:24"
 }
