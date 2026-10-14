@@ -2405,6 +2405,15 @@
       "height": 170,
       "color": "4",
       "text": "**게인 권장 (10-14)**\n- 크랭크 22.3/1.41 → **60/2.5**\n- 엉덩이·무릎 유지\n- 확정: 크랭크만 바꾼 단일 변인 A/B\n- 실물: 영점 보정 먼저"
+    },
+    {
+      "id": "n_rough_box_trial",
+      "type": "file",
+      "x": 24760,
+      "y": 4300,
+      "width": 420,
+      "height": 160,
+      "file": "experiments/2026-10-14_rough_box_trial_v11a.md"
     }
   ],
   "edges": [
@@ -4813,6 +4822,14 @@
       "fromNode": "n_v7b_pd",
       "toNode": "n_gain_reco",
       "label": "권장값"
+    },
+    {
+      "id": "e_rough_turn_t3_box_trial",
+      "fromNode": "n_rough_turn_t3",
+      "fromSide": "bottom",
+      "toNode": "n_rough_box_trial",
+      "toSide": "top",
+      "label": "배포 설정(rough_box_main) + 권장 묶음 시험 (캔버스에 main 노드 없음)"
     }
   ]
 }
