@@ -1696,7 +1696,8 @@
     "docs/mujoco/assets/standonly_reward_terms.png"
    ],
    "section": "done",
-   "changed": "2026-10-14 15:24"
+   "changed": "2026-10-14 15:24",
+   "collapsed": true
   },
   "v7b-realcond": {
    "id": "v7b-realcond",
@@ -1773,6 +1774,15 @@
    "number": "반복 3184 / 12,000",
    "section": "done",
    "changed": "2026-10-14 21:29"
+  },
+  "trial-v11a-4k": {
+   "id": "trial-v11a-4k",
+   "created": "2026-10-14 22:40",
+   "title": "v11a 권장안 시험 런 4,000회 중간 점검 — 기준선과 거의 같음, 계속",
+   "finding": "보상 73.1 대 71.9, 넘어짐 종료 0.006 대 0.003(둘 다 매우 작음), 회전 추종 보상 −3 %. 무작위화는 아직 33 % 램프",
+   "number": "4,051 / 12,000 회",
+   "section": "done",
+   "changed": "2026-10-14 22:40"
   }
  },
  "order": [
@@ -1934,7 +1944,8 @@
   "gain-walk-1014",
   "v11a-plan-1014",
   "pd-gain-criteria",
-  "trial-v11a-heartbeat"
+  "trial-v11a-heartbeat",
+  "trial-v11a-4k"
  ],
- "updated": "2026-10-14 21:29"
+ "updated": "2026-10-14 22:40"
 }
