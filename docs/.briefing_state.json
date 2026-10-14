@@ -1593,7 +1593,8 @@
    "finding": "Slider 0.05-1.0 step 0.05 in the Policy panel; torque = clip(s*Kp*(target-q) - s*Kd*qdot) then the usual effort and torque-speed clamps; at s=1.0 torques are bit-identical to before; at s=0.5 the PD part is exactly half (5 new tests pass). Driven in a real browser on the trail viewer: typed 0.30, readout showed knee Kp 220 to 66, Kd 6 to 1.8, the robot kept running (and collapsed, as expected at 30 percent gains).",
    "number": "5/5 new tests pass; 36 older failures are identical before and after (stale local cache)",
    "section": "done",
-   "changed": "2026-10-12 22:18"
+   "changed": "2026-10-12 22:18",
+   "collapsed": true
   },
   "viser-terrain-choice": {
    "id": "viser-terrain-choice",
@@ -1603,7 +1604,8 @@
    "finding": "Dropdown 'Terrain' in the Policy panel. Flat levels the trail heightfield to z=0 and turns the tree trunks off, then resets the robot standing; policy, mode and Action scale are kept. Lifting the floor plane (first idea) failed: moving a static geom at run time keeps its old collision box, the robot sank 0.90 to 0.15 m in 3 s. Browser check at vx 0.6 on flat: base height min 0.881 m, x 7.4 to 13.5 over 10 s; back to rough: stands at 0.897 m on the trail.",
    "number": "3 new tests + 5 gain-scale tests pass on the trail model",
    "section": "done",
-   "changed": "2026-10-12 22:38"
+   "changed": "2026-10-12 22:38",
+   "collapsed": true
   },
   "foot-sole-survey": {
    "id": "foot-sole-survey",
@@ -1690,6 +1692,25 @@
    ],
    "section": "done",
    "changed": "2026-10-14 15:24"
+  },
+  "v7b-realcond": {
+   "id": "v7b-realcond",
+   "created": "2026-10-14 16:30",
+   "title": "서기 전용 정책 v7b 실기 조건 시뮬레이터 시험",
+   "finding": "v7b(model_8998) 는 학습 환경과 비트 단위로 같은 환경에서 14 조건 시험: 11 조건 8/8 생존. 실기 중력 x 반전+시간차 조건에서 rough_box_main_v11a 는 8/8 넘어짐(평균 2.8 초), v7b 는 8/8 끝까지 생존. 둘 다 못 서는 조건: 게인 0.5/0.5, 실기 게인 0.05/0.3 + 크레인 풀기.",
+   "number": "14 조건 x 8 회; v7b 11 조건 8/8, 1 조건 7/8, 2 조건 0/8; rough 10/1/3",
+   "needs": "메인 세션 판정",
+   "section": "done",
+   "changed": "2026-10-14 16:30"
+  },
+  "v7b-realcond-1014": {
+   "id": "v7b-realcond-1014",
+   "created": "2026-10-14 16:31",
+   "title": "서기 정책 v7b 를 실기 조건 시뮬레이션에 — 실기에 올렸던 걷기 정책보다 같거나 낫다",
+   "finding": "실측한 통신 조건(관절 값 20 ms 늦음, 응답 유실, 안전 제한)과 게인 배율, IMU 치우침을 하나씩 켜고 v7b 를 시험했습니다. 14 조건 중 11 조건에서 8번 모두 서 있었고, 10-13 실기에 올렸던 걷기 정책(rough_box_main_v11a)보다 같거나 낫습니다. 특히 실기에서 문제가 된 IMU 중력 x 부호 오류에서도 서 있었습니다(걷기 정책 0/8). 둘 다 게인 배율 0.5 이하에서는 넘어집니다. 이 시뮬레이터는 센서 잡음을 끄므로 v7b 의 알려진 약점(잡음에 떨림)은 시험되지 않았습니다.",
+   "number": "v7b 8/8 조건 11개 · 걷기 정책 10개 · 중력 x 부호 오류: v7b 8/8, 걷기 0/8",
+   "section": "done",
+   "changed": "2026-10-14 16:31"
   }
  },
  "order": [
@@ -1843,7 +1864,9 @@
   "battery-inquiry",
   "stand10_audit",
   "stand10-audit-1014",
-  "stand10-schedule-1014"
+  "stand10-schedule-1014",
+  "v7b-realcond",
+  "v7b-realcond-1014"
  ],
- "updated": "2026-10-14 15:37"
+ "updated": "2026-10-14 16:31"
 }

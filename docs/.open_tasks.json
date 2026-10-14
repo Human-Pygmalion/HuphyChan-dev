@@ -908,5 +908,26 @@
     "state": "done",
     "added": 1791947044.4371042,
     "why": ""
+  },
+  {
+    "id": 134,
+    "text": "[사용자 2026-10-14] 명령 지연·IMU 실측을 DR 에 반영하기 위한 참고자료 + 분석 내용 모르는 다른 세션용 handoff 문서",
+    "state": "done",
+    "added": 1791959709.3059075,
+    "why": ""
+  },
+  {
+    "id": 135,
+    "text": "v7b_robust_stand(8998) 를 실기 조건 시뮬(real_condition_sim: 관측 지연·유실·가드·저게인·IMU 치우침)로 점검 — 실측 지연 자료(docs/sim2real/2026-10-14_dr_reference_latency_imu.md) 반영, rough_box_main_v11a 결과와 비교",
+    "state": "done",
+    "added": 1791962143.5883062,
+    "why": ""
+  },
+  {
+    "id": 136,
+    "text": "[사용자 2026-10-14] 동료용: 공유 브랜치에 이어서 학습(체크포인트 재개)·처음부터 학습 실행 스크립트 만들어 push + 동료 지적(HUPHY robot.yaml 왼다리 Kp/Kd 0·한계 null, 모터 종류 RS04/RS02 불일치) 확인",
+    "state": "open",
+    "added": 1791962179.446717,
+    "why": ""
   }
 ]
