@@ -1568,7 +1568,8 @@
    "finding": "험지 학습으로 v11a 의 내리막 29 m 낙상이 해결. 정체 종료 자체는 사전 기준(험지 단계·정체 감소)으로 이득 없음 — 멈춰 서기가 원래 드묾. 오르막에서 B 가 더 안정(약한 근거). 앞 세 번의 실패는 NaN·물리 폭주(발목 연결봉 141 rad/s, 보상 1e24+)였고 보호 장치로 해결",
    "number": "험지 단계 A 5.55 / B 5.43 · 산길 8 조건 모두 완주 · 정체 종료 0.7/회 · 물리 폭주 백만 걸음당 2 번",
    "section": "done",
-   "changed": "2026-10-10 12:08"
+   "changed": "2026-10-10 12:08",
+   "collapsed": true
   },
   "audit-rough-main": {
    "id": "audit-rough-main",
@@ -1664,6 +1665,18 @@
    "media": [
     "docs/mujoco/assets/stand10_width_vs_ckpt.png"
    ]
+  },
+  "stand10-audit-1014": {
+   "id": "stand10-audit-1014",
+   "created": "2026-10-14 12:32",
+   "title": "서기 전용 정책 정지 자세 점검 — 다리 벌림은 v9_caps 뿐, 원인은 CAPS 항",
+   "finding": "서기만 배운 정책 셋을 학습 단계별로 씨앗 6개씩, 12초 세워 10초 시점 자세를 사진으로 찍어 비교했습니다(138회). v7_standonly 와 v7b 는 두 발 간격이 기준자세(24.7 cm) 근처에 머뭅니다. v9_caps 는 1단계까지 정상이다가 2단계에서 점점 넓어져 마지막에는 48 cm(최대 61 cm), 엉덩이를 바깥으로 7~9도 벌린 ㅅ자로 섭니다. v7b 와 v9_caps 2단계의 설정 차이는 CAPS 항 하나뿐이고 외력 조건은 같으므로 원인은 CAPS 항입니다. 외력 램프가 끝난 뒤에도 계속 넓어졌습니다.",
+   "number": "최종 두 발 간격: v7 25.1 · v7b 26.0 · v9_caps 48.1 cm (기준 24.7)",
+   "media": [
+    "docs/mujoco/assets/stand10_width_vs_ckpt.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-14 12:32"
   }
  },
  "order": [
@@ -1815,7 +1828,8 @@
   "battery-bms",
   "battery-peer",
   "battery-inquiry",
-  "stand10_audit"
+  "stand10_audit",
+  "stand10-audit-1014"
  ],
  "updated": "2026-10-14 12:32"
 }
