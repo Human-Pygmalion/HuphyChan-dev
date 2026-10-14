@@ -38,9 +38,10 @@ Pygmalion 하체 이족 로봇의 보행 RL 학습 환경과, 그것으로 만�
 | `reference/rough_main/` | 배포 policy 학습 run 의 `env.yaml`·`agent.yaml`·launch manifest·source snapshot·전체 학습 곡선 (`scalars.csv.gz`) | 설정·학습 곡선 비교 기준 |
 | `reference/flat_p1/`, `flat_p2/` | Parent 평지 학습 2 단계의 같은 자료 | 앞 단계 설정 확인 |
 | `fork/` | 원 fork 의 `src/` 변경 patch 와 launch/train script (fork commit 은 공개 remote 에 없음) | Audit 의 `MJ/...` 인용 확인 |
-| `scripts/` | 학습·재생·영상·검증 script | |
+| `scripts/` | 학습·재생·영상·검증 script. 학습: `train_from_scratch.sh` (처음부터 세 단계), `train_continue.sh` (배포 policy 에서 이어서), `train_released.sh` (rough 단계만) | |
+| `deploy/` | **실기 배포 안내** (§9): 배포 꾸러미 사본, 모터·게인 표, HUPHY `biped` 브랜치 안내, 2026-10-13 실기 시험 분석 문서 | 실기에 올릴 때 |
 
-배포 (실기 inference) 꾸러미는 같은 브랜치의 `deploy_asset/pyg_rough_main_20261012/` 에 있다. 실기용 observation·action 계약 (`deploy_contract.json`) 과 mjlab 대비 입출력 일치 검증 결과가 들어 있다.
+배포 (실기 inference) 꾸러미는 `deploy/asset/` 에 있다 (원본은 학습 저장소 `deploy_asset/pyg_rough_main_20261012/`). 실기용 observation·action 계약 (`deploy_contract.json`) 과 mjlab 대비 입출력 일치 검증 결과가 들어 있다.
 
 ## 3. 배포 policy 는 어떻게 만들어졌나
 
@@ -178,14 +179,18 @@ $MJLAB_PYTHON scripts/verify_config.py     # -> RESULT: MATCH
 | 설정 검증 (원 run 의 `env.yaml`·`agent.yaml` 과 값 비교) | `$MJLAB_PYTHON scripts/verify_config.py` |
 | **처음부터 학습** (P1 → P2 → rough, 학습 영상 포함) | `MJLAB_PYTHON=... bash scripts/train_from_scratch.sh` (단계 선택: `STAGES="p2 rough"`, 이어받을 run: `P1_RUN=`, `P2_RUN=`) |
 | Rough 단계만 재학습 (원 P2 의 끝 actor 에서, 학습 영상 포함) | `bash scripts/train_released.sh 12000 4096 released` |
+| **배포 policy 에서 이어서 학습** — 같은 설정으로 계속 (actor·critic·optimizer·iteration 11,999 모두 불러옴) | `bash scripts/train_continue.sh resume 4000 4096 continue` |
+| **배포 policy 에서 이어서 학습** — 환경을 바꾼 뒤 (actor 만 불러오고 critic 300 update 먼저 적응) | `bash scripts/train_continue.sh warmstart 12000 4096 finetune --obs-delay 1 --act-delay 1 --gain-dr 0.8 1.2` |
 | 짧은 확인 학습 | `bash scripts/train_released.sh 1000 4096 check` |
-| 처음부터 학습 (warm start 없이) | `uv run train Pygmalion-Velocity-Rough-Box --env.scene.num-envs 4096` (mjlab 폴더에서) |
+| Rough 단계만 warm start 없이 (배포 절차와 다름) | `uv run train Pygmalion-Velocity-Rough-Box --env.scene.num-envs 4096` (mjlab 폴더에서) |
 | 학습 곡선을 원 run 과 비교 | `$MJLAB_PYTHON scripts/compare_curves.py logs/rsl_rl/pygmalion_velocity/<run> reference/rough_main/scalars.csv.gz --upto 1000 --png curves.png` |
 | Policy 재생 (interactive viewer) | `$MJLAB_PYTHON scripts/play.py Pygmalion-Velocity-Rough-Box --checkpoint-file checkpoints/rough_main_model_11999.pt` |
 | 시연 영상 (headless, 실시간 50 fps, 명령당 15 s) | `$MJLAB_PYTHON scripts/record_video.py --checkpoint checkpoints/rough_main_model_11999.pt --out demo.mp4` |
 | 같은 seed 롤아웃 기록·비교 | `scripts/rollout_trace.py` (docstring 참고) |
 
-`train_released.sh` 는 `MJLAB_PYTHON` 을 쓴다. 로그는 `logs/rsl_rl/pygmalion_velocity/<날짜>_<run_name>/` (checkpoint, `params/`, `videos/train/`). `scripts/train.py` 의 나머지 인자는 mjlab `train` CLI 로 그대로 넘어간다.
+선택 무작위화 `--obs-delay N`, `--act-delay N`, `--gain-dr LO HI` 는 기본이 꺼져 있다 (배포 policy 는 이것 없이 학습됨). 모든 학습 스크립트 뒤에 붙이면 된다 (`train_from_scratch.sh` 는 `TRAIN_EXTRA="..."`). 뜻과 실측 근거는 `deploy/README.md` §4. `train_continue.sh resume` 은 terrain curriculum level 은 복원하지 않는다 (0 부터 다시 오름).
+
+모든 학습 스크립트는 `MJLAB_PYTHON` 을 쓴다. 로그는 `logs/rsl_rl/pygmalion_velocity/<날짜>_<run_name>/` (checkpoint, `params/`, `videos/train/`). `scripts/train.py` 의 나머지 인자는 mjlab `train` CLI 로 그대로 넘어간다.
 
 **배포 policy 와 같은 절차** (`train_released.sh`):
 1. Actor-only warm start: parent 에서 actor weight·action std·obs normalizer 만 불러온다. Critic·optimizer·iteration 은 새로 시작하고 env step counter 를 0 으로 되돌린다. Rough critic 입력 (height scan 포함) 이 parent 와 달라 critic 은 불러올 수 없다.
@@ -208,3 +213,12 @@ $MJLAB_PYTHON scripts/verify_config.py     # -> RESULT: MATCH
 | 그 밖의 fork core 변경 (box-only terrain, actor height scan 제거 등) | mjlab core 수정 + `PYG_*` flag | `env_cfg.py` 의 override | `verify_config` 로 값 일치 확인 |
 
 로봇 모델은 최신 하체 모델 `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop` 이다. 공통 관절 24 개의 축·위치·범위가 최신 전신 모델 (`FullDoF_..._v30_proxyfix_shell_loop`) 과 같다 (2026-10-12 확인).
+
+## 9. 실기 배포
+
+실기에 올리는 데 필요한 것은 `deploy/README.md` 에 모았다. 요점은 다음과 같다.
+- 로봇 쪽 코드는 HUPHY 저장소 **`biped` 브랜치**다. `main` 은 옛 단일다리 설정 (v0.5: 왼다리 Kp/Kd 비어 있음, 한계 null, RS02/RS00) 이다.
+- 모터: hip pitch·roll·knee 는 RS04, hip yaw·발목 크랭크는 RS03. 학습 모델과 실기 설정이 같다 (2026-10-14 확인).
+- 2026-10-13 실기 시험에서 IMU 투영 중력 x 부호가 시뮬레이션과 반대로 들어가는 것을 찾았다 (확인 중).
+- 게인 배율 0.8 미만은 학습 범위 밖이다. `--hz 50` 으로 돌려야 한다.
+

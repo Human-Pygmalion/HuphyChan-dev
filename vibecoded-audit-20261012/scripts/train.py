@@ -14,6 +14,19 @@ Extra options (removed from argv before mjlab's own CLI parses the rest):
                            iteration S, linear to C1 at iteration E, C1 after (flat P2:
                            15999 29998 0.01 0.002). Same schedule as the training fork's runner.
 
+Optional randomization, all OFF by default (the released policy was trained without them). Each
+one changes the environment, so the dumped params/env.yaml records it:
+
+  --obs-delay N            the policy sees the 12 motor angles (both history frames) 0..N policy
+                           steps late, lag drawn per env. The real robot runs at N = 1: it feeds the
+                           state received in the previous control cycle (20 ms at 50 Hz).
+  --act-delay N            joint targets reach the actuators 0..N physics steps (5 ms) late, lag
+                           drawn per env. Measured on the robot: about 1-1.5 ms, so N = 1 covers it.
+  --gain-dr LO HI          at every reset, scale each joint's Kp and Kd by independent draws from
+                           U(LO, HI) (mjlab.envs.mdp.dr.pd_gains), e.g. 0.8 1.2.
+
+Measured values behind these ranges: README section 9 (deployment notes).
+
 The released policy was trained in three stages (scripts/train_from_scratch.sh runs all three):
   python scripts/train.py Pygmalion-Velocity-Flat-P1 --agent.seed 43              # 16,000 it
   python scripts/train.py Pygmalion-Velocity-Flat-P2 --agent.seed 43 \\
@@ -85,6 +98,38 @@ def _install_entropy_anneal(start_it: int, end_it: int, c0: float, c1: float) ->
   MjlabOnPolicyRunner.learn = learn
 
 
+def _install_env_options(obs_delay: int, act_delay: int, gain_dr) -> None:
+  """Edit the env config before mjlab builds it (wraps the registry lookup the train CLI uses)."""
+  import mjlab.scripts.train as mjlab_train_mod
+  from mjlab.envs import mdp as envs_mdp
+  from mjlab.managers.event_manager import EventTermCfg
+  from mjlab.managers.scene_entity_config import SceneEntityCfg
+
+  orig = mjlab_train_mod.load_env_cfg
+
+  def load_env_cfg(task_id, *args, **kwargs):
+    cfg = orig(task_id, *args, **kwargs)
+    if obs_delay > 0:
+      term = cfg.observations["actor"].terms["motor_pos_history"]
+      term.delay_min_lag, term.delay_max_lag, term.delay_per_env = 0, obs_delay, True
+      print(f"[pygmalion] motor angle observation delay 0..{obs_delay} policy steps", flush=True)
+    if act_delay > 0:
+      for act in cfg.scene.entities["robot"].articulation.actuators:
+        act.delay_min_lag, act.delay_max_lag = 0, act_delay
+      print(f"[pygmalion] actuator command delay 0..{act_delay} physics steps", flush=True)
+    if gain_dr is not None:
+      lo, hi = float(gain_dr[0]), float(gain_dr[1])
+      cfg.events["pd_gains_dr"] = EventTermCfg(
+        mode="reset", func=envs_mdp.dr.pd_gains,
+        params={"kp_range": (lo, hi), "kd_range": (lo, hi), "asset_cfg": SceneEntityCfg("robot"),
+                "operation": "scale"},
+      )
+      print(f"[pygmalion] Kp/Kd scale U({lo}, {hi}) per joint at every reset", flush=True)
+    return cfg
+
+  mjlab_train_mod.load_env_cfg = load_env_cfg
+
+
 def _install_warmstart(actor_ckpt: str | None, critic_warmup: int) -> None:
   from mjlab.rl.runner import MjlabOnPolicyRunner
 
@@ -133,12 +178,17 @@ def main() -> None:
   actor_ckpt = _pop("--warmstart-actor")
   critic_warmup = int(_pop("--critic-warmup") or 0)
   anneal = _pop_n("--entropy-anneal", 4)
+  obs_delay = int(_pop("--obs-delay") or 0)
+  act_delay = int(_pop("--act-delay") or 0)
+  gain_dr = _pop_n("--gain-dr", 2)
   import pygmalion_mjlab  # noqa: F401  (registers the tasks)
 
   if actor_ckpt or critic_warmup:
     _install_warmstart(actor_ckpt, critic_warmup)
   if anneal:
     _install_entropy_anneal(int(anneal[0]), int(anneal[1]), float(anneal[2]), float(anneal[3]))
+  if obs_delay or act_delay or gain_dr:
+    _install_env_options(obs_delay, act_delay, gain_dr)
   from mjlab.scripts.train import main as mjlab_train
 
   mjlab_train()
