@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Standing-pose audit: all 138 standing rollouts finished (0 failures); foot-gap table done - v9 caps ends at median 48 cm (reset pose 24.7 cm), v7 and v7b stay 25-27 cm; rendering image grids",
-  "detail": "v7 iterations 1000-4100 fell (environment reset within 12 s) in 3-5 of 6 seeds; v7b 0 of 48; v9 caps 1 of 48.",
-  "since": "2026-10-14 12:29"
+  "title": "DR 참고자료(docs/sim2real/2026-10-14_dr_reference_latency_imu.md: 실측→mjlab 항목→권장 범위, 관절관측 지연 0~1·명령 지연 0~1 물리스텝·유실 0~5% 유지·IMU 부착각 site_quat ±5°, 부호 반전은 DR 금지)와 다른 세션용 handoff(docs/sim2real/HANDOFF_2026-10-14_dr_latency_imu.md) 작성",
+  "detail": "",
+  "since": "2026-10-14 15:37"
  },
  "items": {
   "shouldermesh": {
@@ -1845,5 +1845,5 @@
   "stand10-audit-1014",
   "stand10-schedule-1014"
  ],
- "updated": "2026-10-14 15:24"
+ "updated": "2026-10-14 15:37"
 }
