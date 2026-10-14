@@ -1,0 +1,255 @@
+{
+ "actor_terms": {
+  "base_ang_vel": 3,
+  "projected_gravity": 3,
+  "motor_pos_history": 24,
+  "actions": 12,
+  "command": 3
+ },
+ "actor_dim": 45,
+ "actor_term_order": [
+  "base_ang_vel",
+  "projected_gravity",
+  "motor_pos_history",
+  "actions",
+  "command"
+ ],
+ "action_dim": 12,
+ "action_joints": [
+  "R_hip_pitch_joint",
+  "R_hip_roll_joint",
+  "R_hip_yaw_joint",
+  "R_knee_joint",
+  "R_crank_A_joint",
+  "R_crank_B_joint",
+  "L_hip_pitch_joint",
+  "L_hip_roll_joint",
+  "L_hip_yaw_joint",
+  "L_knee_joint",
+  "L_crank_A_joint",
+  "L_crank_B_joint"
+ ],
+ "action_scale": [
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25,
+  0.25
+ ],
+ "action_offset": [
+  -0.175,
+  0.0,
+  0.0,
+  0.35,
+  0.1439549,
+  -0.1470631,
+  0.175,
+  0.0,
+  0.0,
+  -0.35,
+  -0.143885,
+  0.1468702
+ ],
+ "default_pose": [
+  -0.175,
+  0.0,
+  0.0,
+  0.35,
+  0.1439549,
+  -0.1470631,
+  0.175,
+  0.0,
+  0.0,
+  -0.35,
+  -0.143885,
+  0.1468702
+ ],
+ "joint_limits_hard": [
+  -2.0943999,
+  0.436332,
+  -0.436332,
+  1.48353,
+  -0.785398,
+  0.785398,
+  0.0,
+  2.0943999,
+  -1.2,
+  1.2,
+  -1.2,
+  1.2,
+  -0.436332,
+  2.0943999,
+  -1.48353,
+  0.436332,
+  -0.785398,
+  0.785398,
+  -2.0943999,
+  0.0,
+  -1.2,
+  1.2,
+  -1.2,
+  1.2
+ ],
+ "decimation": 4,
+ "step_dt": 0.02,
+ "physics_dt": 0.005,
+ "actuator0_class": "TnPdActuator",
+ "actuator0_targets": [
+  "R_crank_A_joint",
+  "R_crank_B_joint",
+  "L_crank_A_joint",
+  "L_crank_B_joint"
+ ],
+ "actuator0_default_stiffness": [
+  22.265625,
+  22.265625,
+  22.265625,
+  22.265625
+ ],
+ "actuator0_default_damping": [
+  1.4140625,
+  1.4140625,
+  1.4140625,
+  1.4140625
+ ],
+ "actuator0_stiffness": [
+  22.265625,
+  22.265625,
+  22.265625,
+  22.265625
+ ],
+ "actuator0_damping": [
+  1.4140625,
+  1.4140625,
+  1.4140625,
+  1.4140625
+ ],
+ "actuator1_class": "TnPdActuator",
+ "actuator1_targets": [
+  "R_hip_yaw_joint",
+  "L_hip_yaw_joint"
+ ],
+ "actuator1_default_stiffness": [
+  150.0,
+  150.0
+ ],
+ "actuator1_default_damping": [
+  6.0,
+  6.0
+ ],
+ "actuator1_stiffness": [
+  150.0,
+  150.0
+ ],
+ "actuator1_damping": [
+  6.0,
+  6.0
+ ],
+ "actuator2_class": "TnPdActuator",
+ "actuator2_targets": [
+  "R_hip_pitch_joint",
+  "R_hip_roll_joint",
+  "L_hip_pitch_joint",
+  "L_hip_roll_joint"
+ ],
+ "actuator2_default_stiffness": [
+  150.0,
+  150.0,
+  150.0,
+  150.0
+ ],
+ "actuator2_default_damping": [
+  6.0,
+  6.0,
+  6.0,
+  6.0
+ ],
+ "actuator2_stiffness": [
+  150.0,
+  150.0,
+  150.0,
+  150.0
+ ],
+ "actuator2_damping": [
+  6.0,
+  6.0,
+  6.0,
+  6.0
+ ],
+ "actuator3_class": "TnPdActuator",
+ "actuator3_targets": [
+  "R_knee_joint",
+  "L_knee_joint"
+ ],
+ "actuator3_default_stiffness": [
+  220.0,
+  220.0
+ ],
+ "actuator3_default_damping": [
+  6.0,
+  6.0
+ ],
+ "actuator3_stiffness": [
+  220.0,
+  220.0
+ ],
+ "actuator3_damping": [
+  6.0,
+  6.0
+ ],
+ "mj_counts": {
+  "nbody": 23,
+  "njnt": 25,
+  "ngeom": 59,
+  "neq": 4,
+  "nu": 12,
+  "nv": 30
+ },
+ "mj_total_mass": 23.63014,
+ "mj_hash_dof_armature": "64d0ed9e043d",
+ "mj_hash_dof_damping": "0aa638b7a069",
+ "mj_hash_dof_frictionloss": "6c47022200eb",
+ "mj_hash_body_mass": "c6167b4f1da6",
+ "mj_hash_body_ipos": "8d3fe45f093d",
+ "mj_hash_geom_size": "6407031465d7",
+ "mj_hash_geom_friction": "d16afe7bbef4",
+ "mj_hash_eq_data": "7b49ffa9c864",
+ "mj_hash_jnt_range": "e6214d9b0ddd",
+ "crank_joints": [
+  "R_crank_A_joint",
+  "R_crank_B_joint",
+  "L_crank_A_joint",
+  "L_crank_B_joint"
+ ],
+ "env_reward_terms": [
+  "action_rate_l2",
+  "air_time",
+  "angular_momentum",
+  "body_ang_vel",
+  "contact_force_cap",
+  "dof_pos_limits",
+  "foot_clearance",
+  "foot_impact_velocity",
+  "foot_slip",
+  "foot_swing_height",
+  "knee_overspeed",
+  "pose",
+  "self_collisions",
+  "soft_landing",
+  "stance_knee_extension",
+  "stand_still_penalty",
+  "thermal_effort",
+  "torque_limit",
+  "track_angular_velocity",
+  "track_lin_vel_progress",
+  "track_linear_velocity",
+  "upright"
+ ]
+}

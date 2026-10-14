@@ -1,0 +1,328 @@
+{
+ "args": {
+  "pkg": "/home/syaro/pyg_share/fresh_test/vibecoded-audit-20261012",
+  "checkpoint": "/home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-16_23-49-54_legonly_ab_v7b_robust_stand_p2/model_8998.pt",
+  "task": "Pygmalion-Velocity-Flat-P2",
+  "reps": 8,
+  "seconds": 20.0,
+  "decimation": 5,
+  "only": "nominal,real timing (delay+guards+loss)",
+  "device": "cuda:0",
+  "out": "/home/syaro/v7b_check/rc_v7b_brief_dec5.json"
+ },
+ "step_dt": 0.025,
+ "conditions": {
+  "nominal": {},
+  "real timing (delay+guards+loss)": {
+   "delay": 1,
+   "guards": 1,
+   "loss": 0.02
+  }
+ },
+ "rows": [
+  {
+   "cond": "nominal",
+   "rep": 0,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.1970932483673096,
+   "act_rms": 0.5772355794906616,
+   "t_act3": NaN,
+   "knee_std_deg": 0.07620704174041748,
+   "knee_hz": 0.75,
+   "gyro_rms_dps": [
+    0.5686752200126648,
+    1.3337544202804565,
+    0.6412394046783447
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8934348821640015
+  },
+  {
+   "cond": "nominal",
+   "rep": 1,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.238818883895874,
+   "act_rms": 0.596802830696106,
+   "t_act3": 0.125,
+   "knee_std_deg": 0.07881069928407669,
+   "knee_hz": 0.8,
+   "gyro_rms_dps": [
+    0.7180912494659424,
+    1.4075746536254883,
+    0.7679674029350281
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.893416166305542
+  },
+  {
+   "cond": "nominal",
+   "rep": 2,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.2749700546264648,
+   "act_rms": 0.5938404202461243,
+   "t_act3": NaN,
+   "knee_std_deg": 0.04718302562832832,
+   "knee_hz": 0.75,
+   "gyro_rms_dps": [
+    0.45737895369529724,
+    0.841297447681427,
+    0.27237868309020996
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8934661149978638
+  },
+  {
+   "cond": "nominal",
+   "rep": 3,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.2119638919830322,
+   "act_rms": 0.6072447896003723,
+   "t_act3": 0.10000000149011612,
+   "knee_std_deg": 0.08332867920398712,
+   "knee_hz": 0.75,
+   "gyro_rms_dps": [
+    0.8017902374267578,
+    2.26981782913208,
+    0.831641435623169
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.893374502658844
+  },
+  {
+   "cond": "nominal",
+   "rep": 4,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.3270633220672607,
+   "act_rms": 0.5781505703926086,
+   "t_act3": NaN,
+   "knee_std_deg": 0.07417724281549454,
+   "knee_hz": 0.8,
+   "gyro_rms_dps": [
+    0.8058112859725952,
+    1.3356319665908813,
+    0.5886040329933167
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.893571138381958
+  },
+  {
+   "cond": "nominal",
+   "rep": 5,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.3148249387741089,
+   "act_rms": 0.6235741376876831,
+   "t_act3": NaN,
+   "knee_std_deg": 0.06136150285601616,
+   "knee_hz": 0.30000000000000004,
+   "gyro_rms_dps": [
+    0.5574392676353455,
+    0.7288190126419067,
+    0.4534336030483246
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.893140971660614
+  },
+  {
+   "cond": "nominal",
+   "rep": 6,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.242165446281433,
+   "act_rms": 0.5748792290687561,
+   "t_act3": NaN,
+   "knee_std_deg": 0.06416283547878265,
+   "knee_hz": 0.75,
+   "gyro_rms_dps": [
+    0.6257761716842651,
+    0.8969277739524841,
+    0.5101896524429321
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8933287858963013
+  },
+  {
+   "cond": "nominal",
+   "rep": 7,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.1993087530136108,
+   "act_rms": 0.6095726490020752,
+   "t_act3": 0.125,
+   "knee_std_deg": 0.10557098686695099,
+   "knee_hz": 0.75,
+   "gyro_rms_dps": [
+    0.6948825716972351,
+    1.9756107330322266,
+    1.2408525943756104
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8934159874916077
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 0,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.851879596710205,
+   "act_rms": 0.6604935526847839,
+   "t_act3": 0.15000000596046448,
+   "knee_std_deg": 0.5497074127197266,
+   "knee_hz": 4.9,
+   "gyro_rms_dps": [
+    8.313486099243164,
+    3.993581533432007,
+    6.942592620849609
+   ],
+   "clip_limit": 0.00010416666918899864,
+   "clip_jump": 0.0006249999860301614,
+   "base_h": 0.8931670188903809
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 1,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.5592620372772217,
+   "act_rms": 0.6386752128601074,
+   "t_act3": 0.15000000596046448,
+   "knee_std_deg": 0.481436163187027,
+   "knee_hz": 5.0,
+   "gyro_rms_dps": [
+    7.412339210510254,
+    3.3000810146331787,
+    7.225728511810303
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8935906887054443
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 2,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.6672143936157227,
+   "act_rms": 0.6372627019882202,
+   "t_act3": 0.15000000596046448,
+   "knee_std_deg": 0.4545004665851593,
+   "knee_hz": 5.25,
+   "gyro_rms_dps": [
+    5.956528663635254,
+    3.272606134414673,
+    6.092930793762207
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.00010416666918899864,
+   "base_h": 0.8936593532562256
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 3,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.4180309772491455,
+   "act_rms": 0.6279736161231995,
+   "t_act3": 0.125,
+   "knee_std_deg": 0.2508837878704071,
+   "knee_hz": 1.75,
+   "gyro_rms_dps": [
+    2.2435495853424072,
+    1.8962846994400024,
+    2.2459828853607178
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8931175470352173
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 4,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.8127161264419556,
+   "act_rms": 0.6654754877090454,
+   "t_act3": 0.15000000596046448,
+   "knee_std_deg": 0.412001371383667,
+   "knee_hz": 5.1000000000000005,
+   "gyro_rms_dps": [
+    5.452880382537842,
+    3.600858449935913,
+    5.093419551849365
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0006249999860301614,
+   "base_h": 0.8932284712791443
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 5,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.6694016456604004,
+   "act_rms": 0.6353927850723267,
+   "t_act3": 0.125,
+   "knee_std_deg": 0.5485771894454956,
+   "knee_hz": 4.95,
+   "gyro_rms_dps": [
+    7.106472492218018,
+    3.061919689178467,
+    6.182308673858643
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8932557702064514
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 6,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.6583256721496582,
+   "act_rms": 0.6068741679191589,
+   "t_act3": 0.15000000596046448,
+   "knee_std_deg": 0.5499718189239502,
+   "knee_hz": 5.15,
+   "gyro_rms_dps": [
+    8.058141708374023,
+    3.8659961223602295,
+    6.900350093841553
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8934585452079773
+  },
+  {
+   "cond": "real timing (delay+guards+loss)",
+   "rep": 7,
+   "survived_s": 19.99983787536621,
+   "fell": false,
+   "act_p99": 1.57559072971344,
+   "act_rms": 0.6131702065467834,
+   "t_act3": 0.125,
+   "knee_std_deg": 0.470760315656662,
+   "knee_hz": 4.8500000000000005,
+   "gyro_rms_dps": [
+    6.99911642074585,
+    3.0989830493927,
+    5.85414981842041
+   ],
+   "clip_limit": 0.0,
+   "clip_jump": 0.0,
+   "base_h": 0.8934374451637268
+  }
+ ]
+}
