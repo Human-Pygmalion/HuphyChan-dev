@@ -1683,7 +1683,8 @@
     "docs/mujoco/assets/stand10_width_vs_ckpt.png"
    ],
    "section": "done",
-   "changed": "2026-10-14 12:32"
+   "changed": "2026-10-14 12:32",
+   "collapsed": true
   },
   "stand10-schedule-1014": {
    "id": "stand10-schedule-1014",
@@ -1763,6 +1764,15 @@
    ],
    "section": "done",
    "changed": "2026-10-14 19:06"
+  },
+  "trial-v11a-heartbeat": {
+   "id": "trial-v11a-heartbeat",
+   "created": "2026-10-14 19:28",
+   "title": "v11a 권장안 시험 런 정기 점검 (19:28) — 원격 3090 학습 중",
+   "finding": "자동 점검(스크립트). 진행 중입니다.",
+   "number": "반복 1103 / 12,000",
+   "section": "done",
+   "changed": "2026-10-14 19:28"
   }
  },
  "order": [
@@ -1923,7 +1933,8 @@
   "gain-reco-1014",
   "gain-walk-1014",
   "v11a-plan-1014",
-  "pd-gain-criteria"
+  "pd-gain-criteria",
+  "trial-v11a-heartbeat"
  ],
- "updated": "2026-10-14 19:06"
+ "updated": "2026-10-14 19:28"
 }
