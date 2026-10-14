@@ -2387,6 +2387,14 @@
       "height": 200,
       "color": "1",
       "text": "**서기 정책 다리 벌림 원인 (10-14)**\n- v9_caps 만 48 cm 벌림 (v7b 26 cm)\n- 자세 보상 0.004 로 사망, 회복 못 함\n- 허용폭 2.86° → 기울기 0 → 표류\n- CAPS 가 문턱을 넘게 민 것으로 추정"
+    },
+    {
+      "id": "n_v7b_pd",
+      "file": "experiments/2026-10-14_v7b_pd_gain_check.md",
+      "x": 24160,
+      "y": 1120,
+      "width": 420,
+      "height": 150
     }
   ],
   "edges": [
@@ -4783,6 +4791,12 @@
       "fromNode": "n_stand10_audit",
       "toNode": "n_stand10_cause",
       "label": "보상·커리큘럼 판독"
+    },
+    {
+      "id": "e_stand10_pd",
+      "fromNode": "n_stand10_audit",
+      "toNode": "n_v7b_pd",
+      "label": "게인 점검"
     }
   ]
 }
