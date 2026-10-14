@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Phase 2 done: docs/170 written; none of 7 published gain sets stands with PD alone (multiplier 2.3-6.8, Berkeley 28) - expected for policies that balance actively",
-  "detail": "H1, T1, Berkeley added (Menagerie commit d7b481ba, git-ignored). Ankle alone explains 37-65 percent of the multiplier. Best rule per robot: torque limit (G1-a, H1), armature x (2 pi 10)^2 (G1-b), limit/2 (Berkeley hips and knee), round numbers (T1), Pygmalion ankle crank is the only joint below the action-1 = quarter-of-limit line; trial crank 55 joins it. Commit 119138a.",
-  "since": "2026-10-14 23:00"
+  "title": "v11a 권장안 시험 런 완주(11,999회, 06:03) — 기준선과 같은 도구로 사전 등록 기준 5개 측정 중",
+  "detail": "제자리 회전·서기 흘러감·걷기(씨앗 반복), 실기 조건 시뮬 14조건×8회, 걷는 중 크랭크 목표 오차. 두 저장본 모두 지금 다시 측정. 원격 그래픽카드 잠금 해제함.",
+  "since": "2026-10-15 06:04"
  },
  "items": {
   "shouldermesh": {
@@ -1972,5 +1972,5 @@
   "other-robot-gains",
   "trial-v11a-8k"
  ],
- "updated": "2026-10-15 05:12"
+ "updated": "2026-10-15 06:04"
 }
