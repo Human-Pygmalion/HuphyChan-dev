@@ -190,6 +190,8 @@ $MJLAB_PYTHON scripts/verify_config.py     # -> RESULT: MATCH
 
 선택 무작위화 `--obs-delay N`, `--act-delay N`, `--gain-dr LO HI` 는 기본이 꺼져 있다 (배포 policy 는 이것 없이 학습됨). 모든 학습 스크립트 뒤에 붙이면 된다 (`train_from_scratch.sh` 는 `TRAIN_EXTRA="..."`). 뜻과 실측 근거는 `deploy/README.md` §4. `train_continue.sh resume` 은 terrain curriculum level 은 복원하지 않는다 (0 부터 다시 오름).
 
+**확인 (2026-10-14, 3090, 순정 mjlab, push 된 폴더 그대로)**: `deploy/asset` 자체시험 통과. `train_continue.sh resume` 60 회 (11,999 → 12,059) 의 끝 값이 원 학습 끝과 같은 수준 (평균 episode 길이 800 대 792, 속도 오차 1.09 대 1.16. 보상 74 대 68 은 terrain level 이 0 부터 다시 시작한 영향). `warmstart` + 세 옵션 60 회, `train_released.sh` + `--gain-dr` 20 회, `train_from_scratch.sh` 세 단계 (각 20~30 회, `TRAIN_EXTRA` 세 옵션) 모두 정상 종료. 옵션을 켠 run 의 `params/env.yaml` 에 지연 설정 5 곳·`pd_gains_dr` 가 기록되고, 학습 영상도 생성됨.
+
 모든 학습 스크립트는 `MJLAB_PYTHON` 을 쓴다. 로그는 `logs/rsl_rl/pygmalion_velocity/<날짜>_<run_name>/` (checkpoint, `params/`, `videos/train/`). `scripts/train.py` 의 나머지 인자는 mjlab `train` CLI 로 그대로 넘어간다.
 
 **배포 policy 와 같은 절차** (`train_released.sh`):
