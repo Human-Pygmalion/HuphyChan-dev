@@ -4829,7 +4829,7 @@
       "fromSide": "bottom",
       "toNode": "n_rough_box_trial",
       "toSide": "top",
-      "label": "배포 설정(rough_box_main) + 권장 묶음 시험 (캔버스에 main 노드 없음)"
+      "label": "배포 설정(rough_box_main) + 권장 묶음 시험 (캔버스에 main 노드 없음) · 4k 중간: 기준선과 같은 궤적"
     }
   ]
 }
