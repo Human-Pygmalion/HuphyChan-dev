@@ -1,0 +1,13 @@
+Crank servo gains seen by the two evaluation paths (2026-10-15, remote 3090).
+
+A) matched_set.sh path (Mjlab-Velocity-Flat-Pygmalion, play cfg, PYG_* from each run's own repro/launch_manifest.json)
+   probe: probe_crank.py builds the env exactly like measure_loads.py and prints the actuator stiffness/damping.
+   baseline rough_box_main_v11a : PYG_CRANK_KP/KD unset -> crank (4 joints) stiffness 22.265625, damping 1.4140625
+   trial    rough_box_trial_v11a: PYG_CRANK_KP=55 KD=2.5 -> crank (4 joints) stiffness 55.0, damping 2.5
+   other groups identical in both: hip yaw 150/6, hip pitch+roll 150/6, knee 220/6.
+
+B) real_condition_sim.py path (vibecoded-audit package, task Pygmalion-Velocity-Flat-P2). The package ignores PYG_* env
+   vars, so the trial would silently have been evaluated with 22.27/1.41. Added --crank-kp/--crank-kd (default 0 = package
+   value) to tools/sim2real/real_condition_sim.py; the script now prints "crank Kp/Kd at scale 1.0".
+   baseline log: crank Kp/Kd at scale 1.0: 22.265625 1.4140625   (Kp at scale 0.05 -> 0.0, int truncation as on the robot)
+   trial    log: crank Kp/Kd at scale 1.0: 55.0 2.5               (Kp at scale 0.05 -> 2.44)

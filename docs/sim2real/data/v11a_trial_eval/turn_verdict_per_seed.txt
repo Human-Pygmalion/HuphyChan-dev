@@ -1,0 +1,96 @@
+
+=== m_rbmv11a_final_turn_s0 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.961                96.1 %
+    -0.75    -0.773               103.0 %
+    -0.50    -0.001                 0.2 %
+    -0.25    -0.096                38.5 %
+     0.25     0.009                 3.7 %
+     0.50    -0.008                -1.7 %  <- wrong way
+     0.75     0.688                91.7 %
+     1.00     0.895                89.5 %
+median 64.0 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_rbmv11a_final_turn_s1 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.777                77.7 %
+    -0.75     0.115               -15.3 %  <- wrong way
+    -0.50    -0.242                48.3 %
+    -0.25    -0.007                 2.9 %
+     0.25     0.009                 3.4 %
+     0.50    -0.005                -1.1 %  <- wrong way
+     0.75     0.363                48.4 %
+     1.00     0.937                93.7 %
+median 25.9 %   wrong way 2/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_rbmv11a_final_turn_s2 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.678                67.8 %
+    -0.75    -0.030                 4.0 %
+    -0.50    -0.342                68.4 %
+    -0.25     0.004                -1.5 %  <- wrong way
+     0.25     0.030                11.9 %
+     0.50     0.042                 8.3 %
+     0.75     0.772               103.0 %
+     1.00     0.703                70.3 %
+median 39.8 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_rbmv11a_final_turn_s3 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.785                78.5 %
+    -0.75    -0.747                99.6 %
+    -0.50    -0.461                92.2 %
+    -0.25    -0.045                17.8 %
+     0.25     0.003                 1.1 %
+     0.50     0.133                26.7 %
+     0.75     0.123                16.4 %
+     1.00     0.747                74.7 %
+median 50.7 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_trialv11a_final_turn_s0 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.912                91.2 %
+    -0.75    -0.653                87.1 %
+    -0.50    -0.019                 3.8 %
+    -0.25     0.065               -26.2 %  <- wrong way
+     0.25    -0.003                -1.1 %  <- wrong way
+     0.50     0.092                18.4 %
+     0.75     0.381                50.7 %
+     1.00     0.891                89.1 %
+median 34.6 %   wrong way 2/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_trialv11a_final_turn_s1 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.638                63.8 %
+    -0.75    -0.260                34.6 %
+    -0.50    -0.016                 3.2 %
+    -0.25     0.006                -2.4 %  <- wrong way
+     0.25     0.011                 4.3 %
+     0.50     0.029                 5.8 %
+     0.75     0.067                 9.0 %
+     1.00    -0.026                -2.6 %  <- wrong way
+median 5.1 %   wrong way 2/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_trialv11a_final_turn_s2 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.376                37.6 %
+    -0.75    -0.823               109.7 %
+    -0.50    -0.217                43.5 %
+    -0.25     0.042               -17.0 %  <- wrong way
+     0.25     0.101                40.6 %
+     0.50     0.036                 7.1 %
+     0.75     0.442                58.9 %
+     1.00     0.148                14.8 %
+median 39.1 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+
+=== m_trialv11a_final_turn_s3 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.880                88.0 %
+    -0.75    -0.015                 2.0 %
+    -0.50     0.023                -4.6 %  <- wrong way
+    -0.25     0.000                -0.1 %  <- wrong way
+     0.25     0.023                 9.1 %
+     0.50     0.076                15.1 %
+     0.75     0.183                24.4 %
+     1.00     0.918                91.8 %
+median 12.1 %   wrong way 2/8   (bar: median >= 50 %, wrong way 0)

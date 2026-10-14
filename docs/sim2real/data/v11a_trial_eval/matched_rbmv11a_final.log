@@ -1,0 +1,24 @@
+=== rbmv11a_final: logs/rsl_rl/pygmalion_velocity/2026-10-11_23-35-20_rough_box_main_v11a / model_11999.pt (10-15 06:05) ===
+[measure] 6000 steps (120.0s) -> analysis/out/m_rbmv11a_final_turn_s0.npz
+[measure] 6000 steps (120.0s) -> analysis/out/m_rbmv11a_final_turn_s1.npz
+[measure] 6000 steps (120.0s) -> analysis/out/m_rbmv11a_final_turn_s2.npz
+[measure] 6000 steps (120.0s) -> analysis/out/m_rbmv11a_final_turn_s3.npz
+[measure] 1500 steps (30.0s) -> analysis/out/m_rbmv11a_final_stand_s0.npz
+[measure] 1500 steps (30.0s) -> analysis/out/m_rbmv11a_final_stand_s1.npz
+[measure] 1500 steps (30.0s) -> analysis/out/m_rbmv11a_final_stand_s2.npz
+[measure] 1500 steps (30.0s) -> analysis/out/m_rbmv11a_final_stand_s3.npz
+[gait] vx 1.2: 850 steps (17.0s) -> /home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/out/m_rbmv11a_final_walk_s11_vx1.2.npz
+[gait] vx 1.2: 850 steps (17.0s) -> /home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/out/m_rbmv11a_final_walk_s12_vx1.2.npz
+[gait] vx 1.2: 850 steps (17.0s) -> /home/syaro/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/out/m_rbmv11a_final_walk_s13_vx1.2.npz
+=== verdict rbmv11a_final ===
+turn seed 0: median 64.0 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+turn seed 1: median 25.9 %   wrong way 2/8   (bar: median >= 50 %, wrong way 0)
+turn seed 2: median 39.8 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+turn seed 3: median 50.7 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+foot off ground (%)           1.3% +- 2.5%
+lift events                   10.0 +- 18.7
+travelled (m)               0.383 +- 0.442
+forward speed (m/s)        1.316 +- 0.026
+hip yaw L-R gap (%)         +18.0 +- +3.4
+heading drift (deg)           8.6 +- 11.2
+=== rbmv11a_final done (10-15 07:21) ===

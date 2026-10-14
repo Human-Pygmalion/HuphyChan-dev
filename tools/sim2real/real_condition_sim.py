@@ -45,6 +45,8 @@ ap.add_argument("--seconds", type=float, default=20.0)
 ap.add_argument("--decimation", type=int, default=0, help="0 = task default (4 -> 50 Hz)")
 ap.add_argument("--only", default="", help="comma list of condition names")
 ap.add_argument("--device", default="cuda:0")
+ap.add_argument("--crank-kp", type=float, default=0.0, help="override ankle crank Kp before the gain scale (0 = package value)")
+ap.add_argument("--crank-kd", type=float, default=0.0, help="override ankle crank Kd before the gain scale (0 = package value)")
 ap.add_argument("--out", required=True)
 a = ap.parse_args()
 sys.path.insert(0, a.pkg)
@@ -150,6 +152,13 @@ for act in robot.actuators:
   if getattr(act, "stiffness", None) is None:
     continue
   is_ankle = torch.tensor(["crank" in t for t in act.target_names], device=dev)
+  if (a.crank_kp or a.crank_kd) and is_ankle.any():  # 2026-10-15: trial v11a trains with crank 55/2.5
+    if a.crank_kp:
+      act.default_stiffness[:, is_ankle] = a.crank_kp
+    if a.crank_kd:
+      act.default_damping[:, is_ankle] = a.crank_kd
+  if is_ankle.any():
+    print("crank Kp/Kd at scale 1.0:", float(act.default_stiffness[0, is_ankle][0]), float(act.default_damping[0, is_ankle][0]), flush=True)
   s = torch.where(is_ankle[None, :], ankle[:, None], body[:, None])
   act.stiffness[:] = quant(act.default_stiffness * s, 5000.0)
   act.damping[:] = quant(act.default_damping * s, 100.0)
