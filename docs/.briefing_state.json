@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "v11a 권장안 시험 런 원격 학습 중 (3090, 12,000회, 끝 예상 10-15 06:00)",
-  "detail": "rough_box_trial_v11a: 18:24 발사, 3.3초/회. 설정 비교로 의도한 5가지만 다름을 확인. 4,000·8,000회에서 중간 점검, 완주 뒤 사전 등록 기준 5개로 판정.",
-  "since": "2026-10-14 18:28"
+  "title": "Phase 1 done: published PD gains of G1 and Pygmalion do NOT hold the default pose with PD alone; waiting for download approval for H1/T1/Berkeley models",
+  "detail": "Result (MuJoCo, rigid contacts, same simulator for all): the Kp/Kd multiplier needed so that position control alone keeps the default pose for 5 s is 6.1x for G1 with Unitree's own gains, 5.4x for G1 with the mjlab rule, 5.35x for Pygmalion (crank 22.3), 2.3x for the Pygmalion trial crank 55. A multiplier above 1 means the published gains are below, not at, the barely-stands level; the policy must supply balance. Ankle stiffness over m g h (the toppling stiffness) is 0.38 / 0.28 / 0.47 / 1.16 for the same four. Commit 35eed68. No trained G1 walking checkpoint exists locally.",
+  "since": "2026-10-14 19:57"
  },
  "items": {
   "shouldermesh": {
@@ -1768,11 +1768,11 @@
   "trial-v11a-heartbeat": {
    "id": "trial-v11a-heartbeat",
    "created": "2026-10-14 19:28",
-   "title": "v11a 권장안 시험 런 정기 점검 (19:28) — 원격 3090 학습 중",
+   "title": "v11a 권장안 시험 런 정기 점검 (20:28) — 원격 3090 학습 중",
    "finding": "자동 점검(스크립트). 진행 중입니다.",
-   "number": "반복 1103 / 12,000",
+   "number": "반복 2144 / 12,000",
    "section": "done",
-   "changed": "2026-10-14 19:28"
+   "changed": "2026-10-14 20:28"
   }
  },
  "order": [
@@ -1936,5 +1936,5 @@
   "pd-gain-criteria",
   "trial-v11a-heartbeat"
  ],
- "updated": "2026-10-14 19:28"
+ "updated": "2026-10-14 20:28"
 }
