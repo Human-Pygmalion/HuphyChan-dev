@@ -2368,6 +2368,15 @@
       "y": 3860,
       "width": 420,
       "height": 160
+    },
+    {
+      "id": "n_stand10_audit",
+      "type": "file",
+      "x": 24160,
+      "y": 860,
+      "width": 440,
+      "height": 150,
+      "file": "experiments/2026-10-14_standonly_pose_audit.md"
     }
   ],
   "edges": [
@@ -4750,6 +4759,14 @@
       "toNode": "n_rough_turn_t3",
       "toSide": "top",
       "label": "+ critic warm-up 300"
+    },
+    {
+      "id": "e_stand10_v9caps",
+      "fromNode": "n_v9_caps",
+      "fromSide": "top",
+      "toNode": "n_stand10_audit",
+      "toSide": "bottom",
+      "label": "정지 자세 점검"
     }
   ]
 }

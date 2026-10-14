@@ -1,0 +1,115 @@
+{
+ "v7_p1": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-16_14-25-25_legonly_ab_v7_standonly_p1/params/env.yaml"
+ },
+ "v7_p2": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/params/env.yaml"
+ },
+ "v7b_p1": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-16_22-47-17_legonly_ab_v7b_robust_stand_p1/params/env.yaml"
+ },
+ "v7b_p1r": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-16_22-57-26_legonly_ab_v7b_robust_stand_p1r/params/env.yaml"
+ },
+ "v7b_p2": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-16_23-49-54_legonly_ab_v7b_robust_stand_p2/params/env.yaml"
+ },
+ "v9caps_p1": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-20_18-09-37_legonly_ab_v9_caps_p1/params/env.yaml"
+ },
+ "v9caps_p2": {
+  "gap_cm": 24.740000000000002,
+  "joint_pos": {
+   "L_hip_pitch_joint": 0.175,
+   "L_hip_roll_joint": 0.0,
+   "L_hip_yaw_joint": 0.0,
+   "L_knee_joint": -0.35,
+   "R_hip_pitch_joint": -0.175,
+   "R_hip_roll_joint": 0.0,
+   "R_hip_yaw_joint": 0.0,
+   "R_knee_joint": 0.35
+  },
+  "base_z": 0.8975,
+  "env_yaml": "mujoco-sim/mjlab/logs/rsl_rl/pygmalion_velocity/2026-09-20_19-17-25_legonly_ab_v9_caps_p2/params/env.yaml"
+ },
+ "_signs_derived_from_model": {
+  "L_hip_roll": -1.0,
+  "L_hip_yaw": 1.0,
+  "L_knee": -1.0,
+  "R_hip_roll": 1.0,
+  "R_hip_yaw": -1.0,
+  "R_knee": 1.0
+ }
+}

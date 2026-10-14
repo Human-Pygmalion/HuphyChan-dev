@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "sim pelvis(IMU) x·y·z 기울임 영상: docs/video/2026-10-14_sim_imu_tilt_xyz.mp4 (31.5 s, 30 fps 실시간, 20°/s, 축별 정면·측면·위 시점, 반투명 로봇 + 몸통 축·참 중력·HUPHY 예상 중력 화살표, 오른쪽에 투영 중력·자이로·자세각, 반대 부호 빨간 표시)",
-  "detail": "",
-  "since": "2026-10-14 12:10"
+  "title": "Standing-pose audit: all 138 standing rollouts finished (0 failures); foot-gap table done - v9 caps ends at median 48 cm (reset pose 24.7 cm), v7 and v7b stay 25-27 cm; rendering image grids",
+  "detail": "v7 iterations 1000-4100 fell (environment reset within 12 s) in 3-5 of 6 seeds; v7b 0 of 48; v9 caps 1 of 48.",
+  "since": "2026-10-14 12:29"
  },
  "items": {
   "shouldermesh": {
@@ -1558,7 +1558,8 @@
    "section": "done",
    "changed": "2026-10-10 10:33",
    "finding": "세 번 모두 시뮬레이션 쪽 결함으로 실패했고, 고친 넷째 시도가 지금 정상 진행 중입니다. 결함 셋: (1) 232회째에 물리 계산이 발산한 로봇 하나가 숫자가 아닌 값을 내 학습 전체가 멈춤, (2) 658회째에 학습 평가용 센서 값 하나가 약 6,000만 걸음에 한 번 숫자가 아닌 값을 냄, (3) 3,000회를 다 돌았지만 물리 폭주(백만 걸음에 2번, 발목 연결봉이 초당 141 라디안으로 돎. 평소 상위 1%가 17)가 한 번마다 10의 24승이 넘는 보상을 만들어 학습을 망쳐 무효.",
-   "number": "고친 것: 발산한 로봇만 실패로 끝내고 재시작, 숫자 아닌 센서 값은 그 한 걸음만 0으로 바꾸고 기록, 관절이 초당 100 라디안 넘거나 몸통이 초당 10 m 넘으면 실패로 끝냄, 보상 항목마다 한 걸음 ±50으로 묶음(정상 항목은 최대 약 6이라 영향 없음). 시험에서 폭주 종료가 51.2만 걸음에 1번 = 측정과 일치. 부수 확인: '몸통이 너무 낮음' 종료 1,243번 중 97%가 실제로 주저앉은 것이었음(발 평균보다 0.55 m 위, 평소 0.85 m)."
+   "number": "고친 것: 발산한 로봇만 실패로 끝내고 재시작, 숫자 아닌 센서 값은 그 한 걸음만 0으로 바꾸고 기록, 관절이 초당 100 라디안 넘거나 몸통이 초당 10 m 넘으면 실패로 끝냄, 보상 항목마다 한 걸음 ±50으로 묶음(정상 항목은 최대 약 6이라 영향 없음). 시험에서 폭주 종료가 51.2만 걸음에 1번 = 측정과 일치. 부수 확인: '몸통이 너무 낮음' 종료 1,243번 중 97%가 실제로 주저앉은 것이었음(발 평균보다 0.55 m 위, 평소 0.85 m).",
+   "collapsed": true
   },
   "rough-stag-ab": {
    "id": "rough-stag-ab",
@@ -1650,6 +1651,19 @@
    "finding": "모터 19개(RS04 7, RS03 12), 배터리 제외 39.2 kg, 시뮬레이션 버스 전류(서기·걷기·험지·낙하)와 요구 사양을 정리. 토르소 내부 공간은 CAD 서버가 꺼져 있어 미확정",
    "section": "done",
    "changed": "2026-10-13 14:06"
+  },
+  "stand10_audit": {
+   "id": "stand10_audit",
+   "created": "2026-10-14 12:32",
+   "title": "Standing-pose audit of v7 / v7b / v9 caps",
+   "why": "Find the run that stood with legs spread strangely",
+   "section": "done",
+   "changed": "2026-10-14 12:32",
+   "finding": "138 standing rollouts (23 checkpoints x 6 seeds, 12 s each): v9 caps ends with a median foot gap of 48.1 cm (reset pose 24.74 cm; legs splayed in a wide inverted V), v7b 26.0 cm, v7 25.1 cm; v7 first-stage checkpoints 1000-4100 fell in 3-5 of 6 seeds",
+   "number": "median foot gap v9 caps: 25.0 (iter 1999) -> 48.1 cm (iter 8998)",
+   "media": [
+    "docs/mujoco/assets/stand10_width_vs_ckpt.png"
+   ]
   }
  },
  "order": [
@@ -1800,7 +1814,8 @@
   "foot-sole-survey",
   "battery-bms",
   "battery-peer",
-  "battery-inquiry"
+  "battery-inquiry",
+  "stand10_audit"
  ],
- "updated": "2026-10-14 12:10"
+ "updated": "2026-10-14 12:32"
 }
