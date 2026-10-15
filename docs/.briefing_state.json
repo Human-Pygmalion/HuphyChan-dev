@@ -1867,7 +1867,8 @@
     "docs/img/pd_gain/2026-10-15_rough_torque_p99.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 17:10"
+   "changed": "2026-10-15 17:10",
+   "collapsed": true
   },
   "rec-vs-robots": {
    "id": "rec-vs-robots",
@@ -1949,6 +1950,17 @@
    ],
    "section": "done",
    "changed": "2026-10-15 19:21"
+  },
+  "emf-ui3": {
+   "id": "emf-ui3",
+   "created": "2026-10-15 20:17",
+   "title": "역기전력 벤치 화면: 그래프 순서 끌어 바꾸기·두 점 낙폭 측정(단위 포함)·접기 핸들 추가",
+   "finding": "화면만 변경 → 새로고침으로 반영(서버 재시작 없음). 측정점은 데이터 좌표로 고정돼 그래프와 함께 흐르고, 곡선 14 px 안이면 곡선 값에 붙음. 순서·접힘은 브라우저에 기억. 브라우저 시험 44/44",
+   "media": [
+    "System_ID/emf_bench/ux_shots/8_measure_fold_reorder.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 20:17"
   }
  },
  "order": [
@@ -2125,7 +2137,8 @@
   "emf-scan",
   "ov-monitor",
   "emf-live",
-  "emf-tracking"
+  "emf-tracking",
+  "emf-ui3"
  ],
- "updated": "2026-10-15 19:21"
+ "updated": "2026-10-15 20:17"
 }
