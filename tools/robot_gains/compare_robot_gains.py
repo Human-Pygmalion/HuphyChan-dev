@@ -402,7 +402,9 @@ def _assert_pose_matches_env_yaml(m, qpos0):
     assert n >= 20, n
 
 
-def build_pyg(crank_kp: float, crank_kd: float, key: str, label: str, hipknee=(150., 6., 220., 6.)) -> Case:
+def build_pyg(crank_kp: float, crank_kd: float, key: str, label: str, hipknee=(150., 6., 220., 6.),
+              yaw=None) -> Case:
+    """yaw = (Kp, Kd) of the hip yaw joint; None = same as hip pitch/roll (v7b, trial55)."""
     m = mujoco.MjModel.from_binary_path(str(PYG_MJB))
     m.opt.jacobian = mujoco.mjtJacobian.mjJAC_DENSE
     clip = _parse_env_yaml_clip()
@@ -417,7 +419,7 @@ def build_pyg(crank_kp: float, crank_kd: float, key: str, label: str, hipknee=(1
         if "crank" in short:
             grp, kp, kd, eff = "crank", crank_kp, crank_kd, 60.0
         elif "hip_yaw" in short:
-            grp, kp, kd, eff = "hip_yaw", hip_kp, hip_kd, 60.0
+            grp, kp, kd, eff = "hip_yaw", (yaw or (hip_kp, hip_kd))[0], (yaw or (hip_kp, hip_kd))[1], 60.0
         elif "hip_pitch" in short:
             grp, kp, kd, eff = "hip_pitch", hip_kp, hip_kd, 120.0
         elif "hip_roll" in short:
@@ -645,6 +647,11 @@ CASES = {
     "berkeley": lambda: build_menagerie("berkeley", "berkeley", "Berkeley Humanoid (Isaac config gains)"),
     "pyg_v7b": lambda: build_pyg(22.265625, 1.4140625, "pyg_v7b", "Pygmalion v7b/v11a (crank 22.3/1.41)"),
     "pyg_trial55": lambda: build_pyg(55.0, 2.5, "pyg_trial55", "Pygmalion trial (crank 55/2.5)"),
+    # docs/169 section 7 (flat recommendation) and section 8-7 (mountain recommendation)
+    "pyg_rec_flat": lambda: build_pyg(55.0, 2.5, "pyg_rec_flat", "Pygmalion recommended flat (docs/169 s7)",
+                                      hipknee=(120., 6., 130., 6.), yaw=(75., 4.)),
+    "pyg_rec_mountain": lambda: build_pyg(60.0, 2.7, "pyg_rec_mountain", "Pygmalion recommended mountain (docs/169 s8-7)",
+                                          hipknee=(135., 6., 130., 6.), yaw=(75., 4.)),
 }
 
 

@@ -1,0 +1,1278 @@
+{
+ "key": "pyg_rec_mountain",
+ "label": "Pygmalion recommended mountain (docs/169 s8-7)",
+ "source": {
+  "gains": "docs/168 + env.yaml of rough_box_main_v11a (train gains)",
+  "effort": "env.yaml (crank/yaw 60, hip pitch-roll/knee 120; flat limit, T-N curve ignored here)",
+  "action_scale": 0.25,
+  "decimation": 4,
+  "dt": 0.005,
+  "model": "analysis/out/stand10_v9caps_m8998_s1_model.mjb (LegOnly 23.63 kg, AB ankle)"
+ },
+ "notes": [
+  "Model keeps the measured joint friction loss (0.52 N m hip/knee, 0.25 N m crank) and viscous damping."
+ ],
+ "repo_head": "0550c75d66fe671309711faadccc6921c4dec4da",
+ "mujoco": "3.10.0",
+ "model_sha256": "8bc466e386c23e79fa215b9ee0aeb0b36aadbb837c633c782050f50df1ccf554",
+ "pose_note": "key 0 of the model = env.yaml init_state (PYG_INIT_BENT): hip_pitch 0.175, knee 0.35 (mirrored L/R), ankle pitch 0.175",
+ "action_clip_note": "env.yaml actions.clip = absolute target bounds per joint",
+ "pelvis_tilt_deg": 0.0,
+ "mass_kg": 23.63014,
+ "com_height_above_ankle_m": 0.5655842066877952,
+ "leg_length_m": 0.8547440049432473,
+ "dt": 0.005,
+ "A1_elastic_hold": {
+  "tau": {
+   "robot/R_crank_A_joint": -5.710206058814896,
+   "robot/R_crank_B_joint": 5.789828099363891,
+   "robot/L_crank_A_joint": 5.703789155528918,
+   "robot/L_crank_B_joint": -5.7886196095264015,
+   "robot/R_hip_yaw_joint": 0.00292054462024538,
+   "robot/L_hip_yaw_joint": 0.002920891343570986,
+   "robot/R_hip_pitch_joint": 0.02349983474063322,
+   "robot/R_hip_roll_joint": -0.002439973736628076,
+   "robot/L_hip_pitch_joint": -0.01392204258058527,
+   "robot/L_hip_roll_joint": -0.0024401573786621,
+   "robot/R_knee_joint": -0.7714617976252676,
+   "robot/L_knee_joint": 0.7522504877413994
+  },
+  "resid": 1.1017922685319093e-13,
+  "base_drop_m": 0.011022640412379575,
+  "compat_resid": 1.115272804663725e-12
+ },
+ "A1_rows": {
+  "robot/R_crank_A_joint": {
+   "group": "crank",
+   "kp": 60.0,
+   "effort": 60.0,
+   "tau": -5.710206058814896,
+   "pct_effort": 9.517010098024826,
+   "err_deg": -5.452845122002085
+  },
+  "robot/R_crank_B_joint": {
+   "group": "crank",
+   "kp": 60.0,
+   "effort": 60.0,
+   "tau": 5.789828099363891,
+   "pct_effort": 9.64971349893982,
+   "err_deg": 5.5288785699967
+  },
+  "robot/L_crank_A_joint": {
+   "group": "crank",
+   "kp": 60.0,
+   "effort": 60.0,
+   "tau": 5.703789155528918,
+   "pct_effort": 9.506315259214864,
+   "err_deg": 5.446717430738248
+  },
+  "robot/L_crank_B_joint": {
+   "group": "crank",
+   "kp": 60.0,
+   "effort": 60.0,
+   "tau": -5.7886196095264015,
+   "pct_effort": 9.64769934921067,
+   "err_deg": -5.527724547208823
+  },
+  "robot/R_hip_yaw_joint": {
+   "group": "hip_yaw",
+   "kp": 75.0,
+   "effort": 60.0,
+   "tau": 0.00292054462024538,
+   "pct_effort": 0.004867574367075633,
+   "err_deg": 0.0022311317415959738
+  },
+  "robot/L_hip_yaw_joint": {
+   "group": "hip_yaw",
+   "kp": 75.0,
+   "effort": 60.0,
+   "tau": 0.002920891343570986,
+   "pct_effort": 0.004868152239284977,
+   "err_deg": 0.00223139661870552
+  },
+  "robot/R_hip_pitch_joint": {
+   "group": "hip_pitch",
+   "kp": 135.0,
+   "effort": 120.0,
+   "tau": 0.02349983474063322,
+   "pct_effort": 0.01958319561719435,
+   "err_deg": 0.009973639628838467
+  },
+  "robot/R_hip_roll_joint": {
+   "group": "hip_roll",
+   "kp": 135.0,
+   "effort": 120.0,
+   "tau": -0.002439973736628076,
+   "pct_effort": 0.0020333114471900635,
+   "err_deg": -0.0010355570165300285
+  },
+  "robot/L_hip_pitch_joint": {
+   "group": "hip_pitch",
+   "kp": 135.0,
+   "effort": 120.0,
+   "tau": -0.01392204258058527,
+   "pct_effort": 0.011601702150487725,
+   "err_deg": -0.00590869838569598
+  },
+  "robot/L_hip_roll_joint": {
+   "group": "hip_roll",
+   "kp": 135.0,
+   "effort": 120.0,
+   "tau": -0.0024401573786621,
+   "pct_effort": 0.0020334644822184167,
+   "err_deg": -0.00103563495662996
+  },
+  "robot/R_knee_joint": {
+   "group": "knee",
+   "kp": 130.0,
+   "effort": 120.0,
+   "tau": -0.7714617976252676,
+   "pct_effort": 0.6428848313543897,
+   "err_deg": -0.3400115773807959
+  },
+  "robot/L_knee_joint": {
+   "group": "knee",
+   "kp": 130.0,
+   "effort": 120.0,
+   "tau": 0.7522504877413994,
+   "pct_effort": 0.6268754064511661,
+   "err_deg": 0.331544446801845
+  }
+ },
+ "A2": {
+  "no_push": {
+   "grid": {
+    "0.1": false,
+    "0.15": false,
+    "0.25": false,
+    "0.35": false,
+    "0.5": false,
+    "0.7": false,
+    "1.0": false,
+    "1.5": false,
+    "2.0": false,
+    "3.0": true,
+    "4.0": true,
+    "6.0": true,
+    "8.0": true,
+    "12.0": true,
+    "16.0": true,
+    "24.0": true,
+    "32.0": true
+   },
+   "min_grid": 3.0,
+   "non_monotone": false,
+   "min_refined": 2.09765625,
+   "margin_grid": 0.3333333333333333,
+   "margin_refined": 0.4767225325884544
+  },
+  "push_0p3": {
+   "grid": {
+    "0.1": false,
+    "0.15": false,
+    "0.25": false,
+    "0.35": false,
+    "0.5": false,
+    "0.7": false,
+    "1.0": false,
+    "1.5": false,
+    "2.0": false,
+    "3.0": true,
+    "4.0": true,
+    "6.0": true,
+    "8.0": true,
+    "12.0": true,
+    "16.0": true,
+    "24.0": true,
+    "32.0": true
+   },
+   "min_grid": 3.0,
+   "non_monotone": false,
+   "min_refined": 2.3515625,
+   "margin_grid": 0.3333333333333333,
+   "margin_refined": 0.42524916943521596
+  },
+  "ankle_only_no_push": {
+   "grid": {
+    "0.1": false,
+    "0.15": false,
+    "0.25": false,
+    "0.35": false,
+    "0.5": false,
+    "0.7": false,
+    "1.0": false,
+    "1.5": false,
+    "2.0": false,
+    "3.0": true,
+    "4.0": true,
+    "6.0": true,
+    "8.0": true,
+    "12.0": true,
+    "16.0": true,
+    "24.0": true,
+    "32.0": true
+   },
+   "min_grid": 3.0,
+   "non_monotone": false,
+   "min_refined": 2.0859375,
+   "margin_grid": 0.3333333333333333,
+   "margin_refined": 0.4794007490636704
+  },
+  "hip_knee_only_no_push": {
+   "grid": {
+    "0.1": false,
+    "0.15": false,
+    "0.25": false,
+    "0.35": false,
+    "0.5": false,
+    "0.7": false,
+    "1.0": false,
+    "1.5": false,
+    "2.0": false,
+    "3.0": false,
+    "4.0": false,
+    "6.0": false,
+    "8.0": false,
+    "12.0": false,
+    "16.0": false,
+    "24.0": false,
+    "32.0": false
+   },
+   "min_grid": null,
+   "min_refined": null,
+   "margin_grid": null,
+   "margin_refined": null,
+   "note": "no grid value stands (max 32)"
+  },
+  "no_push_trained_contact": {
+   "grid": {
+    "0.1": false,
+    "0.15": false,
+    "0.25": false,
+    "0.35": false,
+    "0.5": false,
+    "0.7": false,
+    "1.0": false,
+    "1.5": false,
+    "2.0": false,
+    "3.0": true,
+    "4.0": true,
+    "6.0": true,
+    "8.0": true,
+    "12.0": true,
+    "16.0": true,
+    "24.0": true,
+    "32.0": true
+   },
+   "min_grid": 3.0,
+   "non_monotone": false,
+   "min_refined": 2.15625,
+   "margin_grid": 0.3333333333333333,
+   "margin_refined": 0.463768115942029
+  }
+ },
+ "A1_sim_check": {
+  "scale": 3.146484375,
+  "stood": true,
+  "tau_sim": {
+   "robot/R_crank_A_joint": -7.648361552339756,
+   "robot/R_crank_B_joint": 7.718336579321926,
+   "robot/L_crank_A_joint": 7.6532412696976735,
+   "robot/L_crank_B_joint": -7.748910498042878,
+   "robot/R_hip_yaw_joint": -0.002705093848128818,
+   "robot/L_hip_yaw_joint": 0.012828411071545927,
+   "robot/R_hip_pitch_joint": 0.05779934192791599,
+   "robot/R_hip_roll_joint": -0.003491037986127638,
+   "robot/L_hip_pitch_joint": -0.04734053661210237,
+   "robot/L_hip_roll_joint": -0.016460177282334114,
+   "robot/R_knee_joint": 0.28356358918342317,
+   "robot/L_knee_joint": -0.3119824324308131
+  },
+  "z_drop_m": 0.006189220545854024
+ },
+ "A3": {
+  "K_ankle_pitch_sum": 166.29561168791176,
+  "m_g_h": 131.10902140090928,
+  "ratio": 1.2683765763105486,
+  "K_ankle_roll_sum": 130.19465466753164,
+  "ankle_effort_pitch_sum": 199.7721330801638,
+  "ankle_equivalent": {
+   "L": {
+    "Kp_pitch": 83.14795122240446,
+    "Kp_roll": 65.09533462434246,
+    "Kp_cross": -0.9117509989450809,
+    "Kd_pitch": 3.7416578050082006,
+    "Kd_roll": 2.9292900580954107,
+    "effort_pitch": 99.88615739054033,
+    "effort_roll": 88.38113594600225
+   },
+   "R": {
+    "Kp_pitch": 83.1476604655073,
+    "Kp_roll": 65.09932004318918,
+    "Kp_cross": -0.9125964230638743,
+    "Kd_pitch": 3.7416447209478294,
+    "Kd_roll": 2.9294694019435137,
+    "effort_pitch": 99.88597568962346,
+    "effort_roll": 88.38384086009474
+   }
+  },
+  "standing_prediction": {
+   "heel_x": -0.17474993701841568,
+   "toe_x": 0.08525961347108398,
+   "ankle_x": -0.09474746692910155,
+   "com_x": -0.010576578160723826,
+   "e0": 0.08417088876837772,
+   "d_edge": 0.18000708040018554,
+   "s_tip": 0.7884093877772469,
+   "capture_offset_push0p3": 0.15620453321953368,
+   "capture_fits_foot": true,
+   "s_edge": 1.4808525843672742
+  }
+ },
+ "A4": {
+  "robot/R_crank_A_joint": {
+   "armature": 0.0638,
+   "I_swing": 0.06789293744759901,
+   "I_stand": 1.7926414913915614,
+   "wn_rotor_hz": 4.880737126729543,
+   "zeta_rotor": 0.689997955564642,
+   "wn_swing_hz": 4.731332364327721,
+   "zeta_swing": 0.6688763548858618,
+   "wn_stand_hz": 0.9207654922626306,
+   "zeta_stand": 0.13017015477770716
+  },
+  "robot/R_crank_B_joint": {
+   "armature": 0.0638,
+   "I_swing": 0.06774150220123304,
+   "I_stand": 1.75562212214255,
+   "wn_rotor_hz": 4.880737126729543,
+   "zeta_rotor": 0.689997955564642,
+   "wn_swing_hz": 4.736617828036269,
+   "zeta_swing": 0.6696235697139533,
+   "wn_stand_hz": 0.9304225649414187,
+   "zeta_stand": 0.131535391263936
+  },
+  "robot/L_crank_A_joint": {
+   "armature": 0.0638,
+   "I_swing": 0.06789304783281844,
+   "I_stand": 1.7912384581966072,
+   "wn_rotor_hz": 4.880737126729543,
+   "zeta_rotor": 0.689997955564642,
+   "wn_swing_hz": 4.7313285180622335,
+   "zeta_swing": 0.6688758111328889,
+   "wn_stand_hz": 0.9211260282013453,
+   "zeta_stand": 0.13022112434524608
+  },
+  "robot/L_crank_B_joint": {
+   "armature": 0.0638,
+   "I_swing": 0.06774150078169261,
+   "I_stand": 1.7543242107587034,
+   "wn_rotor_hz": 4.880737126729543,
+   "zeta_rotor": 0.689997955564642,
+   "wn_swing_hz": 4.736617877664786,
+   "zeta_swing": 0.6696235767300197,
+   "wn_stand_hz": 0.9307666811419885,
+   "zeta_stand": 0.1315840395456821
+  },
+  "robot/R_hip_yaw_joint": {
+   "armature": 0.0638,
+   "I_swing": 0.19624965780687484,
+   "I_stand": 0.2605227190001252,
+   "wn_rotor_hz": 5.456829997837132,
+   "zeta_rotor": 0.9143006417649889,
+   "wn_swing_hz": 3.1113316671820592,
+   "zeta_swing": 0.5213086244533568,
+   "wn_stand_hz": 2.700399147869622,
+   "zeta_stand": 0.45245621998439156
+  },
+  "robot/L_hip_yaw_joint": {
+   "armature": 0.0638,
+   "I_swing": 0.1962514718624405,
+   "I_stand": 0.26052223942732805,
+   "wn_rotor_hz": 5.456829997837132,
+   "zeta_rotor": 0.9143006417649889,
+   "wn_swing_hz": 3.1113172873113837,
+   "zeta_swing": 0.5213062150828996,
+   "wn_stand_hz": 2.7004016333337795,
+   "zeta_stand": 0.45245663642790834
+  },
+  "robot/R_hip_pitch_joint": {
+   "armature": 0.0773,
+   "I_swing": 2.154772338910152,
+   "I_stand": 0.15396052443989058,
+   "wn_rotor_hz": 6.651158064236481,
+   "zeta_rotor": 0.9286768583319926,
+   "wn_swing_hz": 1.2597556649098671,
+   "zeta_swing": 0.17589507298662058,
+   "wn_stand_hz": 4.7128359762453975,
+   "zeta_stand": 0.6580360391353877
+  },
+  "robot/R_hip_roll_joint": {
+   "armature": 0.0773,
+   "I_swing": 2.02603416110273,
+   "I_stand": 1.5642969126226096,
+   "wn_rotor_hz": 6.651158064236481,
+   "zeta_rotor": 0.9286768583319926,
+   "wn_swing_hz": 1.2991629718537836,
+   "zeta_swing": 0.18139737103074352,
+   "wn_stand_hz": 1.4785207428079736,
+   "zeta_stand": 0.20644044016825128
+  },
+  "robot/L_hip_pitch_joint": {
+   "armature": 0.0773,
+   "I_swing": 2.154778668044765,
+   "I_stand": 0.1538728226730568,
+   "wn_rotor_hz": 6.651158064236481,
+   "zeta_rotor": 0.9286768583319926,
+   "wn_swing_hz": 1.2597538147966383,
+   "zeta_swing": 0.1758948146620816,
+   "wn_stand_hz": 4.714178855243434,
+   "zeta_stand": 0.6582235404151606
+  },
+  "robot/L_hip_roll_joint": {
+   "armature": 0.0773,
+   "I_swing": 2.026038674999659,
+   "I_stand": 1.5643183282078326,
+   "wn_rotor_hz": 6.651158064236481,
+   "zeta_rotor": 0.9286768583319926,
+   "wn_swing_hz": 1.2991615246230155,
+   "zeta_swing": 0.18139716895920802,
+   "wn_stand_hz": 1.478510622267042,
+   "zeta_stand": 0.2064390270741606
+  },
+  "robot/R_knee_joint": {
+   "armature": 0.0773,
+   "I_swing": 0.5146745207596495,
+   "I_stand": 0.2388671012141472,
+   "wn_rotor_hz": 6.526826389720513,
+   "zeta_rotor": 0.9463675309477826,
+   "wn_swing_hz": 2.529446355914014,
+   "zeta_swing": 0.36676108104872024,
+   "wn_stand_hz": 3.7129032977019314,
+   "zeta_stand": 0.5383582949330632
+  },
+  "robot/L_knee_joint": {
+   "armature": 0.0773,
+   "I_swing": 0.5146787660705959,
+   "I_stand": 0.23856057416184323,
+   "wn_rotor_hz": 6.526826389720513,
+   "zeta_rotor": 0.9463675309477826,
+   "wn_swing_hz": 2.529435923864787,
+   "zeta_swing": 0.3667595684372182,
+   "wn_stand_hz": 3.7152878911190528,
+   "zeta_stand": 0.5387040528328029
+  }
+ },
+ "A5": {
+  "robot/R_crank_A_joint": {
+   "kp": 60.0,
+   "kd": 2.7,
+   "effort": 60.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 15.0,
+   "pct_effort_at_action1": 25.0,
+   "kp_halfrange_over_effort": 1.2,
+   "kd_over_kp": 0.045000000000000005,
+   "kp_per_kg": 2.539130110951522,
+   "kp_over_mgL": 0.3028167436407844,
+   "window_halfwidth_rad": [
+    -1.2239548736957402,
+    0.9360451263042601
+   ]
+  },
+  "robot/R_crank_B_joint": {
+   "kp": 60.0,
+   "kd": 2.7,
+   "effort": 60.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 15.0,
+   "pct_effort_at_action1": 25.0,
+   "kp_halfrange_over_effort": 1.2,
+   "kd_over_kp": 0.045000000000000005,
+   "kp_per_kg": 2.539130110951522,
+   "kp_over_mgL": 0.3028167436407844,
+   "window_halfwidth_rad": [
+    -0.9329369246982979,
+    1.2270630753017022
+   ]
+  },
+  "robot/L_crank_A_joint": {
+   "kp": 60.0,
+   "kd": 2.7,
+   "effort": 60.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 15.0,
+   "pct_effort_at_action1": 25.0,
+   "kp_halfrange_over_effort": 1.2,
+   "kd_over_kp": 0.045000000000000005,
+   "kp_per_kg": 2.539130110951522,
+   "kp_over_mgL": 0.3028167436407844,
+   "window_halfwidth_rad": [
+    -0.9361150034482295,
+    1.2238849965517706
+   ]
+  },
+  "robot/L_crank_B_joint": {
+   "kp": 60.0,
+   "kd": 2.7,
+   "effort": 60.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 15.0,
+   "pct_effort_at_action1": 25.0,
+   "kp_halfrange_over_effort": 1.2,
+   "kd_over_kp": 0.045000000000000005,
+   "kp_per_kg": 2.539130110951522,
+   "kp_over_mgL": 0.3028167436407844,
+   "window_halfwidth_rad": [
+    -1.2268702055545262,
+    0.933129794445474
+   ]
+  },
+  "robot/R_hip_yaw_joint": {
+   "kp": 75.0,
+   "kd": 4.0,
+   "effort": 60.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 18.75,
+   "pct_effort_at_action1": 31.25,
+   "kp_halfrange_over_effort": 0.9817475000000001,
+   "kd_over_kp": 0.05333333333333334,
+   "kp_per_kg": 3.1739126386894023,
+   "kp_over_mgL": 0.37852092955098054,
+   "window_halfwidth_rad": [
+    -0.7068582000000001,
+    0.7068582000000001
+   ]
+  },
+  "robot/L_hip_yaw_joint": {
+   "kp": 75.0,
+   "kd": 4.0,
+   "effort": 60.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 18.75,
+   "pct_effort_at_action1": 31.25,
+   "kp_halfrange_over_effort": 0.9817475000000001,
+   "kd_over_kp": 0.05333333333333334,
+   "kp_per_kg": 3.1739126386894023,
+   "kp_over_mgL": 0.37852092955098054,
+   "window_halfwidth_rad": [
+    -0.7068582000000001,
+    0.7068582000000001
+   ]
+  },
+  "robot/R_hip_pitch_joint": {
+   "kp": 135.0,
+   "kd": 6.0,
+   "effort": 120.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 33.75,
+   "pct_effort_at_action1": 28.125,
+   "kp_halfrange_over_effort": 1.42353675,
+   "kd_over_kp": 0.044444444444444446,
+   "kp_per_kg": 5.713042749640924,
+   "kp_over_mgL": 0.681337673191765,
+   "window_halfwidth_rad": [
+    -1.7928634,
+    0.48479540000000015
+   ]
+  },
+  "robot/R_hip_roll_joint": {
+   "kp": 135.0,
+   "kd": 6.0,
+   "effort": 120.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 33.75,
+   "pct_effort_at_action1": 28.125,
+   "kp_halfrange_over_effort": 1.079922375,
+   "kd_over_kp": 0.044444444444444446,
+   "kp_per_kg": 5.713042749640924,
+   "kp_over_mgL": 0.681337673191765,
+   "window_halfwidth_rad": [
+    -0.3403389,
+    1.3875369000000002
+   ]
+  },
+  "robot/L_hip_pitch_joint": {
+   "kp": 135.0,
+   "kd": 6.0,
+   "effort": 120.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 33.75,
+   "pct_effort_at_action1": 28.125,
+   "kp_halfrange_over_effort": 1.42353675,
+   "kd_over_kp": 0.044444444444444446,
+   "kp_per_kg": 5.713042749640924,
+   "kp_over_mgL": 0.681337673191765,
+   "window_halfwidth_rad": [
+    -0.48479540000000015,
+    1.7928634
+   ]
+  },
+  "robot/L_hip_roll_joint": {
+   "kp": 135.0,
+   "kd": 6.0,
+   "effort": 120.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 33.75,
+   "pct_effort_at_action1": 28.125,
+   "kp_halfrange_over_effort": 1.079922375,
+   "kd_over_kp": 0.044444444444444446,
+   "kp_per_kg": 5.713042749640924,
+   "kp_over_mgL": 0.681337673191765,
+   "window_halfwidth_rad": [
+    -1.3875369000000002,
+    0.3403389
+   ]
+  },
+  "robot/R_knee_joint": {
+   "kp": 130.0,
+   "kd": 6.0,
+   "effort": 120.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 32.5,
+   "pct_effort_at_action1": 27.083333333333332,
+   "kp_halfrange_over_effort": 1.1344666666666667,
+   "kd_over_kp": 0.046153846153846156,
+   "kp_per_kg": 5.501448573728298,
+   "kp_over_mgL": 0.6561029445550329,
+   "window_halfwidth_rad": [
+    -0.24528000000000005,
+    1.6396799999999998
+   ]
+  },
+  "robot/L_knee_joint": {
+   "kp": 130.0,
+   "kd": 6.0,
+   "effort": 120.0,
+   "action_scale": 0.25,
+   "tau_at_action1": 32.5,
+   "pct_effort_at_action1": 27.083333333333332,
+   "kp_halfrange_over_effort": 1.1344666666666667,
+   "kd_over_kp": 0.046153846153846156,
+   "kp_per_kg": 5.501448573728298,
+   "kp_over_mgL": 0.6561029445550329,
+   "window_halfwidth_rad": [
+    -1.6396799999999998,
+    0.24528000000000005
+   ]
+  }
+ },
+ "B1": {
+  "L": {
+   "rows": {
+    "robot/R_crank_A_joint": {
+     "role": "swing",
+     "tau": 0.042697590698838085,
+     "pct_effort": 0.07116265116473014,
+     "err_deg": 0.04077319570700769,
+     "action_units_needed": 0.0028465060465892034,
+     "target_abs": 0.14466650020738733,
+     "target_headroom_rad": 0.9353334997926127
+    },
+    "robot/R_crank_B_joint": {
+     "role": "swing",
+     "tau": -0.0514279942907514,
+     "pct_effort": 0.085713323817919,
+     "err_deg": -0.04911011702804914,
+     "action_units_needed": -0.003428532952716723,
+     "target_abs": -0.1479202085398813,
+     "target_headroom_rad": 0.9320797914601188
+    },
+    "robot/L_crank_A_joint": {
+     "role": "stance",
+     "tau": 13.888107002754246,
+     "pct_effort": 23.14684500459041,
+     "err_deg": 13.262165278065032,
+     "action_units_needed": 0.4043718836543915,
+     "target_abs": -0.04279202563817264,
+     "target_headroom_rad": 1.0372079743618274
+    },
+    "robot/L_crank_B_joint": {
+     "role": "stance",
+     "tau": -14.215325697264436,
+     "pct_effort": 23.69220949544073,
+     "err_deg": -13.574636114285273,
+     "action_units_needed": -1.4660328158379814,
+     "target_abs": -0.2196379984049693,
+     "target_headroom_rad": 0.8603620015950307
+    },
+    "robot/R_hip_yaw_joint": {
+     "role": "swing",
+     "tau": 0.01410096905411703,
+     "pct_effort": 0.02350161509019505,
+     "err_deg": 0.010772346851273151,
+     "action_units_needed": 0.0007520516828862416,
+     "target_abs": 0.0001880129207215604,
+     "target_headroom_rad": 0.7066701870792785
+    },
+    "robot/L_hip_yaw_joint": {
+     "role": "stance",
+     "tau": -4.357204651389843,
+     "pct_effort": 7.262007752316405,
+     "err_deg": -3.3286591599921223,
+     "action_units_needed": -0.23238424807412494,
+     "target_abs": -0.058096062018531236,
+     "target_headroom_rad": 0.6487621379814689
+    },
+    "robot/R_hip_pitch_joint": {
+     "role": "swing",
+     "tau": -2.705181099326574,
+     "pct_effort": 2.254317582772145,
+     "err_deg": -1.1481145171109115,
+     "action_units_needed": -1.4801535140541204,
+     "target_abs": -0.5450383785135301,
+     "target_headroom_rad": 0.8548337785135303
+    },
+    "robot/R_hip_roll_joint": {
+     "role": "swing",
+     "tau": 0.04032948455766285,
+     "pct_effort": 0.033607903798052376,
+     "err_deg": 0.017116364852534142,
+     "action_units_needed": 0.0011949476905974178,
+     "target_abs": 0.00029873692264935445,
+     "target_headroom_rad": 0.34063763692264937
+    },
+    "robot/L_hip_pitch_joint": {
+     "role": "stance",
+     "tau": -2.7463069572995233,
+     "pct_effort": 2.288589131082936,
+     "err_deg": -1.1655688733383518,
+     "action_units_needed": -0.08137205799406,
+     "target_abs": 0.154656985501485,
+     "target_headroom_rad": 0.46445238550148515
+    },
+    "robot/L_hip_roll_joint": {
+     "role": "stance",
+     "tau": -28.35432991836605,
+     "pct_effort": 23.628608265305044,
+     "err_deg": -12.033951372176999,
+     "action_units_needed": -0.12563344538181198,
+     "target_abs": -0.031408361345452995,
+     "target_headroom_rad": 0.371747261345453
+    },
+    "robot/R_knee_joint": {
+     "role": "swing",
+     "tau": 6.430420905098613,
+     "pct_effort": 5.358684087582177,
+     "err_deg": 2.8341229104218875,
+     "action_units_needed": 2.9978591047722642,
+     "target_abs": 1.099464776193066,
+     "target_headroom_rad": 0.8902152238069339
+    },
+    "robot/L_knee_joint": {
+     "role": "stance",
+     "tau": -0.5161080385720006,
+     "pct_effort": 0.43009003214333386,
+     "err_deg": -0.22746778756115948,
+     "action_units_needed": -0.015880247340676945,
+     "target_abs": -0.3539700618351692,
+     "target_headroom_rad": 0.2492500618351693
+    }
+   },
+   "info": {
+    "hip_roll_lean_rad": 0.17862371212392517,
+    "ankle_roll_lean_rad": 0.17595188313401602,
+    "com_y_error_m": -4.811259154968717e-08,
+    "pelvis_roll_rad": 3.588054111301312e-09,
+    "swing_clearance_m": 0.02601144326030355,
+    "range_violations": []
+   },
+   "resid": 2.5579538487363607e-13,
+   "foot_force_z": 231.81167339999976,
+   "weight_N": 231.81167340000002
+  },
+  "R": {
+   "rows": {
+    "robot/R_crank_A_joint": {
+     "role": "stance",
+     "tau": -13.888317012562208,
+     "pct_effort": 23.147195020937016,
+     "err_deg": -13.262365822659241,
+     "action_units_needed": -0.4065308703156092,
+     "target_abs": 0.042322156116837734,
+     "target_headroom_rad": 1.0376778438831624
+    },
+    "robot/R_crank_B_joint": {
+     "role": "stance",
+     "tau": 14.214164243076368,
+     "pct_effort": 23.690273738460615,
+     "err_deg": 13.573527007234038,
+     "action_units_needed": 1.4638512436959799,
+     "target_abs": 0.21889973562229284,
+     "target_headroom_rad": 0.8611002643777073
+    },
+    "robot/L_crank_A_joint": {
+     "role": "swing",
+     "tau": -0.04268498862226977,
+     "pct_effort": 0.07114164770378295,
+     "err_deg": -0.04076116161033327,
+     "action_units_needed": -0.0028456659081512736,
+     "target_abs": -0.14459641302880832,
+     "target_headroom_rad": 0.9354035869711917
+    },
+    "robot/L_crank_B_joint": {
+     "role": "swing",
+     "tau": 0.05138844130023301,
+     "pct_effort": 0.08564740216705502,
+     "err_deg": 0.04907234670431874,
+     "action_units_needed": 0.003425896086682201,
+     "target_abs": 0.14772667957619662,
+     "target_headroom_rad": 0.9322733204238034
+    },
+    "robot/R_hip_yaw_joint": {
+     "role": "stance",
+     "tau": 4.340623650294368,
+     "pct_effort": 7.234372750490612,
+     "err_deg": 3.3159922082204885,
+     "action_units_needed": 0.2314999280156996,
+     "target_abs": 0.0578749820039249,
+     "target_headroom_rad": 0.6489832179960752
+    },
+    "robot/L_hip_yaw_joint": {
+     "role": "swing",
+     "tau": -0.014112487889505587,
+     "pct_effort": 0.02352081314917598,
+     "err_deg": -0.010781146593308755,
+     "action_units_needed": -0.0007526660207736313,
+     "target_abs": -0.00018816650519340783,
+     "target_headroom_rad": 0.7066700334948067
+    },
+    "robot/R_hip_pitch_joint": {
+     "role": "stance",
+     "tau": 2.7469656580904362,
+     "pct_effort": 2.289138048408697,
+     "err_deg": 1.1658484346367313,
+     "action_units_needed": 0.08139157505453143,
+     "target_abs": -0.15465210623636713,
+     "target_headroom_rad": 0.4644475062363673
+    },
+    "robot/R_hip_roll_joint": {
+     "role": "stance",
+     "tau": 28.23857012439543,
+     "pct_effort": 23.532141770329524,
+     "err_deg": 11.984821389719068,
+     "action_units_needed": 0.125137574027957,
+     "target_abs": 0.03128439350698925,
+     "target_headroom_rad": 0.37162329350698925
+    },
+    "robot/L_hip_pitch_joint": {
+     "role": "swing",
+     "tau": 2.7058733649515005,
+     "pct_effort": 2.2548944707929173,
+     "err_deg": 1.1484083237672837,
+     "action_units_needed": 1.4801740256281921,
+     "target_abs": 0.545043506407048,
+     "target_headroom_rad": 0.8548389064070482
+    },
+    "robot/L_hip_roll_joint": {
+     "role": "swing",
+     "tau": -0.04034786994429851,
+     "pct_effort": 0.03362322495358209,
+     "err_deg": -0.01712416785297073,
+     "action_units_needed": -0.00119549244279403,
+     "target_abs": -0.0002988731106985075,
+     "target_headroom_rad": 0.3406377731106985
+    },
+    "robot/R_knee_joint": {
+     "role": "stance",
+     "tau": 0.5095685116956092,
+     "pct_effort": 0.42464042641300764,
+     "err_deg": 0.2245855776378549,
+     "action_units_needed": 0.015679031129095744,
+     "target_abs": 0.3539197577822739,
+     "target_headroom_rad": 0.249199757782274
+    },
+    "robot/L_knee_joint": {
+     "role": "swing",
+     "tau": -6.430240243771792,
+     "pct_effort": 5.358533536476492,
+     "err_deg": -2.8340432863330562,
+     "action_units_needed": -2.9978535459622084,
+     "target_abs": -1.099463386490552,
+     "target_headroom_rad": 0.8902166135094478
+    }
+   },
+   "info": {
+    "hip_roll_lean_rad": -0.17789020000705097,
+    "ankle_roll_lean_rad": 0.17522881346744393,
+    "com_y_error_m": 3.67995656724851e-08,
+    "pelvis_roll_rad": -3.457365843540806e-09,
+    "swing_clearance_m": 0.026098797792935585,
+    "range_violations": []
+   },
+   "resid": 1.836308882730009e-13,
+   "foot_force_z": 231.8116734000001,
+   "weight_N": 231.81167340000002
+  }
+ },
+ "B2": {
+  "typical": {
+   "mass": {
+    "robot/R_hip_yaw_joint": {
+     "tau": 5.6712336,
+     "err_deg": 4.332503332170455,
+     "action_units": 0.302465792,
+     "pct_effort": 9.452055999999999
+    },
+    "robot/L_hip_yaw_joint": {
+     "tau": 5.6712336,
+     "err_deg": 4.332503332170455,
+     "action_units": 0.302465792,
+     "pct_effort": 9.452055999999999
+    },
+    "robot/R_hip_pitch_joint": {
+     "tau": 17.0137008,
+     "err_deg": 7.220838886950757,
+     "action_units": 0.5041096533333332,
+     "pct_effort": 14.178084
+    },
+    "robot/R_hip_roll_joint": {
+     "tau": 17.2500022,
+     "err_deg": 7.3211283159361855,
+     "action_units": 0.5111111762962963,
+     "pct_effort": 14.375001833333334
+    },
+    "robot/L_hip_pitch_joint": {
+     "tau": 17.0137008,
+     "err_deg": 7.220838886950757,
+     "action_units": 0.5041096533333332,
+     "pct_effort": 14.178084
+    },
+    "robot/L_hip_roll_joint": {
+     "tau": 17.2500022,
+     "err_deg": 7.3211283159361855,
+     "action_units": 0.5111111762962963,
+     "pct_effort": 14.375001833333334
+    },
+    "robot/R_knee_joint": {
+     "tau": 17.9589064,
+     "err_deg": 7.915150318388331,
+     "action_units": 0.5525817353846154,
+     "pct_effort": 14.965755333333334
+    },
+    "robot/L_knee_joint": {
+     "tau": 17.9589064,
+     "err_deg": 7.915150318388331,
+     "action_units": 0.5525817353846154,
+     "pct_effort": 14.965755333333334
+    },
+    "robot/L_crank_A_joint": {
+     "tau": -21.135171683756518,
+     "err_deg": -20.18260227939424,
+     "action_units": -1.409011445583768,
+     "pct_effort": 35.225286139594196
+    },
+    "robot/L_crank_B_joint": {
+     "tau": 15.807936904809852,
+     "err_deg": 15.095467790911705,
+     "action_units": 1.0538624603206568,
+     "pct_effort": 26.346561508016418
+    },
+    "robot/R_crank_A_joint": {
+     "tau": 21.135176144224403,
+     "err_deg": 20.182606538827315,
+     "action_units": 1.4090117429482936,
+     "pct_effort": 35.22529357370733
+    },
+    "robot/R_crank_B_joint": {
+     "tau": -15.808051411946433,
+     "err_deg": -15.095577137172544,
+     "action_units": -1.0538700941297623,
+     "pct_effort": 26.346752353244053
+    }
+   },
+   "mass_x_length": {
+    "robot/R_hip_yaw_joint": {
+     "tau": 5.386058800258567,
+     "err_deg": 4.114645832854821,
+     "action_units": 0.28725646934712357,
+     "pct_effort": 8.976764667097614
+    },
+    "robot/L_hip_yaw_joint": {
+     "tau": 5.386058800258567,
+     "err_deg": 4.114645832854821,
+     "action_units": 0.28725646934712357,
+     "pct_effort": 8.976764667097614
+    },
+    "robot/R_hip_pitch_joint": {
+     "tau": 16.1581764007757,
+     "err_deg": 6.857743054758035,
+     "action_units": 0.47876078224520596,
+     "pct_effort": 13.465147000646418
+    },
+    "robot/R_hip_roll_joint": {
+     "tau": 16.38259551745314,
+     "err_deg": 6.952989486074118,
+     "action_units": 0.4854102375541671,
+     "pct_effort": 13.652162931210949
+    },
+    "robot/L_hip_pitch_joint": {
+     "tau": 16.1581764007757,
+     "err_deg": 6.857743054758035,
+     "action_units": 0.47876078224520596,
+     "pct_effort": 13.465147000646418
+    },
+    "robot/L_hip_roll_joint": {
+     "tau": 16.38259551745314,
+     "err_deg": 6.952989486074118,
+     "action_units": 0.4854102375541671,
+     "pct_effort": 13.652162931210949
+    },
+    "robot/R_knee_joint": {
+     "tau": 17.055852867485463,
+     "err_deg": 7.517141425407846,
+     "action_units": 0.5247954728457066,
+     "pct_effort": 14.213210722904552
+    },
+    "robot/L_knee_joint": {
+     "tau": 17.055852867485463,
+     "err_deg": 7.517141425407846,
+     "action_units": 0.5247954728457066,
+     "pct_effort": 14.213210722904552
+    },
+    "robot/L_crank_A_joint": {
+     "tau": -20.072401433485734,
+     "err_deg": -19.167731447184604,
+     "action_units": -1.3381600955657156,
+     "pct_effort": 33.45400238914289
+    },
+    "robot/L_crank_B_joint": {
+     "tau": 15.013043666563703,
+     "err_deg": 14.336400662328517,
+     "action_units": 1.0008695777709136,
+     "pct_effort": 25.02173944427284
+    },
+    "robot/R_crank_A_joint": {
+     "tau": 20.07240566966149,
+     "err_deg": 19.167735492434467,
+     "action_units": 1.3381603779774325,
+     "pct_effort": 33.454009449435816
+    },
+    "robot/R_crank_B_joint": {
+     "tau": -15.013152415773167,
+     "err_deg": -14.336504510173977,
+     "action_units": -1.0008768277182112,
+     "pct_effort": 25.02192069295528
+    }
+   }
+  },
+  "high": {
+   "mass": {
+    "robot/R_hip_yaw_joint": {
+     "tau": 5.907535,
+     "err_deg": 4.513024304344224,
+     "action_units": 0.31506853333333334,
+     "pct_effort": 9.845891666666667
+    },
+    "robot/L_hip_yaw_joint": {
+     "tau": 5.907535,
+     "err_deg": 4.513024304344224,
+     "action_units": 0.31506853333333334,
+     "pct_effort": 9.845891666666667
+    },
+    "robot/R_hip_pitch_joint": {
+     "tau": 24.3390442,
+     "err_deg": 10.329811185499,
+     "action_units": 0.7211568651851852,
+     "pct_effort": 20.28253683333333
+    },
+    "robot/R_hip_roll_joint": {
+     "tau": 21.030824600000003,
+     "err_deg": 8.925759179703022,
+     "action_units": 0.6231355437037038,
+     "pct_effort": 17.525687166666668
+    },
+    "robot/L_hip_pitch_joint": {
+     "tau": 24.3390442,
+     "err_deg": 10.329811185499,
+     "action_units": 0.7211568651851852,
+     "pct_effort": 20.28253683333333
+    },
+    "robot/L_hip_roll_joint": {
+     "tau": 21.030824600000003,
+     "err_deg": 8.925759179703022,
+     "action_units": 0.6231355437037038,
+     "pct_effort": 17.525687166666668
+    },
+    "robot/R_knee_joint": {
+     "tau": 18.904112,
+     "err_deg": 8.331737177250874,
+     "action_units": 0.5816649846153846,
+     "pct_effort": 15.753426666666668
+    },
+    "robot/L_knee_joint": {
+     "tau": 18.904112,
+     "err_deg": 8.331737177250874,
+     "action_units": 0.5816649846153846,
+     "pct_effort": 15.753426666666668
+    },
+    "robot/L_crank_A_joint": {
+     "tau": -22.866360570858195,
+     "err_deg": -21.835765892242172,
+     "action_units": -1.524424038057213,
+     "pct_effort": 38.11060095143033
+    },
+    "robot/L_crank_B_joint": {
+     "tau": 17.201891886336146,
+     "err_deg": 16.426596745456592,
+     "action_units": 1.1467927924224097,
+     "pct_effort": 28.66981981056024
+    },
+    "robot/R_crank_A_joint": {
+     "tau": 22.866366594256014,
+     "err_deg": 21.835771644163398,
+     "action_units": 1.5244244396170676,
+     "pct_effort": 38.11061099042669
+    },
+    "robot/R_crank_B_joint": {
+     "tau": -17.20201380039225,
+     "err_deg": -16.42671316480456,
+     "action_units": -1.14680092002615,
+     "pct_effort": 28.670023000653753
+    }
+   },
+   "mass_x_length": {
+    "robot/R_hip_yaw_joint": {
+     "tau": 5.6104779169360075,
+     "err_deg": 4.286089409223772,
+     "action_units": 0.29922548890325373,
+     "pct_effort": 9.35079652822668
+    },
+    "robot/L_hip_yaw_joint": {
+     "tau": 5.6104779169360075,
+     "err_deg": 4.286089409223772,
+     "action_units": 0.29922548890325373,
+     "pct_effort": 9.35079652822668
+    },
+    "robot/R_hip_pitch_joint": {
+     "tau": 23.115169017776353,
+     "err_deg": 9.810382425556634,
+     "action_units": 0.6848938968230031,
+     "pct_effort": 19.26264084814696
+    },
+    "robot/R_hip_roll_joint": {
+     "tau": 19.97330138429219,
+     "err_deg": 8.47693238713146,
+     "action_units": 0.5918015224975464,
+     "pct_effort": 16.64441782024349
+    },
+    "robot/L_hip_pitch_joint": {
+     "tau": 23.115169017776353,
+     "err_deg": 9.810382425556634,
+     "action_units": 0.6848938968230031,
+     "pct_effort": 19.26264084814696
+    },
+    "robot/L_hip_roll_joint": {
+     "tau": 19.97330138429219,
+     "err_deg": 8.47693238713146,
+     "action_units": 0.5918015224975464,
+     "pct_effort": 16.64441782024349
+    },
+    "robot/R_knee_joint": {
+     "tau": 17.953529334195224,
+     "err_deg": 7.912780447797733,
+     "action_units": 0.5524162872060069,
+     "pct_effort": 14.961274445162685
+    },
+    "robot/L_knee_joint": {
+     "tau": 17.953529334195224,
+     "err_deg": 7.912780447797733,
+     "action_units": 0.5524162872060069,
+     "pct_effort": 14.961274445162685
+    },
+    "robot/L_crank_A_joint": {
+     "tau": -21.716538458679654,
+     "err_deg": -20.7377666552647,
+     "action_units": -1.4477692305786436,
+     "pct_effort": 36.19423076446609
+    },
+    "robot/L_crank_B_joint": {
+     "tau": 16.33690440391968,
+     "err_deg": 15.600594544221424,
+     "action_units": 1.0891269602613118,
+     "pct_effort": 27.2281740065328
+    },
+    "robot/R_crank_A_joint": {
+     "tau": 21.716544179194297,
+     "err_deg": 20.737772117953796,
+     "action_units": 1.4477696119462864,
+     "pct_effort": 36.194240298657164
+    },
+    "robot/R_crank_B_joint": {
+     "tau": -16.33702018759587,
+     "err_deg": -15.600705109487794,
+     "action_units": -1.0891346791730578,
+     "pct_effort": 27.228366979326445
+    }
+   }
+  }
+ },
+ "C": {
+  "effort limit": {
+   "n": 5,
+   "pearson_r": 0.9878087384787018,
+   "pearson_r_loglog": 0.9779210282355141,
+   "ratio_cv": 0.07235343070770642,
+   "ratio_mean": 1.1166666666666667
+  },
+  "default-pose gravity torque": {
+   "n": 5,
+   "pearson_r": -0.6895875396761618,
+   "pearson_r_loglog": -0.39421966065577324,
+   "ratio_cv": 1.1889887167443118,
+   "ratio_mean": 17680.220971660674
+  },
+  "armature (rotor)": {
+   "n": 5,
+   "pearson_r": 0.9878087384787019,
+   "pearson_r_loglog": 0.9779210282355139,
+   "ratio_cv": 0.23035810775997648,
+   "ratio_mean": 1458.1263408046655
+  },
+  "link inertia, leg in air": {
+   "n": 5,
+   "pearson_r": 0.8043527342763489,
+   "pearson_r_loglog": 0.9363643219653134,
+   "ratio_cv": 0.9170988693599313,
+   "ratio_mean": 329.7530154328714
+  },
+  "link inertia, standing": {
+   "n": 5,
+   "pearson_r": -0.32637110906080213,
+   "pearson_r_loglog": -0.3754705280341112,
+   "ratio_cv": 0.8535304012797346,
+   "ratio_mean": 365.9396969831593
+  },
+  "single-leg stance torque": {
+   "n": 5,
+   "pearson_r": 0.048637509841973424,
+   "pearson_r_loglog": -0.3107288222726388,
+   "ratio_cv": 1.4480470769247002,
+   "ratio_mean": 65.78577252534168
+  },
+  "action scale x Kp / effort (percent) (constancy)": {
+   "mean": 27.916666666666664,
+   "cv": 0.07235343070770642,
+   "n": 5
+  },
+  "Kp x half range / effort (constancy)": {
+   "mean": 1.1639346583333334,
+   "cv": 0.12732461440668452,
+   "n": 5
+  },
+  "groups": [
+   "hip_yaw",
+   "hip_roll",
+   "hip_pitch",
+   "knee",
+   "crank"
+  ],
+  "kp_by_group": {
+   "crank": 60.0,
+   "hip_yaw": 75.0,
+   "hip_pitch": 135.0,
+   "hip_roll": 135.0,
+   "knee": 130.0
+  }
+ }
+}

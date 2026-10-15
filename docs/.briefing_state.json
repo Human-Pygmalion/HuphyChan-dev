@@ -1789,7 +1789,8 @@
    "finding": "보상 73.1 대 71.9, 넘어짐 종료 0.006 대 0.003(둘 다 매우 작음), 회전 추종 보상 −3 %. 무작위화는 아직 33 % 램프",
    "number": "4,051 / 12,000 회",
    "section": "done",
-   "changed": "2026-10-14 22:40"
+   "changed": "2026-10-14 22:40",
+   "collapsed": true
   },
   "other-robot-gains": {
    "id": "other-robot-gains",
@@ -1861,6 +1862,19 @@
    ],
    "section": "done",
    "changed": "2026-10-15 17:10"
+  },
+  "rec-vs-robots": {
+   "id": "rec-vs-robots",
+   "created": "2026-10-15 17:49",
+   "title": "Compare recommended gains (docs/169 s7, s8-7) with other robots' published gains, with evidence figures",
+   "why": "User asked 2026-10-15 to put other robots as reference and visualize the evidence behind each recommendation",
+   "section": "done",
+   "changed": "2026-10-15 17:49",
+   "finding": "Recommended gain sets measured next to 5 published robots: PD-only stand multiplier 2.29 (flat) / 2.10 (mountain) vs 4.7-28 for others (current 5.33); ankle stiffness / (m g h) 1.16 / 1.27 vs 0.03-0.58 for others (current 0.47); action-1 torque 23-28 % of limit (hip yaw 31 %) vs 17-28 % band. Seven figures + table in docs/169 section 9.",
+   "number": "stand multiplier 2.29 / 2.10",
+   "media": [
+    "docs/img/pd_gain/2026-10-15_rec_F7_summary_dashboard.png"
+   ]
   }
  },
  "order": [
@@ -2030,7 +2044,8 @@
   "trial-v11a-final",
   "pd-gain-recommend",
   "rough-load-probe",
-  "gain-mountain"
+  "gain-mountain",
+  "rec-vs-robots"
  ],
- "updated": "2026-10-15 17:43"
+ "updated": "2026-10-15 17:49"
 }
