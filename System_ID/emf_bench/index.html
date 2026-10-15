@@ -100,6 +100,13 @@
   .meas { font-size: 12.5px; min-height: 0; font-variant-numeric: tabular-nums; }
   .meas:not(:empty) { margin: 3px 0 2px; }
   .meas b { color: var(--c4); } .meas a { margin-left: 8px; cursor: pointer; color: var(--mute); text-decoration: underline; }
+  #ovCard.collapsed .ovbody { display: none; }
+  #ovCard.collapsed .ovhead { margin-bottom: 0; }
+  #ovCard.collapsed #ovFold { transform: rotate(-90deg); }
+  .ovbtns { display: flex; gap: 6px; align-items: center; }
+  .ovbtns .fold { padding: 0 7px; font-size: 13px; line-height: 20px; }
+  .ovmini { font-size: 13px; font-weight: 500; color: var(--mute); margin-left: 8px; }
+  #btnPause.paused { background: var(--warn); color: #fff; border-color: var(--warn); }
 </style>
 </head>
 <body>
@@ -111,6 +118,7 @@
   <span id="pFault" class="pill">고장 없음</span>
   <span id="pFake" class="pill fake" hidden>시뮬레이션 모터 (실물 아님)</span>
   <span style="flex:1"></span>
+  <button id="btnPause" class="pill" title="그래프만 멈춥니다. 제어·기록·과전압 집계는 계속됩니다">⏸ 그래프 일시정지</button>
   <label class="pill" style="cursor:default">표시 구간
     <select id="winSel">
       <option>5</option><option selected>10</option><option>20</option><option>30</option><option>60</option>
@@ -172,7 +180,9 @@
 
   <div class="stack">
     <section class="card" id="ovCard">
-      <div class="ovhead"><h2>과전압 모니터 (초기화 이후)</h2><button id="btnOvReset">초기화 (Reset)</button></div>
+      <div class="ovhead"><h2>과전압 모니터 (초기화 이후) <span id="ovMini" class="ovmini"></span></h2>
+        <span class="ovbtns"><button id="btnOvReset">초기화 (Reset)</button><button class="fold" id="ovFold" title="접기 / 펴기">▾</button></span></div>
+      <div class="ovbody">
       <div class="tiles">
         <div class="tile" id="tOv"><div class="num"><span id="cOv">0</span><small>회</small></div><div class="lbl">과전압 고장 (&gt; 60 V)</div><div class="sub"></div></div>
         <div class="tile" id="tUv"><div class="num"><span id="cUv">0</span><small>회</small></div><div class="lbl">저전압 고장 (&lt; 12 V)</div><div class="sub"></div></div>
@@ -187,6 +197,7 @@
             <th>속도 [°/s]</th><th>토크 [N·m]</th><th>전력 [W] 직전 / 최저(1초)</th><th>Kp / Kd</th><th>사인파</th></tr></thead>
           <tbody id="ovRows"></tbody>
         </table>
+      </div>
       </div>
     </section>
     <section class="card plot" data-id="pPos">
@@ -392,6 +403,7 @@ function renderOv(s) {
   $("cOv").textContent = c.overvoltage; $("cUv").textContent = c.undervoltage;
   $("cOt").textContent = c.other + c.unread; $("cWn").textContent = o.warn;
   $("cUnread").textContent = c.unread ? `(고장값 못 읽음 ${c.unread}회 포함)` : "";
+  $("ovMini").textContent = `과전압 ${c.overvoltage}회 · 저전압 ${c.undervoltage}회 · 기타 ${c.other + c.unread}회` + (o.vbus && o.vbus.max !== null ? ` · 최대 ${o.vbus.max.toFixed(2)} V` : "");
   $("tOv").classList.toggle("hit", c.overvoltage > 0); $("tUv").classList.toggle("hit", c.undervoltage > 0);
   $("tOt").classList.toggle("hit", c.other + c.unread > 0); $("tWn").classList.toggle("warnhit", o.warn > 0);
   const r = o.rate, vb = o.vbus;
@@ -437,7 +449,9 @@ function range(vals, minSpan) {
   const pad = (hi - lo) * 0.08;
   return [lo - pad, hi + pad];
 }
-function lowerBound(t) { let a = 0, b = buf.length; while (a < b) { const m = (a + b) >> 1; if (buf[m].t < t) a = m + 1; else b = m; } return a; }
+let VIEW = null;           // frozen copy of buf while the plots are paused (stream keeps filling buf)
+const SRC = () => VIEW || buf;
+function lowerBound(t) { const B = SRC(); let a = 0, b = B.length; while (a < b) { const m = (a + b) >> 1; if (B[m].t < t) a = m + 1; else b = m; } return a; }
 
 // series: [{key, color, axis:'L'|'R', dash, width}], opts: {minSpanL, minSpanR, unitL, unitR, empty}
 function draw(cv, series, o) {
@@ -451,8 +465,9 @@ function draw(cv, series, o) {
   const dual = series.some(s => s.axis === "R");
   const m = { l: 54, r: dual ? 54 : 10, t: 6, b: 20 };
   const pw = W - m.l - m.r, ph = H - m.t - m.b;
-  const tNow = buf.length ? buf[buf.length - 1].t : 0, t0 = tNow - WIN;
-  const i0 = lowerBound(t0), vis = buf.slice(i0);
+  const B = SRC();
+  const tNow = B.length ? B[B.length - 1].t : 0, t0 = tNow - WIN;
+  const i0 = lowerBound(t0), vis = B.slice(i0);
   const X = t => m.l + (t - t0) / WIN * pw;
   const out = {};
   const axes = {};
@@ -565,9 +580,10 @@ function pickPoint(cv, ev) {
   const Yp = (ax, v) => g.m.t + (1 - (v - g.axes[ax][0]) / (g.axes[ax][1] - g.axes[ax][0])) * g.ph;
   // snap to the nearest curve point within 14 px (so spikes are measured on the data, not on the pixel)
   let best = null;
-  const i = Math.min(lowerBound(t), buf.length - 1);
-  for (let k = Math.max(0, i - 6); k <= Math.min(buf.length - 1, i + 6); k++) {
-    const p = buf[k];
+  const B = SRC();
+  const i = Math.min(lowerBound(t), B.length - 1);
+  for (let k = Math.max(0, i - 6); k <= Math.min(B.length - 1, i + 6); k++) {
+    const p = B[k];
     for (const s of g.series) {
       const v = p[s.key]; if (v === null || v === undefined) continue;
       const ax = s.axis || "L", dx = (p.t - t) / WIN * g.pw, dy = Yp(ax, v) - y, d = Math.hypot(dx, dy);
@@ -647,6 +663,19 @@ document.querySelectorAll(".plot").forEach(sec => {
   document.addEventListener("mouseup", () => plots().forEach(p => { if (p !== dragged) p.draggable = false; }));
 })();
 
+$("btnPause").addEventListener("click", () => {
+  VIEW = VIEW ? null : buf.slice();
+  $("btnPause").textContent = VIEW ? "▶ 그래프 재개 (멈춤 중 · 제어·기록은 계속)" : "⏸ 그래프 일시정지";
+  $("btnPause").classList.toggle("paused", !!VIEW);
+  dirty = true;
+});
+// over-voltage card fold
+(function () {
+  const card = $("ovCard");
+  if (store.get("emf_ov_folded")) card.classList.add("collapsed");
+  $("ovFold").addEventListener("click", () => { card.classList.toggle("collapsed"); store.set("emf_ov_folded", card.classList.contains("collapsed")); });
+})();
+
 function loop() { render(); requestAnimationFrame(loop); }
 window.addEventListener("resize", () => dirty = true);
 
@@ -658,7 +687,7 @@ function connectStream() {
     const org = d.status.origin_deg || 0;
     for (const r of d.samples) {
       r.posRel = r.pos - org; r.tgtRel = r.tgt - org;
-      r.err = r.en ? r.tgt - r.pos : null;     // tracking error only while torque is on
+      r.err = r.en && r.mode === 2 ? r.tgt - r.pos : null;   // only while the MOTOR reports torque on (not after a fault)
       buf.push(r);
     }
     if (buf.length) { const cut = buf[buf.length - 1].t - 65; let k = 0; while (k < buf.length && buf[k].t < cut) k++; if (k > 0) buf.splice(0, k); }
