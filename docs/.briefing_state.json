@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Measuring joint loads on rough terrain, slopes and stairs for PD gains",
-  "detail": "Probe tool written and verified (crank Kp built as 22.27 baseline / 55 trial). Running on the remote RTX 3090: box terrain levels 0/3/6/9 x speed 0.3/0.6/1.0, slopes 10/20/30 deg up and down, stairs 10-25 cm risers up and down, for both policies (~1 h). Slopes and stairs were never in training, so falls are expected and only steps before a fall are counted. In parallel: policy-independent quasi-static torque calculation.",
-  "since": "2026-10-15 16:21"
+  "title": "역기전력 흡수 시험용 단일 모터 웹 화면 구현 중 (모터 연결 전, 가상 모터로 검증)",
+  "detail": "System_ID/emf_bench/: 3090 머신 CAN 직접 통신(설치 없음), 위치 목표·Kp·Kd 실시간 조정, 위치·속도·토크·전류·버스 전압·되민 전력 실시간 그래프, 기록 CSV. 전류·전압은 MIT 파라미터 읽기(매뉴얼로 번호 확인). 가상 모터로 실제 브라우저 클릭 검증 후 원격 배치",
+  "since": "2026-10-15 17:30"
  },
  "items": {
   "shouldermesh": {
@@ -2032,5 +2032,5 @@
   "rough-load-probe",
   "gain-mountain"
  ],
- "updated": "2026-10-15 17:10"
+ "updated": "2026-10-15 17:30"
 }
