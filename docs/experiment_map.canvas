@@ -4864,7 +4864,7 @@
       "fromSide": "bottom",
       "toNode": "n_rough_gain_crank60",
       "toSide": "top",
-      "label": "분리 비교: 크랭크 게인만 (게인 한 가지)"
+      "label": "분리 비교: 크랭크 게인만 (게인 한 가지) · 4k: 회전 보상 기준선과 같음, 보상 +5"
     },
     {
       "id": "e_trial_gain_b",
