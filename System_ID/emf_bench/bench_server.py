@@ -46,7 +46,7 @@ from rscodec import mit  # noqa: E402
 
 MODE_NAMES = {0: "Reset", 1: "Cali", 2: "Motor"}
 CSV_COLUMNS = ["t_s", "unix_s", "pos_deg", "vel_deg_s", "tau_nm", "temp_c", "mode", "fault", "warn",
-               "target_deg", "kp", "kd", "enabled", "vbus_v", "iqf_a", "power_w"]
+               "target_deg", "kp", "kd", "enabled", "vbus_v", "iqf_a", "power_w", "fault_word"]
 PARAM_CYCLE = (fr.PARAM_VBUS, fr.PARAM_IQF)
 LOOP_ACTIONS = ("connect", "disconnect", "enable", "disable", "clear_fault", "fault_query")
 
@@ -78,6 +78,15 @@ class Controller:
     self.kd = float(args.kd)
     self.target_rel = 0.0          # degrees, relative to origin_deg
     self.target_event = 0          # +1 whenever the SERVER moves the target (enable snapshot)
+    # sine position command (user request 2026-10-15): target = center + amp * sin(phase),
+    # phase advances 2*pi per period (one full back-and-forth).  Computed in the loop thread
+    # every cycle, so the waveform is as smooth as the control rate.
+    self.sine_on = False
+    self.sine_amp = 10.0           # degrees, +- around the center
+    self.sine_period = 2.0         # seconds per full back-and-forth
+    self.sine_center = 0.0         # degrees, relative to origin_deg
+    self.sine_phase = 0.0          # radians
+    self._sine_t: Optional[float] = None
 
     # loop-thread state
     self.motor: Optional[BenchMotor] = None
@@ -143,8 +152,32 @@ class Controller:
         self.kd = min(max(v, 0.0), self.enc.kd_max)
         if self.kd != v:
           notes.append(f"Kd는 0..{self.enc.kd_max:g} 범위로 잘림")
+      if "sine_amp_deg" in d:
+        self.sine_amp = abs(float(d["sine_amp_deg"]))
+      if "sine_period_s" in d:
+        v = float(d["sine_period_s"])
+        if v > 0:
+          self.sine_period = v      # phase-continuous: only the speed of the phase changes
+        else:
+          notes.append("주기는 0보다 커야 함")
       if "target_deg" in d:
-        self.target_rel = float(d["target_deg"])
+        if self.sine_on:
+          self.sine_center = float(d["target_deg"])   # while the sine runs the slider moves its center
+        else:
+          self.target_rel = float(d["target_deg"])
+      if "sine" in d:
+        on = d["sine"] in ("on", True, 1, "1")
+        if on and not self.sine_on:
+          if not self.enabled:
+            notes.append("사인파는 토크를 켠 뒤에 시작할 수 있음")
+          else:
+            self.sine_center = self.target_rel      # starts at sin(0) = 0 -> no jump
+            self.sine_phase = 0.0
+            self._sine_t = None
+            self.sine_on = True
+        elif not on and self.sine_on:
+          self.sine_on = False                      # target stays where the sine was -> no jump
+          self.target_event += 1
     return {"ok": True, "note": "; ".join(notes) or None}
 
   def status(self) -> dict:
@@ -162,6 +195,8 @@ class Controller:
         connected=self.motor is not None, alive=alive, enabled=self.enabled,
         fake=self.args.fake, model=self.args.model, motor_id=self.args.id, channel=self.args.channel,
         origin_deg=self.origin_deg, kp=kp, kd=kd, target_rel_deg=trel, target_event=self.target_event,
+        sine_on=self.sine_on, sine_amp_deg=self.sine_amp, sine_period_s=self.sine_period,
+        sine_center_deg=self.sine_center,
         target_clamped=self.target_clamped,
         kp_max=self.enc.kp_max, kd_max=self.enc.kd_max, pmax_deg=self.pmax_deg,
         vmax_deg_s=math.degrees(self.enc.vmax_rad_s), tmax_nm=self.enc.tmax_nm,
@@ -295,6 +330,10 @@ class Controller:
 
   def _do_disable(self, c: Cmd):
     self.enabled = False
+    with self.lock:
+      if self.sine_on:              # torque is off, so the sine has nothing to drive
+        self.sine_on = False
+        self.target_event += 1
     m = self.motor
     if m is not None:
       for _ in range(3):
@@ -326,6 +365,12 @@ class Controller:
   # -------------------------------------------------------------------- one cycle
   def _target_abs(self) -> float:
     with self.lock:
+      if self.sine_on:
+        now = time.monotonic()
+        if self._sine_t is not None:
+          self.sine_phase += 2.0 * math.pi * (now - self._sine_t) / self.sine_period
+        self._sine_t = now
+        self.target_rel = self.sine_center + self.sine_amp * math.sin(self.sine_phase)
       t = (self.origin_deg or 0.0) + self.target_rel
     lim = self.pmax_deg
     self.target_clamped = abs(t) > lim
@@ -417,7 +462,8 @@ class Controller:
       self.rec_writer.writerow([row["t"], round(self.unix_zero + row["t"], 4), row["pos"], row["vel"],
                                 row["tau"], row["temp"], row["mode"], row["fault"], row["warn"], row["tgt"],
                                 row["kp"], row["kd"], row["en"], "" if v is None else v,
-                                "" if i is None else i, p_w])
+                                "" if i is None else i, p_w,
+                                "" if self.fault_word is None else f"0x{self.fault_word:08x}"])
       self.rec_rows += 1
       if st.stamp - self.rec_last_flush > 1.0:
         self.rec_fh.flush()
@@ -538,7 +584,7 @@ class Handler(BaseHTTPRequestHandler):
       out = ctl.submit(action, d)
     elif action not in ("set", "record"):
       out = {"ok": False, "error": f"unknown action {action}"}
-    if any(k in d for k in ("kp", "kd", "target_deg")):
+    if any(k in d for k in ("kp", "kd", "target_deg", "sine", "sine_amp_deg", "sine_period_s")):
       out["note"] = ctl.set_params(d).get("note")
     if "record" in d:
       r = ctl.submit("record", {"on": d["record"] in ("on", True, 1, "1")})

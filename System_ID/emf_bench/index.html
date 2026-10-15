@@ -64,6 +64,10 @@
         vertical-align: middle; margin-right: 4px; border-radius: 2px; }
   .hint { color: var(--mute); font-size: 12px; margin-top: 8px; }
   kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 12px; }
+  .sinerow { flex-wrap: wrap; gap: 6px; align-items: center; }
+  .sinerow span { white-space: nowrap; }
+  .sinerow input { width: 72px; flex: 0 0 72px; }
+  .sinerow button { white-space: nowrap; margin-left: auto; }
 </style>
 </head>
 <body>
@@ -113,6 +117,15 @@
           <button data-step="5">+5°</button><button data-step="30">+30°</button>
           <button id="btnHere">현재 위치로</button>
         </div>
+      </div>
+      <div class="ctl">
+        <label><span>사인파 위치 명령</span><span id="sineInfo"></span></label>
+        <div class="row sinerow">
+          <span>진폭 ±</span><input id="sineAmp" type="number" min="0" step="1" value="10"><span>°</span>
+          <span>주기</span><input id="sinePer" type="number" min="0.05" step="0.1" value="2"><span>초/왕복</span>
+          <button id="btnSine">사인파 시작</button>
+        </div>
+        <div class="hint">목표 = 중심 + 진폭 × sin(2π t / 주기). 중심은 시작할 때의 목표 위치이고, 사인파가 도는 동안 위의 목표 슬라이더는 중심을 옮깁니다. 정지하면 그 순간 위치에 멈춥니다. 속도 목표는 0 으로 보냅니다(위치만).</div>
       </div>
       <div class="hint">토크를 켜는 순간 목표는 그때 측정한 위치로 맞춰지므로 튀지 않습니다.</div>
     </section>
@@ -203,6 +216,24 @@ $("btnHere").addEventListener("click", () => {
   const v = Math.round(last.posRel * 100) / 100;
   $("tgtNum").value = v; $("tgtRange").value = v; sendSet({ target_deg: v });
 });
+function sineInfo() {
+  const a = parseFloat($("sineAmp").value) || 0, T = parseFloat($("sinePer").value) || 0;
+  if (T <= 0) { $("sineInfo").textContent = "주기 > 0"; return; }
+  const vpk = a * 2 * Math.PI / T;
+  const lim = S ? S.vmax_deg_s : 859;
+  $("sineInfo").textContent = `최대 속도 ${vpk.toFixed(0)} °/s` + (vpk > lim ? ` (모터 속도 보고 한계 ${lim.toFixed(0)} 초과)` : "");
+}
+["sineAmp", "sinePer"].forEach(id => $(id).addEventListener("input", () => {
+  sineInfo();
+  const a = parseFloat($("sineAmp").value), T = parseFloat($("sinePer").value);
+  const p = {}; if (!isNaN(a)) p.sine_amp_deg = a; if (!isNaN(T) && T > 0) p.sine_period_s = T;
+  sendSet(p);
+}));
+$("btnSine").addEventListener("click", () => {
+  const a = parseFloat($("sineAmp").value), T = parseFloat($("sinePer").value);
+  cmd({ action: "set", sine_amp_deg: a, sine_period_s: T, sine: S && S.sine_on ? "off" : "on" });
+});
+sineInfo();
 $("btnConnect").addEventListener("click", () => cmd({ action: S && S.connected ? "disconnect" : "connect" }));
 $("btnEnable").addEventListener("click", () => cmd({ action: "enable" }));
 $("btnDisable").addEventListener("click", () => cmd({ action: "disable" }));
@@ -239,6 +270,9 @@ function onStatus(s) {
   // server-owned setpoints: first load, and whenever the server moved the target (enable / connect)
   if (first) { setVal("kpNum", "kpRange", s.kp); setVal("kdNum", "kdRange", s.kd); }
   if (s.target_event !== lastEvent) { lastEvent = s.target_event; setVal("tgtNum", "tgtRange", Math.round(s.target_rel_deg * 100) / 100); }
+  $("btnSine").textContent = s.sine_on ? "사인파 정지" : "사인파 시작";
+  $("btnSine").classList.toggle("on", s.sine_on);
+  if (first) { $("sineAmp").value = s.sine_amp_deg; $("sinePer").value = s.sine_period_s; sineInfo(); }
   if (s.message && !$("msg").textContent) $("msg").textContent = s.message;
 
   const wh = !s.connected ? "-" : "";
