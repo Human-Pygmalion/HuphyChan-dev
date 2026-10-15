@@ -1823,7 +1823,8 @@
    "number": "크랭크 게인 평가 확인: 기준선 22.27/1.41, 시험 55/2.5 (시뮬레이터에 --crank-kp/--crank-kd 추가)",
    "needs": "종합 판단은 메인 세션 (노트 docs/experiments/2026-10-14_rough_box_trial_v11a.md §12)",
    "section": "done",
-   "changed": "2026-10-15 07:23"
+   "changed": "2026-10-15 07:23",
+   "collapsed": true
   },
   "trial-v11a-final": {
    "id": "trial-v11a-final",
@@ -1903,6 +1904,15 @@
    ],
    "section": "done",
    "changed": "2026-10-15 17:54"
+  },
+  "emf-scan": {
+   "id": "emf-scan",
+   "created": "2026-10-15 18:23",
+   "title": "역기전력 벤치 실물 연결: 모터 4번(RS04) 발견, 버스 전압 48.69 V 읽힘 — 화면 서버 http://10.8.0.14:8099 실행 중(연결 전, 힘 없음)",
+   "finding": "어댑터 CANable2(slcan). 전압·전류 응답이 매뉴얼 추정과 달리 상태 프레임과 같은 0xFD 번호로 옴 → 해석 코드 수정·커밋. 모터는 힘 꺼짐(Reset), 온도 26 °C, 고장 없음. 토크 켜기 전 영상 녹화 필요",
+   "number": "모터 4번 위치 112.28°, VBUS 48.69 V",
+   "section": "done",
+   "changed": "2026-10-15 18:23"
   }
  },
  "order": [
@@ -2075,7 +2085,8 @@
   "gain-mountain",
   "rec-vs-robots",
   "gain-vs-robots",
-  "emf-bench"
+  "emf-bench",
+  "emf-scan"
  ],
- "updated": "2026-10-15 17:54"
+ "updated": "2026-10-15 18:23"
 }
