@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "권장 게인(평지·등반)을 G1·H1·T1·Berkeley 공개 게인과 비교 시각화 중",
-  "detail": "기준 4개(출력 1 = 최대 토크 %, 지형별 필요 Kp, 발목 강성 ÷ mgh, 감쇠비)와 게인만으로 서기 배수를 로봇별로 한 그림에 놓는다. 권장 두 세트도 같은 시뮬 측정에 넣음",
-  "since": "2026-10-15 17:43"
+  "title": "Back-EMF bench web UI: built and verified on a simulated motor; waiting for the real motor",
+  "detail": "Single-motor web page (position target, Kp/Kd, live plots of voltage, current, power) in System_ID/emf_bench. 8/8 frame tests and 27/27 browser checks pass against a simulated motor; real motor not yet attached.",
+  "since": "2026-10-15 17:53"
  },
  "items": {
   "shouldermesh": {
@@ -1812,7 +1812,8 @@
    "finding": "무작위화 최대 근접 구간. 직선 추종 같음, 넘어짐 종료 0.005 대 0.018. 회전이 실제로 떨어졌는지는 완주 뒤 무작위화 끈 측정으로 판정",
    "number": "8,059 / 12,000 회, 끝 예상 05:45~06:00",
    "section": "done",
-   "changed": "2026-10-15 02:12"
+   "changed": "2026-10-15 02:12",
+   "collapsed": true
   },
   "trial_v11a_final": {
    "id": "trial_v11a_final",
@@ -1888,6 +1889,20 @@
    ],
    "section": "done",
    "changed": "2026-10-15 17:49"
+  },
+  "emf-bench": {
+   "id": "emf-bench",
+   "created": "2026-10-15 17:53",
+   "title": "역기전력 흡수 시험 웹 화면 완성 — 가상 모터로 브라우저 클릭 검증 27/27, 3090 에서 200 Hz·손실 0",
+   "why": "User will test the over-voltage absorber on a real motor via the 3090 machine's CAN adapter and wants to command angles and watch voltage/current live.",
+   "finding": "System_ID/emf_bench/. 위치 목표·Kp·Kd 실시간 조정, 위치·속도·토크·전류·버스 전압·되민 전력 그래프, CSV 기록, ID 스캔. 전류·전압은 MIT 파라미터 읽기(VBUS 0x701C, iqf 0x701A, 매뉴얼 확인) — 펌웨어 RS04 0.4.1.29·RS03 0.3.1.41 이상 필요, 실물 응답 형식은 미확인. 실물 연결 대기",
+   "number": "http://10.8.0.14:8099",
+   "needs": "How to record video of the real motor (3090 VM has no camera); real-motor confirmation of the Command 14 reply layout via --scan.",
+   "media": [
+    "System_ID/emf_bench/ux_shots/2_after_step_60deg.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 17:54"
   }
  },
  "order": [
@@ -2059,7 +2074,8 @@
   "rough-load-probe",
   "gain-mountain",
   "rec-vs-robots",
-  "gain-vs-robots"
+  "gain-vs-robots",
+  "emf-bench"
  ],
- "updated": "2026-10-15 17:49"
+ "updated": "2026-10-15 17:54"
 }

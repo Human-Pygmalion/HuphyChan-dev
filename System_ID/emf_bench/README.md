@@ -144,7 +144,7 @@ VBUS 와 iqf 를 번갈아 읽습니다(각각 약 100 Hz). 한 모터에 **동�
 
 매뉴얼 근거(RobStride 사용자 매뉴얼, github.com/RobStride/Product_Information):
 
-| 항목 | RS04 (`RS04User Manual260713.pdf`) | RS03 (`RS03User Manual261013.pdf`) |
+| 항목 | RS04 (`Motor_Spec/manuals/RS04_User_Manual_260713.pdf`) | RS03 (`Motor_Spec/manuals/RS03_User_Manual_261013.pdf`) |
 |---|---|---|
 | Command 14 프레임 | 6.17절, 인쇄 쪽 82~83 | 6.17절, 인쇄 쪽 79~80 |
 | 파라미터 표 (0x7019~0x701C) | 인쇄 쪽 50~51 | 인쇄 쪽 48~49 |

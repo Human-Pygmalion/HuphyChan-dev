@@ -6,10 +6,10 @@ come from the vendored HUPHY codec (`rscodec/`); this file adds what that codec 
 have: the MIT parameter-read (Command 14) request/reply and the guarded control frames.
 
 Manual references (RobStride user manuals, GitHub RobStride/Product_Information):
-  RS04  RS04User Manual260713.pdf   printed page 82-83  Section 6.17 "Command 14"
+  RS04  Motor_Spec/manuals/RS04_User_Manual_260713.pdf printed page 82-83  Section 6.17 "Command 14"
         parameter table             printed page 50-51  (0x7019 mechPos, 0x701A iqf,
                                                           0x701B mechVel, 0x701C VBUS)
-  RS03  RS03User Manual261013.pdf   printed page 79-80  Section 6.17 "Command 14"
+  RS03  Motor_Spec/manuals/RS03_User_Manual_261013.pdf printed page 79-80  Section 6.17 "Command 14"
         parameter table             printed page 48-49
   The copies in Motor_Spec/manuals/*_251112.pdf are an OLDER edition: their MIT chapter
   stops at Command 11 (p.38-41) and has no Command 14.  Only the parameter table
