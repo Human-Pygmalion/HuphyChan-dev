@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "emf bench: over-voltage monitor added; live restart and real-motor rate test pending (user is running the motor)",
-  "detail": "Monitor, VBUS-priority switch and tests are done on the simulated motor (44/44 browser checks, 10 new unit tests). The 3090 server was connected and enabled, so it was not restarted and the real-bus rate test was not run. Files are synced; the new page tells the user when the running server is the old version.",
-  "since": "2026-10-15 18:55"
+  "title": "게인 비교 학습 준비 — 두 런(크랭크 60 단독 / 등반 권장 게인 전체) 설정 스위치 구현·검증 후 원격 3090 시작",
+  "detail": "사용자 답: 실물 모터 = URDF(엉덩이 앞뒤·좌우·무릎 RS04, 엉덩이 비틀기·크랭크 RS03), 질량 = 하체만. 두 런 모두 기준선 rough_box_main_v11a 설정에서 게인만 바꾼다. 지연·게인 무작위화는 넣지 않는다.",
+  "since": "2026-10-15 22:16"
  },
  "items": {
   "shouldermesh": {
@@ -2191,5 +2191,5 @@
   "emf-logging",
   "emf-logs-fold"
  ],
- "updated": "2026-10-15 20:44"
+ "updated": "2026-10-15 22:16"
 }
