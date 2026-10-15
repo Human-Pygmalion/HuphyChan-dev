@@ -1779,7 +1779,8 @@
    "finding": "자동 점검(스크립트). 진행 중입니다.",
    "number": "반복 11186 / 12,000",
    "section": "done",
-   "changed": "2026-10-15 05:12"
+   "changed": "2026-10-15 05:12",
+   "collapsed": true
   },
   "trial-v11a-4k": {
    "id": "trial-v11a-4k",
@@ -1848,6 +1849,18 @@
    "number": "넘어짐 단계 0→9: 7→31 % (0.6 m/s). 정적 계산: 25 cm 계단 오르기 시작 무릎 39 N·m, 2배 체중 착지 78 N·m. 발열: 내림에서 엉덩이 비틀기 실효값이 정격의 85~89 %.",
    "section": "done",
    "changed": "2026-10-15 17:08"
+  },
+  "gain-mountain": {
+   "id": "gain-mountain",
+   "created": "2026-10-15 17:10",
+   "title": "관악산 등반 기준 권장 게인 갱신: 엉덩이 135/6 · 비틀기 75/4 · 무릎 130/6 · 크랭크 60/2.7",
+   "finding": "박스 지형·경사·계단에서 관절 하중 측정 + 정책 무관 정적 계산. 오르막에서 엉덩이 좌우 토크 71 N·m → 필요 Kp 136, 크랭크 35 N·m → 66. 게인보다 먼저 막히는 것: 내리막 모터 열(비틀기 정격 85~89 %), 관절 범위(25 cm 턱은 엉덩이 좌우 28°>25°, 30° 경사는 발목 36°>30°), 정책(계단 첫 턱에서 멈춤, 30° 내리막 100 % 넘어짐)",
+   "number": "docs/169 §8",
+   "media": [
+    "docs/img/pd_gain/2026-10-15_rough_torque_p99.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 17:10"
   }
  },
  "order": [
@@ -2016,7 +2029,8 @@
   "trial_v11a_final",
   "trial-v11a-final",
   "pd-gain-recommend",
-  "rough-load-probe"
+  "rough-load-probe",
+  "gain-mountain"
  ],
- "updated": "2026-10-15 17:08"
+ "updated": "2026-10-15 17:10"
 }
