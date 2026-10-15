@@ -87,6 +87,19 @@
   table.ev td { padding: 3px 8px 3px 0; white-space: nowrap; border-bottom: 1px solid var(--grid); }
   table.ev td.cls-ov { color: var(--bad); font-weight: 650; }
   .ovscroll { max-height: 330px; overflow-y: auto; }
+  .plot { position: relative; }
+  .plot .grip { cursor: grab; color: var(--mute); margin-right: 6px; user-select: none; font-size: 15px; }
+  .plot.dragging { opacity: .45; }
+  .plot.drop-before { box-shadow: 0 -3px 0 0 var(--c1); }
+  .plot.drop-after { box-shadow: 0 3px 0 0 var(--c1); }
+  .plot .head { padding-right: 30px; }
+  .plot .fold { position: absolute; top: 6px; right: 8px; padding: 0 7px; font-size: 13px; line-height: 20px; }
+  .plot.collapsed canvas, .plot.collapsed .meas { display: none; }
+  .plot.collapsed .fold { transform: rotate(-90deg); }
+  .plot canvas { cursor: crosshair; }
+  .meas { font-size: 12.5px; min-height: 0; font-variant-numeric: tabular-nums; }
+  .meas:not(:empty) { margin: 3px 0 2px; }
+  .meas b { color: var(--c4); } .meas a { margin-left: 8px; cursor: pointer; color: var(--mute); text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -176,32 +189,44 @@
         </table>
       </div>
     </section>
-    <section class="card plot">
-      <div class="head"><b>① 위치 [°] (연결 시점 위치 = 0)</b>
+    <section class="card plot" data-id="pPos">
+      <div class="head"><b><span class="grip" title="끌어서 순서 바꾸기">⠿</span>① 위치 [°] (연결 시점 위치 = 0)</b>
         <span class="legend"><span><i style="background:var(--c2)"></i>목표</span><span><i style="background:var(--c1)"></i>실제</span></span></div>
+      <button class="fold" title="접기 / 펴기">▾</button>
+      <div class="meas" id="m_cv0"></div>
       <canvas id="cv0"></canvas>
     </section>
-    <section class="card plot">
-      <div class="head"><b>①-2 추종 오차 = 목표 − 실제 [°] (토크 켜진 동안만)</b><span class="nums" id="nErr"></span></div>
+    <section class="card plot" data-id="pErr">
+      <div class="head"><b><span class="grip" title="끌어서 순서 바꾸기">⠿</span>①-2 추종 오차 = 목표 − 실제 [°] (토크 켜진 동안만)</b><span class="nums" id="nErr"></span></div>
+      <button class="fold" title="접기 / 펴기">▾</button>
+      <div class="meas" id="m_cvErr"></div>
       <canvas id="cvErr"></canvas>
     </section>
-    <section class="card plot">
-      <div class="head"><b>② 속도 [°/s]</b><span class="nums" id="n1"></span>
+    <section class="card plot" data-id="pVel">
+      <div class="head"><b><span class="grip" title="끌어서 순서 바꾸기">⠿</span>② 속도 [°/s]</b><span class="nums" id="n1"></span>
         <span class="legend"><span><i style="background:var(--c1)"></i>속도 (모터 보고값, 표시 한계 ±<b id="vlim">-</b> °/s)</span></span></div>
+      <button class="fold" title="접기 / 펴기">▾</button>
+      <div class="meas" id="m_cv1"></div>
       <canvas id="cv1"></canvas>
     </section>
-    <section class="card plot">
-      <div class="head"><b>③ 토크 [N·m] 와 q축 전류 [A]</b><span class="nums" id="n2"></span>
+    <section class="card plot" data-id="pTau">
+      <div class="head"><b><span class="grip" title="끌어서 순서 바꾸기">⠿</span>③ 토크 [N·m] 와 q축 전류 [A]</b><span class="nums" id="n2"></span>
         <span class="legend"><span><i style="background:var(--c1)"></i>토크 (왼쪽 축)</span><span><i style="background:var(--c2)"></i>q축 전류 iqf (오른쪽 축)</span></span></div>
+      <button class="fold" title="접기 / 펴기">▾</button>
+      <div class="meas" id="m_cv2"></div>
       <canvas id="cv2"></canvas>
     </section>
-    <section class="card plot">
-      <div class="head"><b>④ 버스 전압 [V]</b><span class="nums" id="n3"></span>
+    <section class="card plot" data-id="pVbus">
+      <div class="head"><b><span class="grip" title="끌어서 순서 바꾸기">⠿</span>④ 버스 전압 [V]</b><span class="nums" id="n3"></span>
         <span class="legend"><span><i style="background:var(--c3)"></i><span id="vLegend">VBUS (파라미터 읽기)</span></span><span><i style="background:var(--bad)"></i>빨간 세로선 = 고장 발생 시각 (모든 그래프)</span></span></div>
+      <button class="fold" title="접기 / 펴기">▾</button>
+      <div class="meas" id="m_cv3"></div>
       <canvas id="cv3"></canvas>
     </section>
-    <section class="card plot">
-      <div class="head"><b>⑤ 되먹임 전력 = 토크 × 속도 [W] (음수 = 전원 쪽으로 되돌림)</b><span class="nums" id="n4"></span></div>
+    <section class="card plot" data-id="pPow">
+      <div class="head"><b><span class="grip" title="끌어서 순서 바꾸기">⠿</span>⑤ 되먹임 전력 = 토크 × 속도 [W] (음수 = 전원 쪽으로 되돌림)</b><span class="nums" id="n4"></span></div>
+      <button class="fold" title="접기 / 펴기">▾</button>
+      <div class="meas" id="m_cv4"></div>
       <canvas id="cv4"></canvas>
     </section>
   </div>
@@ -437,6 +462,7 @@ function draw(cv, series, o) {
     axes[ax] = range(vals, ax === "L" ? (o.minSpanL || 1) : (o.minSpanR || 1));
   }
   const Y = (ax, v) => m.t + (1 - (v - axes[ax][0]) / (axes[ax][1] - axes[ax][0])) * ph;
+  cv._g = { m, pw, ph, t0, tNow, axes, series, units: o.units || {} };   // for click measurement
   ctx.font = "11px system-ui, sans-serif";
   ctx.lineWidth = 1;
   // y grid + labels (left axis drives the grid)
@@ -484,6 +510,14 @@ function draw(cv, series, o) {
     if (e.t < t0 || e.t > tNow + 0.5) continue;
     const x = X(e.t); ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, m.t + ph); ctx.stroke();
   }
+  // two-point measurement (stored in data coordinates, so the markers scroll with the data)
+  const M = MEAS[cv.id] || [];
+  if (M.length) {
+    ctx.strokeStyle = css.getPropertyValue("--c4"); ctx.fillStyle = css.getPropertyValue("--c4"); ctx.lineWidth = 1.4;
+    const pts = M.map(q => [X(q.t), Y(q.ax in axes ? q.ax : "L", q.v)]);
+    if (pts.length === 2) { ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.stroke(); ctx.setLineDash([]); }
+    pts.forEach(([x, y], k) => { ctx.beginPath(); ctx.arc(x, y, 4, 0, 2 * Math.PI); ctx.fill(); ctx.fillText(k ? "B" : "A", x + 6, y - 6); });
+  }
   ctx.restore();
   ctx.setLineDash([]);
   if (o.empty) { ctx.fillStyle = css.getPropertyValue("--bad"); ctx.font = "600 15px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillText(o.empty, m.l + pw / 2, m.t + ph / 2); }
@@ -499,19 +533,19 @@ function render() {
   dirty = false;
   const conn = S && S.connected;
   const noConn = conn ? null : "연결 안 됨";
-  draw($("cv0"), [{ key: "tgtRel", color: "--c2", dash: [5, 3], width: 1.6 }, { key: "posRel", color: "--c1" }], { minSpanL: 10, empty: noConn });
-  const vE = draw($("cvErr"), [{ key: "err", color: "--c4" }], { minSpanL: 2, empty: noConn });
+  draw($("cv0"), [{ key: "tgtRel", color: "--c2", dash: [5, 3], width: 1.6 }, { key: "posRel", color: "--c1" }], { minSpanL: 10, empty: noConn, units: { L: "°" } });
+  const vE = draw($("cvErr"), [{ key: "err", color: "--c4" }], { minSpanL: 2, empty: noConn, units: { L: "°" } });
   {
     let n = 0, ss = 0, mx = 0, sum = 0, last = null;
     for (const p of vE) { const e = p.err; if (e === null || e === undefined) continue; n++; ss += e * e; sum += e; if (Math.abs(e) > Math.abs(mx)) mx = e; last = e; }
     $("nErr").innerHTML = n ? `지금 <b>${f(last, 1)}</b>° · 구간 평균 ${f(sum / n, 1)}° · 제곱평균제곱근 <b>${f(Math.sqrt(ss / n), 1)}</b>° · 절댓값 최대 <b>${f(Math.abs(mx), 1)}</b>°`
       : (conn ? "토크 꺼짐 — 오차 없음" : "");
   }
-  const v1 = draw($("cv1"), [{ key: "vel", color: "--c1" }], { minSpanL: 20, empty: noConn });
+  const v1 = draw($("cv1"), [{ key: "vel", color: "--c1" }], { minSpanL: 20, empty: noConn, units: { L: "°/s" } });
   const v2 = draw($("cv2"), [{ key: "tau", color: "--c1", axis: "L" }, { key: "iqf", color: "--c2", axis: "R" }],
-    { minSpanL: 0.5, minSpanR: 0.5, empty: noConn || (S && S.vbus_priority ? null : S && !S.iqf_ok ? "iqf 응답 없음 (전류 표시 불가)" : null) });
-  const v3 = draw($("cv3"), [{ key: "vbus", color: "--c3" }], { minSpanL: 2, hline: { v: 60, label: "과전압 보호 60 V (매뉴얼)" }, empty: noConn || (S && !S.vbus_ok ? "VBUS 응답 없음" : null) });
-  const v4 = draw($("cv4"), [{ key: "p", color: "--c4" }], { minSpanL: 5, empty: noConn });
+    { minSpanL: 0.5, minSpanR: 0.5, units: { L: "N·m", R: "A" }, empty: noConn || (S && S.vbus_priority ? null : S && !S.iqf_ok ? "iqf 응답 없음 (전류 표시 불가)" : null) });
+  const v3 = draw($("cv3"), [{ key: "vbus", color: "--c3" }], { minSpanL: 2, units: { L: "V" }, hline: { v: 60, label: "과전압 보호 60 V (매뉴얼)" }, empty: noConn || (S && !S.vbus_ok ? "VBUS 응답 없음" : null) });
+  const v4 = draw($("cv4"), [{ key: "p", color: "--c4" }], { minSpanL: 5, empty: noConn, units: { L: "W" } });
   const s1 = stats(v1, "vel"); $("n1").textContent = s1 ? `지금 ${f(s1.last,0)} · 최소 ${f(s1.lo,0)} · 최대 ${f(s1.hi,0)}` : "";
   const st = stats(v2, "tau"), si = stats(v2, "iqf");
   $("n2").textContent = (st ? `토크 ${f(st.last,2)} N·m` : "") + (S && conn && S.vbus_priority ? " · 전류 읽기 꺼짐 (전압 집중 측정)" : si ? ` · 전류 ${f(si.last,2)} A` : (S && conn ? " · 전류 응답 없음" : ""));
@@ -519,6 +553,100 @@ function render() {
   $("n3").innerHTML = sv ? `지금 <b>${sv.last.toFixed(2)}</b> V · 구간 최소 <b>${sv.lo.toFixed(2)}</b> V · 최대 <b>${sv.hi.toFixed(2)}</b> V · 폭 ${(sv.hi - sv.lo).toFixed(2)} V · <b>60 V 까지 여유 ${(60 - sv.hi).toFixed(2)} V</b> (구간 최대 기준)` : (conn ? "응답 없음" : "");
   const sp = stats(v4, "p"); $("n4").textContent = sp ? `지금 ${f(sp.last,1)} W · 구간 최소 ${f(sp.lo,1)} W (되돌림 최대) · 최대 ${f(sp.hi,1)} W` : "";
 }
+// ---------------------------------------------------------------- two-point measurement (click A, click B)
+const MEAS = {};                     // canvas id -> [{t, v, ax, unit, label}]
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+function pickPoint(cv, ev) {
+  const g = cv._g; if (!g) return null;
+  const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+  if (x < g.m.l || x > g.m.l + g.pw || y < g.m.t || y > g.m.t + g.ph) return null;
+  const t = g.t0 + (x - g.m.l) / g.pw * WIN;
+  const Yp = (ax, v) => g.m.t + (1 - (v - g.axes[ax][0]) / (g.axes[ax][1] - g.axes[ax][0])) * g.ph;
+  // snap to the nearest curve point within 14 px (so spikes are measured on the data, not on the pixel)
+  let best = null;
+  const i = Math.min(lowerBound(t), buf.length - 1);
+  for (let k = Math.max(0, i - 6); k <= Math.min(buf.length - 1, i + 6); k++) {
+    const p = buf[k];
+    for (const s of g.series) {
+      const v = p[s.key]; if (v === null || v === undefined) continue;
+      const ax = s.axis || "L", dx = (p.t - t) / WIN * g.pw, dy = Yp(ax, v) - y, d = Math.hypot(dx, dy);
+      if (d < 14 && (!best || d < best.d)) best = { d, t: p.t, v, ax };
+    }
+  }
+  if (!best) { const v = g.axes.L[0] + (1 - (y - g.m.t) / g.ph) * (g.axes.L[1] - g.axes.L[0]); best = { t, v, ax: "L" }; }
+  best.unit = g.units[best.ax] || "";
+  return best;
+}
+function showMeas(cv) {
+  const M = MEAS[cv.id] || [], el = $("m_" + cv.id); if (!el) return;
+  if (!M.length) { el.innerHTML = ""; return; }
+  const fmt = q => `${f(q.v, Math.abs(q.v) < 10 ? 2 : 1)} ${q.unit}`;
+  let h = `측정 A ${fmt(M[0])}`;
+  if (M.length === 2) {
+    const d = M[1].v - M[0].v, dt = M[1].t - M[0].t;
+    h += ` → B ${fmt(M[1])} · ` + (M[0].unit === M[1].unit
+      ? `<b>낙폭 ${d >= 0 ? "+" : ""}${f(d, Math.abs(d) < 10 ? 2 : 1)} ${M[0].unit}</b>`
+      : `<b>단위가 달라 낙폭 없음 (${M[0].unit} / ${M[1].unit})</b>`) + ` · Δt ${f(dt, 3)} s`;
+  } else h += " · 두 번째 점을 찍으세요";
+  el.innerHTML = h + ' <a data-clear="' + cv.id + '">지우기</a>';
+}
+document.querySelectorAll(".plot canvas").forEach(cv => cv.addEventListener("click", ev => {
+  const q = pickPoint(cv, ev); if (!q) return;
+  const M = MEAS[cv.id] || [];
+  MEAS[cv.id] = M.length >= 2 ? [q] : M.concat([q]);     // third click starts a new pair
+  showMeas(cv); dirty = true;
+}));
+document.addEventListener("click", ev => {
+  const id = ev.target && ev.target.dataset && ev.target.dataset.clear;
+  if (id) { MEAS[id] = []; showMeas($(id)); dirty = true; }
+});
+
+// ---------------------------------------------------------------- fold handle (top right of each plot)
+const folded = new Set(store.get("emf_folded") || []);
+document.querySelectorAll(".plot").forEach(sec => {
+  if (folded.has(sec.dataset.id)) sec.classList.add("collapsed");
+  sec.querySelector(".fold").addEventListener("click", () => {
+    sec.classList.toggle("collapsed");
+    if (sec.classList.contains("collapsed")) folded.add(sec.dataset.id); else folded.delete(sec.dataset.id);
+    store.set("emf_folded", [...folded]); dirty = true;
+  });
+});
+
+// ---------------------------------------------------------------- drag the ⠿ grip to reorder plots
+(function () {
+  const plots = () => [...document.querySelectorAll(".plot")];
+  const parent = plots()[0].parentNode;
+  const saved = store.get("emf_plot_order");
+  if (Array.isArray(saved)) {
+    const byId = Object.fromEntries(plots().map(p => [p.dataset.id, p]));
+    const ordered = saved.map(id => byId[id]).filter(Boolean).concat(plots().filter(p => !saved.includes(p.dataset.id)));
+    for (const p of ordered) parent.appendChild(p);     // plots are the last children of their column
+  }
+  let dragged = null;
+  const clearMarks = () => plots().forEach(p => p.classList.remove("drop-before", "drop-after"));
+  for (const sec of plots()) {
+    const grip = sec.querySelector(".grip");
+    grip.addEventListener("mousedown", () => { sec.draggable = true; });
+    sec.addEventListener("dragstart", ev => { dragged = sec; sec.classList.add("dragging"); ev.dataTransfer.effectAllowed = "move"; ev.dataTransfer.setData("text/plain", sec.dataset.id); });
+    sec.addEventListener("dragend", () => { sec.draggable = false; sec.classList.remove("dragging"); clearMarks(); dragged = null; });
+    sec.addEventListener("dragover", ev => {
+      if (!dragged || dragged === sec) return;
+      ev.preventDefault(); clearMarks();
+      const r = sec.getBoundingClientRect();
+      sec.classList.add(ev.clientY < r.top + r.height / 2 ? "drop-before" : "drop-after");
+    });
+    sec.addEventListener("drop", ev => {
+      if (!dragged || dragged === sec) return;
+      ev.preventDefault();
+      const r = sec.getBoundingClientRect();
+      parent.insertBefore(dragged, ev.clientY < r.top + r.height / 2 ? sec : sec.nextSibling);
+      clearMarks(); store.set("emf_plot_order", plots().map(p => p.dataset.id)); dirty = true;
+    });
+  }
+  document.addEventListener("mouseup", () => plots().forEach(p => { if (p !== dragged) p.draggable = false; }));
+})();
+
 function loop() { render(); requestAnimationFrame(loop); }
 window.addEventListener("resize", () => dirty = true);
 
