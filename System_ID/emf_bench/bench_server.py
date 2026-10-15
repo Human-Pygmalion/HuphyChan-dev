@@ -42,6 +42,7 @@ sys.path.insert(0, HERE)
 import emf_frames as fr  # noqa: E402
 from bench_motor import BenchMotor, State  # noqa: E402
 from fake_motor import FakeMotorTransport  # noqa: E402
+from ov_monitor import OvMonitor  # noqa: E402
 from rscodec import mit  # noqa: E402
 
 MODE_NAMES = {0: "Reset", 1: "Cali", 2: "Motor"}
@@ -49,6 +50,7 @@ CSV_COLUMNS = ["t_s", "unix_s", "pos_deg", "vel_deg_s", "tau_nm", "temp_c", "mod
                "target_deg", "kp", "kd", "enabled", "vbus_v", "iqf_a", "power_w", "fault_word"]
 PARAM_CYCLE = (fr.PARAM_VBUS, fr.PARAM_IQF)
 LOOP_ACTIONS = ("connect", "disconnect", "enable", "disable", "clear_fault", "fault_query")
+SET_KEYS = ("kp", "kd", "target_deg", "sine", "sine_amp_deg", "sine_period_s", "vbus_priority")
 
 
 class Cmd:
@@ -87,6 +89,9 @@ class Controller:
     self.sine_center = 0.0         # degrees, relative to origin_deg
     self.sine_phase = 0.0          # radians
     self._sine_t: Optional[float] = None
+    # VBUS-priority sampling (user request 2026-10-15): every cycle reads VBUS, iqf is not read.
+    # Default alternation reads each at half the loop rate (100 Hz at 200 Hz) and misses short spikes.
+    self.vbus_priority = bool(getattr(args, "vbus_priority", False))
 
     # loop-thread state
     self.motor: Optional[BenchMotor] = None
@@ -99,6 +104,9 @@ class Controller:
     self.pending_param: dict[int, float] = {}
     self.fault_word: Optional[int] = None
     self.prev_fault = False
+    self.prev_warn = False
+    self._first_state_pending = False     # first state after connect: a fault already latched is not a new event
+    self.ov = OvMonitor()
     self.message: Optional[str] = None
     self.target_clamped = False
     self.cycle_n = 0
@@ -152,6 +160,8 @@ class Controller:
         self.kd = min(max(v, 0.0), self.enc.kd_max)
         if self.kd != v:
           notes.append(f"Kd는 0..{self.enc.kd_max:g} 범위로 잘림")
+      if "vbus_priority" in d:
+        self.vbus_priority = d["vbus_priority"] in ("on", True, 1, "1")
       if "sine_amp_deg" in d:
         self.sine_amp = abs(float(d["sine_amp_deg"]))
       if "sine_period_s" in d:
@@ -180,7 +190,12 @@ class Controller:
           self.target_event += 1
     return {"ok": True, "note": "; ".join(notes) or None}
 
-  def status(self) -> dict:
+  def ov_reset(self) -> dict:
+    """Reset button: zero the counters and VBUS statistics (the CSV file keeps growing)."""
+    self.ov.reset(time.monotonic() - self.t_zero)
+    return {"ok": True}
+
+  def status(self, events: bool = True) -> dict:
     now = time.monotonic()
     st = self.last_state
     alive = st is not None and now - self.last_state_t < 0.5
@@ -191,7 +206,10 @@ class Controller:
 
     with self.lock:
       kp, kd, trel = self.kp, self.kd, self.target_rel
+    ov = self.ov.summary(now - self.t_zero)
+    extra = {"ov_events": self.ov.latest_events(30)} if events else {}
     return dict(
+        ov=ov, vbus_priority=self.vbus_priority, **extra,
         connected=self.motor is not None, alive=alive, enabled=self.enabled,
         fake=self.args.fake, model=self.args.model, motor_id=self.args.id, channel=self.args.channel,
         origin_deg=self.origin_deg, kp=kp, kd=kd, target_rel_deg=trel, target_event=self.target_event,
@@ -256,6 +274,7 @@ class Controller:
     finally:
       self._close_motor()
       self._stop_recording()
+      self.ov.close_csv()
 
   def _close_motor(self):
     """Process exit path: disable first (Motor.close sends 5 disables), then close."""
@@ -270,7 +289,10 @@ class Controller:
   def _open_motor(self) -> BenchMotor:
     a = self.args
     if a.fake:
-      tr = FakeMotorTransport(a.model, a.id, answer_params=not a.fake_no_param)
+      kw = {}
+      if getattr(a, "fake_ov_gain", None) is not None:
+        kw["regen_v_per_w"] = a.fake_ov_gain
+      tr = FakeMotorTransport(a.model, a.id, answer_params=not a.fake_no_param, **kw)
       return BenchMotor(transport=tr, channel="fake", motor_id=a.id, model=a.model)
     return BenchMotor(channel=a.channel, motor_id=a.id, model=a.model)
 
@@ -297,7 +319,15 @@ class Controller:
     self.origin_deg = None
     self.last_state = None
     self.fault_word = None
+    self.prev_fault = False
+    self.prev_warn = False
+    self._first_state_pending = True
     self.message = None
+    self.ov.reset(time.monotonic() - self.t_zero)
+    try:
+      self.ov.open_csv(self.args.data_dir, time.time())
+    except OSError as exc:
+      self.message = f"과전압 이벤트 파일을 만들 수 없음: {exc}"
     # zero-gain reads: state only, no torque
     m = self.motor
     for _ in range(30):
@@ -313,6 +343,8 @@ class Controller:
 
   def _do_disconnect(self, c: Cmd):
     self._close_motor()
+    self.ov.stop(time.monotonic() - self.t_zero)
+    self.ov.close_csv()
     self.last_state = None
     self.origin_deg = None
 
@@ -348,6 +380,10 @@ class Controller:
     m.clear_fault()
     self.fault_word = None
     self.enabled = False     # after a fault the user must press Enable again (it re-snapshots the target)
+    with self.lock:
+      if self.sine_on:       # a running sine would override that snapshot and make Enable jump
+        self.sine_on = False
+        self.target_event += 1
 
   def _do_fault_query(self, c: Cmd):
     m = self.motor
@@ -387,7 +423,7 @@ class Controller:
           position_deg=tgt, velocity_deg_s=0.0, kp=kp, kd=kd, torque_nm=0.0, enc=m.enc))
     else:
       ok = m.send_passive()
-    idx = PARAM_CYCLE[self.cycle_n % 2]
+    idx = fr.PARAM_VBUS if self.vbus_priority else PARAM_CYCLE[self.cycle_n % 2]
     self.cycle_n += 1
     ok2 = m.send_param_read(idx)
     if not (ok and ok2):
@@ -441,10 +477,21 @@ class Controller:
       with self.lock:
         self.target_rel = 0.0
         self.target_event += 1
-    if st.fault and not self.prev_fault and self.motor is not None:
+    edge = bool(st.fault) and not self.prev_fault and self.motor is not None
+    if edge:
       self.fault_word = self.motor.query_fault_word()      # documented fault query, read only
     elif not st.fault:
       self.fault_word = None
+    if self._first_state_pending:
+      # a fault that was already latched when we connected is not a new event of this session
+      self._first_state_pending = False
+      self.prev_warn = bool(st.warn)
+      if edge:
+        edge = False
+        self.message = "연결했을 때 이미 고장 상태였음 (이벤트로 세지 않음). 고장 해제를 누르십시오."
+    elif st.warn and not self.prev_warn:
+      self.ov.on_warn_edge()
+    self.prev_warn = bool(st.warn)
     self.prev_fault = bool(st.fault)
     if tgt is None:
       return
@@ -458,6 +505,10 @@ class Controller:
     with self.lock:
       self.seq += 1
       self.samples.append((self.seq, row))
+    self.ov.on_sample(row["t"], v, p_w, st.velocity_deg_s, st.torque_nm)
+    if edge:
+      self.ov.on_fault_edge(row["t"], self.unix_zero + row["t"], self.fault_word, kp, kd,
+                            self.sine_on, self.sine_amp, self.sine_period)
     if self.rec_writer is not None:
       self.rec_writer.writerow([row["t"], round(self.unix_zero + row["t"], 4), row["pos"], row["vel"],
                                 row["tau"], row["temp"], row["mode"], row["fault"], row["warn"], row["tgt"],
@@ -557,10 +608,16 @@ class Handler(BaseHTTPRequestHandler):
     self.end_headers()
     ctl = self.ctl
     last = max(0, ctl.seq - 2000)      # replay up to 10 s of history after a page reload
+    ev_rev, ev_sent = None, 0.0        # the event list is sent on change and once a second, not at 30 Hz
     try:
       while not ctl.stop_evt.is_set():
         rows, last = ctl.samples_since(last)
-        payload = json.dumps({"samples": rows, "status": ctl.status()}, separators=(",", ":"))
+        now = time.monotonic()
+        rev = ctl.ov.rev
+        send_ev = rev != ev_rev or now - ev_sent > 1.0
+        if send_ev:
+          ev_rev, ev_sent = rev, now
+        payload = json.dumps({"samples": rows, "status": ctl.status(events=send_ev)}, separators=(",", ":"))
         self.wfile.write(b"data: " + payload.encode() + b"\n\n")
         self.wfile.flush()
         time.sleep(1 / 30)
@@ -582,9 +639,11 @@ class Handler(BaseHTTPRequestHandler):
     out: dict = {"ok": True}
     if action in LOOP_ACTIONS:
       out = ctl.submit(action, d)
-    elif action not in ("set", "record"):
+    elif action not in ("set", "record", "ov_reset"):
       out = {"ok": False, "error": f"unknown action {action}"}
-    if any(k in d for k in ("kp", "kd", "target_deg", "sine", "sine_amp_deg", "sine_period_s")):
+    if action == "ov_reset":
+      out = ctl.ov_reset()
+    if any(k in d for k in SET_KEYS):
       out["note"] = ctl.set_params(d).get("note")
     if "record" in d:
       r = ctl.submit("record", {"on": d["record"] in ("on", True, 1, "1")})
@@ -675,7 +734,13 @@ def main(argv=None) -> int:
   ap.add_argument("--kp", type=float, default=10.0, help="initial Kp shown in the UI [N m/rad]")
   ap.add_argument("--kd", type=float, default=1.0, help="initial Kd shown in the UI [N m s/rad]")
   ap.add_argument("--data-dir", default=os.path.expanduser("~/System_ID/data"))
+  ap.add_argument("--vbus-priority", action="store_true",
+                  help="read VBUS every cycle, iqf not at all (default: alternate, each at half the loop rate); "
+                       "the page checkbox changes it at run time")
   ap.add_argument("--fake", action="store_true", help="simulated motor, no hardware")
+  ap.add_argument("--fake-ov-gain", type=float, default=None,
+                  help="fake motor: volts of bus rise per watt of regenerated power (default 0.08); raise it so a "
+                       "fast sine trips the 60 V over-voltage fault")
   ap.add_argument("--fake-no-param", action="store_true", help="fake motor ignores Command 14 (old firmware)")
   ap.add_argument("--scan", action="store_true", help="read-only id scan 1..127, then exit")
   args = ap.parse_args(argv)
@@ -698,7 +763,8 @@ def main(argv=None) -> int:
   signal.signal(signal.SIGTERM, _term)
   signal.signal(signal.SIGINT, _term)      # also when started in the background (shell sets SIGINT to ignore)
   tag = "FAKE" if args.fake else args.channel
-  print(f"emf_bench  {args.model} id={args.id} {tag}  loop {args.rate:g} Hz  data -> {args.data_dir}")
+  print(f"emf_bench  {args.model} id={args.id} {tag}  loop {args.rate:g} Hz  "
+        f"{'VBUS every cycle' if args.vbus_priority else 'VBUS/iqf alternating'}  data -> {args.data_dir}")
   print(f"  http://127.0.0.1:{args.port}/")
   for a in lan_addresses():
     print(f"  http://{a}:{args.port}/")

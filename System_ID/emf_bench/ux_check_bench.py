@@ -62,6 +62,8 @@ async def run(args) -> int:
   data_dir = tempfile.mkdtemp(prefix="emf_ux_")
   srv = start_server(args.port, data_dir, [])
   srv2 = start_server(args.port + 1, data_dir, ["--fake-no-param"])
+  ov_dir = tempfile.mkdtemp(prefix="emf_ux_ov_")
+  srv3 = start_server(args.port + 2, ov_dir, ["--fake-ov-gain", "2.0"])
   try:
     async with async_playwright() as p:
       b = await p.chromium.launch()
@@ -140,7 +142,7 @@ async def run(args) -> int:
       c.add(s["recording"] and s["rec_rows"] > 150 and "행" in await txt("#kv"), "recording on: file name and row count shown", f"{s['rec_file']} rows={s['rec_rows']}")
       await pg.click("#btnRecord")
       await pg.wait_for_timeout(300)
-      files = glob.glob(os.path.join(data_dir, "emf_*.csv"))
+      files = [f_ for f_ in glob.glob(os.path.join(data_dir, "emf_*.csv")) if "emf_events_" not in f_]   # samples file, not the events file
       rows = list(csv.reader(open(files[0]))) if files else []
       ts = [float(r[0]) for r in rows[1:]]
       gap = max((b_ - a_ for a_, b_ in zip(ts, ts[1:], strict=False)), default=0.0)
@@ -181,11 +183,91 @@ async def run(args) -> int:
       c.add(not s2["vbus_ok"] and not s2["iqf_ok"] and "응답 없음" in kv and nvb == 0, "no Command 14 reply: page says 응답 없음, plots hold no fabricated values", f"{nvb} param samples, status vbus_ok={s2['vbus_ok']}")
       c.add("응답 없음" in (await pg2.text_content("#n3")) and "0.4.1.29" in kv, "voltage panel and hint (firmware 0.4.1.29) shown")
       await pg2.screenshot(path=os.path.join(args.shots, "4_no_param_reply.png"), full_page=True)
+
+      # ---- over-voltage monitor (fake with a high regen gain: a fast sine trips the 60 V fault)
+      pg3 = await b.new_page(viewport={"width": 1400, "height": 1900})
+      errs3: list[str] = []
+      pg3.on("pageerror", lambda e: errs3.append(str(e)))
+      pg3.on("console", lambda m: errs3.append(m.text) if m.type == "error" else None)
+      await pg3.goto(f"http://127.0.0.1:{args.port + 2}/", wait_until="load")
+      await pg3.wait_for_timeout(500)
+
+      async def st3():
+        return await pg3.evaluate("fetch('/status').then(r => r.json())")
+
+      async def t3(i):
+        return (await pg3.text_content(i) or "").strip()
+
+      c.add(await pg3.is_visible("#ovCard") and "과전압 모니터" in (await pg3.text_content("#ovCard")), "over-voltage monitor card is on the page")
+      await pg3.click("#btnConnect"); await pg3.wait_for_timeout(2600)      # rates are measured over 2 s
+      s3 = await st3()
+      c.add(s3["ov"]["counts"]["overvoltage"] == 0 and await t3("#cOv") == "0" and s3["ov"]["csv"] and "emf_events_" in s3["ov"]["csv"],
+            "monitor starts at 0 and an events file is created at connect", str(s3["ov"]["csv"]))
+      hz_alt = s3["vbus_hz"]
+      c.add("1 ms" in await t3("#ovHint") and "오실로스코프" in await t3("#ovHint") and "Hz" in await t3("#ovHint"),
+            "sampling-rate caveat (1 ms spikes can be missed) is shown", await t3("#ovHint"))
+      # VBUS priority toggle
+      await pg3.click("#chkVbusPri"); await pg3.wait_for_timeout(2600)
+      s3 = await st3()
+      c.add(s3["vbus_priority"] and s3["vbus_hz"] > 1.7 * hz_alt and "읽지 않음" in await t3("#kv") and await pg3.is_checked("#chkVbusPri"),
+            "VBUS-priority checkbox: VBUS read every cycle, iqf off", f"vbus {hz_alt:.0f} Hz -> {s3['vbus_hz']:.0f} Hz, iqf_ok={s3['iqf_ok']}")
+      iq = await pg3.evaluate("buf.filter(x => x.iqf !== null && x.t > buf[buf.length-1].t - 1).length")
+      c.add(iq == 0 and "전류 읽기 꺼짐" in await t3("#n2"), "no iqf samples are drawn while VBUS priority is on", await t3("#n2"))
+
+      # enable, fast sine -> over-voltage fault
+      await pg3.fill("#kpNum", "20"); await pg3.wait_for_timeout(200)
+      await pg3.click("#btnEnable"); await pg3.wait_for_timeout(500)
+      await pg3.fill("#sineAmp", "40"); await pg3.fill("#sinePer", "0.5"); await pg3.wait_for_timeout(200)
+      await pg3.click("#btnSine")
+      for _ in range(80):
+        if (await st3())["ov"]["counts"]["overvoltage"] >= 1:
+          break
+        await pg3.wait_for_timeout(100)
+      await pg3.wait_for_timeout(800)
+      s3 = await st3()
+      c.add(s3["ov"]["counts"]["overvoltage"] == 1 and await t3("#cOv") == "1", "over-voltage counter increases after a fast sine", f"counts {s3['ov']['counts']}")
+      rows_txt = await t3("#ovRows")
+      c.add("과전압" in rows_txt and "0x00000008" in rows_txt, "event row appears in the table (class + fault word)", rows_txt[:120])
+      ev = s3["ov_events"][0]
+      c.add(ev["vbus_max_1s"] > 52 and ev["power_min_1s_w"] < 0 and ev["sine_on"] and ev["kp"] > 0 and ev["wall"],
+            "event record carries VBUS max/min, regen power, gains and sine settings",
+            f"vbus {ev['vbus_min_1s']:.1f}..{ev['vbus_max_1s']:.1f} V, pmin {ev['power_min_1s_w']:.1f} W, sine {ev['sine_amp_deg']}/{ev['sine_period_s']}")
+      c.add(s3["ov"]["vbus"]["above"][0]["n"] > 0 and "52" in await t3("#ovKv"), "threshold counts (>52 V) shown", await t3("#ovKv"))
+      c.add("여유" in await t3("#ovKv") and "여유" in await t3("#n3"), "margin to 60 V shown in the card and on the VBUS plot", await t3("#n3"))
+      c.add(s3["mode"] == 0 and s3["fault"], "no auto-clear / auto-enable: motor stays faulted in Reset")
+      files = glob.glob(os.path.join(ov_dir, "emf_events_*.csv"))
+      erows = list(csv.reader(open(files[0]))) if files else []
+      c.add(len(files) == 1 and len(erows) == 2 and erows[1][5] == "overvoltage" and erows[1][6] == "0x00000008",
+            "event persisted to emf_events_*.csv (flushed)", f"{[os.path.basename(f) for f in files]} {erows[1][:7] if len(erows) > 1 else ''}")
+      # reload: the counters live on the server
+      await pg3.reload(wait_until="load"); await pg3.wait_for_timeout(900)
+      c.add(await t3("#cOv") == "1" and "과전압" in await t3("#ovRows"), "page reload keeps the counter and the table (server side state)")
+      await pg3.screenshot(path=os.path.join(args.shots, "6_ov_monitor.png"), full_page=True)
+
+      # second event after clear + enable + sine, then Reset clears the counters (the file keeps both)
+      await pg3.click("#btnClear"); await pg3.wait_for_timeout(500)
+      await pg3.click("#btnEnable"); await pg3.wait_for_timeout(500)
+      await pg3.click("#btnSine")
+      for _ in range(80):
+        if (await st3())["ov"]["counts"]["overvoltage"] >= 2:
+          break
+        await pg3.wait_for_timeout(100)
+      s3 = await st3()
+      c.add(s3["ov"]["counts"]["overvoltage"] == 2 and await t3("#cOv") == "2", "second over-voltage counted", f"counts {s3['ov']['counts']}")
+      await pg3.click("#btnOvReset"); await pg3.wait_for_timeout(500)
+      s3 = await st3()
+      c.add(s3["ov"]["faults"] == 0 and await t3("#cOv") == "0" and "아직 고장 이벤트가 없습니다" in await t3("#ovRows") and (s3["ov"]["vbus"]["max"] or 0) < 55,
+            "Reset clears counters, table and VBUS statistics (new samples keep arriving)", f"{s3['ov']['counts']} vbus max {s3['ov']['vbus']['max']}")
+      with open(files[0]) as fh:
+        erows = list(csv.reader(fh))
+      c.add(len(erows) == 3, "Reset keeps the events file (2 events, header)", f"{len(erows)} lines")
+      await pg3.click("#btnDisable")
+      c.add(not errs3, "no page errors in the monitor page", "; ".join(errs3[:3]))
       await b.close()
   finally:
-    for pr in (srv, srv2):
+    for pr in (srv, srv2, srv3):
       pr.terminate()
-    for pr in (srv, srv2):
+    for pr in (srv, srv2, srv3):
       try:
         pr.wait(timeout=5)
       except subprocess.TimeoutExpired:

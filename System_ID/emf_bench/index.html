@@ -68,6 +68,25 @@
   .sinerow span { white-space: nowrap; }
   .sinerow input { width: 72px; flex: 0 0 72px; }
   .sinerow button { white-space: nowrap; margin-left: auto; }
+  .chk { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 13px; cursor: pointer; }
+  .ovhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .ovhead h2 { margin: 0; }
+  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+  @media (max-width: 700px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); }
+  .tile .num { font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tile .num small { font-size: 14px; font-weight: 500; color: var(--mute); margin-left: 3px; }
+  .tile .lbl { font-size: 12.5px; color: var(--mute); }
+  .tile .sub { font-size: 11.5px; color: var(--mute); min-height: 1.2em; }
+  .tile.hit { border-color: var(--bad); } .tile.hit .num { color: var(--bad); }
+  .tile.warnhit { border-color: var(--warn); } .tile.warnhit .num { color: var(--warn); }
+  .tablewrap { overflow-x: auto; margin-top: 10px; }
+  table.ev { border-collapse: collapse; width: 100%; font-size: 12px; font-variant-numeric: tabular-nums; }
+  table.ev th { text-align: left; color: var(--mute); font-weight: 600; padding: 3px 8px 3px 0; white-space: nowrap;
+                border-bottom: 1px solid var(--line); }
+  table.ev td { padding: 3px 8px 3px 0; white-space: nowrap; border-bottom: 1px solid var(--grid); }
+  table.ev td.cls-ov { color: var(--bad); font-weight: 650; }
+  .ovscroll { max-height: 330px; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -97,6 +116,8 @@
         <button id="btnDisable" class="danger">끄기 (Disable) — <kbd>Esc</kbd></button>
       </div>
       <div id="msg"></div>
+      <label class="chk"><input type="checkbox" id="chkVbusPri"> 전압 집중 측정 (전류 읽기 끔)</label>
+      <div class="hint" id="vbusPriHint"></div>
 
       <div class="ctl">
         <label><span>Kp (위치 이득) [N·m/rad]</span><span id="kpMax"></span></label>
@@ -137,6 +158,24 @@
   </div>
 
   <div class="stack">
+    <section class="card" id="ovCard">
+      <div class="ovhead"><h2>과전압 모니터 (초기화 이후)</h2><button id="btnOvReset">초기화 (Reset)</button></div>
+      <div class="tiles">
+        <div class="tile" id="tOv"><div class="num"><span id="cOv">0</span><small>회</small></div><div class="lbl">과전압 고장 (&gt; 60 V)</div><div class="sub"></div></div>
+        <div class="tile" id="tUv"><div class="num"><span id="cUv">0</span><small>회</small></div><div class="lbl">저전압 고장 (&lt; 12 V)</div><div class="sub"></div></div>
+        <div class="tile" id="tOt"><div class="num"><span id="cOt">0</span><small>회</small></div><div class="lbl">기타 고장</div><div class="sub" id="cUnread"></div></div>
+        <div class="tile" id="tWn"><div class="num"><span id="cWn">0</span><small>회</small></div><div class="lbl">경고 깃발 켜짐</div><div class="sub">과전압이라는 뜻은 아님</div></div>
+      </div>
+      <dl class="kv" id="ovKv"></dl>
+      <div class="hint" id="ovHint"></div>
+      <div class="tablewrap ovscroll">
+        <table class="ev" id="ovTable">
+          <thead><tr><th>#</th><th>시각</th><th>초기화 후</th><th>종류</th><th>고장값</th><th>VBUS 최대 / 최소 (직전 1초)</th>
+            <th>속도 [°/s]</th><th>토크 [N·m]</th><th>전력 [W] 직전 / 최저(1초)</th><th>Kp / Kd</th><th>사인파</th></tr></thead>
+          <tbody id="ovRows"></tbody>
+        </table>
+      </div>
+    </section>
     <section class="card plot">
       <div class="head"><b>① 위치 [°] (연결 시점 위치 = 0)</b>
         <span class="legend"><span><i style="background:var(--c2)"></i>목표</span><span><i style="background:var(--c1)"></i>실제</span></span></div>
@@ -154,7 +193,7 @@
     </section>
     <section class="card plot">
       <div class="head"><b>④ 버스 전압 [V]</b><span class="nums" id="n3"></span>
-        <span class="legend"><span><i style="background:var(--c3)"></i>VBUS (파라미터 읽기, 약 100 Hz)</span></span></div>
+        <span class="legend"><span><i style="background:var(--c3)"></i><span id="vLegend">VBUS (파라미터 읽기)</span></span><span><i style="background:var(--bad)"></i>빨간 세로선 = 고장 발생 시각 (모든 그래프)</span></span></div>
       <canvas id="cv3"></canvas>
     </section>
     <section class="card plot">
@@ -174,6 +213,8 @@ const buf = [];            // samples {t, posRel, tgtRel, vel, tau, iqf, vbus, p
 let S = null;              // latest status
 let lastEvent = -1;        // target_event seen
 let WIN = 10;
+let EV = [];               // fault events (newest first), loop time t = same axis as the samples
+let priTouched = 0;        // ms timestamp of the user's last click on the VBUS-priority box
 const CSS = () => getComputedStyle(document.documentElement);
 
 // ---------------------------------------------------------------- commands
@@ -234,6 +275,8 @@ $("btnSine").addEventListener("click", () => {
   cmd({ action: "set", sine_amp_deg: a, sine_period_s: T, sine: S && S.sine_on ? "off" : "on" });
 });
 sineInfo();
+$("chkVbusPri").addEventListener("change", e => { priTouched = Date.now(); cmd({ action: "set", vbus_priority: e.target.checked ? "on" : "off" }); });
+$("btnOvReset").addEventListener("click", () => cmd({ action: "ov_reset" }));
 $("btnConnect").addEventListener("click", () => cmd({ action: S && S.connected ? "disconnect" : "connect" }));
 $("btnEnable").addEventListener("click", () => cmd({ action: "enable" }));
 $("btnDisable").addEventListener("click", () => cmd({ action: "disable" }));
@@ -274,6 +317,14 @@ function onStatus(s) {
   $("btnSine").classList.toggle("on", s.sine_on);
   if (first) { $("sineAmp").value = s.sine_amp_deg; $("sinePer").value = s.sine_period_s; sineInfo(); }
   if (s.message && !$("msg").textContent) $("msg").textContent = s.message;
+  if (Date.now() - priTouched > 1500) $("chkVbusPri").checked = !!s.vbus_priority;
+  $("vbusPriHint").textContent = s.vbus_priority
+    ? "매 제어 주기마다 VBUS 를 읽습니다 (VBUS 속도 = 제어 주기). 전류(iqf)는 읽지 않아 ③ 그래프의 전류선이 없고 CSV 의 iqf 열은 비어 있습니다."
+    : "지금은 VBUS 와 전류(iqf)를 번갈아 읽습니다 (각각 제어 주기의 절반). 짧은 전압 튐을 보려면 위 상자를 켜십시오.";
+  $("vLegend").textContent = `VBUS (파라미터 읽기, ${s.connected && s.vbus_hz > 0 ? s.vbus_hz.toFixed(0) : "-"} Hz)`;
+  if (s.ov_events) EV = s.ov_events;
+  $("chkVbusPri").disabled = !s.ov; $("btnOvReset").disabled = !s.ov;
+  if (s.ov) renderOv(s); else renderNoOv();
 
   const wh = !s.connected ? "-" : "";
   const none = "응답 없음";
@@ -288,12 +339,57 @@ function onStatus(s) {
     ["제어 루프", s.connected ? `${s.loop_hz.toFixed(0)} Hz (목표 ${s.rate_hz} Hz) · 최근 1초 최대 간격 ${s.worst_gap_ms.toFixed(1)} ms · 늦은 횟수 ${s.overruns}` : "-"],
     ["잃은 프레임", s.connected ? `상태 ${s.lost_state} · VBUS ${s.lost_vbus} · iqf ${s.lost_iqf} · 송신 실패 ${s.send_fail}` : "-"],
     ["상태 응답률 (2초)", s.connected ? pct(s.state_pct) : "-"],
-    ["파라미터 읽기 응답", s.connected ? `VBUS ${s.vbus_ok ? pct(s.vbus_pct) + " (" + s.vbus_hz.toFixed(0) + " Hz)" : '<span class="bad-text">응답 없음</span>'} · iqf ${s.iqf_ok ? pct(s.iqf_pct) + " (" + s.iqf_hz.toFixed(0) + " Hz)" : '<span class="bad-text">응답 없음</span>'}` : "-"],
+    ["파라미터 읽기 응답", s.connected ? `VBUS ${s.vbus_ok ? pct(s.vbus_pct) + " (" + s.vbus_hz.toFixed(0) + " Hz)" : '<span class="bad-text">응답 없음</span>'} · iqf ${s.vbus_priority ? "읽지 않음 (전압 집중 측정)" : s.iqf_ok ? pct(s.iqf_pct) + " (" + s.iqf_hz.toFixed(0) + " Hz)" : '<span class="bad-text">응답 없음</span>'}` : "-"],
     ["기록 파일", s.recording ? `${s.rec_file}<br>${s.rec_rows} 행` : (s.rec_file ? `중지됨: ${s.rec_file} (${s.rec_rows} 행)` : "-")],
   ];
-  if (s.connected && !s.vbus_ok && !s.iqf_ok) rows.push(["안내", `전압·전류 읽기에 응답이 없습니다. 펌웨어가 ${s.model} ${s.param_fw_min} 이상이어야 합니다 (매뉴얼 Command 14).`]);
+  if (s.connected && !s.vbus_ok && (s.vbus_priority || !s.iqf_ok)) rows.push(["안내", `전압·전류 읽기에 응답이 없습니다. 펌웨어가 ${s.model} ${s.param_fw_min} 이상이어야 합니다 (매뉴얼 Command 14).`]);
   $("kv").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
   dirty = true;
+}
+function renderNoOv() {   // a server started before this feature existed sends no monitor data: never show fake zeros
+  for (const id of ["cOv", "cUv", "cOt", "cWn"]) $(id).textContent = "-";
+  $("ovKv").innerHTML = '<dt>안내</dt><dd class="bad-text">이 서버 프로그램은 과전압 모니터가 없는 옛 버전입니다. 서버를 다시 시작해야 작동합니다 (연결 중에는 다시 시작하지 않음).</dd>';
+  $("ovRows").innerHTML = ""; $("ovHint").textContent = "";
+}
+const CLS_KO = { overvoltage: "과전압", undervoltage: "저전압", other: "기타 고장", unread: "고장값 못 읽음" };
+function clsLabel(e) {
+  if (e.cls === "other") return "기타: " + (e.fault_names.length ? e.fault_names.map(n => FAULT_KO[n] || n).join(", ") : "-");
+  return CLS_KO[e.cls] || e.cls;
+}
+const num = (v, d) => v === null || v === undefined ? "-" : f(v, d);
+function fmtDur(sec) { return sec < 90 ? sec.toFixed(0) + " 초" : (sec / 60).toFixed(1) + " 분"; }
+function renderOv(s) {
+  const o = s.ov, c = o.counts;
+  $("cOv").textContent = c.overvoltage; $("cUv").textContent = c.undervoltage;
+  $("cOt").textContent = c.other + c.unread; $("cWn").textContent = o.warn;
+  $("cUnread").textContent = c.unread ? `(고장값 못 읽음 ${c.unread}회 포함)` : "";
+  $("tOv").classList.toggle("hit", c.overvoltage > 0); $("tUv").classList.toggle("hit", c.undervoltage > 0);
+  $("tOt").classList.toggle("hit", c.other + c.unread > 0); $("tWn").classList.toggle("warnhit", o.warn > 0);
+  const r = o.rate, vb = o.vbus;
+  const lastOv = EV.find(e => e.cls === "overvoltage");
+  // a per-minute figure from a few seconds of observation is noise: show it only after one minute
+  const perMin = (v, span) => v === null || span < 60 ? "(1분 이상 지켜본 뒤 표시)" : v.toFixed(2) + " 회/분";
+  const rows = [
+    ["마지막 과전압", o.since_last_ov_s === null ? "아직 없음" : `<b>${fmtDur(o.since_last_ov_s)} 전</b>` + (lastOv ? ` (${lastOv.wall.slice(11, 19)})` : "")],
+    ["과전압 빈도", `최근 5분 <b>${r.ov_5m}회</b> (관측 ${fmtDur(r.window_s)}) → <b>${perMin(r.ov_per_min_5m, r.window_s)}</b> · 초기화 이후 전체 ${c.overvoltage}회 / ${fmtDur(o.elapsed_s)} → ${perMin(r.ov_per_min_all, o.elapsed_s)}`],
+    ["모든 고장 빈도", `최근 5분 ${r.faults_5m}회 → ${perMin(r.faults_per_min_5m, r.window_s)} · 전체 ${o.faults}회 → ${perMin(r.faults_per_min_all, o.elapsed_s)}`],
+    ["VBUS 최대 / 최소", vb.max === null ? "-" : `<b>${vb.max.toFixed(2)}</b> V / ${vb.min.toFixed(2)} V (표본 ${vb.n}개)`],
+    ["60 V 까지 여유", vb.margin_v === null ? "-" : `<b class="${vb.margin_v <= 0 ? "bad-text" : ""}">${vb.margin_v.toFixed(2)} V</b> (최대값 기준, 과전압 보호 60 V — 매뉴얼)`],
+    ["전압 초과 표본", vb.above.map(a => `&gt;${a.v.toFixed(0)} V: <b>${a.n}</b>개 (약 ${a.s.toFixed(2)} 초)`).join(" · ")],
+    ["이벤트 파일", o.csv ? `${o.csv} (${o.csv_rows} 행)` + (o.csv_error ? ` <span class="bad-text">쓰기 오류 ${o.csv_error}</span>` : "") : "-"],
+  ];
+  $("ovKv").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+  const hz = s.connected && s.vbus_hz > 0 ? s.vbus_hz : null;
+  $("ovHint").textContent = (hz ? `VBUS 는 약 ${hz.toFixed(0)} Hz (${(1000 / hz).toFixed(1)} ms 간격)로 읽은 값입니다. ` : "VBUS 읽기 속도는 연결하면 표시됩니다. ")
+    + "1 ms 안팎의 짧은 스파이크는 놓칠 수 있어, 진짜 최고 전압은 오실로스코프가 필요합니다. 여기의 최대값은 읽은 표본 중의 최대입니다.";
+  const body = EV.slice(0, 20).map(e => {
+    const sine = e.sine_on ? `±${e.sine_amp_deg.toFixed(0)}° / ${e.sine_period_s.toFixed(2)} s` : "-";
+    return `<tr><td>${e.n}</td><td>${e.wall.slice(11, 19)}</td><td>${e.since_reset_s.toFixed(1)} s</td>`
+      + `<td class="${e.cls === "overvoltage" ? "cls-ov" : ""}">${clsLabel(e)}</td><td>${e.fault_hex || "-"}</td>`
+      + `<td>${num(e.vbus_max_1s, 2)} / ${num(e.vbus_min_1s, 2)} V</td><td>${num(e.vel_deg_s, 0)}</td><td>${num(e.tau_nm, 2)}</td>`
+      + `<td>${num(e.power_w, 1)} / ${num(e.power_min_1s_w, 1)}</td><td>${num(e.kp, 1)} / ${num(e.kd, 2)}</td><td>${sine}</td></tr>`;
+  }).join("");
+  $("ovRows").innerHTML = body || `<tr><td colspan="11" style="color:var(--mute)">아직 고장 이벤트가 없습니다.</td></tr>`;
 }
 function setVal(numId, rangeId, v) { $(numId).value = v; $(rangeId).value = v; }
 
@@ -354,6 +450,13 @@ function draw(cv, series, o) {
   ctx.textAlign = "center"; ctx.fillStyle = css.getPropertyValue("--mute");
   const xs = niceStep(WIN, 5);
   for (let a = 0; a <= WIN + 1e-9; a += xs) { const t = tNow - a, x = X(t); ctx.strokeStyle = css.getPropertyValue("--grid"); ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, m.t + ph); ctx.stroke(); ctx.fillText(a === 0 ? "지금" : `−${a.toFixed(0)} s`, x, H - 5); }
+  // 60 V over-voltage protection line, only when it lies inside the plotted range
+  if (o.hline && o.hline.v >= axes.L[0] && o.hline.v <= axes.L[1]) {
+    const y = Y("L", o.hline.v);
+    ctx.save(); ctx.strokeStyle = css.getPropertyValue("--bad"); ctx.lineWidth = 1.4; ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(m.l, y); ctx.lineTo(m.l + pw, y); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = css.getPropertyValue("--bad"); ctx.textAlign = "left"; ctx.fillText(o.hline.label, m.l + 6, Math.max(y - 4, m.t + 10));
+  }
   // series
   ctx.save(); ctx.beginPath(); ctx.rect(m.l, m.t, pw, ph); ctx.clip();
   const stride = Math.max(1, Math.floor(vis.length / (pw * 1.5)));
@@ -370,6 +473,12 @@ function draw(cv, series, o) {
       started = true; prev = p.t;
     }
     ctx.stroke();
+  }
+  // fault events: red vertical marker on every plot
+  ctx.setLineDash([]); ctx.strokeStyle = css.getPropertyValue("--bad"); ctx.lineWidth = 1.6;
+  for (const e of EV) {
+    if (e.t < t0 || e.t > tNow + 0.5) continue;
+    const x = X(e.t); ctx.beginPath(); ctx.moveTo(x, m.t); ctx.lineTo(x, m.t + ph); ctx.stroke();
   }
   ctx.restore();
   ctx.setLineDash([]);
@@ -389,14 +498,14 @@ function render() {
   draw($("cv0"), [{ key: "tgtRel", color: "--c2", dash: [5, 3], width: 1.6 }, { key: "posRel", color: "--c1" }], { minSpanL: 10, empty: noConn });
   const v1 = draw($("cv1"), [{ key: "vel", color: "--c1" }], { minSpanL: 20, empty: noConn });
   const v2 = draw($("cv2"), [{ key: "tau", color: "--c1", axis: "L" }, { key: "iqf", color: "--c2", axis: "R" }],
-    { minSpanL: 0.5, minSpanR: 0.5, empty: noConn || (S && !S.iqf_ok ? "iqf 응답 없음 (전류 표시 불가)" : null) });
-  const v3 = draw($("cv3"), [{ key: "vbus", color: "--c3" }], { minSpanL: 2, empty: noConn || (S && !S.vbus_ok ? "VBUS 응답 없음" : null) });
+    { minSpanL: 0.5, minSpanR: 0.5, empty: noConn || (S && S.vbus_priority ? null : S && !S.iqf_ok ? "iqf 응답 없음 (전류 표시 불가)" : null) });
+  const v3 = draw($("cv3"), [{ key: "vbus", color: "--c3" }], { minSpanL: 2, hline: { v: 60, label: "과전압 보호 60 V (매뉴얼)" }, empty: noConn || (S && !S.vbus_ok ? "VBUS 응답 없음" : null) });
   const v4 = draw($("cv4"), [{ key: "p", color: "--c4" }], { minSpanL: 5, empty: noConn });
   const s1 = stats(v1, "vel"); $("n1").textContent = s1 ? `지금 ${f(s1.last,0)} · 최소 ${f(s1.lo,0)} · 최대 ${f(s1.hi,0)}` : "";
   const st = stats(v2, "tau"), si = stats(v2, "iqf");
-  $("n2").textContent = (st ? `토크 ${f(st.last,2)} N·m` : "") + (si ? ` · 전류 ${f(si.last,2)} A` : (S && conn ? " · 전류 응답 없음" : ""));
+  $("n2").textContent = (st ? `토크 ${f(st.last,2)} N·m` : "") + (S && conn && S.vbus_priority ? " · 전류 읽기 꺼짐 (전압 집중 측정)" : si ? ` · 전류 ${f(si.last,2)} A` : (S && conn ? " · 전류 응답 없음" : ""));
   const sv = stats(v3, "vbus");
-  $("n3").innerHTML = sv ? `지금 <b>${sv.last.toFixed(2)}</b> V · 구간 최소 <b>${sv.lo.toFixed(2)}</b> V · 최대 <b>${sv.hi.toFixed(2)}</b> V · 폭 ${(sv.hi - sv.lo).toFixed(2)} V` : (conn ? "응답 없음" : "");
+  $("n3").innerHTML = sv ? `지금 <b>${sv.last.toFixed(2)}</b> V · 구간 최소 <b>${sv.lo.toFixed(2)}</b> V · 최대 <b>${sv.hi.toFixed(2)}</b> V · 폭 ${(sv.hi - sv.lo).toFixed(2)} V · <b>60 V 까지 여유 ${(60 - sv.hi).toFixed(2)} V</b> (구간 최대 기준)` : (conn ? "응답 없음" : "");
   const sp = stats(v4, "p"); $("n4").textContent = sp ? `지금 ${f(sp.last,1)} W · 구간 최소 ${f(sp.lo,1)} W (되돌림 최대) · 최대 ${f(sp.hi,1)} W` : "";
 }
 function loop() { render(); requestAnimationFrame(loop); }
