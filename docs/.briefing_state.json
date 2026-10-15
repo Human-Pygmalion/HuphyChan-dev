@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Back-EMF bench web UI: built and verified on a simulated motor; waiting for the real motor",
-  "detail": "Single-motor web page (position target, Kp/Kd, live plots of voltage, current, power) in System_ID/emf_bench. 8/8 frame tests and 27/27 browser checks pass against a simulated motor; real motor not yet attached.",
-  "since": "2026-10-15 17:53"
+  "title": "emf bench: over-voltage monitor added; live restart and real-motor rate test pending (user is running the motor)",
+  "detail": "Monitor, VBUS-priority switch and tests are done on the simulated motor (44/44 browser checks, 10 new unit tests). The 3090 server was connected and enabled, so it was not restarted and the real-bus rate test was not run. Files are synced; the new page tells the user when the running server is the old version.",
+  "since": "2026-10-15 18:55"
  },
  "items": {
   "shouldermesh": {
@@ -1833,7 +1833,8 @@
    "finding": "게인 0.5배 생존 0/8→8/8, 크랭크 오차 P99 66.5°→39.4° (창 안). 그러나 제자리 회전 45→23 %, 서기 흘러감 0.38→0.64 m, 걷기 방향 틀어짐 8.6°→33°. 묶음이라 원인 분리 불가 — 게인 0.5 생존은 크랭크 55 덕일 가능성(0.5배여도 27.5 > 기준선 22.3), 회전 하락은 무작위화 최대 구간에서 시작",
    "number": "다음 제안: 크랭크 55 단독 / 지연·게인 무작위화 단독 분리 비교 (같은 씨앗, 회전 씨앗 8개)",
    "section": "done",
-   "changed": "2026-10-15 07:25"
+   "changed": "2026-10-15 07:25",
+   "collapsed": true
   },
   "pd-gain-recommend": {
    "id": "pd-gain-recommend",
@@ -1913,6 +1914,18 @@
    "number": "모터 4번 위치 112.28°, VBUS 48.69 V",
    "section": "done",
    "changed": "2026-10-15 18:23"
+  },
+  "ov-monitor": {
+   "id": "ov-monitor",
+   "created": "2026-10-15 18:55",
+   "title": "역기전력 벤치 과전압 모니터 완성 (가상 모터 검증) — 실서버 반영은 사용자 재시작 승인 대기",
+   "finding": "과전압·저전압·기타 고장·경고 횟수, 사건마다 직전 1초 전압 최대·속도·토크·되민 전력, 분당 빈도, 52/55/58 V 초과 표본, 60 V 보호선, 사건 CSV. 전압 집중 측정(매 주기 VBUS). 자동 해제·재가동 없음",
+   "number": "System_ID/emf_bench, 커밋 fad3451",
+   "media": [
+    "System_ID/emf_bench/ux_shots/6_ov_monitor.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 18:55"
   }
  },
  "order": [
@@ -2086,7 +2099,8 @@
   "rec-vs-robots",
   "gain-vs-robots",
   "emf-bench",
-  "emf-scan"
+  "emf-scan",
+  "ov-monitor"
  ],
- "updated": "2026-10-15 18:23"
+ "updated": "2026-10-15 18:55"
 }
