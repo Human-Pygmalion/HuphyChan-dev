@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "권장 관절 게인을 험지(박스 지형) 하중으로 재검토 — 원격 3090 에서 지형 난이도별 관절 토크·오차 측정 중",
-  "detail": "배포 정책(크랭크 22.3)과 시험 정책(크랭크 55)을 박스 지형 난이도 여러 단계, 앞으로 0.3·0.6·1.0 m/s 로 걷게 해 관절별 토크 상위 1 %·0.1 %, 위치 오차, 포화 비율, 착지 직후 순간 하중을 잰다. 평지 기준이던 '걷기 오차 30° 예산'을 험지 하중으로 다시 계산",
-  "since": "2026-10-15 16:11"
+  "title": "Measuring joint loads on rough terrain, slopes and stairs for PD gains",
+  "detail": "Probe tool written and verified (crank Kp built as 22.27 baseline / 55 trial). Running on the remote RTX 3090: box terrain levels 0/3/6/9 x speed 0.3/0.6/1.0, slopes 10/20/30 deg up and down, stairs 10-25 cm risers up and down, for both policies (~1 h). Slopes and stairs were never in training, so falls are expected and only steps before a fall are counted. In parallel: policy-independent quasi-static torque calculation.",
+  "since": "2026-10-15 16:21"
  },
  "items": {
   "shouldermesh": {
@@ -1769,7 +1769,8 @@
     "docs/img/pd_gain/2026-10-14_gain_criteria.png"
    ],
    "section": "done",
-   "changed": "2026-10-14 19:06"
+   "changed": "2026-10-14 19:06",
+   "collapsed": true
   },
   "trial-v11a-heartbeat": {
    "id": "trial-v11a-heartbeat",
@@ -1837,6 +1838,16 @@
    "number": "docs/169 §7",
    "section": "done",
    "changed": "2026-10-15 16:08"
+  },
+  "rough-load-probe": {
+   "id": "rough-load-probe",
+   "created": "2026-10-15 17:08",
+   "title": "험지(박스 지형·경사·계단) 관절 하중 측정 — 거친 지형에서 필요한 위치 게인이 평지보다 크다",
+   "why": "등산(관악산)까지 갈 것이므로 §7 권장 게인(평지 걷기 토크 기준)을 거친 지형 하중으로 다시 확인",
+   "finding": "훈련한 박스 지형(최고 단계, 단 높이 10 cm)에서도 무릎 토크 99 백분위수는 평지 칸 25 → 43 N·m, 엉덩이 앞뒤 23 → 38 로 늘었다. 훈련 밖 20° 내리막·15 cm 계단 내림에서는 엉덩이 좌우·무릎이 토크 한계(120 N·m)에 닿아 필요 Kp 는 224 이상. 크랭크 오차 30° 기준 필요 Kp 는 박스 54(기준 정책)~78(시험 정책).",
+   "number": "넘어짐 단계 0→9: 7→31 % (0.6 m/s). 정적 계산: 25 cm 계단 오르기 시작 무릎 39 N·m, 2배 체중 착지 78 N·m. 발열: 내림에서 엉덩이 비틀기 실효값이 정격의 85~89 %.",
+   "section": "done",
+   "changed": "2026-10-15 17:08"
   }
  },
  "order": [
@@ -2004,7 +2015,8 @@
   "trial-v11a-8k",
   "trial_v11a_final",
   "trial-v11a-final",
-  "pd-gain-recommend"
+  "pd-gain-recommend",
+  "rough-load-probe"
  ],
- "updated": "2026-10-15 16:11"
+ "updated": "2026-10-15 17:08"
 }
