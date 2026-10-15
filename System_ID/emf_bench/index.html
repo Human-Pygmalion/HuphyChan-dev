@@ -103,6 +103,9 @@
   #ovCard.collapsed .ovbody { display: none; }
   #ovCard.collapsed .ovhead { margin-bottom: 0; }
   #ovCard.collapsed #ovFold { transform: rotate(-90deg); }
+  #logsCard.collapsed .logsbody { display: none; }
+  #logsCard.collapsed .ovhead { margin-bottom: 0; }
+  #logsCard.collapsed #logsFold { transform: rotate(-90deg); }
   .ovbtns { display: flex; gap: 6px; align-items: center; }
   .ovbtns .fold { padding: 0 7px; font-size: 13px; line-height: 20px; }
   .ovmini { font-size: 13px; font-weight: 500; color: var(--mute); margin-left: 8px; }
@@ -223,7 +226,8 @@
     </section>
     <section class="card" id="logsCard">
       <div class="ovhead"><h2>Saved logs <span id="logsMini" class="ovmini"></span></h2>
-        <span class="ovbtns"><button id="btnLogsRefresh">Refresh</button><button id="btnDlSel" class="primary" disabled>Download selected</button></span></div>
+        <span class="ovbtns"><button id="btnLogsRefresh">Refresh</button><button id="btnDlSel" class="primary" disabled>Download selected</button><button class="fold" id="logsFold" title="Collapse / expand">▾</button></span></div>
+      <div class="logsbody">
       <div class="hint" id="logsDir" style="margin:0 0 6px"></div>
       <div class="tablewrap ovscroll">
         <table class="ev" id="logsTable">
@@ -232,6 +236,7 @@
         </table>
       </div>
       <div class="hint">One file selected downloads as a plain CSV; several selected download as one ZIP. A file marked "writing now" is still being written: its download is cut at the last complete row. Files marked "legacy" were written before the logging panel existed.</div>
+      </div>
     </section>
     <section class="card plot" data-id="pPos">
       <div class="head"><b><span class="grip" title="Drag to reorder">⠿</span>① Position [°] (position at connect = 0)</b>
@@ -780,6 +785,9 @@ $("btnPause").addEventListener("click", () => {
   const card = $("ovCard");
   if (store.get("emf_ov_folded")) card.classList.add("collapsed");
   $("ovFold").addEventListener("click", () => { card.classList.toggle("collapsed"); store.set("emf_ov_folded", card.classList.contains("collapsed")); });
+  const lc = $("logsCard");
+  if (store.get("emf_logs_folded")) lc.classList.add("collapsed");
+  $("logsFold").addEventListener("click", () => { lc.classList.toggle("collapsed"); store.set("emf_logs_folded", lc.classList.contains("collapsed")); });
 })();
 
 function loop() { render(); requestAnimationFrame(loop); }
