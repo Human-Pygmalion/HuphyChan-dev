@@ -1957,7 +1957,8 @@
     "System_ID/emf_bench/ux_shots/8_measure_fold_reorder.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 20:17"
+   "changed": "2026-10-15 20:17",
+   "collapsed": true
   },
   "emf-ui4": {
    "id": "emf-ui4",
@@ -2028,6 +2029,15 @@
    "number": "A 4,038 / 12,000회",
    "section": "done",
    "changed": "2026-10-16 02:25"
+  },
+  "gain-ab-8k": {
+   "id": "gain-ab-8k",
+   "created": "2026-10-16 06:18",
+   "title": "게인 비교 A(크랭크 60 단독) 8,000회 — 회전 추종 보상 0.824 대 기준선 0.831, 묶음 시험 런은 0.628",
+   "finding": "무작위화 최대 구간에서도 크랭크만 올린 런은 회전을 유지한다. 묶음 시험 런의 회전 하락 원인은 크랭크가 아니라 지연·게인 무작위화 쪽으로 좁혀짐(학습 중 보상 기준, 최종 판정은 완주 뒤 측정). 평균 보상 69.9 대 62.9, 낮은 몸통 종료 1.50 대 1.89",
+   "number": "A 8,005 / 12,000회, 끝 예상 10:00 → B 자동 시작",
+   "section": "done",
+   "changed": "2026-10-16 06:18"
   }
  },
  "order": [
@@ -2211,7 +2221,8 @@
   "emf-logs-fold",
   "gain-ab-launch",
   "gain-ab-heartbeat",
-  "gain-ab-4k"
+  "gain-ab-4k",
+  "gain-ab-8k"
  ],
- "updated": "2026-10-16 05:26"
+ "updated": "2026-10-16 06:18"
 }
