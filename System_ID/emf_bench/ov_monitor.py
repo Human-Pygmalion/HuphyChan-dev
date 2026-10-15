@@ -219,6 +219,11 @@ class OvMonitor:
           limits=dict(ov=OV_LIMIT_V, uv=UV_LIMIT_V),
           csv=self.csv_path, csv_rows=self.csv_rows, csv_error=self.csv_error)
 
+  def counts_snapshot(self) -> dict:
+    """Event counters since the last reset, for the per-cycle log."""
+    with self.lock:
+      return dict(self.counts, warn=self.warn_count)
+
   def latest_events(self, n: int = 30) -> list:
     """Newest first."""
     with self.lock:

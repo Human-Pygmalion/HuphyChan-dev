@@ -37,7 +37,9 @@ Kd(속도 이득, 단위 N·m·s/rad)는 "속도에 비례해 얼마나 브레�
 | `rate_test.py` | 읽기 전용 제어 주기 시험(켜기 없음). 주기별로 잃는 프레임 비율을 잰다 (과전압 모니터 절) |
 | `test_frames.py` | 하드웨어 없이 프레임 왕복·F_CMD 규칙·종료 시 끄기를 검사 (8개) |
 | `test_ov_monitor.py` | 과전압 모니터 검사: 고장 분류, 이벤트 필드, 문턱 전압 집계, 빈도, 제어 루프 통합 (10개) |
-| `ux_check_bench.py` | 실제 브라우저(playwright)로 화면을 눌러 보는 검사 (처음 27개 + 과전압 모니터 17개 = 44개). `ux_shots/` 에 스크린샷 |
+| `emf_logs.py` | 로그 파일 이름 정리·중복 방지, 열 정의, 목록, 안전한 다운로드(ZIP) (12절) |
+| `test_logs.py` | 로그 이름·경로 안전·열·서버 왕복 검사 (8개) |
+| `ux_check_bench.py` | 실제 브라우저(playwright)로 화면을 눌러 보는 검사 (61개: 기본 + 과전압 모니터 + 영어 화면 + 로깅·다운로드). `ux_shots/` 에 스크린샷 |
 | `sync_to_3090.sh` | 3090 머신으로 복사 |
 
 ## 3. 실행
@@ -125,10 +127,7 @@ sudo ip link set can0 up
   `System_ID/regen_test.py` 와 같은 정의).
 * **상태 칸**: 온도, 모드(Reset/Cali/Motor), 고장·경고(고장값을 비트 이름으로 풀어 줌), 제어 루프
   속도와 최근 1초 최대 간격, 잃은 프레임 수, 파라미터 읽기 응답률.
-* **기록**: 켜면 `~/System_ID/data/emf_<날짜_시각>.csv`(서버가 도는 머신 기준)에 **모든 표본**을
-  씁니다. 파일 이름과 행 수가 화면에 나옵니다. 열: `t_s, unix_s, pos_deg, vel_deg_s, tau_nm, temp_c,
-  mode, fault, warn, target_deg, kp, kd, enabled, vbus_v, iqf_a, power_w`. 전압·전류는 그 표본에서
-  읽은 값이 없으면 **빈칸**입니다(앞 값을 복사해 채우지 않음).
+* **기록(로깅)**: 2026-10-15 에 "기록" 단추가 아래 12절의 로깅 패널로 바뀌었습니다(영어 안내는 12절).
 
 ### 시뮬레이션에서 확인한 것 (실물 아님)
 
@@ -242,7 +241,7 @@ CSV 의 `unix_s` 열은 나중에 다른 기록과 시각을 맞출 때 씁니�
 Kp/Kd, 사인파가 돌고 있었으면 진폭·주기. 모든 그래프에 이벤트 시각마다 **빨간 세로선**이 그려집니다. VBUS 그래프에는
 60 V 가 그 그래프의 세로 범위 안에 있을 때만 점선 "과전압 보호 60 V (매뉴얼)" 과 "60 V 까지 여유 X V" 가 나옵니다.
 
-**파일**: 연결하는 순간 서버 머신의 `~/System_ID/data/emf_events_<날짜_시각>.csv` 가 만들어지고, 이벤트마다 한 줄이 **즉시**
+**파일**: 연결하는 순간 서버 머신의 `~/System_ID/data/emf_logs/emf_events_<날짜_시각>.csv`(2026-10-15 이후. 그 전 파일은 `~/System_ID/data/` 바로 아래에 있음) 가 만들어지고, 이벤트마다 한 줄이 **즉시**
 기록됩니다(서버를 껐다 켜도 남음). 초기화 단추는 화면의 숫자만 0 으로 하고 같은 파일에 계속 이어 씁니다(열 `reset_n`
 이 초기화 횟수). 파일 이름은 카드에 보입니다. 열: `wall_time, unix_s, t_s, since_reset_s, reset_n, cls, fault_word,
 fault_names, vbus_max_1s_v, vbus_min_1s_v, vbus_at_event_v, vel_deg_s, tau_nm, power_w, power_min_1s_w, kp, kd, sine_on,
@@ -274,3 +273,17 @@ sine_amp_deg, sine_period_s`.
 "몇 Hz 까지 손실 없이 되는가"는 모르는 상태입니다(시뮬레이션 모터에서는 200·500 Hz 모두 손실 0 이지만 가짜 모터의
 값은 실물의 근거가 되지 않음). 모터를 연결 해제한 상태에서 위 명령을 돌리고, 손실이 시작되는 주기보다 20 % 이상
 낮게 `--rate` 를 잡으십시오.
+
+## 12. Logging and downloads (added 2026-10-15; English note, the page is now English)
+
+The page is now in English (every label, hint, status text and server message). The old "record" button was replaced by a logging panel.
+
+**Logging panel** (left column): a file-name box that defaults to the current timestamp `YYYYMMDD_HHMMSS` (refreshed while not logging; editable; sanitized to `[A-Za-z0-9._-]`, `.csv` added, never overwrites: an existing name gets `_1`, `_2`, ...), **Start logging** / **Stop logging**, and live rows / elapsed time / file size. Logging is independent of the plot pause button. Rows are written only while connected (one row per control cycle).
+
+**Where the files go** (on the machine running the server, persistent): `~/System_ID/data/emf_logs/<name>.csv`, a sidecar `<name>.meta.json` (start/stop time, motor id/model/channel, rate, server version = git hash if available else source mtime, a description of every column), and the over-voltage event files `emf_events_*.csv`. The file is flushed at least once per second; a stopped or killed server leaves a valid CSV (`meta.json` says `"complete": false` if the process died before stopping).
+
+**Columns** (one row per control cycle; units are in the names; an empty cell means "no value this cycle", never a copy of an old value): `t_s, unix_s, wall_time, cycle, cycle_dt_ms, loop_period_ms, rate_hz, connected, enabled_req, state_ok, mode, mode_name, fault, warn, fault_word, fault_class, fault_names, temp_c, pos_deg, pos_rel_deg, origin_deg, vel_deg_s, tau_nm, target_deg, target_rel_deg, target_clamped, track_err_deg, kp, kd, sine_on, sine_amp_deg, sine_period_s, sine_center_deg, sine_phase_rad, vbus_v, iqf_a, param_req, power_w, vbus_priority, ov_count, uv_count, other_count, warn_count, lost_state, lost_vbus, lost_iqf, send_fail, overruns`. `track_err_deg = target - position` is always written but is meaningful only when `mode == 2` (filter on `mode`). The same descriptions are in the sidecar and in `emf_logs.LOG_COLUMNS`.
+
+**Saved logs card**: lists `emf_logs/*.csv` plus legacy `~/System_ID/data/emf_*.csv` (marked "legacy"), newest first, with size, modified time, rows, checkboxes, a per-row CSV link and an "info" link (the sidecar). "Download selected": one file downloads as plain CSV, several as one ZIP built on the fly. A file that is still being written is marked "writing now - partial" and its download is cut at the last complete row. There is no delete button.
+
+**Endpoints**: `GET /logs` (JSON list), `GET /logs/download?files=a.csv,b.csv`. Only plain basenames ending in `.csv` / `.meta.json` that exist directly in `emf_logs/` (or legacy `emf_*.csv`) are served; anything with `/`, `..`, NUL or characters outside `[A-Za-z0-9._-]` gets HTTP 400, unknown names 404. Control behaviour is unchanged (no new auto-off, timeout or auto-clear).

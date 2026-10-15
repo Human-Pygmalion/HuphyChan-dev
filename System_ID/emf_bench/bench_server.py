@@ -34,22 +34,22 @@ import time
 from collections import deque
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlsplit
 from typing import Optional
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import emf_frames as fr  # noqa: E402
+import emf_logs as lg  # noqa: E402
 from bench_motor import BenchMotor, State  # noqa: E402
 from fake_motor import FakeMotorTransport  # noqa: E402
-from ov_monitor import OvMonitor  # noqa: E402
+from ov_monitor import OvMonitor, classify_fault  # noqa: E402
 from rscodec import mit  # noqa: E402
 
 MODE_NAMES = {0: "Reset", 1: "Cali", 2: "Motor"}
-CSV_COLUMNS = ["t_s", "unix_s", "pos_deg", "vel_deg_s", "tau_nm", "temp_c", "mode", "fault", "warn",
-               "target_deg", "kp", "kd", "enabled", "vbus_v", "iqf_a", "power_w", "fault_word"]
 PARAM_CYCLE = (fr.PARAM_VBUS, fr.PARAM_IQF)
-LOOP_ACTIONS = ("connect", "disconnect", "enable", "disable", "clear_fault", "fault_query")
+LOOP_ACTIONS = ("connect", "disconnect", "enable", "disable", "clear_fault", "fault_query", "log_start", "log_stop")
 SET_KEYS = ("kp", "kd", "target_deg", "sine", "sine_amp_deg", "sine_period_s", "vbus_priority")
 
 
@@ -123,12 +123,22 @@ class Controller:
     self.samples: deque = deque(maxlen=4000)
     self.seq = 0
 
-    # recording
-    self.rec_fh = None
-    self.rec_writer = None
-    self.rec_name: Optional[str] = None
-    self.rec_rows = 0
-    self.rec_last_flush = 0.0
+    # logging (one CSV row per control cycle, see emf_logs.LOG_COLUMNS).  Only the control thread
+    # touches the file; the HTTP threads read the plain counters below.
+    self.legacy_dir = args.data_dir
+    self.log_dir = os.path.join(args.data_dir, lg.LOG_SUBDIR)
+    self.log_fh = None
+    self.log_writer = None
+    self.log_name: Optional[str] = None      # base name of the current / last file
+    self.log_path: Optional[str] = None
+    self.log_rows = 0
+    self.log_t0 = 0.0                        # monotonic start of the current file
+    self.log_elapsed = 0.0                   # frozen at stop
+    self.log_unix0 = 0.0
+    self.log_last_flush = 0.0
+    self.log_error: Optional[str] = None
+    self._prev_cycle_t: Optional[float] = None
+    self.version = lg.server_version(HERE)
 
     self.thread = threading.Thread(target=self._run, name="control", daemon=True)
 
@@ -154,12 +164,12 @@ class Controller:
         v = float(d["kp"])
         self.kp = min(max(v, 0.0), self.enc.kp_max)
         if self.kp != v:
-          notes.append(f"Kp는 0..{self.enc.kp_max:g} 범위로 잘림")
+          notes.append(f"Kp clipped to the range 0..{self.enc.kp_max:g} N·m/rad")
       if "kd" in d:
         v = float(d["kd"])
         self.kd = min(max(v, 0.0), self.enc.kd_max)
         if self.kd != v:
-          notes.append(f"Kd는 0..{self.enc.kd_max:g} 범위로 잘림")
+          notes.append(f"Kd clipped to the range 0..{self.enc.kd_max:g} N·m·s/rad")
       if "vbus_priority" in d:
         self.vbus_priority = d["vbus_priority"] in ("on", True, 1, "1")
       if "sine_amp_deg" in d:
@@ -169,7 +179,7 @@ class Controller:
         if v > 0:
           self.sine_period = v      # phase-continuous: only the speed of the phase changes
         else:
-          notes.append("주기는 0보다 커야 함")
+          notes.append("Sine period must be greater than 0 s")
       if "target_deg" in d:
         if self.sine_on:
           self.sine_center = float(d["target_deg"])   # while the sine runs the slider moves its center
@@ -179,7 +189,7 @@ class Controller:
         on = d["sine"] in ("on", True, 1, "1")
         if on and not self.sine_on:
           if not self.enabled:
-            notes.append("사인파는 토크를 켠 뒤에 시작할 수 있음")
+            notes.append("The sine can only be started after torque is enabled")
           else:
             self.sine_center = self.target_rel      # starts at sin(0) = 0 -> no jump
             self.sine_phase = 0.0
@@ -230,8 +240,21 @@ class Controller:
         fault=bool(st.fault) if st else None, warn=bool(st.warn) if st else None,
         pos_deg=st.position_deg if st else None,
         fault_word=self.fault_word, fault_names=names,
-        recording=self.rec_fh is not None, rec_file=self.rec_name, rec_rows=self.rec_rows,
+        logging=self.log_fh is not None, log_file=self.log_name, log_rows=self.log_rows,
+        log_bytes=self._log_bytes(), log_elapsed_s=self._log_elapsed(now), log_error=self.log_error,
+        log_dir=self.log_dir, log_default_name=lg.default_stamp(),
         message=self.message, t=now - self.t_zero)
+
+  def _log_bytes(self) -> Optional[int]:
+    try:
+      return os.path.getsize(self.log_path) if self.log_path else None
+    except OSError:
+      return None
+
+  def _log_elapsed(self, now: float) -> Optional[float]:
+    if self.log_name is None:
+      return None
+    return now - self.log_t0 if self.log_fh is not None else self.log_elapsed
 
   def samples_since(self, seq: int):
     with self.lock:
@@ -273,7 +296,7 @@ class Controller:
             next_t = time.monotonic()
     finally:
       self._close_motor()
-      self._stop_recording()
+      self._stop_logging()
       self.ov.close_csv()
 
   def _close_motor(self):
@@ -313,7 +336,7 @@ class Controller:
     try:
       self.motor = self._open_motor()
     except OSError as exc:
-      self.message = f"CAN 채널 {self.args.channel} 열기 실패: {exc} (README의 CAN 올리기 참고)"
+      self.message = f"Cannot open CAN channel {self.args.channel}: {exc} (see the README for bringing CAN up)"
       c.result = {"ok": False, "error": self.message}
       return
     self.origin_deg = None
@@ -322,12 +345,13 @@ class Controller:
     self.prev_fault = False
     self.prev_warn = False
     self._first_state_pending = True
+    self._prev_cycle_t = None
     self.message = None
     self.ov.reset(time.monotonic() - self.t_zero)
     try:
-      self.ov.open_csv(self.args.data_dir, time.time())
+      self.ov.open_csv(self.log_dir, time.time())
     except OSError as exc:
-      self.message = f"과전압 이벤트 파일을 만들 수 없음: {exc}"
+      self.message = f"Cannot create the over-voltage event file: {exc}"
     # zero-gain reads: state only, no torque
     m = self.motor
     for _ in range(30):
@@ -338,7 +362,7 @@ class Controller:
         self._on_state(obj)
         break
     if self.origin_deg is None:
-      self.message = "모터 응답 없음 (id/모델/CAN 연결 확인). 응답이 오면 자동으로 원점이 잡힙니다."
+      self.message = "No motor response (check id / model / CAN wiring). The origin is captured automatically when a response arrives."
       c.result = {"ok": True, "warning": self.message}
 
   def _do_disconnect(self, c: Cmd):
@@ -351,7 +375,7 @@ class Controller:
   def _do_enable(self, c: Cmd):
     m = self.motor
     if m is None or self.last_state is None or time.monotonic() - self.last_state_t > 0.5:
-      c.result = {"ok": False, "error": "모터 상태를 아직 못 읽어서 켤 수 없음 (현재 위치를 모름)"}
+      c.result = {"ok": False, "error": "Cannot enable: the motor state has not been read yet (current position unknown)"}
       return
     with self.lock:
       self.target_rel = self.last_state.position_deg - self.origin_deg   # no jump on enable
@@ -378,7 +402,7 @@ class Controller:
   def _do_clear_fault(self, c: Cmd):
     m = self.motor
     if m is None:
-      c.result = {"ok": False, "error": "연결되지 않음"}
+      c.result = {"ok": False, "error": "Not connected"}
       return
     m.clear_fault()
     m.clear_fault()
@@ -392,15 +416,22 @@ class Controller:
   def _do_fault_query(self, c: Cmd):
     m = self.motor
     if m is None:
-      c.result = {"ok": False, "error": "연결되지 않음"}
+      c.result = {"ok": False, "error": "Not connected"}
       return
     self.fault_word = m.query_fault_word()
 
-  def _do_record(self, c: Cmd):
-    if c.args.get("on"):
-      self._start_recording()
-    else:
-      self._stop_recording()
+  def _do_log_start(self, c: Cmd):
+    if self.log_fh is not None:
+      c.result = {"ok": False, "error": f"Logging is already running ({self.log_name})"}
+      return
+    try:
+      c.result = {"ok": True, "note": self._start_logging(c.args.get("name"))}
+    except OSError as exc:
+      self.log_error = f"{type(exc).__name__}: {exc}"
+      c.result = {"ok": False, "error": f"Cannot create the log file in {self.log_dir}: {exc}"}
+
+  def _do_log_stop(self, c: Cmd):
+    self._stop_logging()
 
   # -------------------------------------------------------------------- one cycle
   def _target_abs(self) -> float:
@@ -435,6 +466,7 @@ class Controller:
 
     need_state, need_param = ok, ok2
     state = None
+    cyc_params: dict[int, float] = {}       # replies that arrived during THIS cycle (for the log)
     deadline = t0 + min(0.8 * self.period, 0.02)
     while need_state or need_param:
       left = deadline - time.monotonic()
@@ -449,6 +481,7 @@ class Controller:
         need_state = False
       elif isinstance(obj, fr.ParamReply) and obj.index in PARAM_CYCLE:
         self.pending_param[obj.index] = obj.value
+        cyc_params[obj.index] = obj.value
         self.last_param_t[obj.index] = time.monotonic()
         self.last_param_v[obj.index] = obj.value
         if obj.index == idx:
@@ -470,6 +503,9 @@ class Controller:
 
     if state is not None:
       self._on_state(state, tgt, kp, kd)
+    if self.log_writer is not None:
+      self._log_cycle(t0, tgt, kp, kd, state, idx, cyc_params)
+    self._prev_cycle_t = t0
     if now - self._rates_t > 0.25:
       self._update_rates(now)
 
@@ -492,7 +528,7 @@ class Controller:
       self.prev_warn = bool(st.warn)
       if edge:
         edge = False
-        self.message = "연결했을 때 이미 고장 상태였음 (이벤트로 세지 않음). 고장 해제를 누르십시오."
+        self.message = "The motor was already faulted when connected (not counted as an event). Press Clear fault."
     elif st.warn and not self.prev_warn:
       self.ov.on_warn_edge()
     self.prev_warn = bool(st.warn)
@@ -513,16 +549,6 @@ class Controller:
     if edge:
       self.ov.on_fault_edge(row["t"], self.unix_zero + row["t"], self.fault_word, kp, kd,
                             self.sine_on, self.sine_amp, self.sine_period)
-    if self.rec_writer is not None:
-      self.rec_writer.writerow([row["t"], round(self.unix_zero + row["t"], 4), row["pos"], row["vel"],
-                                row["tau"], row["temp"], row["mode"], row["fault"], row["warn"], row["tgt"],
-                                row["kp"], row["kd"], row["en"], "" if v is None else v,
-                                "" if i is None else i, p_w,
-                                "" if self.fault_word is None else f"0x{self.fault_word:08x}"])
-      self.rec_rows += 1
-      if st.stamp - self.rec_last_flush > 1.0:
-        self.rec_fh.flush()
-        self.rec_last_flush = st.stamp
 
   def _note(self, key, ok: bool, now: float):
     w = self.win[key]
@@ -548,25 +574,115 @@ class Controller:
     self.rates = dict(loop_hz=hz, worst_gap_ms=worst, state_pct=pct("state"), vbus_pct=pct(fr.PARAM_VBUS), iqf_pct=pct(fr.PARAM_IQF),
                       vbus_hz=hzr(fr.PARAM_VBUS), iqf_hz=hzr(fr.PARAM_IQF))
 
-  # -------------------------------------------------------------------- recording
-  def _start_recording(self):
-    if self.rec_fh is not None:
-      return
-    os.makedirs(self.args.data_dir, exist_ok=True)
-    name = datetime.now().strftime("emf_%Y%m%d_%H%M%S.csv")
-    path = os.path.join(self.args.data_dir, name)
-    self.rec_fh = open(path, "w", newline="")
-    self.rec_writer = csv.writer(self.rec_fh)
-    self.rec_writer.writerow(CSV_COLUMNS)
-    self.rec_name = path
-    self.rec_rows = 0
+  # -------------------------------------------------------------------- logging
+  def _log_cycle(self, t0: float, tgt: float, kp: float, kd: float, st: Optional[State], idx: int,
+                 got: dict) -> None:
+    """One CSV row per control cycle with every loggable value (columns: emf_logs.LOG_COLUMNS)."""
+    def r(v, n):
+      return "" if v is None else round(v, n)
 
-  def _stop_recording(self):
-    if self.rec_fh is not None:
-      self.rec_fh.flush()
-      self.rec_fh.close()
-    self.rec_fh = None
-    self.rec_writer = None
+    t = t0 - self.t_zero
+    unix = self.unix_zero + t
+    with self.lock:
+      sine = (int(self.sine_on), self.sine_amp, self.sine_period, self.sine_center, self.sine_phase)
+    org = self.origin_deg
+    fault = self.prev_fault
+    fw = self.fault_word
+    v, i = got.get(fr.PARAM_VBUS), got.get(fr.PARAM_IQF)
+    ovc = self.ov.counts_snapshot()
+    pos = st.position_deg if st else None
+    p_w = st.torque_nm * math.radians(st.velocity_deg_s) if st else None
+    row = [
+        round(t, 6), round(unix, 4), datetime.fromtimestamp(unix).isoformat(timespec="milliseconds"), self.cycle_n - 1,
+        r(None if self._prev_cycle_t is None else 1000.0 * (t0 - self._prev_cycle_t), 3),
+        round(1000.0 * self.period, 4), self.args.rate, 1, int(self.enabled), int(st is not None),
+        st.mode if st else "", MODE_NAMES.get(st.mode, "") if st else "",
+        int(st.fault) if st else "", int(st.warn) if st else "",
+        "" if (fw is None or not fault) else f"0x{fw:08x}",
+        classify_fault(fw) if fault else "",
+        "|".join(fr.decode_fault_names(fw)) if (fault and fw) else "",
+        r(st.temp_c if st else None, 2),
+        r(pos, 5), r(None if pos is None or org is None else pos - org, 5), r(org, 5),
+        r(st.velocity_deg_s if st else None, 4), r(st.torque_nm if st else None, 5),
+        round(tgt, 5), r(None if org is None else tgt - org, 5), int(self.target_clamped),
+        r(None if pos is None else tgt - pos, 5),
+        kp, kd, sine[0], sine[1], sine[2], round(sine[3], 5), round(sine[4], 5),
+        r(v, 4), r(i, 4), "vbus" if idx == fr.PARAM_VBUS else "iqf", r(p_w, 5), int(self.vbus_priority),
+        ovc["overvoltage"], ovc["undervoltage"], ovc["other"] + ovc["unread"], ovc["warn"],
+        self.lost_state, self.lost_param[fr.PARAM_VBUS], self.lost_param[fr.PARAM_IQF], self.send_fail,
+        self.overruns]
+    try:
+      self.log_writer.writerow(row)
+      self.log_rows += 1
+      if t0 - self.log_last_flush >= 1.0:
+        self.log_fh.flush()
+        self.log_last_flush = t0
+    except (OSError, ValueError) as exc:
+      self.log_error = f"{type(exc).__name__}: {exc}"
+      self.message = f"Logging stopped: cannot write {self.log_name}: {exc}"
+      self._stop_logging()
+
+  def _start_logging(self, raw_name) -> Optional[str]:
+    """Open <data_dir>/emf_logs/<name>.csv exclusively (never overwrite), write header + sidecar.
+    Returns a note when the requested name had to be changed."""
+    stamp = lg.default_stamp()
+    want = lg.sanitize_log_name(raw_name, stamp)
+    fh, path = lg.open_unique(self.log_dir, want, (self.legacy_dir,))
+    name = os.path.basename(path)
+    self.log_fh, self.log_writer, self.log_path, self.log_name = fh, csv.writer(fh), path, name
+    self.log_rows, self.log_error = 0, None
+    self.log_t0 = time.monotonic()
+    self.log_last_flush = self.log_t0
+    self.log_unix0 = time.time()
+    self.log_writer.writerow(lg.COLUMN_NAMES)
+    fh.flush()
+    self._write_meta(final=False)
+    if name != want:
+      return f"{want} already exists - logging to {name}"
+    typed = str(raw_name or "").strip()
+    if typed and want not in (typed, typed + ".csv"):
+      return f"File name adjusted to {name} (allowed characters: A-Z a-z 0-9 . _ -)"
+    return None
+
+  def _stop_logging(self) -> None:
+    if self.log_fh is None:
+      return
+    fh, self.log_fh, self.log_writer = self.log_fh, None, None
+    self.log_elapsed = time.monotonic() - self.log_t0
+    try:
+      fh.flush()
+      fh.close()
+    except OSError as exc:
+      self.log_error = f"{type(exc).__name__}: {exc}"
+    self._write_meta(final=True)
+
+  def _write_meta(self, final: bool) -> None:
+    a = self.args
+    now = time.time()
+    meta = dict(
+        file=self.log_name, rows=self.log_rows, complete=final,
+        started_unix=round(self.log_unix0, 3),
+        started_iso=datetime.fromtimestamp(self.log_unix0).isoformat(timespec="milliseconds"),
+        stopped_unix=round(now, 3) if final else None,
+        stopped_iso=datetime.fromtimestamp(now).isoformat(timespec="milliseconds") if final else None,
+        duration_s=round(self.log_elapsed, 3) if final else None,
+        motor=dict(id=a.id, model=a.model, channel="fake" if a.fake else a.channel, simulated=bool(a.fake)),
+        rate_hz=a.rate, loop_period_ms=round(1000.0 * self.period, 4),
+        vbus_priority_at_start=self.vbus_priority,
+        server=dict(version=self.version, source="bench_server.py"),
+        t_s_zero_unix=round(self.unix_zero, 3),
+        notes=["One row per control cycle; the cycle is skipped while the server is not connected.",
+               "Empty cell = no value that cycle (no reply / not read), never a copy of an earlier value.",
+               "track_err_deg is written always; it is meaningful only while mode == 2."],
+        columns=[dict(name=c, description=d) for c, d in lg.LOG_COLUMNS])
+    path = os.path.join(self.log_dir, lg.meta_name(self.log_name))
+    try:
+      with open(path + ".tmp", "w") as fh:
+        json.dump(meta, fh, indent=1)
+        fh.write("\n")
+      os.replace(path + ".tmp", path)
+    except OSError as exc:
+      self.log_error = f"meta: {type(exc).__name__}: {exc}"
 
 
 # ========================================================================== HTTP
@@ -599,10 +715,75 @@ class Handler(BaseHTTPRequestHandler):
       self.wfile.write(body)
     elif path == "/status":
       self._json(self.ctl.status())
+    elif path == "/logs":
+      self._json(self._logs())
+    elif path == "/logs/download":
+      self._download()
     elif path == "/stream":
       self._stream()
     else:
       self.send_error(404)
+
+  def _logs(self) -> dict:
+    ctl = self.ctl
+    open_rows = {}
+    if ctl.log_fh is not None:
+      open_rows[ctl.log_name] = ctl.log_rows
+    if ctl.ov.csv_fh is not None and ctl.ov.csv_path:
+      open_rows[os.path.basename(ctl.ov.csv_path)] = ctl.ov.csv_rows
+    return dict(dir=ctl.log_dir, legacy_dir=ctl.legacy_dir,
+                files=lg.list_logs(ctl.log_dir, ctl.legacy_dir, open_rows))
+
+  def _download(self):
+    ctl = self.ctl
+    q = parse_qs(urlsplit(self.path).query)
+    names = []
+    for part in q.get("files", []):
+      for n in part.split(","):
+        if n and n not in names:
+          names.append(n)
+    if not names:
+      self._json({"ok": False, "error": "no files given (use ?files=a.csv,b.csv)"}, 400)
+      return
+    paths = []
+    for n in names:
+      if not lg.is_safe_name(n):
+        self._json({"ok": False, "error": f"not an allowed file name: {n!r}"}, 400)
+        return
+      p = lg.resolve_download(n, ctl.log_dir, ctl.legacy_dir)
+      if p is None:
+        self._json({"ok": False, "error": f"no such log file: {n}"}, 404)
+        return
+      paths.append(p)
+    try:
+      if len(paths) == 1:
+        p, n = paths[0], names[0]
+        size = os.path.getsize(p)
+        if n.endswith(".csv"):
+          size = lg.complete_length(p, size)         # a log still being written is cut at its last full row
+        ctype = "application/json" if n.endswith(".json") else "text/csv; charset=utf-8"
+        self._send_head(ctype, size, n)
+        for b in lg.read_prefix(p, size):
+          self.wfile.write(b)
+      else:
+        tmp, size = lg.build_zip(paths)
+        with tmp:
+          self._send_head("application/zip", size, f"emf_logs_{lg.default_stamp()}.zip")
+          while True:
+            b = tmp.read(1 << 20)
+            if not b:
+              break
+            self.wfile.write(b)
+    except (BrokenPipeError, ConnectionResetError):
+      pass
+
+  def _send_head(self, ctype: str, size: int, filename: str):
+    self.send_response(200)
+    self.send_header("Content-Type", ctype)
+    self.send_header("Content-Length", str(size))
+    self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+    self.send_header("Cache-Control", "no-store")
+    self.end_headers()
 
   def _stream(self):
     self.send_response(200)
@@ -643,15 +824,12 @@ class Handler(BaseHTTPRequestHandler):
     out: dict = {"ok": True}
     if action in LOOP_ACTIONS:
       out = ctl.submit(action, d)
-    elif action not in ("set", "record", "ov_reset"):
+    elif action not in ("set", "ov_reset"):
       out = {"ok": False, "error": f"unknown action {action}"}
     if action == "ov_reset":
       out = ctl.ov_reset()
     if any(k in d for k in SET_KEYS):
-      out["note"] = ctl.set_params(d).get("note")
-    if "record" in d:
-      r = ctl.submit("record", {"on": d["record"] in ("on", True, 1, "1")})
-      out["ok"] = out["ok"] and r.get("ok", True)
+      out["note"] = ctl.set_params(d).get("note") or out.get("note")
     out["status"] = ctl.status()
     self._json(out)
 
@@ -673,7 +851,7 @@ def scan(args) -> int:
     try:
       m = BenchMotor(channel=args.channel, motor_id=1, model=args.model)
     except OSError as exc:
-      print(f"CAN 채널 {args.channel} 을 열 수 없습니다: {exc}\nREADME.md 의 'CAN 올리기'를 먼저 하세요.")
+      print(f"Cannot open CAN channel {args.channel}: {exc}\nBring CAN up first (README section 4).")
       return 2
   print(f"scan {args.channel if not args.fake else 'FAKE'}  ids 1..127  (zero-gain MIT frames + Command 14 VBUS read; "
         f"decoded as {args.model})")
