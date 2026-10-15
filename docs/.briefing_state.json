@@ -1942,7 +1942,8 @@
    "finding": "값 변경 반영 지연 측정: Kp·Kd·목표·사인 진폭·주기 모두 53~66 ms. 실물에서 값이 안 먹은 것처럼 보인 원인은 과전압 고장으로 모터가 꺼진(Reset) 상태에서 사인파만 소프트웨어로 돌던 것 — 사인 ±80°·0.75 초(최대 670 °/s)에서 추종 오차 최대 227°",
    "number": "http://10.8.0.14:8099",
    "section": "done",
-   "changed": "2026-10-15 18:59"
+   "changed": "2026-10-15 18:59",
+   "collapsed": true
   },
   "emf-tracking": {
    "id": "emf-tracking",
@@ -2018,6 +2019,15 @@
    "number": "그래픽 메모리 16.9 GB",
    "section": "done",
    "changed": "2026-10-15 22:33"
+  },
+  "gain-ab-heartbeat": {
+   "id": "gain-ab-heartbeat",
+   "created": "2026-10-15 23:33",
+   "title": "게인만 바꾼 두 팔 비교 학습 정기 점검 (23:33) — 원격 3090 학습 중",
+   "finding": "자동 점검(스크립트). 진행 중입니다. 팔 A = 크랭크 60/2.7 만, 팔 B = 등반 권장 묶음 (대기 중이면 반복 '-').",
+   "number": "팔 A 반복 1111 / 12,000 · 팔 B 반복 - / 12,000",
+   "section": "done",
+   "changed": "2026-10-15 23:33"
   }
  },
  "order": [
@@ -2200,7 +2210,8 @@
   "emf-bench-logging",
   "emf-logging",
   "emf-logs-fold",
-  "gain-ab-launch"
+  "gain-ab-launch",
+  "gain-ab-heartbeat"
  ],
- "updated": "2026-10-15 22:33"
+ "updated": "2026-10-15 23:33"
 }
