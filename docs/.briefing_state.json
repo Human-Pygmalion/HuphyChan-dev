@@ -1802,7 +1802,8 @@
     "docs/img/pd_gain/2026-10-14_pd_only_stand_multiplier.png"
    ],
    "section": "done",
-   "changed": "2026-10-14 23:01"
+   "changed": "2026-10-14 23:01",
+   "collapsed": true
   },
   "trial-v11a-8k": {
    "id": "trial-v11a-8k",
@@ -1875,6 +1876,18 @@
    "media": [
     "docs/img/pd_gain/2026-10-15_rec_F7_summary_dashboard.png"
    ]
+  },
+  "gain-vs-robots": {
+   "id": "gain-vs-robots",
+   "created": "2026-10-15 17:49",
+   "title": "권장 게인 두 세트를 G1·H1·T1·Berkeley 와 같은 시뮬 측정에 넣어 비교 시각화 (docs/169 §9)",
+   "finding": "출력 1 = 최대 토크 %: 지금 31/62/46/9 → 평지 권장 25/31/27/23, 등반 권장 28/31/27/25 (다른 로봇 17~28 % 띠). 발목 강성 ÷ mgh: 다른 로봇 0.03~0.58, 지금 0.47 → 권장 1.16/1.27. 게인만으로 서기 배수: 다른 로봇 4.7~28, 지금 5.3 → 권장 2.3/2.1",
+   "number": "그림 7장 F1~F7",
+   "media": [
+    "docs/img/pd_gain/2026-10-15_rec_F7_summary_dashboard.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 17:49"
   }
  },
  "order": [
@@ -2045,7 +2058,8 @@
   "pd-gain-recommend",
   "rough-load-probe",
   "gain-mountain",
-  "rec-vs-robots"
+  "rec-vs-robots",
+  "gain-vs-robots"
  ],
  "updated": "2026-10-15 17:49"
 }
