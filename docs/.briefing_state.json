@@ -1894,7 +1894,8 @@
     "docs/img/pd_gain/2026-10-15_rec_F7_summary_dashboard.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 17:49"
+   "changed": "2026-10-15 17:49",
+   "collapsed": true
   },
   "emf-bench": {
    "id": "emf-bench",
@@ -1908,7 +1909,8 @@
     "System_ID/emf_bench/ux_shots/2_after_step_60deg.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 17:54"
+   "changed": "2026-10-15 17:54",
+   "collapsed": true
   },
   "emf-scan": {
    "id": "emf-scan",
@@ -1973,6 +1975,30 @@
    ],
    "section": "done",
    "changed": "2026-10-15 20:28"
+  },
+  "emf-bench-logging": {
+   "id": "emf-bench-logging",
+   "created": "2026-10-15 20:41",
+   "title": "EMF bench: English UI + CSV logging + downloads",
+   "finding": "Page and server messages are English; logging panel writes 48-column per-cycle CSV + meta.json to ~/System_ID/data/emf_logs/; Saved logs card downloads CSV or ZIP",
+   "number": "ux check 61/61, test_logs 8/8, frames 8/8, ov monitor 10/10; live server restarted 20:41 (disconnected, press Connect)",
+   "media": [
+    "System_ID/emf_bench/ux_shots/10_english_logging.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 20:41"
+  },
+  "emf-logging": {
+   "id": "emf-logging",
+   "created": "2026-10-15 20:41",
+   "title": "역기전력 벤치: 영어 화면 + 전체 값 CSV 로깅(서버 영구 저장) + 선택 다운로드, 실서버 재시작 완료",
+   "finding": "48개 열(시각·위치·속도·토크·목표·추종오차·게인·사인파·VBUS·iqf·되민전력·고장·루프 시간·손실·과전압 누적), 기본 이름 YYYYMMDD_HHMMSS, ~/System_ID/data/emf_logs/ 에 저장 + .meta.json. 목록에서 골라 CSV 하나 또는 ZIP 다운로드. 브라우저 시험 61/61",
+   "number": "http://10.8.0.14:8099",
+   "media": [
+    "System_ID/emf_bench/ux_shots/10_english_logging.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 20:41"
   }
  },
  "order": [
@@ -2151,7 +2177,9 @@
   "emf-live",
   "emf-tracking",
   "emf-ui3",
-  "emf-ui4"
+  "emf-ui4",
+  "emf-bench-logging",
+  "emf-logging"
  ],
- "updated": "2026-10-15 20:28"
+ "updated": "2026-10-15 20:41"
 }
