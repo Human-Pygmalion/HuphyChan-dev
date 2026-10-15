@@ -356,6 +356,10 @@ class Controller:
     with self.lock:
       self.target_rel = self.last_state.position_deg - self.origin_deg   # no jump on enable
       self.target_event += 1
+      if self.sine_on:        # a sine still running (e.g. after a fault) restarts from here, no jump
+        self.sine_center = self.target_rel
+        self.sine_phase = 0.0
+        self._sine_t = None
     m.enable()
     m.enable()
     self.enabled = True
