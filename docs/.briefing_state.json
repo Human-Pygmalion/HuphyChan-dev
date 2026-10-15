@@ -1919,7 +1919,8 @@
    "finding": "어댑터 CANable2(slcan). 전압·전류 응답이 매뉴얼 추정과 달리 상태 프레임과 같은 0xFD 번호로 옴 → 해석 코드 수정·커밋. 모터는 힘 꺼짐(Reset), 온도 26 °C, 고장 없음. 토크 켜기 전 영상 녹화 필요",
    "number": "모터 4번 위치 112.28°, VBUS 48.69 V",
    "section": "done",
-   "changed": "2026-10-15 18:23"
+   "changed": "2026-10-15 18:23",
+   "collapsed": true
   },
   "ov-monitor": {
    "id": "ov-monitor",
@@ -1999,6 +2000,14 @@
    ],
    "section": "done",
    "changed": "2026-10-15 20:41"
+  },
+  "emf-logs-fold": {
+   "id": "emf-logs-fold",
+   "created": "2026-10-15 20:44",
+   "title": "역기전력 벤치: Saved logs 카드 접기 추가 (새로고침으로 반영)",
+   "finding": "접어도 머리줄에 파일 수 표시, 접힘 상태 기억. 브라우저 시험 61/61",
+   "section": "done",
+   "changed": "2026-10-15 20:44"
   }
  },
  "order": [
@@ -2179,7 +2188,8 @@
   "emf-ui3",
   "emf-ui4",
   "emf-bench-logging",
-  "emf-logging"
+  "emf-logging",
+  "emf-logs-fold"
  ],
- "updated": "2026-10-15 20:41"
+ "updated": "2026-10-15 20:44"
 }
