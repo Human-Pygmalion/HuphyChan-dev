@@ -1413,16 +1413,6 @@
    "changed": "2026-10-02 12:45",
    "collapsed": true
   },
-  "model-split-1002": {
-   "id": "model-split-1002",
-   "created": "2026-10-02 02:43",
-   "title": "학습 감시를 스크립트로 넘김 — 정기 점검에 모델을 쓰지 않음",
-   "finding": "사용자 지적(간단한 일에 Opus 를 쓰면 자원 낭비)에 따라, 매시간 진행 숫자를 읽어 이 페이지에 적는 일을 감시 스크립트가 직접 하도록 바꿨습니다. 모델은 학습이 멈추거나 단계가 바뀌거나 끝날 때만 깨어납니다. 단순 위임 작업은 Sonnet·Haiku, Opus 는 판정만 쓰는 규칙도 다시 저장했습니다.",
-   "number": "v11 남은 약 50시간 동안 모델 호출 시간당 1회 → 사건 2~3회",
-   "section": "done",
-   "changed": "2026-10-02 02:43",
-   "collapsed": true
-  },
   "v11a-deploy-package": {
    "id": "v11a-deploy-package",
    "created": "2026-10-06 20:44",
@@ -2024,11 +2014,11 @@
   "gain-ab-heartbeat": {
    "id": "gain-ab-heartbeat",
    "created": "2026-10-15 23:33",
-   "title": "게인만 바꾼 두 팔 비교 학습 정기 점검 (01:34) — 원격 3090 학습 중",
+   "title": "게인만 바꾼 두 팔 비교 학습 정기 점검 (03:26) — 원격 3090 학습 중",
    "finding": "자동 점검(스크립트). 진행 중입니다. 팔 A = 크랭크 60/2.7 만, 팔 B = 등반 권장 묶음 (대기 중이면 반복 '-').",
-   "number": "팔 A 반복 3176 / 12,000 · 팔 B 반복 - / 12,000",
+   "number": "팔 A 반복 5080 / 12,000 · 팔 B 반복 - / 12,000",
    "section": "done",
-   "changed": "2026-10-16 01:34"
+   "changed": "2026-10-16 03:26"
   },
   "gain-ab-4k": {
    "id": "gain-ab-4k",
@@ -2169,7 +2159,6 @@
   "can-adapter-cornered",
   "local-gpu-missing-1001",
   "v11-heartbeat",
-  "model-split-1002",
   "v11a-deploy-package",
   "shell-lidar-overlay",
   "isaac-warehouse-demo",
@@ -2224,5 +2213,5 @@
   "gain-ab-heartbeat",
   "gain-ab-4k"
  ],
- "updated": "2026-10-16 02:25"
+ "updated": "2026-10-16 03:26"
 }
