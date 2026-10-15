@@ -182,6 +182,10 @@
       <canvas id="cv0"></canvas>
     </section>
     <section class="card plot">
+      <div class="head"><b>①-2 추종 오차 = 목표 − 실제 [°] (토크 켜진 동안만)</b><span class="nums" id="nErr"></span></div>
+      <canvas id="cvErr"></canvas>
+    </section>
+    <section class="card plot">
       <div class="head"><b>② 속도 [°/s]</b><span class="nums" id="n1"></span>
         <span class="legend"><span><i style="background:var(--c1)"></i>속도 (모터 보고값, 표시 한계 ±<b id="vlim">-</b> °/s)</span></span></div>
       <canvas id="cv1"></canvas>
@@ -496,6 +500,13 @@ function render() {
   const conn = S && S.connected;
   const noConn = conn ? null : "연결 안 됨";
   draw($("cv0"), [{ key: "tgtRel", color: "--c2", dash: [5, 3], width: 1.6 }, { key: "posRel", color: "--c1" }], { minSpanL: 10, empty: noConn });
+  const vE = draw($("cvErr"), [{ key: "err", color: "--c4" }], { minSpanL: 2, empty: noConn });
+  {
+    let n = 0, ss = 0, mx = 0, sum = 0, last = null;
+    for (const p of vE) { const e = p.err; if (e === null || e === undefined) continue; n++; ss += e * e; sum += e; if (Math.abs(e) > Math.abs(mx)) mx = e; last = e; }
+    $("nErr").innerHTML = n ? `지금 <b>${f(last, 1)}</b>° · 구간 평균 ${f(sum / n, 1)}° · 제곱평균제곱근 <b>${f(Math.sqrt(ss / n), 1)}</b>° · 절댓값 최대 <b>${f(Math.abs(mx), 1)}</b>°`
+      : (conn ? "토크 꺼짐 — 오차 없음" : "");
+  }
   const v1 = draw($("cv1"), [{ key: "vel", color: "--c1" }], { minSpanL: 20, empty: noConn });
   const v2 = draw($("cv2"), [{ key: "tau", color: "--c1", axis: "L" }, { key: "iqf", color: "--c2", axis: "R" }],
     { minSpanL: 0.5, minSpanR: 0.5, empty: noConn || (S && S.vbus_priority ? null : S && !S.iqf_ok ? "iqf 응답 없음 (전류 표시 불가)" : null) });
@@ -519,6 +530,7 @@ function connectStream() {
     const org = d.status.origin_deg || 0;
     for (const r of d.samples) {
       r.posRel = r.pos - org; r.tgtRel = r.tgt - org;
+      r.err = r.en ? r.tgt - r.pos : null;     // tracking error only while torque is on
       buf.push(r);
     }
     if (buf.length) { const cut = buf[buf.length - 1].t - 65; let k = 0; while (k < buf.length && buf[k].t < cut) k++; if (k > 0) buf.splice(0, k); }
