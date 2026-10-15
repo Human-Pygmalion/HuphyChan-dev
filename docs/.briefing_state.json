@@ -1955,7 +1955,8 @@
     "System_ID/emf_bench/ux_shots/7_tracking_error.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 19:21"
+   "changed": "2026-10-15 19:21",
+   "collapsed": true
   },
   "emf-ui3": {
    "id": "emf-ui3",
@@ -2028,6 +2029,15 @@
    "number": "팔 A 반복 3176 / 12,000 · 팔 B 반복 - / 12,000",
    "section": "done",
    "changed": "2026-10-16 01:34"
+  },
+  "gain-ab-4k": {
+   "id": "gain-ab-4k",
+   "created": "2026-10-16 02:25",
+   "title": "게인 비교 A(크랭크 60 단독) 4,000회 — 보상 77.1 대 기준선 71.9, 회전 추종 보상 0.940 대 0.930",
+   "finding": "크랭크만 올린 런은 4,000회까지 기준선보다 낫거나 같다. 묶음 시험 런의 회전 하락은 6,000회 뒤에 생겼으므로 판단은 8,000회 점검에서 한다. B 는 A 종료 뒤 자동 시작",
+   "number": "A 4,038 / 12,000회",
+   "section": "done",
+   "changed": "2026-10-16 02:25"
   }
  },
  "order": [
@@ -2211,7 +2221,8 @@
   "emf-logging",
   "emf-logs-fold",
   "gain-ab-launch",
-  "gain-ab-heartbeat"
+  "gain-ab-heartbeat",
+  "gain-ab-4k"
  ],
- "updated": "2026-10-16 01:34"
+ "updated": "2026-10-16 02:25"
 }
