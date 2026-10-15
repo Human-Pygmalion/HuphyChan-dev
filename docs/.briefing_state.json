@@ -1881,7 +1881,8 @@
    "number": "stand multiplier 2.29 / 2.10",
    "media": [
     "docs/img/pd_gain/2026-10-15_rec_F7_summary_dashboard.png"
-   ]
+   ],
+   "collapsed": true
   },
   "gain-vs-robots": {
    "id": "gain-vs-robots",
@@ -1961,6 +1962,17 @@
    ],
    "section": "done",
    "changed": "2026-10-15 20:17"
+  },
+  "emf-ui4": {
+   "id": "emf-ui4",
+   "created": "2026-10-15 20:28",
+   "title": "역기전력 벤치 화면: 과전압 카드 접기(머리줄에 요약) + 그래프 일시정지",
+   "finding": "일시정지는 그래프만 멈춤(스냅숏), 제어·기록·과전압 집계는 계속. 멈춘 상태에서 두 점 측정 가능. 추종 오차는 모터가 토크 켜짐(Motor 모드)으로 보고할 때만. 브라우저 시험 44/44, 새로고침으로 반영",
+   "media": [
+    "System_ID/emf_bench/ux_shots/9_paused_ovfolded.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-15 20:28"
   }
  },
  "order": [
@@ -2138,7 +2150,8 @@
   "ov-monitor",
   "emf-live",
   "emf-tracking",
-  "emf-ui3"
+  "emf-ui3",
+  "emf-ui4"
  ],
- "updated": "2026-10-15 20:17"
+ "updated": "2026-10-15 20:28"
 }
