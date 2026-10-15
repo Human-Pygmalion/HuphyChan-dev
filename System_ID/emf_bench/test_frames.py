@@ -28,8 +28,13 @@ class FrameTests(unittest.TestCase):
     r = fr.parse_param_reply(0x304, data, 4)
     self.assertEqual((r.index, round(r.value, 3)), (0x701C, 48.25))
     self.assertIsNone(fr.parse_param_reply(0x305, data, 4))       # other motor
-    self.assertIsNone(fr.parse_param_reply(0xFD, data, 4))        # state-frame id
     self.assertIsNone(fr.parse_param_reply(0x304 | fr.CAN_EFF_FLAG, data, 4))
+    # real RS04 id 4 reply, captured 2026-10-15 on the host id 0xFD
+    real = bytes.fromhex("1c70000071bd4242")
+    r = fr.parse_param_reply(0xFD, real, 4)
+    self.assertEqual((r.index, round(r.value, 2)), (0x701C, 48.69))
+    # a state frame on the same id must not parse as a parameter reply
+    self.assertIsNone(fr.parse_param_reply(0xFD, bytes.fromhex("0493f47fe7ff0104"), 4))
 
   def test_f_cmd_rule(self):
     for action in ("enable", "disable", "clear_fault"):

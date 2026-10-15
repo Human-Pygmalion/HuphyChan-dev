@@ -57,12 +57,16 @@ _CONTROL_COMMANDS = {
 #   request  11-bit ID = (3 << 8) | motor_id      (selector 3 = tables.SEL_PARAM_READ)
 #            Byte0~1 = parameter index, LITTLE endian (low byte first)
 #            Byte2~3 = 00, Byte4~7 = 00
-#   reply    11-bit ID = (3 << 8) | motor_id      (same as request -- manual shows
-#            "3 | 7F" for both), Byte0~1 = index, Byte4~7 = value (float32, little endian
-#            -- the manual's reply table only says "low byte first"; the byte position
-#            Byte4~7 follows the private-protocol Type 17 example in the manual
-#            (251112 p.27: reply "1E 70 00 00 00 00 F0 41" = loc_kp 30.0) and
-#            the Command 15 layout.  NOT yet confirmed on a real motor with this code.)
+#   reply    ★ MEASURED on the real RS04 id 4 (2026-10-15, 3090 bench, CANable2):
+#            the reply comes on the HOST id (0xFD, the same CAN id as state frames), NOT on
+#            (3 << 8) | motor_id as the manual table suggests.  Byte0~1 = index (little
+#            endian), Byte2~3 = 00, Byte4~7 = value float32 little endian.
+#              request 0x304  1C 70 00 00 00 00 00 00
+#              reply   0x0FD  1C 70 00 00 71 BD 42 42   -> VBUS 48.685 V
+#              reply   0x0FD  1A 70 00 00 00 00 00 00   -> iqf 0.0 A (torque off)
+#            A state frame on the same id has Byte0 = motor id, so a reply is recognised by
+#            Byte1 = 0x70 and a known index in Byte0~1 (Byte0 of a known index is never a
+#            valid small motor id here).  Replies on (3 << 8) | motor_id are also accepted.
 #   Firmware requirement printed in the manual headings of 6.15-6.18:
 #            RS04 >= 0.4.1.29     RS03 >= 0.3.1.41     (older firmware: no reply)
 # --------------------------------------------------------------------------------------
@@ -122,9 +126,12 @@ def parse_param_reply(can_id: int, data: bytes, motor_id: int) -> Optional[Param
     """Decode a Command 14 reply, or None if this frame is not one for `motor_id`."""
     if can_id & CAN_EFF_FLAG:
         return None
-    if (can_id & CAN_SFF_MASK) != param_reply_id(motor_id) or len(data) < 8:
+    sid = can_id & CAN_SFF_MASK
+    if len(data) < 8 or not (sid == param_reply_id(motor_id) or sid < 0x100):
         return None
     index = data[0] | (data[1] << 8)
+    if index not in PARAM_NAMES or data[2] or data[3]:
+        return None
     (value,) = struct.unpack("<f", data[4:8])
     if math.isnan(value):
         return None

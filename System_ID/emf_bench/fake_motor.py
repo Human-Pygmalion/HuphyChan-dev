@@ -145,8 +145,8 @@ class FakeMotorTransport:
                   PARAM_MECH_POS: self.q, PARAM_MECH_VEL: self.w}
         if index not in values:
             return
-        self._queue((tables.SEL_PARAM_READ << 8) | self.motor_id,
-                    struct.pack("<H2xf", index, values[index]))
+        # The real RS04 replies on the host id 0xFD (measured 2026-10-15), not 0x300|id.
+        self._queue(HOST_ID, struct.pack("<H2xf", index, values[index]))
 
     # ---- replies ---------------------------------------------------------------------
     def _queue(self, cid: int, data: bytes) -> None:
