@@ -1403,16 +1403,6 @@
    "section": "blocked",
    "changed": "2026-10-01 15:58"
   },
-  "v11-heartbeat": {
-   "id": "v11-heartbeat",
-   "created": "2026-10-01 18:18",
-   "title": "A/B v11 정기 점검 (12:45) — 두 팔 학습 중 (원격 3090)",
-   "finding": "자동 점검(스크립트). 두 팔 모두 진행 중입니다.",
-   "number": "v11a: 1단계 10138 회 · 4.00 단계 · 체류 4738 · 오차 0.2624 · 넘어짐 0.0000 · v11b: 1단계 10087 회 · 4.00 단계 · 체류 4687 · 오차 0.2298 · 넘어짐 0.0000",
-   "section": "done",
-   "changed": "2026-10-02 12:45",
-   "collapsed": true
-  },
   "v11a-deploy-package": {
    "id": "v11a-deploy-package",
    "created": "2026-10-06 20:44",
@@ -2014,7 +2004,8 @@
    "finding": "팔 A(크랭크 60/2.7 만)는 2026-10-15 22:28 에 원격 3090 에서 시작해 반복 3.46 초로 돌고 있다 (12,000 회 약 11.5 시간, 예상 완주 10-16 10:00). 그래픽 메모리 16.9 / 24.6 GB 라 팔 B 를 동시에 올릴 여유(18.4 GB 필요)가 없어, 팔 A 가 끝나면 팔 B(엉덩이 135/6, 비틀기 75/4, 무릎 130/6, 크랭크 60/2.7)가 자동 시작한다. 발사 전 환경 설정 비교: 기준선은 배포 설정과 같고, 각 팔은 게인 줄(팔 A 4줄, 팔 B 12줄)만 다르다.",
    "number": "그래픽 메모리 16.9 GB",
    "section": "done",
-   "changed": "2026-10-15 22:33"
+   "changed": "2026-10-15 22:33",
+   "collapsed": true
   },
   "gain-ab-heartbeat": {
    "id": "gain-ab-heartbeat",
@@ -2093,6 +2084,15 @@
    "number": "docs/171",
    "section": "done",
    "changed": "2026-10-16 12:33"
+  },
+  "huphy-can-review": {
+   "id": "huphy-can-review",
+   "created": "2026-10-16 13:01",
+   "title": "HUPHY biped CAN 검토: 응답 번호(호스트 ID)를 설정하는 곳이 없어 12개 모터 모두 0xFD 로 응답 — 실물 6모터 유실 2.8~3.1 % vs 1모터 벤치 0.009 %",
+   "finding": "구조는 이미 겹쳐 보내기(6개 연달아 송신 후 expect=6 수거, 마감 2~4 ms). 지연 중앙값 2.5 ms / 99 % 5.9 ms(200 Hz). 같은 응답 번호 충돌이 유력한 유실 원인(가설) — 오류 계수 측정 후 모터별 호스트 ID(Command 9) 부여로 검증 제안. '모터당 3개'는 같은 모터에 응답 전 중복 송신 시의 실측 한계(모터 수신 버퍼 추정)",
+   "number": "docs/171 §5~§6",
+   "section": "done",
+   "changed": "2026-10-16 13:01"
   }
  },
  "order": [
@@ -2223,7 +2223,6 @@
   "v9-caps-p2",
   "can-adapter-cornered",
   "local-gpu-missing-1001",
-  "v11-heartbeat",
   "v11a-deploy-package",
   "shell-lidar-overlay",
   "isaac-warehouse-demo",
@@ -2282,7 +2281,8 @@
   "gain-ab-armA",
   "heading-drift-probe",
   "heading-drift",
-  "can-budget"
+  "can-budget",
+  "huphy-can-review"
  ],
- "updated": "2026-10-16 12:33"
+ "updated": "2026-10-16 13:01"
 }
