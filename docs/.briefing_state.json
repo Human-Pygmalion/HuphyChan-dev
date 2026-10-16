@@ -2099,7 +2099,8 @@
    "finding": "구조는 이미 겹쳐 보내기(6개 연달아 송신 후 expect=6 수거, 마감 2~4 ms). 지연 중앙값 2.5 ms / 99 % 5.9 ms(200 Hz). 같은 응답 번호 충돌이 유력한 유실 원인(가설) — 오류 계수 측정 후 모터별 호스트 ID(Command 9) 부여로 검증 제안. '모터당 3개'는 같은 모터에 응답 전 중복 송신 시의 실측 한계(모터 수신 버퍼 추정)",
    "number": "docs/171 §5~§6",
    "section": "done",
-   "changed": "2026-10-16 13:01"
+   "changed": "2026-10-16 13:01",
+   "collapsed": true
   },
   "can-faq2": {
    "id": "can-faq2",
@@ -2167,6 +2168,15 @@
    ],
    "section": "done",
    "changed": "2026-10-16 18:01"
+  },
+  "next-actions": {
+   "id": "next-actions",
+   "created": "2026-10-17 03:29",
+   "title": "다른 HUPHY 세션·biped 2fdc139 검토 → 다음 할 일 정리 (docs/173), 학습 2개 대기열 준비 중",
+   "finding": "새 실기 서기 기록 6개(게인 배율 0.31/0.41/0.51) 발견 → 밀기 발산 판정 분석 시작. 학습 대기열: C 게인 무작위화만, D 명령 지연만 (둘 다 크랭크 60 기준, B 종료 후 순서대로 자동 시작)",
+   "number": "B 07:40 → C 약 19:20 → D 약 07:00 (10-18) 예상",
+   "section": "done",
+   "changed": "2026-10-17 03:29"
   }
  },
  "order": [
@@ -2363,7 +2373,8 @@
   "can-link",
   "gain-naming-limits",
   "stance-inertia",
-  "real-pd-guide"
+  "real-pd-guide",
+  "next-actions"
  ],
- "updated": "2026-10-17 03:10"
+ "updated": "2026-10-17 03:29"
 }
