@@ -1995,7 +1995,8 @@
     "System_ID/emf_bench/ux_shots/10_english_logging.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 20:41"
+   "changed": "2026-10-15 20:41",
+   "collapsed": true
   },
   "emf-logs-fold": {
    "id": "emf-logs-fold",
@@ -2060,6 +2061,28 @@
    "number": "사전 기준 6개 중 합격 4·불합격 1·판정 없음 1",
    "section": "done",
    "changed": "2026-10-16 12:11"
+  },
+  "heading-drift-probe": {
+   "id": "heading-drift-probe",
+   "created": "2026-10-16 12:23",
+   "title": "Straight-walk heading drift: measured, no cause named",
+   "why": "Arm A (crank 60/2.7 only) turns left 4.48 deg/s when commanded straight; baseline does not.",
+   "finding": "Arm A drift is constant from the first measured second, same direction in 3 of 3 seeds (std 0.03 deg/s); hip yaw range, stance time and vertical force are symmetric, while hip roll range (+44.8 %), ankle roll range (-64.6 %) and crank A/B torque (-45.8 % / +43.6 %) are asymmetric. Heading mode is off in the probe.",
+   "number": "yaw rate deg/s: baseline -0.66 +/- 0.85, bundle trial +2.58 +/- 2.46, arm A +4.48 +/- 0.03",
+   "section": "experiments",
+   "changed": "2026-10-16 12:23"
+  },
+  "heading-drift": {
+   "id": "heading-drift",
+   "created": "2026-10-16 12:24",
+   "title": "직진 중 방향 틀어짐 조사: 크랭크 60 단독 런은 회전 명령 0 에서 왼쪽 4.48 °/s 일정 치우침 (세 씨앗 같은 방향)",
+   "finding": "회전 추종 보상 허용폭(분산 0.5)에서 이 오차는 보상을 1.2 % 만 줄인다 → 학습이 거의 벌하지 않는다. 크랭크 게인 상승으로 좌우 크랭크 우세가 반대 다리로 갈린 걸음이 생김. 측정은 방향 유지 명령을 끈 상태(학습은 30 % 방향 유지). 게인 결함이라기보다 보상이 작은 치우침을 놓치는 문제",
+   "number": "치우침 4.48 °/s (기준선 −0.66, 묶음 시험 +2.58)",
+   "media": [
+    "docs/img/pd_gain/2026-10-16_heading_drift_probe.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-16 12:24"
   }
  },
  "order": [
@@ -2246,7 +2269,9 @@
   "gain-ab-4k",
   "gain-ab-8k",
   "gainab_armA_eval",
-  "gain-ab-armA"
+  "gain-ab-armA",
+  "heading-drift-probe",
+  "heading-drift"
  ],
- "updated": "2026-10-16 12:15"
+ "updated": "2026-10-16 12:24"
 }
