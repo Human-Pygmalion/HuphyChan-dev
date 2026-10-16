@@ -1,0 +1,23 @@
+== hl_00505lstency4ms.csv   drain_ms=4.0 hz=50.0
+joint                      sent  ontime%  late%  lost%    p50    p99     max late<drain%   late-run max / hist(1,2,3,4-5,6-10,11-20,21+) / %late-cycles-in-runs>=3
+right_leg/hip_pitch        6026    99.42   0.07   0.51  1.357  4.518   9.668         0.0     1 / 4 0 0 0 0 0 0 / 0.0
+right_leg/hip_roll         6026    97.71   0.25   2.04  2.165  4.807   7.039      33.333     1 / 15 0 0 0 0 0 0 / 0.0
+right_leg/hip_yaw          6026    97.78   0.56   1.66  2.644  5.128   7.978      23.529     2 / 24 5 0 0 0 0 0 / 0.0
+right_leg/knee             6025    96.58   0.91   2.51  2.911  5.268  11.032      32.727     7 / 35 5 1 0 1 0 0 / 18.182
+right_leg/ankle_a          6025    96.83   1.39   1.78  3.217  5.408  14.103      35.714    10 / 55 5 1 0 2 0 0 / 22.619
+right_leg/ankle_b          6026    95.67   1.96   2.37  3.093  5.597  13.405      30.508    13 / 44 13 6 2 1 1 0 / 40.678
+left_leg/hip_pitch         6027    99.97   0.03   0.00  1.179  5.502   7.447         0.0     1 / 2 0 0 0 0 0 0 / 0.0
+left_leg/hip_roll          6026    99.44   0.12   0.45  1.788  5.789   7.492      57.143     1 / 7 0 0 0 0 0 0 / 0.0
+left_leg/hip_yaw           6026    99.29   0.23   0.48  2.332  5.934   7.542        50.0     2 / 8 3 0 0 0 0 0 / 0.0
+left_leg/knee              6025    97.44   0.55   2.01  2.631  6.048   7.573      21.212     5 / 13 1 3 2 0 0 0 / 54.545
+left_leg/ankle_a           6026    97.99   0.66   1.34  2.974  6.279   8.203        27.5    16 / 12 3 0 0 1 1 0 / 55.0
+left_leg/ankle_b           6024    96.93   1.08   1.99  3.112  6.329   7.488      44.615    10 / 6 6 5 3 2 0 0 / 72.308
+-- right_leg: 6026 collect cycles; longest late run over all joints = 13 cycles
+   simultaneity (late): cycles with >=3 joints late: observed 29 vs independent 0.1 (x578.34), permutation p=0.0033, mean pairwise phi=0.128
+   simultaneity (absent): cycles with >=3 joints absent: observed 6 vs independent 1.4 (x4.187), permutation p=0.01, mean pairwise phi=0.139
+   absent -> late next cycle: hip_pitch 11.111% (base 0.066%), hip_roll 10.949% (base 0.249%), hip_yaw 22.835% (base 0.564%), knee 21.762% (base 0.913%), ankle_a 37.952% (base 1.394%), ankle_b 32.524% (base 1.958%)
+-- left_leg: 6026 collect cycles; longest late run over all joints = 16 cycles
+   simultaneity (late): cycles with >=3 joints late: observed 27 vs independent 0.0 (x4028.201), permutation p=0.0033, mean pairwise phi=0.169
+   simultaneity (absent): cycles with >=3 joints absent: observed 1 vs independent 0.2 (x6.021), permutation p=0.1429, mean pairwise phi=0.127
+   absent -> late next cycle: hip_pitch 100.0% (base 0.033%), hip_roll 20.588% (base 0.116%), hip_yaw 28.205% (base 0.232%), knee 13.571% (base 0.548%), ankle_a 17.347% (base 0.664%), ankle_b 15.278% (base 1.079%)
+-- between ['right_leg', 'left_leg']: paired cycles 6026; any-late both: observed 46 vs independent 4.1; pearson(late counts)=0.648

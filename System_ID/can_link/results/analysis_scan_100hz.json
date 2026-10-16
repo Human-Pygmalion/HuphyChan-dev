@@ -1,0 +1,1227 @@
+{
+ "file": "scan_100hz.csv",
+ "meta": {
+  "drain_ms": 4.0,
+  "hz": 100.0
+ },
+ "joints": {
+  "right_leg/hip_pitch": {
+   "sent": 15117,
+   "ontime": 14539,
+   "late": 430,
+   "lost": 148,
+   "ontime_pct": 96.176,
+   "late_pct": 2.844,
+   "lost_pct": 0.979,
+   "latency_ms_all": {
+    "p50": 1.555,
+    "p95": 4.523,
+    "p99": 6.106,
+    "max": 28.261
+   },
+   "latency_ms_ontime": {
+    "p50": 1.528,
+    "p99": 5.296
+   },
+   "latency_ms_late_rows": {
+    "p50": 4.551,
+    "p99": 10.071
+   },
+   "late_rows_faster_than_drain_pct": 38.372
+  },
+  "right_leg/hip_roll": {
+   "sent": 15117,
+   "ontime": 13452,
+   "late": 1018,
+   "lost": 647,
+   "ontime_pct": 88.986,
+   "late_pct": 6.734,
+   "lost_pct": 4.28,
+   "latency_ms_all": {
+    "p50": 2.445,
+    "p95": 5.027,
+    "p99": 6.864,
+    "max": 28.354
+   },
+   "latency_ms_ontime": {
+    "p50": 2.398,
+    "p99": 5.744
+   },
+   "latency_ms_late_rows": {
+    "p50": 4.186,
+    "p99": 9.653
+   },
+   "late_rows_faster_than_drain_pct": 45.383
+  },
+  "right_leg/hip_yaw": {
+   "sent": 15117,
+   "ontime": 12991,
+   "late": 1603,
+   "lost": 523,
+   "ontime_pct": 85.936,
+   "late_pct": 10.604,
+   "lost_pct": 3.46,
+   "latency_ms_all": {
+    "p50": 2.882,
+    "p95": 5.42,
+    "p99": 7.472,
+    "max": 28.31
+   },
+   "latency_ms_ontime": {
+    "p50": 2.772,
+    "p99": 5.995
+   },
+   "latency_ms_late_rows": {
+    "p50": 4.312,
+    "p99": 9.701
+   },
+   "late_rows_faster_than_drain_pct": 42.608
+  },
+  "right_leg/knee": {
+   "sent": 15117,
+   "ontime": 12201,
+   "late": 2317,
+   "lost": 599,
+   "ontime_pct": 80.71,
+   "late_pct": 15.327,
+   "lost_pct": 3.962,
+   "latency_ms_all": {
+    "p50": 3.257,
+    "p95": 5.698,
+    "p99": 7.779,
+    "max": 28.133
+   },
+   "latency_ms_ontime": {
+    "p50": 3.104,
+    "p99": 6.224
+   },
+   "latency_ms_late_rows": {
+    "p50": 4.226,
+    "p99": 9.87
+   },
+   "late_rows_faster_than_drain_pct": 44.454
+  },
+  "right_leg/ankle_a": {
+   "sent": 15117,
+   "ontime": 11611,
+   "late": 3029,
+   "lost": 477,
+   "ontime_pct": 76.808,
+   "late_pct": 20.037,
+   "lost_pct": 3.155,
+   "latency_ms_all": {
+    "p50": 3.526,
+    "p95": 5.955,
+    "p99": 8.077,
+    "max": 28.398
+   },
+   "latency_ms_ontime": {
+    "p50": 3.354,
+    "p99": 6.394
+   },
+   "latency_ms_late_rows": {
+    "p50": 4.318,
+    "p99": 9.877
+   },
+   "late_rows_faster_than_drain_pct": 41.334
+  },
+  "right_leg/ankle_b": {
+   "sent": 15117,
+   "ontime": 11080,
+   "late": 3349,
+   "lost": 688,
+   "ontime_pct": 73.295,
+   "late_pct": 22.154,
+   "lost_pct": 4.551,
+   "latency_ms_all": {
+    "p50": 3.529,
+    "p95": 6.052,
+    "p99": 8.414,
+    "max": 34.127
+   },
+   "latency_ms_ontime": {
+    "p50": 3.333,
+    "p99": 6.4
+   },
+   "latency_ms_late_rows": {
+    "p50": 4.239,
+    "p99": 9.977
+   },
+   "late_rows_faster_than_drain_pct": 43.953
+  },
+  "left_leg/hip_pitch": {
+   "sent": 15117,
+   "ontime": 14965,
+   "late": 152,
+   "lost": 0,
+   "ontime_pct": 98.995,
+   "late_pct": 1.005,
+   "lost_pct": 0.0,
+   "latency_ms_all": {
+    "p50": 1.343,
+    "p95": 4.562,
+    "p99": 6.455,
+    "max": 27.915
+   },
+   "latency_ms_ontime": {
+    "p50": 1.341,
+    "p99": 6.01
+   },
+   "latency_ms_late_rows": {
+    "p50": 2.108,
+    "p99": 18.179
+   },
+   "late_rows_faster_than_drain_pct": 63.158
+  },
+  "left_leg/hip_roll": {
+   "sent": 15117,
+   "ontime": 14654,
+   "late": 282,
+   "lost": 181,
+   "ontime_pct": 96.937,
+   "late_pct": 1.865,
+   "lost_pct": 1.197,
+   "latency_ms_all": {
+    "p50": 2.277,
+    "p95": 5.423,
+    "p99": 7.777,
+    "max": 33.328
+   },
+   "latency_ms_ontime": {
+    "p50": 2.267,
+    "p99": 6.586
+   },
+   "latency_ms_late_rows": {
+    "p50": 5.463,
+    "p99": 16.852
+   },
+   "late_rows_faster_than_drain_pct": 39.716
+  },
+  "left_leg/hip_yaw": {
+   "sent": 15117,
+   "ontime": 14563,
+   "late": 428,
+   "lost": 126,
+   "ontime_pct": 96.335,
+   "late_pct": 2.831,
+   "lost_pct": 0.833,
+   "latency_ms_all": {
+    "p50": 2.853,
+    "p95": 5.857,
+    "p99": 9.109,
+    "max": 32.961
+   },
+   "latency_ms_ontime": {
+    "p50": 2.819,
+    "p99": 6.957
+   },
+   "latency_ms_late_rows": {
+    "p50": 6.802,
+    "p99": 17.238
+   },
+   "late_rows_faster_than_drain_pct": 31.075
+  },
+  "left_leg/knee": {
+   "sent": 15117,
+   "ontime": 13846,
+   "late": 631,
+   "lost": 640,
+   "ontime_pct": 91.592,
+   "late_pct": 4.174,
+   "lost_pct": 4.234,
+   "latency_ms_all": {
+    "p50": 3.368,
+    "p95": 6.298,
+    "p99": 9.69,
+    "max": 32.843
+   },
+   "latency_ms_ontime": {
+    "p50": 3.324,
+    "p99": 7.145
+   },
+   "latency_ms_late_rows": {
+    "p50": 6.059,
+    "p99": 15.307
+   },
+   "late_rows_faster_than_drain_pct": 35.182
+  },
+  "left_leg/ankle_a": {
+   "sent": 15117,
+   "ontime": 13790,
+   "late": 928,
+   "lost": 399,
+   "ontime_pct": 91.222,
+   "late_pct": 6.139,
+   "lost_pct": 2.639,
+   "latency_ms_all": {
+    "p50": 3.696,
+    "p95": 6.909,
+    "p99": 10.24,
+    "max": 37.444
+   },
+   "latency_ms_ontime": {
+    "p50": 3.632,
+    "p99": 7.379
+   },
+   "latency_ms_late_rows": {
+    "p50": 6.861,
+    "p99": 14.707
+   },
+   "late_rows_faster_than_drain_pct": 27.802
+  },
+  "left_leg/ankle_b": {
+   "sent": 15117,
+   "ontime": 13309,
+   "late": 1196,
+   "lost": 612,
+   "ontime_pct": 88.04,
+   "late_pct": 7.912,
+   "lost_pct": 4.048,
+   "latency_ms_all": {
+    "p50": 3.923,
+    "p95": 7.505,
+    "p99": 10.659,
+    "max": 37.542
+   },
+   "latency_ms_ontime": {
+    "p50": 3.834,
+    "p99": 7.652
+   },
+   "latency_ms_late_rows": {
+    "p50": 6.814,
+    "p99": 14.618
+   },
+   "late_rows_faster_than_drain_pct": 26.756
+  }
+ },
+ "cycles": {
+  "right_leg": {
+   "joints": [
+    "right_leg/hip_pitch",
+    "right_leg/hip_roll",
+    "right_leg/hip_yaw",
+    "right_leg/knee",
+    "right_leg/ankle_a",
+    "right_leg/ankle_b"
+   ],
+   "cycles": 15107,
+   "per_joint": {
+    "right_leg/hip_pitch": {
+     "cycles_seen": 15107,
+     "late_cycles": 430,
+     "absent_cycles": 491,
+     "state_counts": {
+      "A": 491,
+      "B": 292,
+      "O": 14186,
+      "L": 138
+     },
+     "late_runs": {
+      "n_runs": 303,
+      "max": 27,
+      "mean": 1.419,
+      "hist": {
+       "1": 274,
+       "2": 16,
+       "3": 3,
+       "4-5": 4,
+       "6-10": 2,
+       "11-20": 2,
+       "21+": 2
+      },
+      "late_cycles_in_runs_ge3_pct": 28.837,
+      "longest": [
+       {
+        "start_t": 46.847,
+        "start_cycle": 3904,
+        "length": 27
+       },
+       {
+        "start_t": 56.886,
+        "start_cycle": 4673,
+        "length": 23
+       },
+       {
+        "start_t": 27.534,
+        "start_cycle": 2357,
+        "length": 18
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 491,
+      "followed_by_late": 288,
+      "pct": 58.656,
+      "baseline_late_pct": 2.846
+     }
+    },
+    "right_leg/hip_roll": {
+     "cycles_seen": 15107,
+     "late_cycles": 1018,
+     "absent_cycles": 1251,
+     "state_counts": {
+      "O": 12838,
+      "A": 1251,
+      "B": 526,
+      "L": 492
+     },
+     "late_runs": {
+      "n_runs": 619,
+      "max": 29,
+      "mean": 1.645,
+      "hist": {
+       "1": 514,
+       "2": 47,
+       "3": 18,
+       "4-5": 20,
+       "6-10": 10,
+       "11-20": 8,
+       "21+": 2
+      },
+      "late_cycles_in_runs_ge3_pct": 40.275,
+      "longest": [
+       {
+        "start_t": 46.835,
+        "start_cycle": 3903,
+        "length": 29
+       },
+       {
+        "start_t": 25.158,
+        "start_cycle": 2151,
+        "length": 21
+       },
+       {
+        "start_t": 24.375,
+        "start_cycle": 2074,
+        "length": 20
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 1251,
+      "followed_by_late": 579,
+      "pct": 46.283,
+      "baseline_late_pct": 6.739
+     }
+    },
+    "right_leg/hip_yaw": {
+     "cycles_seen": 15107,
+     "late_cycles": 1603,
+     "absent_cycles": 1410,
+     "state_counts": {
+      "O": 12094,
+      "B": 765,
+      "A": 1410,
+      "L": 838
+     },
+     "late_runs": {
+      "n_runs": 899,
+      "max": 36,
+      "mean": 1.783,
+      "hist": {
+       "1": 680,
+       "2": 99,
+       "3": 46,
+       "4-5": 32,
+       "6-10": 29,
+       "11-20": 10,
+       "21+": 3
+      },
+      "late_cycles_in_runs_ge3_pct": 45.228,
+      "longest": [
+       {
+        "start_t": 24.029,
+        "start_cycle": 2042,
+        "length": 36
+       },
+       {
+        "start_t": 46.847,
+        "start_cycle": 3904,
+        "length": 31
+       },
+       {
+        "start_t": 24.428,
+        "start_cycle": 2079,
+        "length": 23
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 1410,
+      "followed_by_late": 805,
+      "pct": 57.092,
+      "baseline_late_pct": 10.611
+     }
+    },
+    "right_leg/knee": {
+     "cycles_seen": 15107,
+     "late_cycles": 2317,
+     "absent_cycles": 1617,
+     "state_counts": {
+      "A": 1617,
+      "L": 1444,
+      "O": 11173,
+      "B": 873
+     },
+     "late_runs": {
+      "n_runs": 1082,
+      "max": 49,
+      "mean": 2.141,
+      "hist": {
+       "1": 709,
+       "2": 148,
+       "3": 68,
+       "4-5": 83,
+       "6-10": 55,
+       "11-20": 15,
+       "21+": 4
+      },
+      "late_cycles_in_runs_ge3_pct": 56.625,
+      "longest": [
+       {
+        "start_t": 24.029,
+        "start_cycle": 2042,
+        "length": 49
+       },
+       {
+        "start_t": 154.193,
+        "start_cycle": 12285,
+        "length": 36
+       },
+       {
+        "start_t": 119.008,
+        "start_cycle": 9547,
+        "length": 23
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 1617,
+      "followed_by_late": 906,
+      "pct": 56.03,
+      "baseline_late_pct": 15.337
+     }
+    },
+    "right_leg/ankle_a": {
+     "cycles_seen": 15107,
+     "late_cycles": 3029,
+     "absent_cycles": 1549,
+     "state_counts": {
+      "O": 10529,
+      "A": 1549,
+      "L": 2055,
+      "B": 974
+     },
+     "late_runs": {
+      "n_runs": 1284,
+      "max": 28,
+      "mean": 2.359,
+      "hist": {
+       "1": 693,
+       "2": 241,
+       "3": 112,
+       "4-5": 128,
+       "6-10": 93,
+       "11-20": 12,
+       "21+": 5
+      },
+      "late_cycles_in_runs_ge3_pct": 61.208,
+      "longest": [
+       {
+        "start_t": 24.111,
+        "start_cycle": 2050,
+        "length": 28
+       },
+       {
+        "start_t": 118.99,
+        "start_cycle": 9546,
+        "length": 26
+       },
+       {
+        "start_t": 24.729,
+        "start_cycle": 2109,
+        "length": 23
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 1549,
+      "followed_by_late": 985,
+      "pct": 63.589,
+      "baseline_late_pct": 20.05
+     }
+    },
+    "right_leg/ankle_b": {
+     "cycles_seen": 15107,
+     "late_cycles": 3349,
+     "absent_cycles": 1833,
+     "state_counts": {
+      "O": 9925,
+      "L": 2293,
+      "A": 1833,
+      "B": 1056
+     },
+     "late_runs": {
+      "n_runs": 1436,
+      "max": 28,
+      "mean": 2.332,
+      "hist": {
+       "1": 709,
+       "2": 329,
+       "3": 159,
+       "4-5": 135,
+       "6-10": 82,
+       "11-20": 20,
+       "21+": 2
+      },
+      "late_cycles_in_runs_ge3_pct": 59.182,
+      "longest": [
+       {
+        "start_t": 24.037,
+        "start_cycle": 2043,
+        "length": 28
+       },
+       {
+        "start_t": 46.847,
+        "start_cycle": 3904,
+        "length": 23
+       },
+       {
+        "start_t": 18.28,
+        "start_cycle": 1548,
+        "length": 17
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 1833,
+      "followed_by_late": 1083,
+      "pct": 59.083,
+      "baseline_late_pct": 22.169
+     }
+    }
+   },
+   "late_run_hist_all_joints": {
+    "1": 3579,
+    "2": 880,
+    "3": 406,
+    "4-5": 402,
+    "6-10": 271,
+    "11-20": 67,
+    "21+": 18
+   },
+   "late_run_max_all_joints": 49,
+   "simultaneity_late": {
+    "cycles": 15107,
+    "marginal_rate_per_joint": {
+     "right_leg/hip_pitch": 0.028,
+     "right_leg/hip_roll": 0.067,
+     "right_leg/hip_yaw": 0.106,
+     "right_leg/knee": 0.153,
+     "right_leg/ankle_a": 0.201,
+     "right_leg/ankle_b": 0.222
+    },
+    "observed_hist": {
+     "0": 9735,
+     "1": 1890,
+     "2": 1740,
+     "3": 975,
+     "4": 462,
+     "5": 227,
+     "6": 78
+    },
+    "expected_hist_if_independent": {
+     "0": 6446.0,
+     "1": 6040.1,
+     "2": 2194.9,
+     "3": 389.7,
+     "4": 34.9,
+     "5": 1.5,
+     "6": 0.0
+    },
+    "cycles_with_ge_2": {
+     "observed": 3482,
+     "expected_independent": 2621.0,
+     "ratio": 1.329
+    },
+    "cycles_with_ge_3": {
+     "observed": 1742,
+     "expected_independent": 426.1,
+     "ratio": 4.088
+    },
+    "cycles_with_ge_4": {
+     "observed": 767,
+     "expected_independent": 36.4,
+     "ratio": 21.073
+    },
+    "permutation_test": {
+     "statistic": "cycles with >= 3 joints flagged",
+     "observed": 1742,
+     "p_value": 0.0005,
+     "shifts": 2000
+    },
+    "mean_pairwise_phi": 0.288
+   },
+   "simultaneity_absent": {
+    "cycles": 15107,
+    "marginal_rate_per_joint": {
+     "right_leg/hip_pitch": 0.033,
+     "right_leg/hip_roll": 0.083,
+     "right_leg/hip_yaw": 0.093,
+     "right_leg/knee": 0.107,
+     "right_leg/ankle_a": 0.103,
+     "right_leg/ankle_b": 0.121
+    },
+    "observed_hist": {
+     "0": 9490,
+     "1": 3339,
+     "2": 2098,
+     "3": 120,
+     "4": 44,
+     "5": 16,
+     "6": 0
+    },
+    "expected_hist_if_independent": {
+     "0": 8558.7,
+     "1": 5126.9,
+     "2": 1251.6,
+     "3": 158.5,
+     "4": 10.9,
+     "5": 0.4,
+     "6": 0.0
+    },
+    "cycles_with_ge_2": {
+     "observed": 2278,
+     "expected_independent": 1421.3,
+     "ratio": 1.603
+    },
+    "cycles_with_ge_3": {
+     "observed": 180,
+     "expected_independent": 169.8,
+     "ratio": 1.06
+    },
+    "cycles_with_ge_4": {
+     "observed": 60,
+     "expected_independent": 11.3,
+     "ratio": 5.325
+    },
+    "permutation_test": {
+     "statistic": "cycles with >= 3 joints flagged",
+     "observed": 180,
+     "p_value": 0.2119,
+     "shifts": 2000
+    },
+    "mean_pairwise_phi": 0.059
+   },
+   "by_send_order": [
+    {
+     "index": 0,
+     "joint": "right_leg/hip_pitch",
+     "late_cycles_pct": 2.846,
+     "absent_cycles_pct": 3.25
+    },
+    {
+     "index": 1,
+     "joint": "right_leg/hip_roll",
+     "late_cycles_pct": 6.739,
+     "absent_cycles_pct": 8.281
+    },
+    {
+     "index": 2,
+     "joint": "right_leg/hip_yaw",
+     "late_cycles_pct": 10.611,
+     "absent_cycles_pct": 9.333
+    },
+    {
+     "index": 3,
+     "joint": "right_leg/knee",
+     "late_cycles_pct": 15.337,
+     "absent_cycles_pct": 10.704
+    },
+    {
+     "index": 4,
+     "joint": "right_leg/ankle_a",
+     "late_cycles_pct": 20.05,
+     "absent_cycles_pct": 10.254
+    },
+    {
+     "index": 5,
+     "joint": "right_leg/ankle_b",
+     "late_cycles_pct": 22.169,
+     "absent_cycles_pct": 12.133
+    }
+   ]
+  },
+  "left_leg": {
+   "joints": [
+    "left_leg/hip_pitch",
+    "left_leg/hip_roll",
+    "left_leg/hip_yaw",
+    "left_leg/knee",
+    "left_leg/ankle_a",
+    "left_leg/ankle_b"
+   ],
+   "cycles": 15117,
+   "per_joint": {
+    "left_leg/hip_pitch": {
+     "cycles_seen": 15117,
+     "late_cycles": 152,
+     "absent_cycles": 43,
+     "state_counts": {
+      "O": 14922,
+      "A": 43,
+      "B": 43,
+      "L": 109
+     },
+     "late_runs": {
+      "n_runs": 44,
+      "max": 82,
+      "mean": 3.455,
+      "hist": {
+       "1": 40,
+       "2": 1,
+       "3": 0,
+       "4-5": 0,
+       "6-10": 1,
+       "11-20": 1,
+       "21+": 1
+      },
+      "late_cycles_in_runs_ge3_pct": 72.368,
+      "longest": [
+       {
+        "start_t": 165.601,
+        "start_cycle": 13214,
+        "length": 82
+       },
+       {
+        "start_t": 56.846,
+        "start_cycle": 4671,
+        "length": 20
+       },
+       {
+        "start_t": 166.486,
+        "start_cycle": 13297,
+        "length": 8
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 43,
+      "followed_by_late": 40,
+      "pct": 93.023,
+      "baseline_late_pct": 1.005
+     }
+    },
+    "left_leg/hip_roll": {
+     "cycles_seen": 15117,
+     "late_cycles": 282,
+     "absent_cycles": 299,
+     "state_counts": {
+      "A": 299,
+      "L": 166,
+      "O": 14536,
+      "B": 116
+     },
+     "late_runs": {
+      "n_runs": 128,
+      "max": 41,
+      "mean": 2.203,
+      "hist": {
+       "1": 102,
+       "2": 13,
+       "3": 3,
+       "4-5": 1,
+       "6-10": 3,
+       "11-20": 5,
+       "21+": 1
+      },
+      "late_cycles_in_runs_ge3_pct": 54.61,
+      "longest": [
+       {
+        "start_t": 165.864,
+        "start_cycle": 13237,
+        "length": 41
+       },
+       {
+        "start_t": 56.846,
+        "start_cycle": 4671,
+        "length": 20
+       },
+       {
+        "start_t": 165.601,
+        "start_cycle": 13214,
+        "length": 19
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 299,
+      "followed_by_late": 120,
+      "pct": 40.134,
+      "baseline_late_pct": 1.865
+     }
+    },
+    "left_leg/hip_yaw": {
+     "cycles_seen": 15117,
+     "late_cycles": 428,
+     "absent_cycles": 335,
+     "state_counts": {
+      "A": 335,
+      "L": 222,
+      "B": 206,
+      "O": 14354
+     },
+     "late_runs": {
+      "n_runs": 218,
+      "max": 38,
+      "mean": 1.963,
+      "hist": {
+       "1": 173,
+       "2": 22,
+       "3": 3,
+       "4-5": 6,
+       "6-10": 8,
+       "11-20": 4,
+       "21+": 2
+      },
+      "late_cycles_in_runs_ge3_pct": 49.299,
+      "longest": [
+       {
+        "start_t": 165.864,
+        "start_cycle": 13237,
+        "length": 38
+       },
+       {
+        "start_t": 166.343,
+        "start_cycle": 13283,
+        "length": 26
+       },
+       {
+        "start_t": 41.618,
+        "start_cycle": 3506,
+        "length": 17
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 335,
+      "followed_by_late": 209,
+      "pct": 62.388,
+      "baseline_late_pct": 2.831
+     }
+    },
+    "left_leg/knee": {
+     "cycles_seen": 15117,
+     "late_cycles": 631,
+     "absent_cycles": 891,
+     "state_counts": {
+      "A": 891,
+      "L": 383,
+      "O": 13595,
+      "B": 248
+     },
+     "late_runs": {
+      "n_runs": 282,
+      "max": 33,
+      "mean": 2.238,
+      "hist": {
+       "1": 186,
+       "2": 54,
+       "3": 10,
+       "4-5": 11,
+       "6-10": 9,
+       "11-20": 10,
+       "21+": 2
+      },
+      "late_cycles_in_runs_ge3_pct": 53.407,
+      "longest": [
+       {
+        "start_t": 147.46,
+        "start_cycle": 11771,
+        "length": 33
+       },
+       {
+        "start_t": 165.601,
+        "start_cycle": 13214,
+        "length": 22
+       },
+       {
+        "start_t": 84.632,
+        "start_cycle": 6864,
+        "length": 19
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 891,
+      "followed_by_late": 259,
+      "pct": 29.068,
+      "baseline_late_pct": 4.174
+     }
+    },
+    "left_leg/ankle_a": {
+     "cycles_seen": 15117,
+     "late_cycles": 928,
+     "absent_cycles": 672,
+     "state_counts": {
+      "A": 672,
+      "B": 266,
+      "L": 662,
+      "O": 13517
+     },
+     "late_runs": {
+      "n_runs": 312,
+      "max": 23,
+      "mean": 2.974,
+      "hist": {
+       "1": 160,
+       "2": 41,
+       "3": 30,
+       "4-5": 36,
+       "6-10": 32,
+       "11-20": 12,
+       "21+": 1
+      },
+      "late_cycles_in_runs_ge3_pct": 73.922,
+      "longest": [
+       {
+        "start_t": 75.913,
+        "start_cycle": 6164,
+        "length": 23
+       },
+       {
+        "start_t": 93.332,
+        "start_cycle": 7555,
+        "length": 20
+       },
+       {
+        "start_t": 41.618,
+        "start_cycle": 3506,
+        "length": 19
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 672,
+      "followed_by_late": 285,
+      "pct": 42.411,
+      "baseline_late_pct": 6.139
+     }
+    },
+    "left_leg/ankle_b": {
+     "cycles_seen": 15117,
+     "late_cycles": 1196,
+     "absent_cycles": 939,
+     "state_counts": {
+      "O": 12982,
+      "A": 939,
+      "L": 870,
+      "B": 326
+     },
+     "late_runs": {
+      "n_runs": 379,
+      "max": 31,
+      "mean": 3.156,
+      "hist": {
+       "1": 137,
+       "2": 85,
+       "3": 72,
+       "4-5": 34,
+       "6-10": 35,
+       "11-20": 15,
+       "21+": 1
+      },
+      "late_cycles_in_runs_ge3_pct": 74.331,
+      "longest": [
+       {
+        "start_t": 147.553,
+        "start_cycle": 11777,
+        "length": 31
+       },
+       {
+        "start_t": 21.212,
+        "start_cycle": 1796,
+        "length": 17
+       },
+       {
+        "start_t": 41.618,
+        "start_cycle": 3506,
+        "length": 17
+       }
+      ]
+     },
+     "absent_then_late_next": {
+      "absent_events": 939,
+      "followed_by_late": 335,
+      "pct": 35.676,
+      "baseline_late_pct": 7.912
+     }
+    }
+   },
+   "late_run_hist_all_joints": {
+    "1": 798,
+    "2": 216,
+    "3": 118,
+    "4-5": 88,
+    "6-10": 88,
+    "11-20": 47,
+    "21+": 8
+   },
+   "late_run_max_all_joints": 82,
+   "simultaneity_late": {
+    "cycles": 15117,
+    "marginal_rate_per_joint": {
+     "left_leg/hip_pitch": 0.01,
+     "left_leg/hip_roll": 0.019,
+     "left_leg/hip_yaw": 0.028,
+     "left_leg/knee": 0.042,
+     "left_leg/ankle_a": 0.061,
+     "left_leg/ankle_b": 0.079
+    },
+    "observed_hist": {
+     "0": 13406,
+     "1": 671,
+     "2": 589,
+     "3": 252,
+     "4": 60,
+     "5": 62,
+     "6": 77
+    },
+    "expected_hist_if_independent": {
+     "0": 11819.5,
+     "1": 2992.4,
+     "2": 290.9,
+     "3": 13.8,
+     "4": 0.3,
+     "5": 0.0,
+     "6": 0.0
+    },
+    "cycles_with_ge_2": {
+     "observed": 1040,
+     "expected_independent": 305.0,
+     "ratio": 3.409
+    },
+    "cycles_with_ge_3": {
+     "observed": 451,
+     "expected_independent": 14.1,
+     "ratio": 31.959
+    },
+    "cycles_with_ge_4": {
+     "observed": 199,
+     "expected_independent": 0.3,
+     "ratio": 592.295
+    },
+    "permutation_test": {
+     "statistic": "cycles with >= 3 joints flagged",
+     "observed": 451,
+     "p_value": 0.0005,
+     "shifts": 2000
+    },
+    "mean_pairwise_phi": 0.404
+   },
+   "simultaneity_absent": {
+    "cycles": 15117,
+    "marginal_rate_per_joint": {
+     "left_leg/hip_pitch": 0.003,
+     "left_leg/hip_roll": 0.02,
+     "left_leg/hip_yaw": 0.022,
+     "left_leg/knee": 0.059,
+     "left_leg/ankle_a": 0.044,
+     "left_leg/ankle_b": 0.062
+    },
+    "observed_hist": {
+     "0": 13067,
+     "1": 951,
+     "2": 1078,
+     "3": 15,
+     "4": 3,
+     "5": 3,
+     "6": 0
+    },
+    "expected_hist_if_independent": {
+     "0": 12185.4,
+     "1": 2693.9,
+     "2": 228.3,
+     "3": 9.3,
+     "4": 0.2,
+     "5": 0.0,
+     "6": 0.0
+    },
+    "cycles_with_ge_2": {
+     "observed": 1099,
+     "expected_independent": 237.7,
+     "ratio": 4.623
+    },
+    "cycles_with_ge_3": {
+     "observed": 21,
+     "expected_independent": 9.4,
+     "ratio": 2.225
+    },
+    "cycles_with_ge_4": {
+     "observed": 6,
+     "expected_independent": 0.2,
+     "ratio": 32.718
+    },
+    "permutation_test": {
+     "statistic": "cycles with >= 3 joints flagged",
+     "observed": 21,
+     "p_value": 0.002,
+     "shifts": 2000
+    },
+    "mean_pairwise_phi": 0.102
+   },
+   "by_send_order": [
+    {
+     "index": 0,
+     "joint": "left_leg/hip_pitch",
+     "late_cycles_pct": 1.005,
+     "absent_cycles_pct": 0.284
+    },
+    {
+     "index": 1,
+     "joint": "left_leg/hip_roll",
+     "late_cycles_pct": 1.865,
+     "absent_cycles_pct": 1.978
+    },
+    {
+     "index": 2,
+     "joint": "left_leg/hip_yaw",
+     "late_cycles_pct": 2.831,
+     "absent_cycles_pct": 2.216
+    },
+    {
+     "index": 3,
+     "joint": "left_leg/knee",
+     "late_cycles_pct": 4.174,
+     "absent_cycles_pct": 5.894
+    },
+    {
+     "index": 4,
+     "joint": "left_leg/ankle_a",
+     "late_cycles_pct": 6.139,
+     "absent_cycles_pct": 4.445
+    },
+    {
+     "index": 5,
+     "joint": "left_leg/ankle_b",
+     "late_cycles_pct": 7.912,
+     "absent_cycles_pct": 6.212
+    }
+   ]
+  },
+  "between_buses": {
+   "buses": [
+    "right_leg",
+    "left_leg"
+   ],
+   "paired_cycles": 15101,
+   "cycles_in_a": 15107,
+   "cycles_in_b": 15117,
+   "any_late_a_pct": 35.554,
+   "any_late_b_pct": 11.324,
+   "both_any_late_observed": 949,
+   "both_expected_if_independent": 608.0,
+   "pearson_late_counts": 0.142
+  }
+ }
+}

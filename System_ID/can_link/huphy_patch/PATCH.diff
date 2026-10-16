@@ -1,0 +1,808 @@
+diff --git a/src/huphy/motors/canbus.py b/src/huphy/motors/canbus.py
+index dc71902..8778670 100644
+--- a/src/huphy/motors/canbus.py
++++ b/src/huphy/motors/canbus.py
+@@ -62,6 +62,29 @@ slcan 은 속도를 어댑터가 들고 있어서 `ip link` 에 `bitrate` 를 
+ 
+ 닫을 때는 **스레드를 먼저 세우고** 채널을 닫음. 순서가 반대면 닫힌 소켓에서
+ `recv` 를 부르게 됨.
++
++
++## can_link 개선판에서 바뀐 것 (원본 a1b67b1 대비)
++
++공개 이름(connect/disconnect/send/send_many/drain/flush_rx/counters/start_reader)은
++그대로임. 바뀐 동작은 넷이고, 모두 이 파일 안에서 끝남.
++
++1. **수신 스레드가 기본 켬** (`reader=True`). 끄려면 `CanBus(ch, reader=False)`.
++   스레드가 없으면 프레임의 도착 시각을 "파이썬이 꺼낸 시각"으로밖에 모름.
++2. **프레임마다 커널 도착 시각** (`CanFrame.stamp`). python-can 의 `msg.timestamp`
++   (커널이 소켓 큐에 넣은 시각, 벽시계)를 `time.monotonic()` 기준으로 바꿔 넣음.
++   스레드가 늦게 깨어나도 "언제 도착했나"는 변하지 않음. 이 값이 있어야 `bus.py` 가
++   "이번 송신 이후에 도착한 응답"을 가려낼 수 있음.
++3. **오류 프레임을 종류별로 셈** (`counters.error_classes`). 큐에는 안 넣는 것은 원본과
++   같음(큐에 넣으면 응답 한 개로 오인됨). 합계 `error_frames` 도 그대로 있음.
++   소켓에 `CAN_RAW_ERR_FILTER=CAN_ERR_MASK` 를 직접 걸어 python-can 버전과 무관하게
++   오류 프레임이 들어오게 함.
++4. **커널 필터 선택** (`reply_ids=[...]`, `set_reply_filter()`). 모터별 호스트 ID 를
++   줬을 때 그 번호만 받음. 기본은 필터 없음.
++
++새로 생긴 것: `poll()` — 큐에 있는 것을 꺼내되, 없으면 도착할 때까지(최대 timeout)
++깨어 있음. `RobStrideBus.collect` 가 "개수"가 아니라 "누가 왔나"로 끝을 판단하려고 씀.
++`drain(expect=N)` 은 예전처럼 **개수**로 끝남 — 제어 주기 수거에는 쓰지 말 것.
+ """
+ 
+ from __future__ import annotations
+@@ -70,7 +93,7 @@ import logging
+ import threading
+ import time
+ from collections import deque
+-from dataclasses import dataclass
++from dataclasses import dataclass, field
+ from typing import Dict, Iterable, List, Optional, Sequence
+ 
+ logger = logging.getLogger(__name__)
+@@ -115,6 +138,38 @@ READER_JOIN_S = 0.5
+ """수신 스레드가 끝나기를 기다리는 시간. `recv` 한 번의 대기보다 넉넉해야 함."""
+ 
+ 
++# ---- CAN 오류 프레임 (linux/can/error.h) ------------------------------------
++CAN_ERR_MASK = 0x1FFFFFFF
++"""`CAN_RAW_ERR_FILTER` 에 주는 값 = 모든 종류의 오류 프레임을 받음."""
++
++SOL_CAN_RAW = 101
++CAN_RAW_ERR_FILTER = 2
++
++ERR_CLASSES = (
++    (0x001, "tx_timeout"),        # 송신 시간 초과
++    (0x002, "lost_arbitration"),  # 중재에서 짐 (data[0] = 진 비트 위치)
++    (0x004, "controller"),        # 컨트롤러 문제 (data[1] 에 세부)
++    (0x008, "protocol"),          # 프로토콜 위반 (data[2], data[3] 에 세부)
++    (0x010, "transceiver"),       # 트랜시버 상태
++    (0x020, "no_ack"),            # 받은 노드 없음
++    (0x040, "bus_off"),           # 버스 꺼짐
++    (0x080, "bus_error"),         # 버스 오류 (비트/채움/형식 오류가 여기로 옴)
++    (0x100, "restarted"),         # 컨트롤러 재시작
++    (0x200, "counters"),          # 오류 카운터 보고 (data[6], data[7])
++)
++ERR_CLASS_NAMES = tuple(name for _, name in ERR_CLASSES)
++
++ERR_CTRL_DETAIL = (               # data[1]
++    (0x01, "rx_overflow"), (0x02, "tx_overflow"), (0x04, "rx_warning"),
++    (0x08, "tx_warning"), (0x10, "rx_passive"), (0x20, "tx_passive"),
++    (0x40, "active"),
++)
++ERR_PROT_DETAIL = (               # data[2]
++    (0x01, "bit"), (0x02, "form"), (0x04, "stuff"), (0x08, "bit0"),
++    (0x10, "bit1"), (0x20, "overload"), (0x40, "active"), (0x80, "tx"),
++)
++
++
+ @dataclass(frozen=True)
+ class CanFrame:
+     """CAN 프레임 하나. 바이트의 뜻은 모름.
+@@ -163,7 +218,25 @@ class CanCounters:
+     gs_usb 에서 드러남. 0 이 아니면 버스 오류가 실제로 있는 것임 (배선·노이즈·타이밍).
+     """
+ 
++    error_classes: Dict[str, int] = field(default_factory=dict)
++    """오류 프레임을 종류별로 셈. 키: `ERR_CLASS_NAMES`, 그리고 세부
++    `controller.rx_overflow`, `protocol.stuff` 같은 것. 한 프레임이 여러 종류일 수 있어
++    합이 `error_frames` 와 다를 수 있음 (버스 오류 하나가 `bus_error` 와 `protocol.bit`
++    둘로 셈).
++
++    `bus_error` 가 늘면 선 위에서 비트 오류가 난 것 -- 같은 응답 번호끼리 겹친 경우가
++    여기에 해당함. `lost_arbitration` 은 송신 중 졌다는 뜻이라 정상 동작에서도 나옴.
++    """
++
++    stamp_fallbacks: int = 0
++    """커널 도착 시각을 못 얻어 "꺼낸 시각"으로 대신한 프레임 수. 0 이어야 함."""
++
++    def count_error(self, name: str) -> None:
++        self.error_classes[name] = self.error_classes.get(name, 0) + 1
++
+     def reset(self) -> None:
++        self.error_classes = {}
++        self.stamp_fallbacks = 0
+         self.tx_errors = 0
+         self.rx_errors = 0
+         self.frames_sent = 0
+@@ -184,6 +257,16 @@ class CanCounters:
+             "can.error_frames": self.error_frames,
+         }
+ 
++    def error_fields(self) -> Dict[str, int]:
++        """`as_fields()` 에 얹을 추가 항목: 오류 프레임 종류별 + 도착 시각 대체 횟수.
++
++        **`as_fields()` 는 원본 그대로 두었음** (키 집합을 고정하는 시험이 있음). 텔레메트리에
++        싣고 싶으면 호출부에서 `{**counters.as_fields(), **counters.error_fields()}` 로 합칠 것.
++        """
++        out = {"can.stamp_fallbacks": self.stamp_fallbacks}
++        out.update({f"can.err_{n}": self.error_classes.get(n, 0) for n in ERR_CLASS_NAMES})
++        return out
++
+ 
+ class CanBus:
+     """CAN 채널 하나. 다리 하나가 버스 하나를 씀.
+@@ -197,17 +280,24 @@ class CanBus:
+         channel: str,
+         *,
+         interface: str = DEFAULT_INTERFACE,
+-        reader: bool = False,
++        reader: bool = True,
++        reply_ids: Optional[Iterable[int]] = None,
++        error_frames: bool = True,
+     ) -> None:
+         self.channel = channel
+         self.interface = interface
+         self.use_reader = bool(reader)
+         """수신 스레드를 둘지. `connect()` 가 이 값을 보고 시작함.
+ 
+-        **기본은 끔.** 스레드가 없으면 `drain` 이 직접 `recv` 를 부름 -- 다리
+-        하나만 돌릴 때는 기다릴 버스가 하나뿐이라 얻는 것이 없음.
++        **기본은 켬** (원본은 끔). 스레드가 있어야 송신 주기와 무관하게 응답을 바로
++        받아 두고, 프레임마다 도착 시각을 정확히 알 수 있음.
+         """
+ 
++        self.reply_ids = None if reply_ids is None else tuple(sorted({int(i) for i in reply_ids}))
++        """받을 11비트 번호 목록. `None` 이면 전부 받음 (커널 필터 없음)."""
++
++        self.want_error_frames = bool(error_frames)
++
+         self._bus = None
+         self._tx_lock = threading.Lock()
+         self.counters = CanCounters()
+@@ -219,6 +309,8 @@ class CanBus:
+ 
+         self._reader: Optional[threading.Thread] = None
+         self._reader_stop = threading.Event()
++        self._rx_event = threading.Event()
++        """수신 스레드가 프레임을 넣을 때마다 켜짐. `poll()` 이 잠들었다 깨는 데 씀."""
+ 
+     def __repr__(self) -> str:
+         state = "연결됨" if self.is_connected else "끊김"
+@@ -249,15 +341,19 @@ class CanBus:
+                 "(순수 계산 계층은 이것 없이도 동작함)"
+             ) from e
+ 
++        kwargs = {}
++        if self.reply_ids is not None:
++            kwargs["can_filters"] = _filters_for(self.reply_ids)
+         try:
+             self._bus = can.interface.Bus(
+-                channel=self.channel, interface=self.interface
++                channel=self.channel, interface=self.interface, **kwargs
+             )
+         except Exception as e:
+             raise ConnectionError(
+                 f"{self.channel} ({self.interface}) 를 열 수 없음: {e}"
+             ) from e
+ 
++        self._set_error_filter(self.want_error_frames)
+         logger.info("CAN 연결됨: %s", self)
+ 
+         if self.use_reader:
+@@ -354,12 +450,13 @@ class CanBus:
+             if msg is None:
+                 continue
+             if getattr(msg, "is_error_frame", False):
+-                self.counters.error_frames += 1
++                self._note_error_frame(msg)
+                 continue
+             if len(self._rx) == self._rx.maxlen:
+                 # 큐가 참 -- 소비가 밀린 것임. 오래된 것부터 밀려나감.
+                 self.counters.rx_dropped += 1
+-            self._rx.append(_frame_of(msg))
++            self._rx.append(self._frame_of(msg))
++            self._rx_event.set()
+ 
+     def _take(self, limit: int) -> List[CanFrame]:
+         """큐에 있는 것을 최대 `limit` 개 꺼냄. 없으면 빈 목록."""
+@@ -371,6 +468,78 @@ class CanBus:
+                 break
+         return out
+ 
++    # ---- 도착 시각 · 오류 프레임 · 필터 -----------------------------------------
++    def _frame_of(self, msg) -> CanFrame:
++        """`python-can` 의 `Message` 를 중립 프레임으로. **여기서만 변환함.**
++
++        `stamp` 는 커널이 프레임을 받은 시각을 `time.monotonic()` 기준으로 옮긴 값임.
++        python-can socketcan 의 `msg.timestamp` 는 커널 벽시계(에포크 초)이므로
++        지금의 (벽시계 - 단조시계) 차이를 빼서 옮김. 커널 시각이 없거나 터무니없으면
++        (미래, 또는 5초 넘게 과거) 꺼낸 시각을 쓰고 `stamp_fallbacks` 를 셈.
++        """
++        now = time.monotonic()
++        stamp = now
++        ts = float(getattr(msg, "timestamp", 0.0) or 0.0)
++        if ts > 1.0e9:
++            cand = ts - (time.time() - now)
++            if now - 5.0 <= cand <= now + 0.001:
++                stamp = min(cand, now)
++            else:
++                self.counters.stamp_fallbacks += 1
++        else:
++            self.counters.stamp_fallbacks += 1
++        return CanFrame(
++            can_id=int(msg.arbitration_id),
++            data=bytes(msg.data),
++            is_extended=bool(msg.is_extended_id),
++            stamp=stamp,
++        )
++
++    def _note_error_frame(self, msg) -> None:
++        """오류 프레임을 종류별로 셈. 큐에는 넣지 않음."""
++        self.counters.error_frames += 1
++        cls = int(msg.arbitration_id) & 0x3FF
++        data = bytes(getattr(msg, "data", b"") or b"").ljust(8, b"\0")
++        if cls == 0:
++            self.counters.count_error("unknown")
++        for bit, name in ERR_CLASSES:
++            if cls & bit:
++                self.counters.count_error(name)
++        if cls & 0x004:
++            for bit, name in ERR_CTRL_DETAIL:
++                if data[1] & bit:
++                    self.counters.count_error(f"controller.{name}")
++        if cls & 0x008:
++            for bit, name in ERR_PROT_DETAIL:
++                if data[2] & bit:
++                    self.counters.count_error(f"protocol.{name}")
++
++    def _set_error_filter(self, on: bool) -> None:
++        """소켓에 오류 프레임 수신을 켜거나 끔 (python-can socketcan 한정).
++
++        python-can 버전에 따라 기본이 달라서 직접 건다. 소켓이 없는 인터페이스
++        (virtual 등)에서는 조용히 넘어감.
++        """
++        sock = getattr(self._bus, "socket", None)
++        if sock is None:
++            return
++        try:
++            sock.setsockopt(SOL_CAN_RAW, CAN_RAW_ERR_FILTER, CAN_ERR_MASK if on else 0)
++        except Exception as e:  # noqa: BLE001
++            logger.warning("%s 오류 프레임 필터를 못 검 (계속 진행함): %s", self.channel, e)
++
++    def set_reply_filter(self, ids: Optional[Iterable[int]]) -> None:
++        """받을 11비트 번호를 바꿈. `None` 이면 필터 해제 (전부 받음).
++
++        모터별 호스트 ID 를 하나씩 바꾸는 중에는 옛 번호(0xFD)와 새 번호를 둘 다
++        넣어야 함 -- 아직 안 바꾼 모터의 응답이 필터에 걸려 사라지면 무응답으로 보임.
++        """
++        self.reply_ids = None if ids is None else tuple(sorted({int(i) for i in ids}))
++        if self._bus is None:
++            return
++        flt = None if self.reply_ids is None else _filters_for(self.reply_ids)
++        self._bus.set_filters(flt)
++
+     # ---- 송신 -------------------------------------------------------------
+     def send(self, frame: CanFrame) -> bool:
+         """한 프레임을 보냄. 실패하면 세고 `False` 를 반환함."""
+@@ -448,9 +617,9 @@ class CanBus:
+ 
+             if msg is not None:
+                 if getattr(msg, "is_error_frame", False):
+-                    self.counters.error_frames += 1
++                    self._note_error_frame(msg)
+                 else:
+-                    out.append(_frame_of(msg))
++                    out.append(self._frame_of(msg))
+                 continue
+ 
+             # 큐가 비었음
+@@ -463,6 +632,44 @@ class CanBus:
+         self.counters.frames_received += len(out)
+         return out
+ 
++    def poll(self, timeout_s: float = 0.0, *, max_frames: int = 4096) -> List[CanFrame]:
++        """지금 있는 프레임을 꺼냄. 없으면 **하나라도 도착할 때까지** 최대 `timeout_s` 기다림.
++
++        `drain(expect=N)` 과 달리 개수를 보지 않음 -- 호출한 쪽이 "누가 왔나"를 보고
++        더 기다릴지 정함 (`RobStrideBus.collect`). 수신 스레드가 있으면 이벤트로
++        잠들었다 깨므로 0.2 ms 단위 폴링으로 CPU 를 쓰지 않음.
++        """
++        if self.reader_running:
++            out = self._take(max_frames)
++            if out or timeout_s <= 0.0:
++                self.counters.frames_received += len(out)
++                return out
++            self._rx_event.clear()
++            out = self._take(max_frames)          # clear 와 take 사이에 들어온 것
++            if not out:
++                self._rx_event.wait(float(timeout_s))
++                out = self._take(max_frames)
++            self.counters.frames_received += len(out)
++            return out
++        # 수신 스레드가 없을 때: 첫 프레임은 최대 timeout_s 까지 기다리고, 나머지는 기다리지 않음.
++        bus = self._require()
++        out: List[CanFrame] = []
++        while len(out) < max_frames:
++            try:
++                msg = bus.recv(timeout=0.0 if out else max(0.0, float(timeout_s)))
++            except Exception as e:
++                self.counters.rx_errors += 1
++                logger.debug("%s 수신 실패: %s", self.channel, e)
++                break
++            if msg is None:
++                break
++            if getattr(msg, "is_error_frame", False):
++                self._note_error_frame(msg)
++            else:
++                out.append(self._frame_of(msg))
++        self.counters.frames_received += len(out)
++        return out
++
+     def flush_rx(self, *, max_frames: int = 4096) -> int:
+         """큐에 남은 것을 버리고 개수를 반환함.
+ 
+@@ -500,14 +707,9 @@ class CanBus:
+         return out
+ 
+ 
+-def _frame_of(msg) -> CanFrame:
+-    """`python-can` 의 `Message` 를 중립 프레임으로. **여기서만 변환함.**"""
+-    return CanFrame(
+-        can_id=int(msg.arbitration_id),
+-        data=bytes(msg.data),
+-        is_extended=bool(msg.is_extended_id),
+-        stamp=time.monotonic(),
+-    )
++def _filters_for(ids: Iterable[int]):
++    """python-can 의 `can_filters` 형식. 11비트 번호가 정확히 같은 것만 통과."""
++    return [{"can_id": int(i), "can_mask": 0x7FF, "extended": False} for i in ids]
+ 
+ 
+ def drain_all(
+diff --git a/src/huphy/motors/robstride/bus.py b/src/huphy/motors/robstride/bus.py
+index 24702f9..64baa8a 100644
+--- a/src/huphy/motors/robstride/bus.py
++++ b/src/huphy/motors/robstride/bus.py
+@@ -34,6 +34,24 @@ MIT 모드에는 "상태 읽기" 명령이 따로 없음. 모터는 **동작 명
+ 순서를 짜려면 나뉘어 있어야 함 (이슈 #10).
+ 
+ 
++## can_link 개선판에서 바뀐 것 (원본 a1b67b1 대비) -- `collect` 의 끝 판정
++
++원본은 `drain(expect=N)` 이 **프레임 개수**로 끝남. 직전 주기의 늦은 응답이 큐에
++남아 있으면 그것도 한 개로 세어, 이번 주기 응답 하나가 다음 주기로 밀리고 그 밀림이
++이어짐 (밀림이 안 풀림: `can_link/tests/test_collect_slip.py` 가 재현함).
++
++개선판은 **모터마다** 끝남. 모터는 "이번 송신 시각 이후에 도착한 응답(커널 도착 시각)"을
++받았을 때 끝난 것이고, 송신 이전에 도착한 프레임은 상태에 반영하되 `late` 로만 기록함.
++반환값(응답이 없던 모터 id)은 그대로이고, 상세는 `bus.last_collect` 에 있음.
++
++**동작이 바뀌는 곳 (한 군데)**: 모터 하나에 응답 없는 명령이 `max_outstanding`(기본 2)개
++쌓이면 그 모터에는 이번 주기 `send_mit` 명령을 **보내지 않음**. 모터는 마지막으로 받은
++MIT 명령(목표각·게인·토크)을 계속 유지하므로 토크가 갑자기 0 이 되지는 않음 -- 대신
++그 주기의 새 목표값이 그 모터에는 전달되지 않음. 모터 수신 칸이 3개라 4번째부터 버려지는
++것(2026-09-09 실측)을 호스트에서 먼저 막는 장치임. 쌓인 기록은 `outstanding_ttl_s`
++(기본 50 ms)가 지나면 버려져서, 죽은 모터에도 주기적으로 다시 시도함.
++끄려면 `max_outstanding=0`. `enable/disable/clear_fault` 는 이 제한을 받지 않음.
++
+ ## 여기 없는 것
+ 
+ CAN id 변경, 프로토콜 전환, 기계영점, 플래시 저장은 `commissioning.py` 로 감.
+@@ -44,11 +62,12 @@ from __future__ import annotations
+ 
+ import logging
+ import time
+-from dataclasses import dataclass
+-from typing import Dict, Iterable, List, Mapping, Optional, Tuple
++from collections import deque
++from dataclasses import dataclass, field
++from typing import Deque, Dict, Iterable, List, Mapping, Optional, Tuple
+ 
+ from ..base import Motor, MotorFault, MotorState, MotorsBus, resolve_motor_list
+-from ..canbus import DEFAULT_DRAIN_S, CanBus, CanFrame
++from ..canbus import DEFAULT_DRAIN_S, DEFAULT_POLL_S, CanBus, CanFrame
+ from . import tables
+ from .codec import mit
+ 
+@@ -74,6 +93,9 @@ class MitCommand:
+     torque_nm: float = 0.0
+ 
+ 
++DEFAULT_HOST_ID = 0xFD
++"""공장값 호스트 ID. 모든 모터가 이 번호로 응답함 (파라미터 0x200A CAN_MASTER)."""
++
+ PASSIVE = MitCommand(position_deg=0.0)
+ """토크가 나가지 않는 명령. 응답만 받아 오는 데 씀."""
+ 
+@@ -91,6 +113,52 @@ def _command_frame(motor_id: int, command: int, f_cmd: int = tables.F_CMD_DEFAUL
+     )
+ 
+ 
++@dataclass
++class CollectStats:
++    """직전 `collect()` 한 번의 결과. `RobStrideBus.last_collect` 에 있음."""
++
++    awaited: Tuple[int, ...] = ()
++    """직전 `send_mit` 에서 명령을 **실제로 보낸** 모터 (미응답 한도로 건너뛴 것 제외)."""
++
++    fresh: Tuple[int, ...] = ()
++    """이번 송신 이후에 도착한 응답을 받은 모터."""
++
++    missing: Tuple[int, ...] = ()
++    """`awaited` 중 `fresh` 가 아닌 모터."""
++
++    late: Tuple[int, ...] = ()
++    """송신 **이전에** 도착한 프레임(직전 명령의 늦은 응답)이 나온 모터."""
++
++    late_age_s: Dict[int, float] = field(default_factory=dict)
++    """`late` 프레임의 나이 = 수거를 마친 시각 - 그 프레임의 도착 시각. 이만큼 묵은 값."""
++
++    fresh_age_s: Dict[int, float] = field(default_factory=dict)
++    """`fresh` 응답의 나이. 정상이면 수거 대기 안쪽의 작은 값."""
++
++    skipped: Tuple[int, ...] = ()
++    """미응답 한도 때문에 이번 주기 명령을 보내지 않은 모터."""
++
++    waited_s: float = 0.0
++    timed_out: bool = False
++    """기다린 모터가 다 오기 전에 마감에 걸렸는지."""
++
++
++@dataclass
++class LinkCounters:
++    """버스 수명 동안 누적. `as_fields()` 는 텔레메트리용 (0 이어도 모든 키)."""
++
++    cycles: int = 0
++    late_replies: int = 0
++    skipped_commands: int = 0
++    timeouts: int = 0
++    id_mismatch: int = 0
++    undecodable: int = 0
++    unknown_motor: int = 0
++
++    def as_fields(self) -> Dict[str, int]:
++        return {f"bus.{k}": v for k, v in self.__dict__.items()}
++
++
+ class RobStrideBus(MotorsBus):
+     """CAN 채널 하나에 물린 RobStride 모터들.
+ 
+@@ -105,11 +173,45 @@ class RobStrideBus(MotorsBus):
+         *,
+         protocol: tables.Protocol = tables.Protocol.MIT,
+         drain_s: float = DEFAULT_DRAIN_S,
++        reply_ids: Optional[Mapping[int, int]] = None,
++        max_outstanding: int = 2,
++        outstanding_ttl_s: float = 0.05,
++        kernel_filter: bool = False,
+     ) -> None:
+         if drain_s < 0:
+             raise ValueError(f"drain_s 는 0 이상이어야 함 (받은 값 {drain_s})")
++        if not 0 <= int(max_outstanding) <= 3:
++            raise ValueError(
++                f"max_outstanding 은 0(끔)~3 이어야 함 -- 모터 수신 칸이 3개임 (받은 값 {max_outstanding})"
++            )
+         self.bus = bus
+         self.motors = dict(motors)
++        self.max_outstanding = int(max_outstanding)
++        """모터 하나에 응답 없는 명령을 이 개수까지만 둠. 0 이면 제한 없음 (원본 동작)."""
++        self.outstanding_ttl_s = float(outstanding_ttl_s)
++        """응답 없는 명령 기록을 이 시간이 지나면 버림 (모터가 버렸거나 응답을 잃은 것으로 봄)."""
++
++        self.reply_ids: Dict[int, int] = {int(m): int(h) for m, h in (reply_ids or {}).items()}
++        """모터 id -> 그 모터가 응답에 쓰는 11비트 번호 (모터별 호스트 ID). 비우면 전부
++        공장값 0xFD 를 공유하고 `data[0]` 으로만 구분함."""
++        for mid, host in self.reply_ids.items():
++            if mid not in self.motors:
++                raise ValueError(f"reply_ids: 이 버스에 없는 모터 {mid}")
++            if not 0 <= host <= 0x7FF:
++                raise ValueError(f"reply_ids: m{mid} 의 번호 0x{host:X} 가 11비트를 넘음")
++            if host in self.motors:
++                # 응답 번호가 다른 모터의 명령 번호와 같으면 그 모터가 응답 프레임을 명령으로
++                # 읽을 수 있음 -- 상태 바이트가 MIT 게인·토크로 해석됨.
++                raise ValueError(
++                    f"reply_ids: m{mid} 의 응답 번호 0x{host:X} 가 모터 id {host} 와 같음 (거부)"
++                )
++        owners: Dict[int, List[int]] = {}
++        for mid, host in self.reply_ids.items():
++            owners.setdefault(host, []).append(mid)
++        self._mid_by_reply_id: Dict[int, int] = {h: m[0] for h, m in owners.items() if len(m) == 1}
++        """번호 하나를 모터 하나만 쓰는 경우의 역방향 표. 여럿이 나눠 쓰는 번호는 빠지고
++        그 프레임은 `data[0]` 으로 구분함."""
++        self.kernel_filter = bool(kernel_filter)
+         self.protocol = protocol
+         self.drain_s = float(drain_s)
+         """응답을 기다리는 최대 시간 (초). `collect` 와 `refresh_states` 가 씀.
+@@ -145,6 +247,18 @@ class RobStrideBus(MotorsBus):
+         """
+         self._sent_at: Dict[int, float] = {}
+         self._prev_sent_at: Dict[int, float] = {}
++        self._tx_at: Dict[int, float] = {}
++        """모터별 마지막 송신 시각. `_sent_at` 과 같은 값이지만 **지연 기록기가 없어도** 남김 --
++        `collect` 가 "송신 이후 도착"을 가리는 데 씀. (`_sent_at` 은 원본처럼 기록기가 있을 때만.)"""
++
++        self._outstanding: Dict[int, Deque[float]] = {mid: deque() for mid in self.motors}
++        """모터별로 응답을 아직 못 받은 명령의 송신 시각 (오래된 것이 앞)."""
++        self._cycle_sent: Tuple[int, ...] = ()
++        self._cycle_skipped: Tuple[int, ...] = ()
++        self._cycle_open = False
++        """`send_mit` 를 부른 뒤 아직 `collect` 를 안 불렀는지."""
++        self.last_collect = CollectStats()
++        self.link = LinkCounters()
+ 
+     def __repr__(self) -> str:
+         return f"RobStrideBus({self.bus.channel}, 모터 {len(self.motors)}개)"
+@@ -165,6 +279,12 @@ class RobStrideBus(MotorsBus):
+     # ---- 수명 -------------------------------------------------------------
+     def connect(self) -> None:
+         self.bus.connect()
++        if self.kernel_filter and hasattr(self.bus, "set_reply_filter"):
++            # 호스트 ID 를 아직 안 바꾼 모터는 0xFD 로 계속 응답하므로 그 번호도 열어 둠.
++            ids = set(self.reply_ids.values())
++            if any(mid not in self.reply_ids for mid in self.motors):
++                ids.add(DEFAULT_HOST_ID)
++            self.bus.set_reply_filter(ids)
+ 
+     def disconnect(self) -> None:
+         """**토크를 먼저 끊고** 채널을 닫음. 여러 번 불려도 안전함.
+@@ -219,6 +339,15 @@ class RobStrideBus(MotorsBus):
+                 f"이 버스에 없는 모터 id: {unknown} (가용: {list(self.motor_ids)})"
+             )
+ 
++        now = time.monotonic()
++        sendable: Dict[int, MitCommand] = {}
++        skipped: List[int] = []
++        for mid, c in commands.items():
++            if self._outstanding_full(mid, now):
++                skipped.append(mid)
++            else:
++                sendable[mid] = c
++
+         frames = [
+             CanFrame(
+                 can_id=mid,
+@@ -231,12 +360,26 @@ class RobStrideBus(MotorsBus):
+                     enc=self._encoding[mid],
+                 ),
+             )
+-            for mid, c in commands.items()
++            for mid, c in sendable.items()
+         ]
+-        if self.latency is not None:
+-            self._note_sent(commands)
++        self._cycle_sent = tuple(sendable)
++        self._cycle_skipped = tuple(skipped)
++        self._cycle_open = True
++        self.link.skipped_commands += len(skipped)
++        if skipped:
++            logger.debug("%s 미응답 한도로 명령 건너뜀: %s", self.bus.channel, skipped)
++        self._note_sent(sendable)
+         return self.bus.send_many(frames)
+ 
++    def _outstanding_full(self, mid: int, now: float) -> bool:
++        """이 모터에 응답 없는 명령이 한도에 닿았는지. 오래된 기록은 먼저 버림."""
++        if self.max_outstanding <= 0:
++            return False
++        q = self._outstanding[mid]
++        while q and now - q[0] > self.outstanding_ttl_s:
++            q.popleft()
++        return len(q) >= self.max_outstanding
++
+     def _note_sent(self, commands: Mapping[int, MitCommand]) -> None:
+         """보낸 시각을 모터별로 남김. **묶음을 보내기 직전 한 시각**을 씀.
+ 
+@@ -245,20 +388,24 @@ class RobStrideBus(MotorsBus):
+         프레임이 기다리는 시간도 그 안에 들어가야 함.
+ 
+         직전 시각도 들고 있음 -- 다음 주기에 늦게 들어온 응답을 그 명령에 맞추려고.
++        지연 기록기용 `_sent_at` 은 원본처럼 기록기가 있을 때만 남기고, `collect` 가 쓰는
++        `_tx_at` 은 항상 남김.
+         """
+         now = time.monotonic()
+         for mid in commands:
+-            if mid in self._sent_at:
+-                self._prev_sent_at[mid] = self._sent_at[mid]
+-            self._sent_at[mid] = now
+-            self.latency.sent(mid)
++            self._tx_at[mid] = now
++            self._outstanding[mid].append(now)
++            if self.latency is not None:
++                if mid in self._sent_at:
++                    self._prev_sent_at[mid] = self._sent_at[mid]
++                self._sent_at[mid] = now
++                self.latency.sent(mid)
+ 
+     def _note_received(self, mid: int, stamp: float) -> None:
+         """응답 하나의 지연을 남김.
+ 
+         MIT 응답에는 순번이 없음. 그래서 **도착 시각이 이번 송신보다 앞이면** 직전
+-        명령의 응답이 늦게 온 것으로 봄 (`late`). 수신 스레드가 도착할 때 시각을
+-        찍으므로 이 구분이 성립함.
++        명령의 응답이 늦게 온 것으로 봄 (`late`). 도착 시각은 커널이 찍은 값임.
+         """
+         sent = self._sent_at.get(mid)
+         if sent is None or not stamp:
+@@ -276,48 +423,152 @@ class RobStrideBus(MotorsBus):
+     ) -> List[int]:
+         """도착한 응답을 해석해 캐시에 넣음. **응답이 없었던 모터 id** 를 반환함.
+ 
+-        `expect` 를 주면 그만큼 채웠을 때 즉시 빠져나감. 정상 주기에는 예산을
+-        쓰지 않음.
++        끝 판정은 **모터별**임: 직전 `send_mit` 에서 명령을 보낸 모터 각각이 "그 송신
++        시각 이후에 도착한 응답"을 받으면 끝. 전부 받으면 즉시 빠져나가고, 아니면
++        `timeout_s`(기본 `self.drain_s`)에서 끊음. 송신 이전에 도착한 프레임(직전
++        주기의 늦은 응답)은 상태에 반영하되 끝 판정에는 안 쓰고 `last_collect.late` 에
++        나이와 함께 남김. 한 모터의 응답이 여럿이면 가장 늦게 도착한 것이 상태가 됨.
++
++        `expect` 는 **호환용**임. `send_mit` 없이 부르는 경우(예: 활성화 응답 수거)에만
++        예전처럼 프레임 개수로 끝남.
+ 
+-        `timeout_s` 를 안 주면 `self.drain_s` 를 씀. 예전에는 여기에 0.002 가 따로
+-        박혀 있어서 `canbus.DEFAULT_DRAIN_S` 를 바꿔도 제어 경로에는 안 닿았음.
++        `timeout_s` 를 안 주면 `self.drain_s` 를 씀.
+         """
+         wait = self.drain_s if timeout_s is None else float(timeout_s)
+-        frames = self.bus.drain(expect=expect, timeout_s=wait)
+-
+-        seen = set()
++        awaited = self._cycle_sent
++        skipped = self._cycle_skipped
++        sent_this_cycle = self._cycle_open
++        self._cycle_sent = ()
++        self._cycle_skipped = ()
++        self._cycle_open = False
++        t0 = time.monotonic()
++        stats = CollectStats(awaited=awaited, skipped=skipped)
++        fresh: Dict[int, float] = {}
++        late: Dict[int, float] = {}
++        late_stamp: Dict[int, float] = {}
++        seen_any = set()
++
++        if not awaited and sent_this_cycle:
++            # 이번 주기에 보낸 명령이 하나도 없음(전부 건너뜀·빈 명령): 기다릴 응답이 없으므로 있는 것만 받음.
++            frames = self.bus.drain(expect=0, timeout_s=0.0) if getattr(self.bus, "poll", None) is None \
++                else self.bus.poll(0.0)
++            self._ingest(frames, fresh, late, late_stamp, seen_any, awaited=())
++        elif not awaited:
++            # 호환 경로: `send_mit` 없이 부르면 개수로 기다림 (원본 동작).
++            frames = self.bus.drain(expect=expect, timeout_s=wait)
++            self._ingest(frames, fresh, late, late_stamp, seen_any, awaited=())
++        else:
++            deadline = t0 + wait
++            pending = set(awaited)
++            poll = getattr(self.bus, "poll", None)
++            idle = 0.0                       # poll 이 없는 버스에서 잔 시간 (시계가 안 가는 시험 대역 대비)
++            while True:
++                remaining = deadline - time.monotonic()
++                if poll is not None:
++                    frames = poll(max(0.0, remaining) if pending else 0.0)
++                else:
++                    # poll 이 없는 버스(시험 대역 등): drain 으로 있는 것만 꺼내고 짧게 잠
++                    frames = self.bus.drain(expect=None, timeout_s=0.0)
++                    if not frames and pending:
++                        time.sleep(min(max(0.0, remaining), DEFAULT_POLL_S))
++                        idle += DEFAULT_POLL_S
++                if frames:
++                    self._ingest(frames, fresh, late, late_stamp, seen_any, awaited=awaited)
++                    pending = {m for m in awaited if m not in fresh}
++                if not pending:
++                    break
++                if time.monotonic() >= deadline or idle >= wait:
++                    stats.timed_out = True
++                    self.link.timeouts += 1
++                    break
++
++        end = time.monotonic()
++        stats.waited_s = end - t0
++        stats.fresh = tuple(m for m in self.motor_ids if m in fresh)
++        stats.missing = tuple(m for m in awaited if m not in fresh)
++        stats.late = tuple(m for m in self.motor_ids if m in late)
++        stats.late_age_s = {m: end - late_stamp[m] for m in stats.late}
++        stats.fresh_age_s = {m: end - fresh[m] for m in stats.fresh}
++        self.last_collect = stats
++        self.link.cycles += 1
++        self.link.late_replies += len(stats.late)
++
++        # 보내지 않은 모터(명령 안 한 것·건너뛴 것)는 이번 수거에서 아무 프레임이나 왔으면 응답한 것으로 봄.
++        ok = set(fresh)
++        ok.update(m for m in seen_any if m not in awaited)
++        return [mid for mid in self.motor_ids if mid not in ok]
++
++    def _mid_of(self, frame: CanFrame) -> Optional[int]:
++        """응답 프레임이 어느 모터 것인지. 번호가 한 모터 전용이면 번호로, 아니면 `data[0]`.
++
++        전용 번호로 왔는데 `data[0]` 이 다르면 어느 쪽도 믿을 수 없으므로 버림 (세어 둠).
++        """
++        owner = self._mid_by_reply_id.get(frame.can_id)
++        if owner is not None:
++            if frame.data and frame.data[0] != owner:
++                self.link.id_mismatch += 1
++                return None
++            return owner
++        return int(frame.data[0]) if frame.data else None
++
++    def _ingest(
++        self,
++        frames: List[CanFrame],
++        fresh: Dict[int, float],
++        late: Dict[int, float],
++        late_stamp: Dict[int, float],
++        seen_any: set,
++        *,
++        awaited: Tuple[int, ...],
++    ) -> None:
++        """프레임들을 해석해 상태를 갱신하고 fresh/late 로 가름. 도착 순서대로 처리함."""
+         now = time.monotonic()
+         for f in frames:
+-            try:
+-                mid, pos, vel, tau, temp = mit.decode_state(f.data, enc=self._encoding_for_frame(f))
+-            except (ValueError, KeyError) as e:
+-                logger.debug("%s 해석 실패 %s: %s", self.bus.channel, f.data.hex(), e)
++            mid = self._mid_of(f)
++            if mid is None:
+                 continue
+             if mid not in self.motors:
++                self.link.unknown_motor += 1
+                 logger.debug("%s 모르는 모터 응답 id=%d", self.bus.channel, mid)
+                 continue
+-            self._states[mid] = MotorState(
+-                position_deg=pos,
+-                velocity_deg_s=vel,
+-                torque_nm=tau,
+-                temp_c=temp,
+-                stamp=now,
+-            )
+-            seen.add(mid)
++            try:
++                _, pos, vel, tau, temp = mit.decode_state(f.data, enc=self._encoding[mid])
++            except (ValueError, KeyError) as e:
++                self.link.undecodable += 1
++                logger.debug("%s 해석 실패 %s: %s", self.bus.channel, f.data.hex(), e)
++                continue
++
++            stamp = f.stamp or now
++            seen_any.add(mid)
++            q = self._outstanding[mid]
++            if q:
++                q.popleft()                     # 응답 하나가 명령 하나를 갚음 (오래된 것부터)
++
++            # 상태는 시간을 거슬러 가지 않음: 이미 더 늦게 도착한 값이 있으면 덮지 않음.
++            if stamp >= self._states[mid].stamp:
++                self._states[mid] = MotorState(
++                    position_deg=pos,
++                    velocity_deg_s=vel,
++                    torque_nm=tau,
++                    temp_c=temp,
++                    stamp=stamp,
++                )
+             if self.latency is not None:
+                 self._note_received(mid, f.stamp)
+ 
+-        return [mid for mid in self.motor_ids if mid not in seen]
+-
+-    def _encoding_for_frame(self, frame: CanFrame) -> tables.EncodingRange:
+-        """응답 프레임의 인코딩 범위를 고름.
+-
+-        모터 id 가 프레임 안(`data[0]`)에 있으므로 그걸로 찾음. CAN 중재 id 는
+-        모델을 알려주지 않고, 다리에는 RS02 와 RS00 이 섞여 있어 범위가 다름.
+-        """
+-        if not frame.data:
+-            raise ValueError("빈 프레임")
+-        return self._encoding[frame.data[0]]
++            sent = self._tx_at.get(mid)
++            if mid in awaited:
++                if sent is not None and stamp >= sent:
++                    fresh[mid] = stamp
++                else:
++                    late[mid] = late.get(mid, 0.0)
++                    late_stamp[mid] = min(late_stamp.get(mid, stamp), stamp)
++            else:
++                if sent is not None and stamp < sent:
++                    late[mid] = 0.0
++                    late_stamp[mid] = min(late_stamp.get(mid, stamp), stamp)
++                else:
++                    fresh[mid] = stamp
+ 
+     def refresh_states(self, motors: Optional[Iterable[int]] = None) -> List[int]:
+         """상태를 요청하고 응답을 수거함. 응답이 없었던 모터 id 를 반환함.
+@@ -336,6 +587,8 @@ class RobStrideBus(MotorsBus):
+         """
+         ids = resolve_motor_list(motors, self.motor_ids)
+         self.bus.flush_rx()
++        for mid in ids:
++            self._outstanding[mid].clear()      # 비운 큐의 응답은 더 안 옴
+         self.send_mit({mid: PASSIVE for mid in ids})
+         missing = self.collect(expect=len(ids))
+         return [mid for mid in ids if mid in set(missing)]

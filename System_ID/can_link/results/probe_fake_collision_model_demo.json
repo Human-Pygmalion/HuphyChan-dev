@@ -1,0 +1,385 @@
+{
+ "tool": "bus_probe",
+ "version": "1.0",
+ "started": "2026-10-16T14:14:05+0900",
+ "host": "Kirima-Ubnt2204-DeepL",
+ "channel": "fake0",
+ "fake": true,
+ "ids": [
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ],
+ "models": {
+  "7": "RS04",
+  "8": "RS04",
+  "9": "RS04",
+  "10": "RS04",
+  "11": "RS04",
+  "12": "RS04"
+ },
+ "params": [],
+ "args": {
+  "channel": "can0",
+  "ids": "7,8,9,10,11,12",
+  "model": "RS04",
+  "model_map": "",
+  "mode": "pipelined",
+  "rates": "100,200",
+  "duration": 2.0,
+  "param": "none",
+  "timeout_ms": 4.0,
+  "expire_ms": 50.0,
+  "max_outstanding": 3,
+  "pause": 0.5,
+  "err_frames": true,
+  "own_msgs": false,
+  "allow_enabled": false,
+  "force_sweep": false,
+  "out": "results/probe_fake_collision_model_demo.json",
+  "fake": true,
+  "fake_collide": true
+ },
+ "sent_frame_kinds": [
+  "zero-gain MIT (kp=kd=torque=0)"
+ ],
+ "hello": {
+  "7": 0,
+  "8": 0,
+  "9": 0,
+  "10": 0,
+  "11": 0,
+  "12": 0
+ },
+ "runs": [
+  {
+   "mode": "pipelined",
+   "rate_hz": 100.0,
+   "duration_s": 2.0,
+   "cycles": 200,
+   "achieved_cycle_hz": 100.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.061,
+    "p99": 0.079,
+    "max": 0.115
+   },
+   "frames_sent": 743,
+   "send_failures": 0,
+   "state": {
+    "sent": 743,
+    "ontime": 236,
+    "late": 161,
+    "lost": 346,
+    "ontime_pct": 31.763,
+    "late_pct": 21.669,
+    "lost_pct": 46.568,
+    "rtt_ms": {
+     "n": 397,
+     "median": 2.703,
+     "p99": 42.954,
+     "max": 42.976
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 126,
+     "ontime": 48,
+     "late": 29,
+     "lost": 49,
+     "rtt_ms": {
+      "n": 77,
+      "median": 1.242,
+      "p99": 41.137,
+      "max": 41.138
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 98
+     },
+     "skipped_by_outstanding_limit": 74
+    },
+    "8": {
+     "sent": 125,
+     "ontime": 41,
+     "late": 28,
+     "lost": 56,
+     "rtt_ms": {
+      "n": 69,
+      "median": 1.609,
+      "p99": 41.508,
+      "max": 41.511
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 91
+     },
+     "skipped_by_outstanding_limit": 75
+    },
+    "9": {
+     "sent": 126,
+     "ontime": 42,
+     "late": 29,
+     "lost": 55,
+     "rtt_ms": {
+      "n": 71,
+      "median": 1.975,
+      "p99": 41.863,
+      "max": 41.874
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 92
+     },
+     "skipped_by_outstanding_limit": 74
+    },
+    "10": {
+     "sent": 122,
+     "ontime": 35,
+     "late": 25,
+     "lost": 62,
+     "rtt_ms": {
+      "n": 60,
+      "median": 2.342,
+      "p99": 42.232,
+      "max": 42.242
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 85
+     },
+     "skipped_by_outstanding_limit": 78
+    },
+    "11": {
+     "sent": 122,
+     "ontime": 35,
+     "late": 25,
+     "lost": 62,
+     "rtt_ms": {
+      "n": 60,
+      "median": 2.709,
+      "p99": 42.599,
+      "max": 42.609
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 85
+     },
+     "skipped_by_outstanding_limit": 78
+    },
+    "12": {
+     "sent": 122,
+     "ontime": 35,
+     "late": 25,
+     "lost": 62,
+     "rtt_ms": {
+      "n": 60,
+      "median": 3.076,
+      "p99": 42.966,
+      "max": 42.976
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 85
+     },
+     "skipped_by_outstanding_limit": 78
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 536
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 139,
+   "error_frames": {
+    "total": 9911,
+    "by_class": {
+     "bus_error": 9911
+    }
+   },
+   "skipped_by_outstanding_limit": 457,
+   "kernel_counters_delta": {
+    "seconds": 2.046,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "pipelined     100 Hz  cycles=200    achieved=100.0   overrun=0    ontime=31.76% late=21.67% lost=46.57%  rtt med/p99/max=2.703/42.954/42.976 ms  errframes=9911 kernel bus-errors+=n/a skipped=457"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 200.0,
+   "duration_s": 2.0,
+   "cycles": 389,
+   "achieved_cycle_hz": 194.5,
+   "overrun_cycles": 1,
+   "cycle_start_lateness_ms": {
+    "median": 0.06,
+    "p99": 0.101,
+    "max": 60.383
+   },
+   "frames_sent": 962,
+   "send_failures": 0,
+   "state": {
+    "sent": 962,
+    "ontime": 331,
+    "late": 283,
+    "lost": 348,
+    "ontime_pct": 34.407,
+    "late_pct": 29.418,
+    "lost_pct": 36.175,
+    "rtt_ms": {
+     "n": 614,
+     "median": 2.962,
+     "p99": 47.971,
+     "max": 48.046
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 164,
+     "ontime": 71,
+     "late": 50,
+     "lost": 43,
+     "rtt_ms": {
+      "n": 121,
+      "median": 1.302,
+      "p99": 46.188,
+      "max": 46.203
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 133
+     },
+     "skipped_by_outstanding_limit": 225
+    },
+    "8": {
+     "sent": 163,
+     "ontime": 61,
+     "late": 50,
+     "lost": 52,
+     "rtt_ms": {
+      "n": 111,
+      "median": 1.742,
+      "p99": 46.563,
+      "max": 46.576
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 123
+     },
+     "skipped_by_outstanding_limit": 226
+    },
+    "9": {
+     "sent": 161,
+     "ontime": 55,
+     "late": 48,
+     "lost": 58,
+     "rtt_ms": {
+      "n": 103,
+      "median": 2.117,
+      "p99": 46.931,
+      "max": 46.943
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 117
+     },
+     "skipped_by_outstanding_limit": 228
+    },
+    "10": {
+     "sent": 158,
+     "ontime": 48,
+     "late": 45,
+     "lost": 65,
+     "rtt_ms": {
+      "n": 93,
+      "median": 2.486,
+      "p99": 47.298,
+      "max": 47.311
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 110
+     },
+     "skipped_by_outstanding_limit": 231
+    },
+    "11": {
+     "sent": 158,
+     "ontime": 48,
+     "late": 45,
+     "lost": 65,
+     "rtt_ms": {
+      "n": 93,
+      "median": 2.854,
+      "p99": 47.664,
+      "max": 47.678
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 110
+     },
+     "skipped_by_outstanding_limit": 231
+    },
+    "12": {
+     "sent": 158,
+     "ontime": 48,
+     "late": 45,
+     "lost": 65,
+     "rtt_ms": {
+      "n": 93,
+      "median": 3.221,
+      "p99": 48.03,
+      "max": 48.046
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 110
+     },
+     "skipped_by_outstanding_limit": 231
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 703
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 89,
+   "error_frames": {
+    "total": 13952,
+    "by_class": {
+     "bus_error": 13952
+    }
+   },
+   "skipped_by_outstanding_limit": 1372,
+   "kernel_counters_delta": {
+    "seconds": 2.173,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "pipelined     200 Hz  cycles=389    achieved=194.5   overrun=1    ontime=34.41% late=29.42% lost=36.17%  rtt med/p99/max=2.962/47.971/48.046 ms  errframes=13952 kernel bus-errors+=n/a skipped=1372"
+  }
+ ],
+ "adapter": {
+  "before": {
+   "time": 1792127645.469042,
+   "ip": {},
+   "sysfs": {}
+  },
+  "after": {
+   "time": 1792127650.689482,
+   "ip": {},
+   "sysfs": {}
+  },
+  "total_delta": {
+   "seconds": 5.22,
+   "ip": {},
+   "sysfs": {},
+   "state_after": null
+  }
+ }
+}

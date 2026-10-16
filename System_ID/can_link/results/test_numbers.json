@@ -1,0 +1,88 @@
+{
+ "late_once": {
+  "old": {
+   "late_motor": 9,
+   "cycles": 60,
+   "glitch_cycle": 5,
+   "shifted_cycles_after_glitch": 54,
+   "cycles_after_glitch": 54,
+   "first_clean_cycle_after": null,
+   "stale_cycles_per_motor": {
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 54
+   },
+   "missing_reports_after_glitch": 1
+  },
+  "new": {
+   "late_motor": 9,
+   "cycles": 60,
+   "glitch_cycle": 5,
+   "shifted_cycles_after_glitch": 0,
+   "cycles_after_glitch": 54,
+   "first_clean_cycle_after": 6,
+   "stale_cycles_per_motor": {
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0
+   },
+   "missing_reports_after_glitch": 0
+  }
+ },
+ "late_once_by_motor": {
+  "old": {
+   "7": 54,
+   "8": 54,
+   "9": 54,
+   "10": 54,
+   "11": 54,
+   "12": 54
+  },
+  "new": {
+   "7": 0,
+   "8": 0,
+   "9": 0,
+   "10": 0,
+   "11": 0,
+   "12": 0
+  }
+ },
+ "slow_motor": {
+  "old": {
+   "motor": 9,
+   "delay_ms": 35.0,
+   "cycles": 60,
+   "max_unanswered_at_motor": 3,
+   "frames_dropped_by_motor_buffer": 15,
+   "frames_sent_to_motor": 60,
+   "skipped_by_guard": 0,
+   "other_motors_always_answered": true
+  },
+  "new_K2": {
+   "motor": 9,
+   "delay_ms": 35.0,
+   "cycles": 60,
+   "max_unanswered_at_motor": 2,
+   "frames_dropped_by_motor_buffer": 0,
+   "frames_sent_to_motor": 24,
+   "skipped_by_guard": 36,
+   "other_motors_always_answered": true
+  },
+  "new_K0_guard_off": {
+   "motor": 9,
+   "delay_ms": 35.0,
+   "cycles": 60,
+   "max_unanswered_at_motor": 3,
+   "frames_dropped_by_motor_buffer": 15,
+   "frames_sent_to_motor": 60,
+   "skipped_by_guard": 0,
+   "other_motors_always_answered": true
+  }
+ }
+}

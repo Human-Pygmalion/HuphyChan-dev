@@ -1,0 +1,1920 @@
+{
+ "tool": "bus_probe",
+ "version": "1.0",
+ "started": "2026-10-16T14:13:44+0900",
+ "host": "Kirima-Ubnt2204-DeepL",
+ "channel": "fake0",
+ "fake": true,
+ "ids": [
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ],
+ "models": {
+  "7": "RS04",
+  "8": "RS04",
+  "9": "RS04",
+  "10": "RS04",
+  "11": "RS04",
+  "12": "RS04"
+ },
+ "params": [
+  "vbus"
+ ],
+ "args": {
+  "channel": "can0",
+  "ids": "7,8,9,10,11,12",
+  "model": "RS04",
+  "model_map": "",
+  "mode": "both",
+  "rates": "100,200,300,500",
+  "duration": 2.0,
+  "param": "vbus",
+  "timeout_ms": 4.0,
+  "expire_ms": 50.0,
+  "max_outstanding": 3,
+  "pause": 0.5,
+  "err_frames": true,
+  "own_msgs": false,
+  "allow_enabled": false,
+  "force_sweep": false,
+  "out": "results/probe_fake_demo.json",
+  "fake": true,
+  "fake_collide": false
+ },
+ "sent_frame_kinds": [
+  "zero-gain MIT (kp=kd=torque=0)",
+  "Command 14 read vbus"
+ ],
+ "hello": {
+  "7": 0,
+  "8": 0,
+  "9": 0,
+  "10": 0,
+  "11": 0,
+  "12": 0
+ },
+ "runs": [
+  {
+   "mode": "sequential",
+   "rate_hz": 100.0,
+   "duration_s": 2.0,
+   "cycles": 200,
+   "achieved_cycle_hz": 100.0,
+   "overrun_cycles": 5,
+   "cycle_start_lateness_ms": {
+    "median": 0.059,
+    "p99": 0.072,
+    "max": 0.112
+   },
+   "frames_sent": 2400,
+   "send_failures": 0,
+   "state": {
+    "sent": 1200,
+    "ontime": 1200,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1200,
+     "median": 0.731,
+     "p99": 0.827,
+     "max": 0.83
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.73,
+      "p99": 0.83,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 0.721,
+        "p99": 0.828,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.727,
+      "p99": 0.826,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 0.727,
+        "p99": 0.828,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.726,
+      "p99": 0.828,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 0.73,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.734,
+      "p99": 0.827,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 0.734,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.725,
+      "p99": 0.826,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 0.732,
+        "p99": 0.828,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.736,
+      "p99": 0.825,
+      "max": 0.827
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 0.723,
+        "p99": 0.826,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2400
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.056,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "sequential    100 Hz  cycles=200    achieved=100.0   overrun=5    ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.731/0.827/0.83 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 200.0,
+   "duration_s": 2.0,
+   "cycles": 210,
+   "achieved_cycle_hz": 105.0,
+   "overrun_cycles": 210,
+   "cycle_start_lateness_ms": {
+    "median": 0.001,
+    "p99": 0.002,
+    "max": 0.004
+   },
+   "frames_sent": 2520,
+   "send_failures": 0,
+   "state": {
+    "sent": 1260,
+    "ontime": 1260,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1260,
+     "median": 0.727,
+     "p99": 0.828,
+     "max": 0.83
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.732,
+      "p99": 0.829,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.717,
+        "p99": 0.828,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.72,
+      "p99": 0.828,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.731,
+        "p99": 0.828,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.722,
+      "p99": 0.826,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.722,
+        "p99": 0.828,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.739,
+      "p99": 0.828,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.731,
+        "p99": 0.823,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.722,
+      "p99": 0.828,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.732,
+        "p99": 0.828,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.726,
+      "p99": 0.827,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.733,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2520
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.064,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "sequential    200 Hz  cycles=210    achieved=105.0   overrun=210  ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.727/0.828/0.83 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 300.0,
+   "duration_s": 2.0,
+   "cycles": 210,
+   "achieved_cycle_hz": 105.0,
+   "overrun_cycles": 210,
+   "cycle_start_lateness_ms": {
+    "median": 0.001,
+    "p99": 0.002,
+    "max": 0.002
+   },
+   "frames_sent": 2520,
+   "send_failures": 0,
+   "state": {
+    "sent": 1260,
+    "ontime": 1260,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1260,
+     "median": 0.727,
+     "p99": 0.828,
+     "max": 0.83
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.726,
+      "p99": 0.829,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.726,
+        "p99": 0.828,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.729,
+      "p99": 0.828,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.734,
+        "p99": 0.829,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.721,
+      "p99": 0.824,
+      "max": 0.828
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.742,
+        "p99": 0.828,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.725,
+      "p99": 0.826,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.724,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.734,
+      "p99": 0.828,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.732,
+        "p99": 0.827,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 210,
+     "ontime": 210,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 210,
+      "median": 0.727,
+      "p99": 0.825,
+      "max": 0.828
+     },
+     "params": {
+      "vbus": {
+       "sent": 210,
+       "ontime": 210,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 210,
+        "median": 0.722,
+        "p99": 0.827,
+        "max": 0.829
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 420
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2520
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.066,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "sequential    300 Hz  cycles=210    achieved=105.0   overrun=210  ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.727/0.828/0.83 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 500.0,
+   "duration_s": 2.0,
+   "cycles": 209,
+   "achieved_cycle_hz": 104.5,
+   "overrun_cycles": 209,
+   "cycle_start_lateness_ms": {
+    "median": 0.001,
+    "p99": 0.002,
+    "max": 0.003
+   },
+   "frames_sent": 2508,
+   "send_failures": 0,
+   "state": {
+    "sent": 1254,
+    "ontime": 1254,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1254,
+     "median": 0.731,
+     "p99": 0.829,
+     "max": 0.831
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 209,
+     "ontime": 209,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 209,
+      "median": 0.735,
+      "p99": 0.829,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 209,
+       "ontime": 209,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 209,
+        "median": 0.734,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 418
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 209,
+     "ontime": 209,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 209,
+      "median": 0.729,
+      "p99": 0.828,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 209,
+       "ontime": 209,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 209,
+        "median": 0.742,
+        "p99": 0.827,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 418
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 209,
+     "ontime": 209,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 209,
+      "median": 0.717,
+      "p99": 0.826,
+      "max": 0.828
+     },
+     "params": {
+      "vbus": {
+       "sent": 209,
+       "ontime": 209,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 209,
+        "median": 0.737,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 418
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 209,
+     "ontime": 209,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 209,
+      "median": 0.735,
+      "p99": 0.83,
+      "max": 0.831
+     },
+     "params": {
+      "vbus": {
+       "sent": 209,
+       "ontime": 209,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 209,
+        "median": 0.73,
+        "p99": 0.828,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 418
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 209,
+     "ontime": 209,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 209,
+      "median": 0.727,
+      "p99": 0.826,
+      "max": 0.83
+     },
+     "params": {
+      "vbus": {
+       "sent": 209,
+       "ontime": 209,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 209,
+        "median": 0.728,
+        "p99": 0.825,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 418
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 209,
+     "ontime": 209,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 209,
+      "median": 0.741,
+      "p99": 0.829,
+      "max": 0.829
+     },
+     "params": {
+      "vbus": {
+       "sent": 209,
+       "ontime": 209,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 209,
+        "median": 0.72,
+        "p99": 0.829,
+        "max": 0.83
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 418
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2508
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.065,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "sequential    500 Hz  cycles=209    achieved=104.5   overrun=209  ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.731/0.829/0.831 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 100.0,
+   "duration_s": 2.0,
+   "cycles": 200,
+   "achieved_cycle_hz": 100.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.061,
+    "p99": 0.077,
+    "max": 0.09
+   },
+   "frames_sent": 2400,
+   "send_failures": 0,
+   "state": {
+    "sent": 1200,
+    "ontime": 1200,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1200,
+     "median": 1.13,
+     "p99": 1.471,
+     "max": 1.474
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.806,
+      "p99": 0.921,
+      "max": 0.922
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 2.063,
+        "p99": 2.199,
+        "max": 2.205
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 0.91,
+      "p99": 1.026,
+      "max": 1.026
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 2.288,
+        "p99": 2.419,
+        "max": 2.427
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 1.021,
+      "p99": 1.138,
+      "max": 1.139
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 2.399,
+        "p99": 2.531,
+        "max": 2.538
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 1.133,
+      "p99": 1.25,
+      "max": 1.25
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 2.512,
+        "p99": 2.646,
+        "max": 2.649
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 1.246,
+      "p99": 1.362,
+      "max": 1.363
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 2.629,
+        "p99": 2.757,
+        "max": 2.76
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 200,
+     "ontime": 200,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 200,
+      "median": 1.358,
+      "p99": 1.473,
+      "max": 1.474
+     },
+     "params": {
+      "vbus": {
+       "sent": 200,
+       "ontime": 200,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 200,
+        "median": 2.781,
+        "p99": 3.057,
+        "max": 3.103
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 400
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2400
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.047,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "pipelined     100 Hz  cycles=200    achieved=100.0   overrun=0    ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=1.13/1.471/1.474 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 200.0,
+   "duration_s": 2.0,
+   "cycles": 400,
+   "achieved_cycle_hz": 200.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.06,
+    "p99": 0.083,
+    "max": 0.104
+   },
+   "frames_sent": 4800,
+   "send_failures": 0,
+   "state": {
+    "sent": 2400,
+    "ontime": 2400,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 2400,
+     "median": 1.132,
+     "p99": 1.474,
+     "max": 1.476
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 400,
+     "ontime": 400,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 400,
+      "median": 0.806,
+      "p99": 0.921,
+      "max": 0.922
+     },
+     "params": {
+      "vbus": {
+       "sent": 400,
+       "ontime": 400,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 400,
+        "median": 2.065,
+        "p99": 2.196,
+        "max": 2.204
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 800
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 400,
+     "ontime": 400,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 400,
+      "median": 0.912,
+      "p99": 1.029,
+      "max": 1.029
+     },
+     "params": {
+      "vbus": {
+       "sent": 400,
+       "ontime": 400,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 400,
+        "median": 2.29,
+        "p99": 2.407,
+        "max": 2.425
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 800
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 400,
+     "ontime": 400,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 400,
+      "median": 1.024,
+      "p99": 1.14,
+      "max": 1.141
+     },
+     "params": {
+      "vbus": {
+       "sent": 400,
+       "ontime": 400,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 400,
+        "median": 2.402,
+        "p99": 2.532,
+        "max": 2.538
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 800
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 400,
+     "ontime": 400,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 400,
+      "median": 1.135,
+      "p99": 1.252,
+      "max": 1.253
+     },
+     "params": {
+      "vbus": {
+       "sent": 400,
+       "ontime": 400,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 400,
+        "median": 2.515,
+        "p99": 2.645,
+        "max": 2.65
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 800
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 400,
+     "ontime": 400,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 400,
+      "median": 1.247,
+      "p99": 1.364,
+      "max": 1.365
+     },
+     "params": {
+      "vbus": {
+       "sent": 400,
+       "ontime": 400,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 400,
+        "median": 2.629,
+        "p99": 2.759,
+        "max": 2.761
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 800
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 400,
+     "ontime": 400,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 400,
+      "median": 1.359,
+      "p99": 1.476,
+      "max": 1.476
+     },
+     "params": {
+      "vbus": {
+       "sent": 400,
+       "ontime": 400,
+       "late": 0,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 400,
+        "median": 2.76,
+        "p99": 3.082,
+        "max": 3.217
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 800
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 4800
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.053,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "pipelined     200 Hz  cycles=400    achieved=200.0   overrun=0    ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=1.132/1.474/1.476 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 300.0,
+   "duration_s": 2.0,
+   "cycles": 600,
+   "achieved_cycle_hz": 300.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.059,
+    "p99": 0.088,
+    "max": 1.649
+   },
+   "frames_sent": 7200,
+   "send_failures": 0,
+   "state": {
+    "sent": 3600,
+    "ontime": 3600,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 3600,
+     "median": 1.133,
+     "p99": 1.475,
+     "max": 1.904
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 600,
+     "ontime": 600,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 600,
+      "median": 0.806,
+      "p99": 0.921,
+      "max": 1.349
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 599,
+       "late": 1,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 2.066,
+        "p99": 2.203,
+        "max": 3.07
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1200
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "8": {
+     "sent": 600,
+     "ontime": 600,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 600,
+      "median": 0.913,
+      "p99": 1.03,
+      "max": 1.458
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 599,
+       "late": 1,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 2.291,
+        "p99": 2.42,
+        "max": 3.181
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1200
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "9": {
+     "sent": 600,
+     "ontime": 600,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 600,
+      "median": 1.025,
+      "p99": 1.141,
+      "max": 1.57
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 598,
+       "late": 2,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 2.403,
+        "p99": 2.539,
+        "max": 3.293
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1200
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "10": {
+     "sent": 600,
+     "ontime": 600,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 600,
+      "median": 1.137,
+      "p99": 1.253,
+      "max": 1.681
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 598,
+       "late": 2,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 2.515,
+        "p99": 2.65,
+        "max": 4.094
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1200
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "11": {
+     "sent": 600,
+     "ontime": 600,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 600,
+      "median": 1.249,
+      "p99": 1.365,
+      "max": 1.793
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 598,
+       "late": 2,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 2.628,
+        "p99": 2.761,
+        "max": 4.464
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1200
+     },
+     "skipped_by_outstanding_limit": 0
+    },
+    "12": {
+     "sent": 600,
+     "ontime": 600,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 600,
+      "median": 1.36,
+      "p99": 1.477,
+      "max": 1.904
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 597,
+       "late": 3,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 2.766,
+        "p99": 3.079,
+        "max": 5.697
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1200
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 7200
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 2.056,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "pipelined     300 Hz  cycles=600    achieved=300.0   overrun=0    ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=1.133/1.475/1.904 ms  errframes=0 kernel bus-errors+=n/a skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 500.0,
+   "duration_s": 2.0,
+   "cycles": 1000,
+   "achieved_cycle_hz": 500.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.068,
+    "p99": 0.109,
+    "max": 0.14
+   },
+   "frames_sent": 8703,
+   "send_failures": 0,
+   "state": {
+    "sent": 5975,
+    "ontime": 4172,
+    "late": 1801,
+    "lost": 2,
+    "ontime_pct": 69.824,
+    "late_pct": 30.142,
+    "lost_pct": 0.033,
+    "rtt_ms": {
+     "n": 5973,
+     "median": 1.441,
+     "p99": 3.941,
+     "max": 6.709
+    }
+   },
+   "per_motor": {
+    "7": {
+     "sent": 1000,
+     "ontime": 1000,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1000,
+      "median": 1.184,
+      "p99": 1.483,
+      "max": 1.579
+     },
+     "params": {
+      "vbus": {
+       "sent": 600,
+       "ontime": 23,
+       "late": 577,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 600,
+        "median": 5.101,
+        "p99": 6.942,
+        "max": 8.886
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1600
+     },
+     "skipped_by_outstanding_limit": 400
+    },
+    "8": {
+     "sent": 1000,
+     "ontime": 1000,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1000,
+      "median": 1.294,
+      "p99": 1.591,
+      "max": 1.689
+     },
+     "params": {
+      "vbus": {
+       "sent": 559,
+       "ontime": 44,
+       "late": 515,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 559,
+        "median": 6.753,
+        "p99": 7.15,
+        "max": 8.789
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1559
+     },
+     "skipped_by_outstanding_limit": 441
+    },
+    "9": {
+     "sent": 1000,
+     "ontime": 1000,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1000,
+      "median": 1.405,
+      "p99": 1.702,
+      "max": 1.8
+     },
+     "params": {
+      "vbus": {
+       "sent": 524,
+       "ontime": 40,
+       "late": 484,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 524,
+        "median": 6.841,
+        "p99": 7.469,
+        "max": 8.883
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1524
+     },
+     "skipped_by_outstanding_limit": 476
+    },
+    "10": {
+     "sent": 1000,
+     "ontime": 1000,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1000,
+      "median": 1.517,
+      "p99": 1.813,
+      "max": 1.913
+     },
+     "params": {
+      "vbus": {
+       "sent": 507,
+       "ontime": 26,
+       "late": 481,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 507,
+        "median": 6.924,
+        "p99": 7.27,
+        "max": 8.994
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1507
+     },
+     "skipped_by_outstanding_limit": 493
+    },
+    "11": {
+     "sent": 996,
+     "ontime": 10,
+     "late": 985,
+     "lost": 1,
+     "rtt_ms": {
+      "n": 995,
+      "median": 3.596,
+      "p99": 3.973,
+      "max": 5.706
+     },
+     "params": {
+      "vbus": {
+       "sent": 255,
+       "ontime": 250,
+       "late": 5,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 255,
+        "median": 6.927,
+        "p99": 8.873,
+        "max": 8.883
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1250
+     },
+     "skipped_by_outstanding_limit": 749
+    },
+    "12": {
+     "sent": 979,
+     "ontime": 162,
+     "late": 816,
+     "lost": 1,
+     "rtt_ms": {
+      "n": 978,
+      "median": 3.699,
+      "p99": 5.842,
+      "max": 6.709
+     },
+     "params": {
+      "vbus": {
+       "sent": 283,
+       "ontime": 215,
+       "late": 68,
+       "lost": 0,
+       "rtt_ms": {
+        "n": 283,
+        "median": 6.934,
+        "p99": 8.881,
+        "max": 8.985
+       }
+      }
+     },
+     "reply_ids": {
+      "0xFD": 1261
+     },
+     "skipped_by_outstanding_limit": 738
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 8701
+   },
+   "shared_reply_id": true,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 3297,
+   "kernel_counters_delta": {
+    "seconds": 2.059,
+    "ip": {},
+    "sysfs": {},
+    "state_after": null
+   },
+   "summary": "pipelined     500 Hz  cycles=1000   achieved=500.0   overrun=0    ontime=69.82% late=30.14% lost=0.03%  rtt med/p99/max=1.441/3.941/6.709 ms  errframes=0 kernel bus-errors+=n/a skipped=3297"
+  }
+ ],
+ "adapter": {
+  "before": {
+   "time": 1792127624.918007,
+   "ip": {},
+   "sysfs": {}
+  },
+  "after": {
+   "time": 1792127645.4034843,
+   "ip": {},
+   "sysfs": {}
+  },
+  "total_delta": {
+   "seconds": 20.485,
+   "ip": {},
+   "sysfs": {},
+   "state_after": null
+  }
+ }
+}

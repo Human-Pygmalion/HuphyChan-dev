@@ -1,0 +1,8 @@
+Read-only export of HUPHY src/huphy/motors/ (the whole package, byte-identical).
+  repo    /home/syaro/external_repos/HUPHY  (maido-39/HUPHY fork)
+  ref     origin/biped
+  commit  a1b67b1bbcfe0ab367862c1e4722a11776113e03
+  method  git -C <repo> show origin/biped:src/huphy/motors/<file>   (working tree never touched)
+  date    2026-10-16
+Do NOT edit these files.  The patched drop-in files live in ../../huphy_patch/ and the
+tests overlay them on a copy of this tree.  sha256 of each file: SHA256SUMS.
