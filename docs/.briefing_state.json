@@ -2046,7 +2046,8 @@
    "number": "crank error P99 46.3 vs 66.5 deg",
    "needs": "Overall judgement from the main session",
    "section": "done",
-   "changed": "2026-10-16 12:10"
+   "changed": "2026-10-16 12:10",
+   "collapsed": true
   },
   "gain-ab-armA": {
    "id": "gain-ab-armA",
@@ -2124,6 +2125,15 @@
    "needs": "벤치 모터 전원 복구(48V) 후 host_id_tool read 와 bus_probe 실측, 이어서 로봇에서 번호 같음/다름 비교",
    "section": "done",
    "changed": "2026-10-16 14:38"
+  },
+  "can-link": {
+   "id": "can-link",
+   "created": "2026-10-16 14:45",
+   "title": "CAN 링크 작업공간 완성 (System_ID/can_link): 시험 도구 3종 + HUPHY 갈아끼움 개선판 + 개발자 README",
+   "finding": "로봇 기록: 유실 2.2~3.5 %, 한 사건 뒤 오른다리 6관절이 59~71 주기 연속 늦음(밀림 지속 확인). 개선판(모터별 완료 판정)은 가상 시험에서 묵은 주기 54/54→0/54. 기본값은 HUPHY 동작과 동일 — HUPHY 시험 1,265 통과·4 실패(원본과 같은 환경 원인). 수신 스레드·미응답 상한·모터별 응답 번호는 켜는 순서와 근거를 README 에. 실물 검증은 벤치 모터 전원 꺼져 보류",
+   "number": "커밋 3fa891d, docs/124 항목 1-3a",
+   "section": "done",
+   "changed": "2026-10-16 14:45"
   }
  },
  "order": [
@@ -2316,7 +2326,8 @@
   "huphy-can-review",
   "can-faq2",
   "gain-ab-armB-4k",
-  "huphy-can-link"
+  "huphy-can-link",
+  "can-link"
  ],
- "updated": "2026-10-16 14:38"
+ "updated": "2026-10-16 14:45"
 }
