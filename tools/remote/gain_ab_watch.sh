@@ -15,7 +15,8 @@ D='~/MikuchanRemote/Human-Pygmalion/mujoco-sim/mjlab/analysis/out'
 A=rough_gain_crank60_v11a
 B=rough_gain_mountain_v11a
 r() { ssh -o BatchMode=yes -o ConnectTimeout=15 $H "$@"; }
-iter() { r "grep -a -o 'Learning iteration [0-9]*/[0-9]*' $D/$1_launch.out 2>/dev/null | tail -1" | grep -o '[0-9]*/' | tr -d /; }
+# newest of <run>_launch.out / <run>_resume.out (arm B was resumed from model_6300 on 2026-10-17)
+iter() { r "grep -a -o 'Learning iteration [0-9]*/[0-9]*' \$(ls -t $D/$1_resume.out $D/$1_launch.out 2>/dev/null | head -1) 2>/dev/null | tail -1" | grep -o '[0-9]*/' | tr -d /; }
 alive() { r "pgrep -f '[a]gent.run-name $1' >/dev/null && echo yes || echo no"; }
 firstmark() { for m in 4000 8000 99999; do [ "${1:-0}" -lt $m ] && { echo $m; return; }; done; }
 heartbeat() {

@@ -1031,7 +1031,7 @@
   {
     "id": 151,
     "text": "[사용자 2026-10-15] 비교 학습: 기준선+크랭크 60/2.7 단독 vs 기준선+등반 권장 게인 전체 (모터=URDF, 질량=하체만)",
-    "state": "blocked",
+    "state": "doing",
     "added": 1792070176.7215555,
     "why": "B 런 6,309회에서 일시 정지(사용자 요청, GPU 비움). 재개: 원격 bash mujoco-sim/mjlab/analysis/resume_gain_mountain.sh"
   },
@@ -1068,6 +1068,13 @@
     "text": "[사용자 2026-10-16] 권장 게인을 액추에이터 이름 규약으로 + P/D 균형 기준 + 배포 폴더 README 관절 상하한이 URDF/MJCF 와 맞는지 (무릎 0~135° 예상)",
     "state": "done",
     "added": 1792139267.1625483,
+    "why": ""
+  },
+  {
+    "id": 157,
+    "text": "[발견 2026-10-16] HUPHY biped 가 2fdc139 로 11커밋 진행 — 개발자가 응답 번호 충돌을 실측 확인(burst 무응답 39~43 %·버스오류 ~1300 → seq 0 %·4)하고 seq 기본·늦은 응답 무응답 처리. 우리 PATCH.diff 는 bus.py 에서 더 이상 적용 안 됨 → can_link README·패치를 2fdc139 기준으로 갱신 필요(호스트 ID 분리 시 burst 복귀 가능성 중심)",
+    "state": "open",
+    "added": 1792142113.1863446,
     "why": ""
   }
 ]
