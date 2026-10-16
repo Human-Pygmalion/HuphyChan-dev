@@ -3,7 +3,7 @@
 Reads the rollouts `mujoco-sim/mjlab/analysis/gait_kinematics_probe.py` writes (the walk npz files of
 `analysis/matched_set.sh`) and reports, for the four ankle crank servos pooled
 (R/L x A/B), the absolute position error |qtarget - q| in degrees (P50, P99) and the
-absolute torque |tau| P99 in N*m. The action window is +-62 deg, so an error P99 close to 62
+absolute torque |tau| P99, RMS and max in N*m (RMS added 2026-10-16 for the gain A/B check 5). The action window is +-62 deg, so an error P99 close to 62
 means the target sits at the window edge and the servo cannot ask for more.
 
   (cwd = mujoco-sim/mjlab; the script only needs numpy)
@@ -40,18 +40,18 @@ def main() -> None:
     err_all.append(err)
     tau_all.append(tau)
     per_file.append(dict(file=f, err_p50=float(np.percentile(err, 50)), err_p99=float(np.percentile(err, 99)),
-                         tau_p99=float(np.percentile(tau, 99)), n=int(len(err))))
+                         tau_p99=float(np.percentile(tau, 99)), tau_rms=float(np.sqrt(np.mean(tau ** 2))), n=int(len(err))))
   err = np.concatenate(err_all)
   tau = np.concatenate(tau_all)
   res = dict(label=a.label, warm_s=a.warm, files=per_file, pooled=dict(
       err_p50_deg=float(np.percentile(err, 50)), err_p99_deg=float(np.percentile(err, 99)),
       err_max_deg=float(err.max()), tau_p99_nm=float(np.percentile(tau, 99)),
-      tau_max_nm=float(tau.max()), n=int(len(err))))
+      tau_max_nm=float(tau.max()), tau_rms_nm=float(np.sqrt(np.mean(tau ** 2))), n=int(len(err))))
   for p in per_file:
-    print(f"{a.label} {p['file'].split('/')[-1]}: err P50 {p['err_p50']:.1f} P99 {p['err_p99']:.1f} deg, tau P99 {p['tau_p99']:.1f} N*m")
+    print(f"{a.label} {p['file'].split('/')[-1]}: err P50 {p['err_p50']:.1f} P99 {p['err_p99']:.1f} deg, tau P99 {p['tau_p99']:.1f} RMS {p['tau_rms']:.1f} N*m")
   r = res["pooled"]
   print(f"{a.label} POOLED: err P50 {r['err_p50_deg']:.1f} P99 {r['err_p99_deg']:.1f} max {r['err_max_deg']:.1f} deg | "
-        f"tau P99 {r['tau_p99_nm']:.1f} max {r['tau_max_nm']:.1f} N*m (n={r['n']})")
+        f"tau P99 {r['tau_p99_nm']:.1f} RMS {r['tau_rms_nm']:.1f} max {r['tau_max_nm']:.1f} N*m (n={r['n']})")
   if a.out:
     json.dump(res, open(a.out, "w"), indent=1)
 

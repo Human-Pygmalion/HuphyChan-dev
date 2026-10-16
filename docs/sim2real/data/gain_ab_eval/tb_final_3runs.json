@@ -1,0 +1,173 @@
+{
+ "base": {
+  "Train/mean_reward": {
+   "last_step": 11999,
+   "final200": 66.89836605072021,
+   "n": 200,
+   "last": 67.83917999267578
+  },
+  "Train/mean_episode_length": {
+   "last_step": 11999,
+   "final200": 768.9291000366211,
+   "n": 200,
+   "last": 792.4500122070312
+  },
+  "Episode_Termination/fell_over": {
+   "last_step": 11999,
+   "final200": 0.0020923913642764093,
+   "n": 200,
+   "last": 0.0
+  },
+  "Episode_Termination/low_base": {
+   "last_step": 11999,
+   "final200": 1.6723954659700393,
+   "n": 200,
+   "last": 1.6666667461395264
+  },
+  "Episode_Termination/stagnation": {
+   "last_step": 11999,
+   "final200": 0.6168223159015178,
+   "n": 200,
+   "last": 0.2083333432674408
+  },
+  "Episode_Reward/track_linear_velocity": {
+   "last_step": 11999,
+   "final200": 0.9829164889454841,
+   "n": 200,
+   "last": 1.0471526384353638
+  },
+  "Episode_Reward/track_angular_velocity": {
+   "last_step": 11999,
+   "final200": 0.8618669301271439,
+   "n": 200,
+   "last": 0.9099197387695312
+  },
+  "Metrics/twist/error_vel_xy_steady_moving": {
+   "last_step": 11999,
+   "final200": 0.506243387311697,
+   "n": 200,
+   "last": 0.5009439587593079
+  },
+  "Metrics/twist/error_ang_vel_steady_moving": null,
+  "Curriculum/dr_levels/dr_factor": {
+   "last_step": 11999,
+   "final200": 1.0,
+   "n": 200,
+   "last": 1.0
+  }
+ },
+ "trial": {
+  "Train/mean_reward": {
+   "last_step": 11999,
+   "final200": 64.98903003692627,
+   "n": 200,
+   "last": 64.08707427978516
+  },
+  "Train/mean_episode_length": {
+   "last_step": 11999,
+   "final200": 765.2227014160156,
+   "n": 200,
+   "last": 753.010009765625
+  },
+  "Episode_Termination/fell_over": {
+   "last_step": 11999,
+   "final200": 0.009420290105044842,
+   "n": 200,
+   "last": 0.0416666679084301
+  },
+  "Episode_Termination/low_base": {
+   "last_step": 11999,
+   "final200": 1.7520669090747834,
+   "n": 200,
+   "last": 1.9583333730697632
+  },
+  "Episode_Termination/stagnation": {
+   "last_step": 11999,
+   "final200": 0.5651581168174744,
+   "n": 200,
+   "last": 0.5416666865348816
+  },
+  "Episode_Reward/track_linear_velocity": {
+   "last_step": 11999,
+   "final200": 1.0179415330290795,
+   "n": 200,
+   "last": 1.0337324142456055
+  },
+  "Episode_Reward/track_angular_velocity": {
+   "last_step": 11999,
+   "final200": 0.6711884790658951,
+   "n": 200,
+   "last": 0.6764737963676453
+  },
+  "Metrics/twist/error_vel_xy_steady_moving": {
+   "last_step": 11999,
+   "final200": 0.4714432655274868,
+   "n": 200,
+   "last": 0.4725445508956909
+  },
+  "Metrics/twist/error_ang_vel_steady_moving": null,
+  "Curriculum/dr_levels/dr_factor": {
+   "last_step": 11999,
+   "final200": 1.0,
+   "n": 200,
+   "last": 1.0
+  }
+ },
+ "armA": {
+  "Train/mean_reward": {
+   "last_step": 11999,
+   "final200": 72.33135440826416,
+   "n": 200,
+   "last": 71.60908508300781
+  },
+  "Train/mean_episode_length": {
+   "last_step": 11999,
+   "final200": 790.6524502563476,
+   "n": 200,
+   "last": 809.9500122070312
+  },
+  "Episode_Termination/fell_over": {
+   "last_step": 11999,
+   "final200": 0.013416502363979817,
+   "n": 200,
+   "last": 0.0
+  },
+  "Episode_Termination/low_base": {
+   "last_step": 11999,
+   "final200": 1.4695174986124038,
+   "n": 200,
+   "last": 1.6521739959716797
+  },
+  "Episode_Termination/stagnation": {
+   "last_step": 11999,
+   "final200": 0.5684395734965801,
+   "n": 200,
+   "last": 1.04347825050354
+  },
+  "Episode_Reward/track_linear_velocity": {
+   "last_step": 11999,
+   "final200": 1.0496266320347787,
+   "n": 200,
+   "last": 1.0103857517242432
+  },
+  "Episode_Reward/track_angular_velocity": {
+   "last_step": 11999,
+   "final200": 0.8566288712620735,
+   "n": 200,
+   "last": 0.831150233745575
+  },
+  "Metrics/twist/error_vel_xy_steady_moving": {
+   "last_step": 11999,
+   "final200": 0.46919989988207816,
+   "n": 200,
+   "last": 0.46785280108451843
+  },
+  "Metrics/twist/error_ang_vel_steady_moving": null,
+  "Curriculum/dr_levels/dr_factor": {
+   "last_step": 11999,
+   "final200": 1.0,
+   "n": 200,
+   "last": 1.0
+  }
+ }
+}

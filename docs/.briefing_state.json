@@ -1969,7 +1969,8 @@
     "System_ID/emf_bench/ux_shots/9_paused_ovfolded.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 20:28"
+   "changed": "2026-10-15 20:28",
+   "collapsed": true
   },
   "emf-bench-logging": {
    "id": "emf-bench-logging",
@@ -2038,6 +2039,17 @@
    "number": "A 8,005 / 12,000회, 끝 예상 10:00 → B 자동 시작",
    "section": "done",
    "changed": "2026-10-16 06:18"
+  },
+  "gainab_armA_eval": {
+   "id": "gainab_armA_eval",
+   "created": "2026-10-16 12:10",
+   "title": "Gain A/B arm A finished-run evaluation: 4 of 6 pre-registered checks pass, 1 fails, 1 has no threshold",
+   "why": "Arm A changes only the ankle crank gain (60/2.7 instead of 22.3/1.41). Pre-registered checks decide whether the crank gain alone causes the turn loss seen in the bundle trial.",
+   "finding": "No turn loss from the crank gain: turn-in-place median over 8 seeds 53.5 % (baseline 45.3 %, bundle trial 23.4 %), wrong-way turns 3/64 (baseline 6/64). Real-condition simulator at gain scale 0.7: 8/8 survive (baseline 7/8); at 0.5: 1/8 (baseline 0/8). Walking crank target error 99th percentile 46.3 deg (baseline 66.5, limit 62), crank torque RMS 13.1 N·m (limit 20). Standing drift 0.377 m (limit 0.5). Failing: fell_over termination 0.0134 vs baseline 0.0021 (low_base 1.470 vs 1.672 is lower). Also seen, not pre-registered: walking heading drift 61 deg vs baseline 8.6 deg; at 0.3 m/s only 14 % of envs reach the slope/stairs start (baseline 38 %).",
+   "number": "crank error P99 46.3 vs 66.5 deg",
+   "needs": "Overall judgement from the main session",
+   "section": "done",
+   "changed": "2026-10-16 12:10"
   }
  },
  "order": [
@@ -2222,7 +2234,8 @@
   "gain-ab-launch",
   "gain-ab-heartbeat",
   "gain-ab-4k",
-  "gain-ab-8k"
+  "gain-ab-8k",
+  "gainab_armA_eval"
  ],
- "updated": "2026-10-16 11:15"
+ "updated": "2026-10-16 12:10"
 }

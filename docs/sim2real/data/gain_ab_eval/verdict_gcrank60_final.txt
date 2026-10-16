@@ -1,0 +1,111 @@
+=== verdict gcrank60_final ===
+=== m_gcrank60_final_turn_s0 ===
+
+=== m_gcrank60_final_turn_s0 ===
+  command  achieved   achieved/commanded
+    -1.00    -1.009               100.9 %
+    -0.75    -0.852               113.7 %
+    -0.50     0.003                -0.6 %  <- wrong way
+    -0.25    -0.171                68.4 %
+     0.25     0.014                 5.7 %
+     0.50     0.022                 4.4 %
+     0.75     0.649                86.5 %
+     1.00     0.890                89.0 %
+median 77.5 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s1 ===
+
+=== m_gcrank60_final_turn_s1 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.836                83.6 %
+    -0.75    -0.350                46.7 %
+    -0.50    -0.453                90.6 %
+    -0.25    -0.079                31.5 %
+     0.25     0.011                 4.5 %
+     0.50     0.100                20.1 %
+     0.75     0.414                55.2 %
+     1.00     0.974                97.4 %
+median 51.0 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s2 ===
+
+=== m_gcrank60_final_turn_s2 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.693                69.3 %
+    -0.75    -0.014                 1.9 %
+    -0.50    -0.427                85.4 %
+    -0.25     0.000                -0.1 %  <- wrong way
+     0.25     0.010                 4.0 %
+     0.50     0.122                24.3 %
+     0.75     0.736                98.1 %
+     1.00     0.751                75.1 %
+median 46.8 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s3 ===
+
+=== m_gcrank60_final_turn_s3 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.816                81.6 %
+    -0.75    -0.821               109.4 %
+    -0.50    -0.524               104.9 %
+    -0.25    -0.016                 6.4 %
+     0.25     0.020                 8.0 %
+     0.50     0.172                34.4 %
+     0.75     0.130                17.3 %
+     1.00     0.774                77.4 %
+median 55.9 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s4 ===
+
+=== m_gcrank60_final_turn_s4 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.606                60.6 %
+    -0.75    -0.335                44.6 %
+    -0.50    -0.226                45.1 %
+    -0.25    -0.259               103.8 %
+     0.25     0.013                 5.2 %
+     0.50     0.076                15.3 %
+     0.75     0.742                99.0 %
+     1.00     0.162                16.2 %
+median 44.9 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s5 ===
+
+=== m_gcrank60_final_turn_s5 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.482                48.2 %
+    -0.75    -0.716                95.5 %
+    -0.50    -0.464                92.9 %
+    -0.25    -0.094                37.5 %
+     0.25     0.257               102.7 %
+     0.50     0.023                 4.7 %
+     0.75     0.715                95.3 %
+     1.00     0.381                38.1 %
+median 70.5 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s6 ===
+
+=== m_gcrank60_final_turn_s6 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.969                96.9 %
+    -0.75    -0.581                77.4 %
+    -0.50    -0.292                58.3 %
+    -0.25    -0.148                59.1 %
+     0.25     0.020                 8.1 %
+     0.50     0.008                 1.6 %
+     0.75     0.711                94.7 %
+     1.00     0.907                90.7 %
+median 68.3 %   wrong way 0/8   (bar: median >= 50 %, wrong way 0)
+=== m_gcrank60_final_turn_s7 ===
+
+=== m_gcrank60_final_turn_s7 ===
+  command  achieved   achieved/commanded
+    -1.00    -0.578                57.8 %
+    -0.75    -0.561                74.7 %
+    -0.50    -0.278                55.6 %
+    -0.25    -0.008                 3.3 %
+     0.25     0.012                 4.8 %
+     0.50    -0.127               -25.5 %  <- wrong way
+     0.75     0.133                17.7 %
+     1.00     0.945                94.5 %
+median 36.6 %   wrong way 1/8   (bar: median >= 50 %, wrong way 0)
+foot off ground (%)           1.6% +- 3.0%
+lift events                   11.5 +- 21.0
+travelled (m)               0.377 +- 0.438
+forward speed (m/s)        1.255 +- 0.003
+hip yaw L-R gap (%)          -1.5 +- +0.7
+heading drift (deg)           61.2 +- 2.7

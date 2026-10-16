@@ -1,0 +1,3 @@
+[probe] slope_up_20_vx0.6            falls   6.2 %  valid steps  218612  vel err 0.541  crank|tau| P99  32.0  knee P99  45.6  (51 s)
+[probe] slope_down_20_vx0.3          falls  13.7 %  valid steps   38970  vel err 0.624  crank|tau| P99  28.1  knee P99  77.6  (53 s)
+[probe] slope_down_20_vx0.6          falls  72.7 %  valid steps   95014  vel err 0.765  crank|tau| P99  30.0  knee P99  92.1  (85 s)

@@ -1,0 +1,3 @@
+Module _tile_cholesky_solve_block__locals__kernel_7d50aafc 50fca6f load on device 'cuda:0' took 24.04 ms  (cached)
+[probe] stairs_up_15cm_vx0.3         falls   9.8 %  valid steps    9085  vel err 0.307  crank|tau| P99  49.2  knee P99  55.8  (83 s)
+[probe] stairs_down_15cm_vx0.3       falls   2.7 %  valid steps   11131  vel err 0.533  crank|tau| P99  46.1  knee P99  73.3  (65 s)

@@ -1,0 +1,52 @@
+== 2026-10-11_23-35-20_rough_box_main_v11a
+PYG_CRANK_KP= None KD= None
+ACT robot/R_crank_A_joint 1.0 [0. 0. 0.]
+ACT robot/R_crank_B_joint 1.0 [0. 0. 0.]
+ACT robot/L_crank_A_joint 1.0 [0. 0. 0.]
+ACT robot/L_crank_B_joint 1.0 [0. 0. 0.]
+ACT robot/R_hip_yaw_joint 1.0 [0. 0. 0.]
+ACT robot/L_hip_yaw_joint 1.0 [0. 0. 0.]
+ACT robot/R_hip_pitch_joint 1.0 [0. 0. 0.]
+ACT robot/R_hip_roll_joint 1.0 [0. 0. 0.]
+ACT robot/L_hip_pitch_joint 1.0 [0. 0. 0.]
+ACT robot/L_hip_roll_joint 1.0 [0. 0. 0.]
+ACT robot/R_knee_joint 1.0 [0. 0. 0.]
+ACT robot/L_knee_joint 1.0 [0. 0. 0.]
+ACTUATOR TnPdActuator None
+   stiffness [22.265625, 22.265625, 22.265625, 22.265625]
+   damping [1.4140625, 1.4140625, 1.4140625, 1.4140625]
+ACTUATOR TnPdActuator None
+   stiffness [150.0, 150.0]
+   damping [6.0, 6.0]
+ACTUATOR TnPdActuator None
+   stiffness [150.0, 150.0, 150.0, 150.0]
+   damping [6.0, 6.0, 6.0, 6.0]
+ACTUATOR TnPdActuator None
+   stiffness [220.0, 220.0]
+   damping [6.0, 6.0]
+== 2026-10-15_22-28-36_rough_gain_crank60_v11a
+PYG_CRANK_KP= 60 KD= 2.7
+ACT robot/R_crank_A_joint 1.0 [0. 0. 0.]
+ACT robot/R_crank_B_joint 1.0 [0. 0. 0.]
+ACT robot/L_crank_A_joint 1.0 [0. 0. 0.]
+ACT robot/L_crank_B_joint 1.0 [0. 0. 0.]
+ACT robot/R_hip_yaw_joint 1.0 [0. 0. 0.]
+ACT robot/L_hip_yaw_joint 1.0 [0. 0. 0.]
+ACT robot/R_hip_pitch_joint 1.0 [0. 0. 0.]
+ACT robot/R_hip_roll_joint 1.0 [0. 0. 0.]
+ACT robot/L_hip_pitch_joint 1.0 [0. 0. 0.]
+ACT robot/L_hip_roll_joint 1.0 [0. 0. 0.]
+ACT robot/R_knee_joint 1.0 [0. 0. 0.]
+ACT robot/L_knee_joint 1.0 [0. 0. 0.]
+ACTUATOR TnPdActuator None
+   stiffness [60.0, 60.0, 60.0, 60.0]
+   damping [2.700000047683716, 2.700000047683716, 2.700000047683716, 2.700000047683716]
+ACTUATOR TnPdActuator None
+   stiffness [150.0, 150.0]
+   damping [6.0, 6.0]
+ACTUATOR TnPdActuator None
+   stiffness [150.0, 150.0, 150.0, 150.0]
+   damping [6.0, 6.0, 6.0, 6.0]
+ACTUATOR TnPdActuator None
+   stiffness [220.0, 220.0]
+   damping [6.0, 6.0]
