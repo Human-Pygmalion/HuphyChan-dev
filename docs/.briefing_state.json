@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Gain A/B arm A: finished-run evaluation vs baseline (6 pre-registered checks)",
-  "detail": "Remote 3090 CPU runs at nice 10 (training arm B keeps the GPU lock). Turn x8 seeds, standing x4, walking, real-condition simulator, uphill/stairs probe.",
-  "since": "2026-10-16 10:16"
+  "title": "CAN 링크 작업공간 구현 중 (System_ID/can_link) — 시험 도구·개선 구현·개발자 전달 README",
+  "detail": "시험 도구: 버스 측정(순차/겹쳐 보내기, 주기별 왕복·유실·늦음·오류 계수), 호스트 ID 읽기/한 모터씩 변경(기본 시험 실행), HUPHY 실물 지연 기록 분석. 개선: 모터별 완료 판정(송신 이후 도착 기준), 수신 스레드 기본, 오류 프레임 집계, 미응답 상한, 모터별 응답 번호. HUPHY 저장소는 읽기만. 벤치 모터는 버스 전원 꺼져 하드웨어 검증 보류 가능",
+  "since": "2026-10-16 13:41"
  },
  "items": {
   "shouldermesh": {
@@ -2295,5 +2295,5 @@
   "huphy-can-review",
   "can-faq2"
  ],
- "updated": "2026-10-16 13:25"
+ "updated": "2026-10-16 13:41"
 }
