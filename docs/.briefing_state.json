@@ -2119,7 +2119,8 @@
    "finding": "평균 보상 77.0 (A 77.1, 기준선 71.9). 엉덩이·무릎을 낮춰도 초반 학습은 나빠지지 않았다. 판단은 8,000회(무작위화 최대)와 완주 측정에서",
    "number": "B 4,011 / 12,000회, 끝 예상 21:45",
    "section": "done",
-   "changed": "2026-10-16 14:17"
+   "changed": "2026-10-16 14:17",
+   "collapsed": true
   },
   "huphy-can-link": {
    "id": "huphy-can-link",
@@ -2129,7 +2130,8 @@
    "number": "시험 71개 통과 / 손실: 오른다리 3.5%, 왼다리 2.8% (200Hz), 모터 1개 벤치 0.009% / 가장 긴 연속 늦음 82주기 (100Hz 왼다리)",
    "needs": "벤치 모터 전원 복구(48V) 후 host_id_tool read 와 bus_probe 실측, 이어서 로봇에서 번호 같음/다름 비교",
    "section": "done",
-   "changed": "2026-10-16 14:38"
+   "changed": "2026-10-16 14:38",
+   "collapsed": true
   },
   "can-link": {
    "id": "can-link",
@@ -2187,6 +2189,31 @@
    "number": "B 8,063 / 12,000회, 끝 예상 07:50 → C 자동 시작",
    "section": "done",
    "changed": "2026-10-17 03:57"
+  },
+  "real-stand-logs-0310405": {
+   "id": "real-stand-logs-0310405",
+   "created": "2026-10-17 04:01",
+   "title": "Real standing logs (body gain 0.3/0.4/0.5, ankle 1.0) vs simulation",
+   "finding": "Real robot diverges 2 s after pushes of 0.15-0.3 m/s equivalent (gyro peak 0.085-0.24 rad/s); simulation at the same gains does not fall below 0.5 m/s. Observations before the push stay inside the training band. Best fit: a real-only difference, not the gain alone.",
+   "number": "0 of 48 simulated pushes (0.15-0.3 m/s) fell; real fell after 2 of 3 logs' events",
+   "needs": "A real log at body gain 0.8-1.0 with ankle 1.0, send mode seq, and the gain/send mode written in the log header",
+   "media": [
+    "docs/sim2real/img/2026-10-17_real_stand_timeseries.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-17 04:01"
+  },
+  "real-logs": {
+   "id": "real-logs",
+   "created": "2026-10-17 04:03",
+   "title": "실기 서기 기록(몸 0.3/0.4/0.5, 발목 1.0) 분석: 시뮬은 같은 게인·같은 크기 밀기에서 0/48 넘어짐, 실기는 2초 안에 발산 → 실기에만 있는 차이",
+   "finding": "조용히 설 때 관측은 학습 범위 안. 실기에만 있는 차이 후보: 송신 방식 burst 의 지연·유실(오른 발목 B 늦음+무응답 최대 22 %), IMU 값 멈춤(조용할 때 64~90 % 주기에서 직전과 동일, 최장 230 주기), 오른 발목 A 영점 −5.6°. 정책 주기 24~27 ms 는 시뮬에서 차이 없음. 결정적 자료(몸 게인 0.8~1.0 + seq 기록)가 없음",
+   "number": "docs/sim2real/2026-10-17_real_stand_logs_gain031_051.md",
+   "media": [
+    "docs/sim2real/img/2026-10-17_real_stand_timeseries.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-17 04:03"
   }
  },
  "order": [
@@ -2385,7 +2412,9 @@
   "stance-inertia",
   "real-pd-guide",
   "next-actions",
-  "gain-ab-armB-8k"
+  "gain-ab-armB-8k",
+  "real-stand-logs-0310405",
+  "real-logs"
  ],
- "updated": "2026-10-17 03:57"
+ "updated": "2026-10-17 04:03"
 }
