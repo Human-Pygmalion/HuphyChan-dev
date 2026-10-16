@@ -1982,7 +1982,8 @@
     "System_ID/emf_bench/ux_shots/10_english_logging.png"
    ],
    "section": "done",
-   "changed": "2026-10-15 20:41"
+   "changed": "2026-10-15 20:41",
+   "collapsed": true
   },
   "emf-logging": {
    "id": "emf-logging",
@@ -2050,6 +2051,15 @@
    "needs": "Overall judgement from the main session",
    "section": "done",
    "changed": "2026-10-16 12:10"
+  },
+  "gain-ab-armA": {
+   "id": "gain-ab-armA",
+   "created": "2026-10-16 12:11",
+   "title": "게인 비교 A(크랭크 60 단독) 판정: 아직 채택 안 함 — 회전 개선, 직진 중 방향 틀어짐 61°",
+   "finding": "제자리 회전 53.5 % 대 기준선 45.3 % (씨앗 8개), 반대 방향 3/64 대 6/64, 크랭크 오차 99 백분위수 46° (창 62° 안), 크랭크 토크 실효값 13.1 N·m (정격 20). 그러나 1.2 m/s 직진에서 17초 동안 61° 틀어짐(세 씨앗 58~64°, 기준선 8.6°). 게인 0.5배 생존 1/8 → 묶음 시험 런의 0.5배 내성(8/8)은 크랭크가 아니라 게인 무작위화 덕",
+   "number": "사전 기준 6개 중 합격 4·불합격 1·판정 없음 1",
+   "section": "done",
+   "changed": "2026-10-16 12:11"
   }
  },
  "order": [
@@ -2235,7 +2245,8 @@
   "gain-ab-heartbeat",
   "gain-ab-4k",
   "gain-ab-8k",
-  "gainab_armA_eval"
+  "gainab_armA_eval",
+  "gain-ab-armA"
  ],
- "updated": "2026-10-16 12:10"
+ "updated": "2026-10-16 12:11"
 }
