@@ -1,0 +1,20 @@
+### flags: []
+crank Kp/Kd at scale 1.0: 22.265625 1.4140625
+built Kp/Kd at scale 1.0: {'R_crank_A_joint': (22.2656, 1.4141), 'R_crank_B_joint': (22.2656, 1.4141), 'L_crank_A_joint': (22.2656, 1.4141), 'L_crank_B_joint': (22.2656, 1.4141)}
+['R_crank_A_joint', 'R_crank_B_joint', 'L_crank_A_joint', 'L_crank_B_joint'] Kp at scale 0.05 -> [0.0, 0.0, 0.0, 0.0]
+built Kp/Kd at scale 1.0: {'R_hip_yaw_joint': (150.0, 6.0), 'L_hip_yaw_joint': (150.0, 6.0)}
+['R_hip_yaw_joint', 'L_hip_yaw_joint'] Kp at scale 0.05 -> [7.326007843017578, 7.326007843017578]
+built Kp/Kd at scale 1.0: {'R_hip_pitch_joint': (150.0, 6.0), 'R_hip_roll_joint': (150.0, 6.0), 'L_hip_pitch_joint': (150.0, 6.0), 'L_hip_roll_joint': (150.0, 6.0)}
+['R_hip_pitch_joint', 'R_hip_roll_joint', 'L_hip_pitch_joint', 'L_hip_roll_joint'] Kp at scale 0.05 -> [7.326007843017578, 7.326007843017578, 7.326007843017578, 7.326007843017578]
+built Kp/Kd at scale 1.0: {'R_knee_joint': (220.0, 6.0), 'L_knee_joint': (220.0, 6.0)}
+['R_knee_joint', 'L_knee_joint'] Kp at scale 0.05 -> [10.989011764526367, 10.989011764526367]
+### flags: [--crank-kp 60 --crank-kd 2.7 --hip-kp 135 --hip-kd 6 --hip-yaw-kp 75 --hip-yaw-kd 4 --knee-kp 130 --knee-kd 6]
+crank Kp/Kd at scale 1.0: 60.0 2.700000047683716
+built Kp/Kd at scale 1.0: {'R_crank_A_joint': (60.0, 2.7), 'R_crank_B_joint': (60.0, 2.7), 'L_crank_A_joint': (60.0, 2.7), 'L_crank_B_joint': (60.0, 2.7)}
+['R_crank_A_joint', 'R_crank_B_joint', 'L_crank_A_joint', 'L_crank_B_joint'] Kp at scale 0.05 -> [2.442002534866333, 2.442002534866333, 2.442002534866333, 2.442002534866333]
+built Kp/Kd at scale 1.0: {'R_hip_yaw_joint': (75.0, 4.0), 'L_hip_yaw_joint': (75.0, 4.0)}
+['R_hip_yaw_joint', 'L_hip_yaw_joint'] Kp at scale 0.05 -> [3.663003921508789, 3.663003921508789]
+built Kp/Kd at scale 1.0: {'R_hip_pitch_joint': (135.0, 6.0), 'R_hip_roll_joint': (135.0, 6.0), 'L_hip_pitch_joint': (135.0, 6.0), 'L_hip_roll_joint': (135.0, 6.0)}
+['R_hip_pitch_joint', 'R_hip_roll_joint', 'L_hip_pitch_joint', 'L_hip_roll_joint'] Kp at scale 0.05 -> [6.105006694793701, 6.105006694793701, 6.105006694793701, 6.105006694793701]
+built Kp/Kd at scale 1.0: {'R_knee_joint': (130.0, 6.0), 'L_knee_joint': (130.0, 6.0)}
+['R_knee_joint', 'L_knee_joint'] Kp at scale 0.05 -> [6.105006694793701, 6.105006694793701]

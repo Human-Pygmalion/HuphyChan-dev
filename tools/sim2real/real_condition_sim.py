@@ -47,6 +47,13 @@ ap.add_argument("--only", default="", help="comma list of condition names")
 ap.add_argument("--device", default="cuda:0")
 ap.add_argument("--crank-kp", type=float, default=0.0, help="override ankle crank Kp before the gain scale (0 = package value)")
 ap.add_argument("--crank-kd", type=float, default=0.0, help="override ankle crank Kd before the gain scale (0 = package value)")
+# gain overrides for the other joint groups (0 = package value); same pattern as --crank-kp, applied before the gain scale
+ap.add_argument("--hip-kp", type=float, default=0.0, help="override hip pitch + roll Kp (0 = package value)")
+ap.add_argument("--hip-kd", type=float, default=0.0, help="override hip pitch + roll Kd (0 = package value)")
+ap.add_argument("--hip-yaw-kp", type=float, default=0.0, help="override hip yaw Kp (0 = package value)")
+ap.add_argument("--hip-yaw-kd", type=float, default=0.0, help="override hip yaw Kd (0 = package value)")
+ap.add_argument("--knee-kp", type=float, default=0.0, help="override knee Kp (0 = package value)")
+ap.add_argument("--knee-kd", type=float, default=0.0, help="override knee Kd (0 = package value)")
 ap.add_argument("--out", required=True)
 a = ap.parse_args()
 sys.path.insert(0, a.pkg)
@@ -159,6 +166,17 @@ for act in robot.actuators:
       act.default_damping[:, is_ankle] = a.crank_kd
   if is_ankle.any():
     print("crank Kp/Kd at scale 1.0:", float(act.default_stiffness[0, is_ankle][0]), float(act.default_damping[0, is_ankle][0]), flush=True)
+  # hip / knee overrides (arm B of the rough gain A/B); joint name substring -> (Kp, Kd), 0 keeps the package value
+  for key, kp, kd in (("hip_pitch", a.hip_kp, a.hip_kd), ("hip_roll", a.hip_kp, a.hip_kd),
+                      ("hip_yaw", a.hip_yaw_kp, a.hip_yaw_kd), ("knee", a.knee_kp, a.knee_kd)):
+    sel = torch.tensor([key in t for t in act.target_names], device=dev)
+    if sel.any():
+      if kp:
+        act.default_stiffness[:, sel] = kp
+      if kd:
+        act.default_damping[:, sel] = kd
+  print("built Kp/Kd at scale 1.0:", {t: (round(float(act.default_stiffness[0, i]), 4), round(float(act.default_damping[0, i]), 4))
+                                     for i, t in enumerate(act.target_names)}, flush=True)
   s = torch.where(is_ankle[None, :], ankle[:, None], body[:, None])
   act.stiffness[:] = quant(act.default_stiffness * s, 5000.0)
   act.damping[:] = quant(act.default_damping * s, 100.0)
