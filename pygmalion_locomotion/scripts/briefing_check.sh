@@ -79,7 +79,7 @@ if echo "$cur" | grep -qiE '학습 중|학습중|training|본런|스모크 실�
   # (the run's own watcher reports that).
   if echo "$cur" | grep -q '원격'; then
     alive() { timeout 15 ssh -o BatchMode=yes -o ConnectTimeout=5 syaro@10.8.0.14 \
-      'pgrep -f "[t]rain_wandb_video|[r]un_v2_scratch|[t]rain_actor_warmstart" >/dev/null' 2>/dev/null; [ $? -ne 1 ]; }
+      'pgrep -f "[t]rain_wandb_video|[r]un_v2_scratch|[t]rain_actor_warmstart|[m]jlab.scripts.train" >/dev/null' 2>/dev/null; [ $? -ne 1 ]; }
   else
     alive() { pgrep -f "train_wandb_video|run_training|run_v2_scratch" >/dev/null 2>&1; }
   fi
