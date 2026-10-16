@@ -2014,7 +2014,8 @@
    "finding": "자동 점검(스크립트). 진행 중입니다. 팔 A = 크랭크 60/2.7 만, 팔 B = 등반 권장 묶음 (대기 중이면 반복 '-').",
    "number": "팔 A 반복 11999 / 12,000 · 팔 B 반복 2974 / 12,000",
    "section": "done",
-   "changed": "2026-10-16 13:15"
+   "changed": "2026-10-16 13:15",
+   "collapsed": true
   },
   "gain-ab-4k": {
    "id": "gain-ab-4k",
@@ -2093,6 +2094,15 @@
    "number": "docs/171 §5~§6",
    "section": "done",
    "changed": "2026-10-16 13:01"
+  },
+  "can-faq2": {
+   "id": "can-faq2",
+   "created": "2026-10-16 13:25",
+   "title": "CAN 보충: 호스트 ID 는 매뉴얼상 저장(Command 12) 필요, 0xFD 공유 문제는 버퍼가 아니라 중재 충돌, 주기 밀림 시 HUPHY 수거가 개수 기준이라 한 주기 밀림이 이어질 수 있음",
+   "finding": "0x200A CAN_MASTER 기본 253, Type 18 쓰기는 전원 끄면 사라짐, 0x20xx 는 저장 대상. 개선안: 모터별 최신·송신 이후 도착 기준 완료 판정, 수신 스레드로 0~1 주기 고정 지연, 호스트 ID 별 커널 필터",
+   "number": "docs/171 §7",
+   "section": "done",
+   "changed": "2026-10-16 13:25"
   }
  },
  "order": [
@@ -2282,7 +2292,8 @@
   "heading-drift-probe",
   "heading-drift",
   "can-budget",
-  "huphy-can-review"
+  "huphy-can-review",
+  "can-faq2"
  ],
- "updated": "2026-10-16 13:15"
+ "updated": "2026-10-16 13:25"
 }
