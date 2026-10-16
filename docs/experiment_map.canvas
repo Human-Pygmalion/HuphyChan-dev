@@ -2441,6 +2441,40 @@
       "width": 420,
       "height": 160,
       "file": "experiments/2026-10-15_ab_rough_gain_compare.md"
+    },
+    {
+      "id": "n_rough_gain_gaindr",
+      "type": "file",
+      "x": 23740,
+      "y": 4860,
+      "width": 420,
+      "height": 160,
+      "file": "experiments/2026-10-17_rough_gain_crank60_gaindr_v11a.md"
+    },
+    {
+      "id": "n_rough_gain_actdelay",
+      "type": "file",
+      "x": 24260,
+      "y": 4860,
+      "width": 420,
+      "height": 160,
+      "file": "experiments/2026-10-17_rough_gain_crank60_actdelay_v11a.md"
+    },
+    {
+      "id": "e_gain_a_gaindr",
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 420,
+      "height": 200
+    },
+    {
+      "id": "e_gain_a_actdelay",
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 420,
+      "height": 200
     }
   ],
   "edges": [
