@@ -1041,5 +1041,12 @@
     "state": "open",
     "added": 1792070264.759677,
     "why": ""
+  },
+  {
+    "id": 153,
+    "text": "[사용자 2026-10-16] CAN 통신 검토: 현재 벤치 지연·손실 실측, slcan→gs_usb(candleLight) 병렬화 가능성, 1 Mbps 모터 6개 최대 Hz·대역폭",
+    "state": "done",
+    "added": 1792121473.551782,
+    "why": ""
   }
 ]
