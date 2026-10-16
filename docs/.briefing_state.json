@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "게인 비교 B(등반 권장 전체) 원격 학습 중 — 3090 에서 재개",
-  "detail": "10-17 02:09 에 model_6300 에서 재개. 첫 기록 6,300 회, 무작위화 램프 0.7169 (예상 0.7167) 로 이어짐. 남은 5,700 회, 끝 예상 07:40. 감시 스크립트가 8,000 회와 종료를 알림",
-  "since": "2026-10-17 02:10"
+  "title": "Gain comparison arms C and D queued on the 3090 (start after arm B, about 07:55; D about 19:30; D done about 07:00 next day)",
+  "detail": "Arm C = arm A + gain randomization only (stiffness x0.8-1.2, damping x0.7-1.3). Arm D = arm A + command delay randomization only (0-1 policy step = 20 ms). Pre-launch check: config differs from arm A only by the added randomization keys (C: 74 added lines, D: 4 added lines, 0 removed); 4-iteration smoke runs with 64 environments passed for both. Queue script gain_queue_cd.sh is waiting for arm B to exit; it takes over the GPU lock and releases it after D.",
+  "since": "2026-10-17 03:43"
  },
  "items": {
   "shouldermesh": {
@@ -2109,7 +2109,8 @@
    "finding": "0x200A CAN_MASTER 기본 253, Type 18 쓰기는 전원 끄면 사라짐, 0x20xx 는 저장 대상. 개선안: 모터별 최신·송신 이후 도착 기준 완료 판정, 수신 스레드로 0~1 주기 고정 지연, 호스트 ID 별 커널 필터",
    "number": "docs/171 §7",
    "section": "done",
-   "changed": "2026-10-16 13:25"
+   "changed": "2026-10-16 13:25",
+   "collapsed": true
   },
   "gain-ab-armB-4k": {
    "id": "gain-ab-armB-4k",
@@ -2177,6 +2178,15 @@
    "number": "B 07:40 → C 약 19:20 → D 약 07:00 (10-18) 예상",
    "section": "done",
    "changed": "2026-10-17 03:29"
+  },
+  "gain-ab-armB-8k": {
+   "id": "gain-ab-armB-8k",
+   "created": "2026-10-17 03:57",
+   "title": "게인 비교 B 8,000회 — 회전 추종 보상 0.864 (기준선 0.831, A 0.824), 넘어짐 종료 0.010 으로 세 런 중 가장 좋음",
+   "finding": "무작위화 최대 구간. 평균 보상 68.4 (A 69.9, 기준선 62.9). 엉덩이·무릎을 낮춘 등반 권장 게인이 학습 중 지표로는 나빠지지 않았다. 판정은 완주 뒤 측정",
+   "number": "B 8,063 / 12,000회, 끝 예상 07:50 → C 자동 시작",
+   "section": "done",
+   "changed": "2026-10-17 03:57"
   }
  },
  "order": [
@@ -2374,7 +2384,8 @@
   "gain-naming-limits",
   "stance-inertia",
   "real-pd-guide",
-  "next-actions"
+  "next-actions",
+  "gain-ab-armB-8k"
  ],
- "updated": "2026-10-17 03:29"
+ "updated": "2026-10-17 03:57"
 }
