@@ -17,7 +17,7 @@
 
 1. **수거(`collect`)가 "프레임 몇 개 왔나"로 끝나서, 응답이 한 번만 늦어도 한 주기 밀림이 끝없이 이어집니다** — 가짜 버스에서 재현했고(54주기 중 54주기가 계속 밀림), 실물 기록에서도 한 번의 사건 뒤에 59~71주기 연속으로 늦는 구간이 보입니다. 개선판은 다음 주기에 바로 복구됩니다(54주기 중 0주기).
 2. **모터 12개가 전부 같은 응답 번호 `0xFD` 로 답합니다**(호스트 번호를 바꾸는 코드·절차가 없음). 같은 번호끼리는 중재로 가려지지 않아 충돌(비트 오류) 가능성이 있고, 실물 기록의 손실 2.2~3.5 % 가 모터 1개짜리 벤치(0.009 %)보다 훨씬 큰 것과 맞지만 **아직 로봇에서 재 보지 못한 가설**입니다. 재는 도구와 한 번에 한 모터씩 바꾸는 절차를 같이 드립니다.
-3. **파일 두 개(`canbus.py`, `robstride/bus.py`)를 복사하면** 모터별 완료 판정, 커널 도착 시각, 모터당 미응답 한도, 모터별 응답 번호 지원, 오류 프레임 종류별 집계가 들어갑니다. 공개 이름은 그대로이고, 바뀌는 동작은 3절에 전부 적었습니다.
+3. **파일 두 개(`canbus.py`, `robstride/bus.py`)를 복사해도 기본 동작은 HUPHY 자체 시험을 그대로 통과합니다**(아래 6-3). 모터별 완료 판정과 커널 도착 시각은 기본으로 들어가고, 수신 스레드·미응답 한도·모터별 응답 번호는 **켜는 항목**입니다 — 켜는 순서와 근거는 3-4절 "권장 설정"에 있습니다.
 
 ---
 
@@ -173,16 +173,16 @@ bus = RobStrideBus(
 
 **재현** (모터 1개의 응답이 35 ms = 3.5주기 늦음, 100 Hz, 60주기) — `tests/test_collect_slip.py`
 
-| | 원본 | 개선판(K=2) | 개선판(끔) |
+| | 원본 | 개선판(`max_outstanding=2`) | 개선판(기본, 꺼짐) |
 |---|---|---|---|
-| 모터에 쌓인 미응답 최대 | **3** | **2** | 3 |
+| 모터에 쌓인 미응답 최대 | **3** | **2** (`max_outstanding=2`) | 3 (기본) |
 | 모터 수신 칸이 버린 명령 | **15 / 60** | **0** | 15 |
 | 그 모터에 보낸 명령 | 60 | **24** (36 건너뜀) | 60 |
 | 나머지 5개 모터 | 항상 응답 | 항상 응답 | 항상 응답 |
 
-**어떻게 고치나**: `max_outstanding`(기본 2, 최대 3) 개의 미응답이 쌓인 모터에는 **이번 주기 명령을 보내지 않고 셉니다**(`bus.link.skipped_commands`, `last_collect.skipped`).
+**어떻게 고치나**: `max_outstanding`(**기본 꺼짐**, 켤 때 권장 2, 최대 3) 개의 미응답이 쌓인 모터에는 **이번 주기 명령을 보내지 않고 셉니다**(`bus.link.skipped_commands`, `last_collect.skipped`).
 **동작이 바뀌는 곳입니다:** 건너뛴 주기에는 그 모터에 새 목표값이 전달되지 않습니다. 모터는 마지막으로 받은 MIT 명령(목표각·게인·토크)을 유지하므로 토크가 갑자기 0 이 되지는 않습니다.
-기록은 `outstanding_ttl_s`(기본 50 ms)가 지나면 버려져서, 죽은 모터에도 주기적으로 다시 시도합니다. `enable/disable/clear_fault` 는 이 한도를 **받지 않습니다**(끄는 명령은 항상 나감 — 시험으로 확인). 끄려면 `max_outstanding=0`.
+기록은 `outstanding_ttl_s`(기본 50 ms)가 지나면 버려져서, 죽은 모터에도 주기적으로 다시 시도합니다. `enable/disable/clear_fault` 는 이 한도를 **받지 않습니다**(끄는 명령은 항상 나감 — 시험으로 확인). 켜기: `max_outstanding=2` (기본은 꺼짐 = 원본 동작).
 부수 효과: 죽은 모터가 있어도 매 주기 창을 통째로 기다리지 않습니다(보내지 않았으니 기다리지 않음. 무응답 보고는 그대로).
 
 ---
@@ -206,7 +206,7 @@ bus = RobStrideBus(
 cand = ts - (time.time() - now)               # 벽시계 -> 단조시계
 stamp = min(cand, now) if now - 5.0 <= cand <= now + 0.001 else now   # 아니면 읽은 시각 + 셈
 ```
-개선판의 수신 스레드는 **기본 켬**입니다(`reader=True`). 양다리 모드는 원래 켜져 있어 달라지지 않고, 다리 하나만 쓰는 경로가 바뀝니다(3절).
+도착 시각은 수신 스레드 유무와 무관하게 커널 시각입니다. 수신 스레드(`reader=True`)는 **기본 꺼짐**(원본과 같음)이고 켜는 것을 권장합니다(3-4절). 양다리 모드(`bringup.py:184`)는 원래 켜져 있습니다.
 
 ---
 
@@ -244,17 +244,17 @@ stamp = min(cand, now) if now - 5.0 <= cand <= now + 0.001 else now   # 아니�
 | # | 무엇이 | 원본 | 개선판 | 되돌리는 법 |
 |---|---|---|---|---|
 | 1 | `collect()` 끝 판정 | 프레임 개수 | 모터별 "송신 이후 도착" | — (이것이 고침) |
-| 2 | `collect(expect=…)` | 개수로 끝 | **`send_mit` 뒤에는 무시**, 그 없이 부르면(활성화 응답 수거 등) 예전처럼 개수 | — |
-| 3 | `send_mit` 미응답 한도 | 없음 | 모터당 2개 쌓이면 그 주기 명령 **건너뜀**(2-3) | `max_outstanding=0` |
-| 4 | `CanBus` 수신 스레드 | 기본 꺼짐 | **기본 켬** (양다리 모드는 원래 켬) | `CanBus(ch, reader=False)` |
+| 2 | `collect(expect=…)` | 개수로 끝 | `completion="per_motor"`(기본)에서는 **`send_mit` 뒤에 무시**, 그 없이 부르면(활성화 응답 수거 등) 예전처럼 개수. `completion="count"` 는 항상 개수 | `completion="count"` |
+| 3 | `send_mit` 미응답 한도 | 없음 | **기본 꺼짐.** `max_outstanding=2` 로 켜면 모터당 2개 쌓일 때 그 주기 명령 **건너뜀**(2-3) | 기본이 꺼짐 |
+| 4 | `CanBus` 수신 스레드 | 기본 꺼짐 | **기본 꺼짐(원본과 같음).** `reader=True` 로 켜기를 권장 | — |
 | 5 | `CanFrame.stamp` | 읽은 시각 | 커널 도착 시각 | — |
 | 6 | `MotorState.stamp` | 수거 시각 | 도착 시각 | — |
 | 7 | 오류 프레임 | 합계만 | 종류별(`error_classes`, `error_fields()`) | — |
-| 8 | 모터별 응답 번호 | 없음 | `reply_ids=`, `kernel_filter=` 선택 사항 | 안 주면 원본과 같음 |
+| 8 | 모터별 응답 번호 | 없음 | `reply_ids=`, `kernel_filter=` 선택 사항 | 기본이 꺼짐 |
 | 9 | `RobStrideBus` 새 속성 | — | `last_collect`, `link`(누적: `cycles/late_replies/skipped_commands/timeouts/id_mismatch/undecodable/unknown_motor`, `link.as_fields()`) | — |
 | 10 | `refresh_states` | — | 큐를 비운 뒤 미응답 기록도 비움 | — |
 
-**원본 시험과의 차이** (6-3): 4번(수신 스레드 기본 켬)은 `CanBus("can1")` 을 스레드 없이 가정하는 시험들과 부딪혀 수십 개가 실패합니다. 기본을 `False` 로 두고 `bringup.py:184` 에 맡기시면 나머지는 3(미응답 한도)이 만드는 시험 1개(`test_what_never_came_is_lost`)뿐입니다.
+**기본값으로 HUPHY 자체 시험 1,269개를 돌린 결과는 6-3입니다.** 기본 동작이 원본과 같도록 켜는 항목을 옵션으로 두었습니다.
 
 ### 3-3. 시험 (하드웨어 없음)
 
@@ -271,8 +271,20 @@ stamp = min(cand, now) if now - 5.0 <= cand <= now + 0.001 else now   # 아니�
 | 실시간·스레드 | `ReaderThreadRealTime` | 실제 시계·수신 스레드에서도 원본 슬립 지속, 개선판 복구 |
 | 도구 | `test_tools.py` | 프레임 안전성, 호스트 번호 거부 규칙, 드라이런, 저장·전원 재투입 모형, 분석기 합성 자료 |
 
-실행: `cd System_ID/can_link && python3 -m unittest discover -s tests` (71개, 약 10초).
+실행: `cd System_ID/can_link && python3 -m unittest discover -s tests` (73개, 약 10초).
 숫자만 다시 뽑기: `python3 tests/run_all.py` → `results/test_numbers.json`.
+
+### 3-4. 권장 설정 (켜는 순서)
+
+복사만 하면 **기본값은 원본 동작을 지키되**(`reader=False`, `max_outstanding=None`) 모터별 완료 판정(`completion="per_motor"`, 기본)과 커널 도착 시각이 들어갑니다. 아래 순서로 하나씩 켜고, 켤 때마다 `latency_log` 를 같은 조건으로 다시 떠서 비교하십시오.
+
+| 순서 | 켜는 것 | 어떻게 | 무엇이 바뀌나 | 근거 |
+|---|---|---|---|---|
+| 1 | **모터별 완료 판정** (이미 기본) | `RobStrideBus(..., completion="per_motor")`. 원본 동작으로 되돌리려면 `"count"` | `collect()` 가 개수가 아니라 "송신 이후 도착"으로 끝남. 늦은 응답은 `last_collect.late` 에 나이와 함께 기록. 정상 주기는 전부 도착하면 즉시 끝나 창을 다 쓰지 않음 | 한 응답이 한 번 늦은 뒤 **값이 묵은 주기: 원본 54/54 → 개선판 0/54**, 다음 주기에 복구(`completion="count"` 로 두면 다시 54/54). 실물 기록: 한 사건 뒤 59~71주기 연속 늦음 (2-1). HUPHY 자체 시험은 기본값에서 통과(6-3) |
+| 2 | **수신 스레드** | `CanBus(ch, reader=True)` (양다리 경로 `bringup.py:184` 는 이미 켬; 다리 하나만 쓰는 경로에서 켜면 됨) | 응답을 송신 주기와 무관하게 받아 두고 `poll()` 이 이벤트로 깨어남. 도착 시각은 스레드 없이도 커널 시각이라 정확도는 그대로 | 시험 `ReaderThreadRealTime`: 실제 시계·스레드에서 묵은 주기 21/21 → 0/21 (3회). 기본이 `False` 인 이유: 가짜 버스가 `recv` 를 바로 돌려주는 원본 시험이 스레드를 가정하지 않음 |
+| 3 | **미응답 한도** | `RobStrideBus(..., max_outstanding=2)` | 모터에 응답 없는 명령이 2개 쌓이면 그 주기 **그 모터 명령을 안 보냄**(모터는 마지막 명령을 유지, 새 목표값만 전달 안 됨). 끄는 명령은 항상 나감. 죽은 모터를 매 주기 창만큼 기다리지 않음 | 응답이 3.5주기 늦는 모터: 모터에 쌓인 미응답 3 → 2, 모터가 버린 명령 15/60 → 0, 그 모터에 보낸 명령 60 → 24 (2-3). **동작이 바뀌므로 실물에서 `skipped_commands` 를 보면서 켜십시오** |
+| 4 | **모터별 호스트 번호** | 5절 절차로 모터를 하나씩 바꾼 뒤 `RobStrideBus(..., reply_ids={...}, kernel_filter=True)` | 모터마다 다른 응답 번호 → 중재가 작동, 번호로 모터 확정(`data[0]` 불일치는 폐기·집계), 커널 필터 | 충돌이 실제 원인인지는 **미검증**(7절). 로봇에서 `bus_probe.py` 로 번호 같음/다름을 비교해 `bus-errors`·유실이 줄 때만 유지 |
+| (참고) | 오류 프레임 종류별 집계 | 이미 항상 켜짐 (`counters.error_classes`). 텔레메트리에는 `{**c.as_fields(), **c.error_fields()}` | 합계만 있던 것이 종류별로 나옴. 큐 내용·`as_fields()` 는 원본과 같음 | 2-6 |
 
 ---
 
@@ -334,8 +346,7 @@ python3 host_id_tool.py set  --motor 7 --host 0x70                  # 드라이�
 ### 4-4. HUPHY 자체 시험을 개선판에 돌려 보기
 
 ```bash
-./run_upstream_suite.sh          # 원본과 개선판(수신 스레드 기본 켬) 각각 5분 내외
-./run_upstream_suite.sh false    # 개선판의 수신 스레드 기본값만 False 로 되돌린 변형
+./run_upstream_suite.sh          # 원본과 개선판(기본값) 각각 5분 내외
 ```
 `git archive origin/biped` 로 임시 폴더에 꺼내므로 HUPHY 저장소는 읽기만 합니다.
 
@@ -410,26 +421,27 @@ python3 host_id_tool.py set  --motor 7 --host 0x70                  # 드라이�
 |---|---|---|
 | 응답 한 번 늦은 뒤 값이 묵은 주기 (54주기 중) | **54** | **0** |
 | 묵은 값이 없어지는 주기 | 없음 | 늦은 주기 + 1 |
-| 느린 모터(35 ms): 모터에 쌓인 미응답 최대 | 3 | 2 |
+| 느린 모터(35 ms): 모터에 쌓인 미응답 최대 (`max_outstanding=2`) | 3 | 2 |
 | 느린 모터: 모터가 버린 명령 (60 중) | 15 | 0 |
 | 느린 모터에 실제로 보낸 명령 (60 중) | 60 | 24 |
 | 도착 30 ms 뒤에 읽을 때 `stamp` − 송신 | 30.2 ms (읽은 시각) | 0.64 ms (도착 시각) |
-| 실제 시계 + 수신 스레드(20 ms 주기, 25주기, 3회 반복): 늦음 뒤 묵은 주기 | 21/21, 21/21, 21/21 | 0/21, 0/21, 0/21 |
-| 이 폴더 시험 | — | **71 / 71 통과** |
+| 실제 시계 + 수신 스레드 `reader=True`(20 ms 주기, 25주기, 3회 반복): 늦음 뒤 묵은 주기 | 21/21, 21/21, 21/21 | 0/21, 0/21, 0/21 |
+| 이 폴더 시험 | — | **73 / 73 통과** |
 | 깨끗한 실행의 수거 시간 | — | 모든 주기가 창(4 ms)보다 훨씬 짧음(2 ms 미만), 시간초과 0 |
 
-### 6-3. HUPHY 자체 시험 (`run_upstream_suite.sh`)
+### 6-3. HUPHY 자체 시험 (`run_upstream_suite.sh`, 기본값 그대로)
 
-`./run_upstream_suite.sh` 가 `git archive origin/biped` 를 임시 폴더에 꺼내 시험 1,269개를 돌립니다(HUPHY 저장소는 읽기만).
+`git archive origin/biped` 를 임시 폴더에 꺼내 `PATCH.diff` 를 적용하고 시험 1,269개를 돌립니다(HUPHY 저장소는 읽기만). 개선판은 **기본값**(`reader=False`, `max_outstanding=None`, `completion="per_motor"`)입니다.
 
-| 대상 | 결과 | 비고 |
-|---|---|---|
-| 원본 `a1b67b1` | 1,265 통과 / **4 실패** | 실패 4개는 임시 폴더에 설정 심볼릭 링크·실측 파일이 없어서 나는 것(`test_calibration`·`test_config` 3개, `test_run::test_it_shows_what_it_will_do`). 개선판과 무관 |
-| 개선판, **수신 스레드 기본을 `False` 로 되돌린 변형** (`./run_upstream_suite.sh false`) | 1,264 통과 / 5 실패 | 위 4개 + `test_latency_log::test_what_never_came_is_lost` 1개. 이 1개는 **의도한 차이**: 응답 없는 모터에 세 번째 명령을 미응답 한도(2)가 막아 "보낸 수"가 3 이 아니라 2 로 세어짐. `max_outstanding=0` 으로 두면 통과(모터·다리·지연·버스·복구 시험 232개 전부 통과 확인) |
-| 개선판, **배포본 그대로(수신 스레드 기본 켬)** | 파일별 실행: `test_canbus` 12 실패, `test_robstride_bus` 7, `test_commissioning` 14, `test_leg` 20여 개(240초 제한에 걸려 중단), `test_latency_log` 1, `test_run` 1(원본 4개 중 하나) | `test_biped`·`test_bringup`·`test_commission_cli`·`test_control`·`test_stand`·`test_selftest`·`test_failures` 는 전부 통과 |
+| 대상 | 결과 |
+|---|---|
+| 원본 `a1b67b1` | 1,265 통과 / **4 실패** |
+| **개선판, 기본값** | 1,265 통과 / **4 실패 — 원본과 같은 4개** |
 
-배포본에서 실패하는 것은 **수신 스레드 기본 켬 하나** 때문입니다. 시험의 가짜 버스가 `recv` 를 기다림 없이 바로 돌려주거나(스레드가 헛돌며 CPU 를 먹음) 스레드를 닫지 않아서, `CanBus("can1")` 만 만드는 시험들이 스레드 없는 동작을 가정합니다. 양다리 경로(`bringup.py:184`)는 원래 `reader=True` 로 켜므로 그쪽 시험(`test_run`, `test_bringup`, `test_control`)은 통과합니다.
-**권장:** HUPHY 에 넣으실 때는 `canbus.py` 의 `reader: bool = True` 를 `False` 로 두고 `bringup.py:184` 의 기존 `setdefault("reader", True)` 에 맡기십시오(위 두 번째 줄의 변형이 그것입니다). 이 폴더의 배포본이 `True` 인 것은 "수신 스레드 기본 켬" 요청대로입니다. 어느 쪽이든 나머지 동작(완료 판정·커널 도착 시각·한도·오류 분류)은 같습니다.
+남은 4개(원본에서도 똑같이 실패 — 임시 폴더에 설정 심볼릭 링크와 실측 파일이 없어서 나는 환경 문제):
+`test_calibration.py::TestRealFiles::test_everything_is_unmeasured`, `test_config.py::TestRealFile::test_two_legs_two_channels`, `test_config.py::TestRealFile::test_limits_live_in_the_calibration_file`, `test_run.py::TestRun::test_it_shows_what_it_will_do`.
+
+`completion="per_motor"` 를 기본으로 켠 상태에서 통과하므로 개수 판정에 기대는 원본 시험은 없습니다. 켜는 항목 중 **수신 스레드 기본 켬**(`reader=True`)과 **미응답 한도 기본 켬**(`max_outstanding=2`)은 원본 시험과 부딪혀서(스레드 가정이 없는 가짜 버스 시험 수십 개, 미응답 모터의 "보낸 수" 시험 1개) 기본에서 뺐습니다.
 
 ### 6-4. 하드웨어 (벤치 모터 1개, `can0`, 2026-10-16)
 
@@ -448,7 +460,7 @@ python3 host_id_tool.py set  --motor 7 --host 0x70                  # 드라이�
 3. **개선판을 실제 `python-can` 위에서.** 이 컴퓨터에는 `python-can` 이 없어 `can.Message` / `can.interface.Bus` 를 흉내 낸 대역으로 시험했습니다. 쓰는 속성은 `msg.timestamp`(소켓 기반 인터페이스에서 커널 벽시계), `bus.socket`(없으면 오류 필터 설정을 조용히 건너뜀), `bus.set_filters` 입니다. 실제 버전에서의 `msg.timestamp` 값과 `stamp_fallbacks == 0` 을 로봇에서 한 번 보셔야 합니다.
 4. **실제 로봇에서 개선판의 효과.** 위 숫자는 가짜 버스입니다. 실물에서 `late` 비율과 연속 늦음이 줄어드는지는 로봇에서 같은 조건으로 `latency_log` 를 다시 떠 비교해야 합니다.
 5. **왕복이 주기보다 긴 경우의 오인**(2-1 한계)과, 모터 수신 칸이 3개라는 **내부 원인**(실측은 있으나 모터 내부는 못 봄).
-6. **HUPHY 시험 수정.** 수신 스레드 기본값 등으로 부딪히는 원본 시험은 6-3 에 적었고 고치지 않았습니다(HUPHY 는 건드리지 않음).
+6. **켜는 항목 세 개(`reader=True`, `max_outstanding=2`, `reply_ids`)를 켠 상태의 HUPHY 시험.** 기본값에서는 통과를 확인했지만(6-3), 켠 상태로는 돌리지 않았습니다. 켜면 스레드를 가정하지 않는 원본 시험과 부딪힙니다(HUPHY 는 건드리지 않아 고치지 않음).
 7. **어댑터 차이.** 오류 프레임은 gs_usb 에서만 나옵니다. 왼다리·오른다리 어댑터가 각각 slcan 인지 gs_usb 인지는 기록 파일만으로는 모릅니다.
 
 ---
@@ -462,7 +474,7 @@ python3 host_id_tool.py set  --motor 7 --host 0x70                  # 드라이�
 | `bus_probe.py`, `host_id_tool.py`, `analyze_huphy_latency.py` | 시험 도구 (읽기 전용 기본) |
 | `canraw.py`, `frames.py` | 표준 라이브러리 소켓 CAN, 프레임 빌더(안전 지도는 `frames.py` 머리말) |
 | `fake_can.py` | 가짜 버스·모터(시험과 `--fake` 용; **측정이 아님**) |
-| `tests/` | 단위 시험 71개와 시나리오(`scenarios.py`, `run_all.py`) |
+| `tests/` | 단위 시험 73개와 시나리오(`scenarios.py`, `run_all.py`) |
 | `vendor/huphy_motors_biped_a1b67b1/` | 원본 `motors/` 읽기 전용 사본 (출처·해시 포함) |
 | `run_upstream_suite.sh`, `make_patch.sh` | HUPHY 자체 시험 실행, 차이 파일 생성 |
 | `results/` | 분석기 결과(JSON·텍스트), 시험 숫자, 벤치 청취 기록, 가짜 버스 데모 2개(`probe_fake_*`: 형식 예시이며 측정 아님, 충돌 모형은 보정 안 된 장난감) |

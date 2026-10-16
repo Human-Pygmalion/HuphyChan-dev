@@ -12,12 +12,12 @@ DRAIN_S = 0.004         # the value in the archived robot logs (drain_ms=4)
 LATE_EXTRA_S = 0.006    # reply arrives ~6.9 ms after the burst: after the 4 ms drain, before the next send
 
 
-def late_once(pkg, *, late_motor: int = 9, glitch_cycle: int = 5, n: int = 60) -> Dict:
+def late_once(pkg, *, late_motor: int = 9, glitch_cycle: int = 5, n: int = 60, **bus_kwargs) -> Dict:
     """One reply (motor `late_motor`, cycle `glitch_cycle`) misses the drain window by 3 ms.
 
     Returns how many cycles from the glitch on contain a state that is one cycle old."""
     scripts = {late_motor: (lambda m, i: LATE_EXTRA_S if i == glitch_cycle else 0.0)}
-    rig = h.Rig(pkg, scripts=scripts, drain_s=DRAIN_S)
+    rig = h.Rig(pkg, scripts=scripts, drain_s=DRAIN_S, bus_kwargs=bus_kwargs)
     res = h.run_cycles(rig, n, PERIOD)
     shifted = [r["k"] for r in res if any((v or 0) >= 1 for v in r["lag"].values())]
     after = [k for k in shifted if k > glitch_cycle]
@@ -54,8 +54,9 @@ def slow_motor(pkg, *, motor: int = 9, delay_s: float = 0.035, n: int = 60, **bu
 def all_numbers() -> Dict:
     o, p = h.orig(), h.patched()
     d = {"late_once": {"old": late_once(o), "new": late_once(p)},
+         "late_once_count_mode": late_once(p, completion="count"),
          "late_once_by_motor": {"old": {}, "new": {}},
-         "slow_motor": {"old": slow_motor(o), "new_K2": slow_motor(p),
+         "slow_motor": {"old": slow_motor(o), "new_K2": slow_motor(p, max_outstanding=2),
                         "new_K0_guard_off": slow_motor(p, max_outstanding=0)}}
     for name, pkg in (("old", o), ("new", p)):
         for m in range(7, 13):

@@ -35,6 +35,23 @@
    "missing_reports_after_glitch": 0
   }
  },
+ "late_once_count_mode": {
+  "late_motor": 9,
+  "cycles": 60,
+  "glitch_cycle": 5,
+  "shifted_cycles_after_glitch": 54,
+  "cycles_after_glitch": 54,
+  "first_clean_cycle_after": null,
+  "stale_cycles_per_motor": {
+   "7": 0,
+   "8": 0,
+   "9": 0,
+   "10": 0,
+   "11": 0,
+   "12": 54
+  },
+  "missing_reports_after_glitch": 54
+ },
  "late_once_by_motor": {
   "old": {
    "7": 54,

@@ -69,8 +69,7 @@ slcan 은 속도를 어댑터가 들고 있어서 `ip link` 에 `bitrate` 를 �
 공개 이름(connect/disconnect/send/send_many/drain/flush_rx/counters/start_reader)은
 그대로임. 바뀐 동작은 넷이고, 모두 이 파일 안에서 끝남.
 
-1. **수신 스레드가 기본 켬** (`reader=True`). 끄려면 `CanBus(ch, reader=False)`.
-   스레드가 없으면 프레임의 도착 시각을 "파이썬이 꺼낸 시각"으로밖에 모름.
+1. **수신 스레드는 기본 끔(원본과 같음)**. 켜려면 `CanBus(ch, reader=True)` (권장, README 권장 설정).
 2. **프레임마다 커널 도착 시각** (`CanFrame.stamp`). python-can 의 `msg.timestamp`
    (커널이 소켓 큐에 넣은 시각, 벽시계)를 `time.monotonic()` 기준으로 바꿔 넣음.
    스레드가 늦게 깨어나도 "언제 도착했나"는 변하지 않음. 이 값이 있어야 `bus.py` 가
@@ -280,7 +279,7 @@ class CanBus:
         channel: str,
         *,
         interface: str = DEFAULT_INTERFACE,
-        reader: bool = True,
+        reader: bool = False,
         reply_ids: Optional[Iterable[int]] = None,
         error_frames: bool = True,
     ) -> None:
@@ -289,8 +288,9 @@ class CanBus:
         self.use_reader = bool(reader)
         """수신 스레드를 둘지. `connect()` 가 이 값을 보고 시작함.
 
-        **기본은 켬** (원본은 끔). 스레드가 있어야 송신 주기와 무관하게 응답을 바로
-        받아 두고, 프레임마다 도착 시각을 정확히 알 수 있음.
+        **기본은 끔** (원본과 같음 -- 기존 시험·호출부의 기대를 바꾸지 않으려고). 켜면 송신 주기와
+        무관하게 응답을 바로 받아 두고 `poll()` 이 이벤트로 깨어남. 양다리 경로(`bringup.py:184`)는
+        원래 켜고 있음. 도착 시각(`stamp`)은 스레드 유무와 관계없이 커널 시각임.
         """
 
         self.reply_ids = None if reply_ids is None else tuple(sorted({int(i) for i in reply_ids}))

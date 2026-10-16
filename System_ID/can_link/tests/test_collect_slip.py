@@ -64,19 +64,31 @@ class SlipNew(unittest.TestCase):
 
     def test_dead_motor_costs_one_drain_per_cycle_when_guard_is_off(self):
         rig = h.Rig(h.patched(), drain_s=sc.DRAIN_S, scripts={8: (lambda m, i: None)},
-                    bus_kwargs=dict(max_outstanding=0))
+                    bus_kwargs=dict(max_outstanding=None))
         res = h.run_cycles(rig, 10, sc.PERIOD)
         self.assertTrue(all(r["missing"] == [8] for r in res))
         self.assertTrue(all(abs(r["stats"].waited_s - sc.DRAIN_S) < 1e-4 for r in res))
         rig.close()
 
     def test_dead_motor_with_guard_is_still_reported_missing_every_cycle_but_waited_for_less(self):
-        rig = h.Rig(h.patched(), drain_s=sc.DRAIN_S, scripts={8: (lambda m, i: None)})
+        rig = h.Rig(h.patched(), drain_s=sc.DRAIN_S, scripts={8: (lambda m, i: None)}, bus_kwargs=dict(max_outstanding=2))
         res = h.run_cycles(rig, 40, sc.PERIOD)
         self.assertTrue(all(r["missing"] == [8] for r in res))      # link-loss counting is unchanged
         waits = [r["stats"].waited_s for r in res]
         self.assertLess(sum(waits), 0.6 * sc.DRAIN_S * len(res))    # guard skips the dead motor most cycles
         rig.close()
+
+
+class CompletionFlag(unittest.TestCase):
+    def test_default_is_per_motor_and_count_reproduces_the_original_slip(self):
+        self.assertEqual(sc.late_once(h.patched())["shifted_cycles_after_glitch"], 0)
+        r = sc.late_once(h.patched(), completion="count")
+        self.assertEqual(r["shifted_cycles_after_glitch"], r["cycles_after_glitch"])
+
+    def test_bad_value_refused(self):
+        with self.assertRaises(ValueError):
+            h.Rig(h.patched(), bus_kwargs=dict(completion="x"))
+        h.fc.uninstall_fake_can_module()
 
 
 class OutstandingGuard(unittest.TestCase):
@@ -93,8 +105,8 @@ class OutstandingGuard(unittest.TestCase):
             self.assertGreater(r["skipped_by_guard"], 0 if K < 3 else -1)
             self.assertTrue(r["other_motors_always_answered"])
 
-    def test_guard_off_reproduces_the_original_pile_up(self):
-        r = sc.slow_motor(h.patched(), max_outstanding=0)
+    def test_guard_is_off_by_default_and_reproduces_the_original_pile_up(self):
+        r = sc.slow_motor(h.patched())            # default = off
         self.assertEqual(r["max_unanswered_at_motor"], 3)
         self.assertEqual(r["frames_sent_to_motor"], 60)
 
@@ -104,7 +116,7 @@ class OutstandingGuard(unittest.TestCase):
         h.fc.uninstall_fake_can_module()
 
     def test_disable_torque_is_never_skipped_by_the_guard(self):
-        rig = h.Rig(h.patched(), drain_s=sc.DRAIN_S, scripts={9: (lambda m, i: 0.5)})
+        rig = h.Rig(h.patched(), drain_s=sc.DRAIN_S, scripts={9: (lambda m, i: 0.5)}, bus_kwargs=dict(max_outstanding=2))
         h.run_cycles(rig, 6, sc.PERIOD)                      # motor 9 now has 2 unanswered, guard closed
         before = len([1 for _, cid, d in rig.wire.tx_sent_log if cid == 9])
         rig.rs.disable_torque([9])
@@ -117,7 +129,7 @@ class OutstandingGuard(unittest.TestCase):
 
     def test_stale_records_expire_so_a_recovered_motor_is_commanded_again(self):
         rig = h.Rig(h.patched(), drain_s=sc.DRAIN_S,
-                    scripts={9: (lambda m, i: None if i < 2 else 0.0)})   # first 2 replies lost, then healthy
+                    scripts={9: (lambda m, i: None if i < 2 else 0.0)}, bus_kwargs=dict(max_outstanding=2))   # first 2 replies lost, then healthy
         res = h.run_cycles(rig, 30, sc.PERIOD)
         late_cycles = [r["k"] for r in res if 9 not in r["missing"]]
         self.assertTrue(len(late_cycles) >= 20, "motor 9 should be answering again after the ttl")

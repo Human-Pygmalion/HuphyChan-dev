@@ -40,17 +40,17 @@ MIT 모드에는 "상태 읽기" 명령이 따로 없음. 모터는 **동작 명
 남아 있으면 그것도 한 개로 세어, 이번 주기 응답 하나가 다음 주기로 밀리고 그 밀림이
 이어짐 (밀림이 안 풀림: `can_link/tests/test_collect_slip.py` 가 재현함).
 
-개선판은 **모터마다** 끝남. 모터는 "이번 송신 시각 이후에 도착한 응답(커널 도착 시각)"을
+개선판은 (`completion="per_motor"`, 기본) **모터마다** 끝남. `completion="count"` 는 원본의 개수 판정. 모터는 "이번 송신 시각 이후에 도착한 응답(커널 도착 시각)"을
 받았을 때 끝난 것이고, 송신 이전에 도착한 프레임은 상태에 반영하되 `late` 로만 기록함.
 반환값(응답이 없던 모터 id)은 그대로이고, 상세는 `bus.last_collect` 에 있음.
 
-**동작이 바뀌는 곳 (한 군데)**: 모터 하나에 응답 없는 명령이 `max_outstanding`(기본 2)개
+**동작이 바뀌는 곳 (한 군데)**: 모터 하나에 응답 없는 명령이 `max_outstanding`(켰을 때 권장 2)개
 쌓이면 그 모터에는 이번 주기 `send_mit` 명령을 **보내지 않음**. 모터는 마지막으로 받은
 MIT 명령(목표각·게인·토크)을 계속 유지하므로 토크가 갑자기 0 이 되지는 않음 -- 대신
 그 주기의 새 목표값이 그 모터에는 전달되지 않음. 모터 수신 칸이 3개라 4번째부터 버려지는
 것(2026-09-09 실측)을 호스트에서 먼저 막는 장치임. 쌓인 기록은 `outstanding_ttl_s`
 (기본 50 ms)가 지나면 버려져서, 죽은 모터에도 주기적으로 다시 시도함.
-끄려면 `max_outstanding=0`. `enable/disable/clear_fault` 는 이 제한을 받지 않음.
+**기본은 꺼짐**(`max_outstanding=None`); 켜려면 `max_outstanding=2`. `enable/disable/clear_fault` 는 이 제한을 받지 않음.
 
 ## 여기 없는 것
 
@@ -174,12 +174,18 @@ class RobStrideBus(MotorsBus):
         protocol: tables.Protocol = tables.Protocol.MIT,
         drain_s: float = DEFAULT_DRAIN_S,
         reply_ids: Optional[Mapping[int, int]] = None,
-        max_outstanding: int = 2,
+        max_outstanding: Optional[int] = None,
+        completion: str = "per_motor",
         outstanding_ttl_s: float = 0.05,
         kernel_filter: bool = False,
     ) -> None:
         if drain_s < 0:
             raise ValueError(f"drain_s 는 0 이상이어야 함 (받은 값 {drain_s})")
+        if completion not in ("per_motor", "count"):
+            raise ValueError(f"completion 은 'per_motor' 또는 'count' (받은 값 {completion!r})")
+        self.completion = completion
+        """`collect` 끝 판정. `per_motor`(기본): 모터별 "송신 이후 도착". `count`: 원본처럼 프레임 개수."""
+        max_outstanding = 0 if max_outstanding is None else max_outstanding
         if not 0 <= int(max_outstanding) <= 3:
             raise ValueError(
                 f"max_outstanding 은 0(끔)~3 이어야 함 -- 모터 수신 칸이 3개임 (받은 값 {max_outstanding})"
@@ -187,7 +193,7 @@ class RobStrideBus(MotorsBus):
         self.bus = bus
         self.motors = dict(motors)
         self.max_outstanding = int(max_outstanding)
-        """모터 하나에 응답 없는 명령을 이 개수까지만 둠. 0 이면 제한 없음 (원본 동작)."""
+        """모터 하나에 응답 없는 명령을 이 개수까지만 둠. `None`/0 이면 제한 없음 (원본 동작, **기본**)."""
         self.outstanding_ttl_s = float(outstanding_ttl_s)
         """응답 없는 명령 기록을 이 시간이 지나면 버림 (모터가 버렸거나 응답을 잃은 것으로 봄)."""
 
@@ -448,7 +454,11 @@ class RobStrideBus(MotorsBus):
         late_stamp: Dict[int, float] = {}
         seen_any = set()
 
-        if not awaited and sent_this_cycle:
+        if self.completion == "count":
+            # 원본 동작: 프레임 개수로 끝남 (비교·되돌리기용)
+            frames = self.bus.drain(expect=expect, timeout_s=wait)
+            self._ingest(frames, fresh, late, late_stamp, seen_any, awaited=())
+        elif not awaited and sent_this_cycle:
             # 이번 주기에 보낸 명령이 하나도 없음(전부 건너뜀·빈 명령): 기다릴 응답이 없으므로 있는 것만 받음.
             frames = self.bus.drain(expect=0, timeout_s=0.0) if getattr(self.bus, "poll", None) is None \
                 else self.bus.poll(0.0)

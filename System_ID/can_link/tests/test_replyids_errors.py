@@ -201,13 +201,13 @@ class StampsAndCompat(unittest.TestCase):
         self.assertEqual(rig.can.counters.stamp_fallbacks, 1)
         rig.close()
 
-    def test_reader_is_on_by_default_and_off_when_asked(self):
+    def test_reader_is_off_by_default_like_the_original_and_on_when_asked(self):
         pkg = h.patched()
         rig = h.Rig(pkg, virtual=False, canbus_kwargs={})
-        self.assertTrue(rig.can.reader_running)
-        rig.close()
-        rig = h.Rig(pkg, virtual=False, canbus_kwargs=dict(reader=False))
         self.assertFalse(rig.can.reader_running)
+        rig.close()
+        rig = h.Rig(pkg, virtual=False, canbus_kwargs=dict(reader=True))
+        self.assertTrue(rig.can.reader_running)
         rig.close()
 
     def test_import_without_python_can(self):
@@ -282,7 +282,7 @@ class ReaderThreadRealTime(unittest.TestCase):
 
     def test_old_with_reader_slips_forever_new_recovers(self):
         o_slip, n = self._run(h.orig(), reader=True)
-        n_slip, _ = self._run(h.patched())
+        n_slip, _ = self._run(h.patched(), reader=True)
         self.assertGreaterEqual(o_slip, n - 2, f"old: {o_slip}/{n}")
         self.assertLessEqual(n_slip, 1, f"new: {n_slip}/{n}")
 
