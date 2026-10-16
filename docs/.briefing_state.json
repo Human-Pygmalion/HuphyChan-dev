@@ -2079,7 +2079,8 @@
     "docs/img/pd_gain/2026-10-16_heading_drift_probe.png"
    ],
    "section": "done",
-   "changed": "2026-10-16 12:24"
+   "changed": "2026-10-16 12:24",
+   "collapsed": true
   },
   "can-budget": {
    "id": "can-budget",
@@ -2144,6 +2145,15 @@
    "number": "실물 게인 찾기 방법 조사·학습 경로는 진행 중",
    "section": "done",
    "changed": "2026-10-16 17:31"
+  },
+  "stance-inertia": {
+   "id": "stance-inertia",
+   "created": "2026-10-16 17:55",
+   "title": "디딤 상태 유효 관성·중력 강성 계산 (docs/169 §10-3)",
+   "finding": "디딤 발 고정·다른 관절 고정 조건. 발목 디딤 관성 10.3 kg·m² (흔들 때 0.006의 약 1,700배), 중력 강성 +135 N·m/rad(불안정). 크랭크 60 이면 한 발 디딤 순 강성 −58, 쓰러짐 시간 상수 0.42초(정책 주기 20 ms의 21배). 디딤 감쇠비는 엉덩이·무릎 0.14~0.21 로 낮다 → 균형 감쇠는 정책이 담당",
+   "number": "한 발 디딤 수동 안정에 필요한 크랭크 Kp ≥ 105",
+   "section": "done",
+   "changed": "2026-10-16 17:55"
   }
  },
  "order": [
@@ -2338,7 +2348,8 @@
   "gain-ab-armB-4k",
   "huphy-can-link",
   "can-link",
-  "gain-naming-limits"
+  "gain-naming-limits",
+  "stance-inertia"
  ],
- "updated": "2026-10-16 17:31"
+ "updated": "2026-10-16 17:55"
 }
