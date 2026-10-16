@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "게인 비교 원격 학습 중 — A(크랭크 60 단독) 완주·판정 측정 중, B(등반 권장 전체) 원격 3090 학습 중",
-  "detail": "A 10:14 완주(11,999회). B 10:11 자동 시작, 끝 예상 21:45. A 판정 측정: 회전 씨앗 8개(기준선도 8개 재측정), 서기, 실기 조건 시뮬 14조건, 걷기 크랭크 오차·토크, 오르막 20°·계단 15 cm",
-  "since": "2026-10-16 10:15"
+  "title": "Gain A/B arm A: finished-run evaluation vs baseline (6 pre-registered checks)",
+  "detail": "Remote 3090 CPU runs at nice 10 (training arm B keeps the GPU lock). Turn x8 seeds, standing x4, walking, real-condition simulator, uphill/stairs probe.",
+  "since": "2026-10-16 10:16"
  },
  "items": {
   "shouldermesh": {
@@ -2015,11 +2015,11 @@
   "gain-ab-heartbeat": {
    "id": "gain-ab-heartbeat",
    "created": "2026-10-15 23:33",
-   "title": "게인만 바꾼 두 팔 비교 학습 정기 점검 (09:19) — 원격 3090 학습 중",
+   "title": "게인만 바꾼 두 팔 비교 학습 정기 점검 (11:15) — 원격 3090 학습 중",
    "finding": "자동 점검(스크립트). 진행 중입니다. 팔 A = 크랭크 60/2.7 만, 팔 B = 등반 권장 묶음 (대기 중이면 반복 '-').",
-   "number": "팔 A 반복 11121 / 12,000 · 팔 B 반복 - / 12,000",
+   "number": "팔 A 반복 11999 / 12,000 · 팔 B 반복 949 / 12,000",
    "section": "done",
-   "changed": "2026-10-16 09:19"
+   "changed": "2026-10-16 11:15"
   },
   "gain-ab-4k": {
    "id": "gain-ab-4k",
@@ -2224,5 +2224,5 @@
   "gain-ab-4k",
   "gain-ab-8k"
  ],
- "updated": "2026-10-16 10:15"
+ "updated": "2026-10-16 11:15"
 }
