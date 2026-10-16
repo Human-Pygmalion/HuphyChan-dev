@@ -2089,7 +2089,8 @@
    "finding": "병목은 선이 아니라 slcan USB 1 ms 묶음(파이 실측 6개 4.07 ms). gs_usb(candleLight)로 겹쳐 보내기 이득 기대, 실측 필요. 모든 모터가 같은 응답 번호 0xFD 라 몰아 보낼 때 충돌·오류 계수 확인 필요. 별도: 벤치 모터는 2026-10-15 21:40:19 버스 전압 20→5 V 로 꺼진 뒤 무응답",
    "number": "docs/171",
    "section": "done",
-   "changed": "2026-10-16 12:33"
+   "changed": "2026-10-16 12:33",
+   "collapsed": true
   },
   "huphy-can-review": {
    "id": "huphy-can-review",
@@ -2154,6 +2155,18 @@
    "number": "한 발 디딤 수동 안정에 필요한 크랭크 Kp ≥ 105",
    "section": "done",
    "changed": "2026-10-16 17:55"
+  },
+  "real-pd-guide": {
+   "id": "real-pd-guide",
+   "created": "2026-10-16 18:01",
+   "title": "실물 모터 PD 게인 조사·절차·학습 경로 문서 (docs/172) + 기존 벤치 데이터 예비 분석",
+   "finding": "문헌은 실물로 학습 게인을 고르지 않는다 — 게인은 기준으로 먼저 정하고, 실물은 시뮬 관절을 실물에 맞추는 데(관성·마찰·지연) 쓴다. 게인 무작위화 문헌 범위: Cassie ±30 %, Isaac Lab 0.8~1.2배, Guan ±10 %, Booster ±5 %, Berkeley 없음. 기존 벤치(모터만) 주파수 응답은 시뮬과 0.1~0.6 dB·0.4~4.4° 차이로 일치(0.5~6 Hz)",
+   "number": "학습 경로 7단계 (2차 시스템 → 위치 제어 → 주파수 응답 → 표본화·지연 → 시스템 식별 → 모터 구동기 내부 → 시뮬-실물 이전)",
+   "media": [
+    "docs/img/pd_tuning_prelim_bode.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-16 18:01"
   }
  },
  "order": [
@@ -2349,7 +2362,8 @@
   "huphy-can-link",
   "can-link",
   "gain-naming-limits",
-  "stance-inertia"
+  "stance-inertia",
+  "real-pd-guide"
  ],
- "updated": "2026-10-16 17:55"
+ "updated": "2026-10-16 18:01"
 }
