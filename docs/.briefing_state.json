@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "게인 비교: C(게인 무작위화) 완주·판정 측정 중, D(명령 지연 무작위화) 원격 3090 학습 중",
-  "detail": "C 19:4x 완주. 대기열이 19:39 에 D 시작, 48회까지 오류 없음, 끝 예상 10-18 07:15. C 판정: 게인 0.5배 생존(가설 ≥ 6/8), 회전 씨앗 8, 서기, 직진 치우침, 오르막·계단",
-  "since": "2026-10-17 19:43"
+  "title": "팔 C(게인 무작위화) 완주 뒤 사전 등록 측정 중",
+  "detail": "평가 때 게인 무작위화는 끈다(PYG_PD_GAIN_DR 제외). 이유: 걷기 측정 도구는 pd_gains 이벤트를 지우지 않아서, 켜 두면 게인이 0.8~1.2 배로 흔들린 채 잰다. 평가 환경 게인은 60/2.7·150/6·220/6 으로 확인. 실기 조건 시뮬은 끝: 게인 0.5 에서 6/8 (팔 A 1/8, 팔 B 2/8), 실제 타이밍 8/8. 나머지 측정이 도는 중.",
+  "since": "2026-10-17 19:55"
  },
  "items": {
   "shouldermesh": {
@@ -2220,7 +2220,8 @@
     "docs/sim2real/img/2026-10-17_real_stand_timeseries.png"
    ],
    "section": "done",
-   "changed": "2026-10-17 04:03"
+   "changed": "2026-10-17 04:03",
+   "collapsed": true
   },
   "rough_gain_crank60_gaindr_v11a-heartbeat": {
    "id": "rough_gain_crank60_gaindr_v11a-heartbeat",
@@ -2298,6 +2299,15 @@
    "number": "docs/175",
    "section": "done",
    "changed": "2026-10-17 19:21"
+  },
+  "rough_gain_crank60_actdelay_v11a-heartbeat": {
+   "id": "rough_gain_crank60_actdelay_v11a-heartbeat",
+   "created": "2026-10-17 20:43",
+   "title": "rough_gain_crank60_actdelay_v11a 정기 점검 (20:43) — 원격 3090 학습 중",
+   "finding": "자동 점검(스크립트). 진행 중입니다.",
+   "number": "반복 917 / 12,000",
+   "section": "done",
+   "changed": "2026-10-17 20:43"
   }
  },
  "order": [
@@ -2506,7 +2516,8 @@
   "gain-c-8k",
   "handoff-174",
   "digest-174",
-  "dr-requirements"
+  "dr-requirements",
+  "rough_gain_crank60_actdelay_v11a-heartbeat"
  ],
- "updated": "2026-10-17 19:43"
+ "updated": "2026-10-17 20:43"
 }
