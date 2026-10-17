@@ -1,5 +1,7 @@
 # HUPHY 실기 로그 심층 분석 — 무엇이 Sim↔Real 차이를 만드는가
 
+> **갱신 (2026-10-17)**: IMU 중력 x 부호 문제는 HUPHY `biped` `bb558c6` (2026-10-15) 에서 고쳐졌다 — 쿼터니언을 `(w, x, −y, −z)` 로 옮김, 가속도계와 0.002 안에서 일치. 이 폴더 전체 요약은 [`README.md`](README.md).
+
 2026-10-13. 앞 문서 [실험 조건 추적](2026-10-13_huphy_archivedlogs_conditions.md) 의 다음 단계.
 대상 정책: `rough_box_main_v11a` checkpoint 11999 (로봇의 `stand_bi.pt` 와 같은 파일). 시뮬레이션은 공유 브랜치 `vibecoded-audit-20261012` 의 순정 mjlab 패키지 (`Pygmalion-Velocity-Flat-P2` play 설정, 평지, 속도 명령 0) 로 돌렸다.
 
