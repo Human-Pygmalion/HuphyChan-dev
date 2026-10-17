@@ -2207,7 +2207,8 @@
     "docs/sim2real/img/2026-10-17_real_stand_timeseries.png"
    ],
    "section": "done",
-   "changed": "2026-10-17 04:01"
+   "changed": "2026-10-17 04:01",
+   "collapsed": true
   },
   "real-logs": {
    "id": "real-logs",
@@ -2275,6 +2276,15 @@
    "number": "docs/174",
    "section": "done",
    "changed": "2026-10-17 18:34"
+  },
+  "digest-174": {
+   "id": "digest-174",
+   "created": "2026-10-17 18:35",
+   "title": "알아낸 사실 정리 문서 작성: docs/174 (v11a 묶음 시험·역기전력 벤치·CAN 응답 번호)",
+   "finding": "다른 세션이 이어받을 수 있게 용어 정의·사실·숫자·원본 링크·열린 문제 6개·함정 6개. 게인 선정 과정은 docs/171 개요 문서로 연결. HUPHY 2fdc139 기준: 응답 번호 충돌 확인·seq 기본, 호스트 ID 분리는 아직 안 함",
+   "number": "docs/174",
+   "section": "done",
+   "changed": "2026-10-17 18:35"
   }
  },
  "order": [
@@ -2481,7 +2491,8 @@
   "gain-ab-armB-final",
   "gain-c-4k",
   "gain-c-8k",
-  "handoff-174"
+  "handoff-174",
+  "digest-174"
  ],
- "updated": "2026-10-17 18:34"
+ "updated": "2026-10-17 18:35"
 }
