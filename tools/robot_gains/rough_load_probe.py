@@ -43,6 +43,8 @@ from pathlib import Path
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--run", required=True, help="run directory (reads repro/launch_manifest.json for PYG_* flags)")
+ap.add_argument("--manifest-run", help="run directory whose repro/launch_manifest.json holds the PYG_* flags (default: --run; "
+                "needed for a resumed run, whose own directory has no repro/)")
 ap.add_argument("--ckpt", default="model_11999.pt")
 ap.add_argument("--suite", choices=["box", "slope", "stairs"], required=True)
 ap.add_argument("--levels", default="0,3,6,9", help="box suite: difficulty rows (0..9)")
@@ -55,7 +57,7 @@ ap.add_argument("--seed", type=int, default=7)
 ap.add_argument("--out", required=True)
 a = ap.parse_args()
 
-for k, v in json.load(open(Path(a.run) / "repro/launch_manifest.json"))["environment"].items():
+for k, v in json.load(open(Path(a.manifest_run or a.run) / "repro/launch_manifest.json"))["environment"].items():
   if k.startswith("PYG_"):
     os.environ[k] = str(v)
 os.environ.pop("PYG_STAGNATION", None)  # judge walking, not the stagnation rule itself (terrain_eval convention)

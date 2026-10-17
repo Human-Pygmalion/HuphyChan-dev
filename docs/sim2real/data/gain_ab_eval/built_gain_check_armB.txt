@@ -1,0 +1,21 @@
+built R_crank_A_joint        Kp=  60.000 Kd= 2.7000
+built R_crank_B_joint        Kp=  60.000 Kd= 2.7000
+built L_crank_A_joint        Kp=  60.000 Kd= 2.7000
+built L_crank_B_joint        Kp=  60.000 Kd= 2.7000
+built R_hip_yaw_joint        Kp=  75.000 Kd= 4.0000
+built L_hip_yaw_joint        Kp=  75.000 Kd= 4.0000
+built R_hip_pitch_joint      Kp= 135.000 Kd= 6.0000
+built R_hip_roll_joint       Kp= 135.000 Kd= 6.0000
+built L_hip_pitch_joint      Kp= 135.000 Kd= 6.0000
+built L_hip_roll_joint       Kp= 135.000 Kd= 6.0000
+built R_knee_joint           Kp= 130.000 Kd= 6.0000
+built L_knee_joint           Kp= 130.000 Kd= 6.0000
+--- run params/env.yaml actuator gains, in file order ---
+env.yaml stiffness: 60.0
+env.yaml damping: 2.7
+env.yaml stiffness: 75.0
+env.yaml damping: 4.0
+env.yaml stiffness: 135.0
+env.yaml damping: 6.0
+env.yaml stiffness: 130.0
+env.yaml damping: 6.0

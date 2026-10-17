@@ -790,7 +790,12 @@ def main():
     ap.add_argument("--json-out")
     ap.add_argument("--plot")
     ap.add_argument("--no-fk", action="store_true")
+    ap.add_argument("--with-armB", action="store_true",
+                    help="also analyse arm B (m_gmountain_final_*); do not combine with --plot (bars are laid out for 3 policies)")
     a = ap.parse_args()
+    if a.with_armB:
+        POLICIES["armB"] = "m_gmountain_final"
+        KO["armB"] = "팔 B"
 
     meta = load_meta()
     mjm = None

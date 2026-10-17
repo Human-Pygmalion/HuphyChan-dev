@@ -12,7 +12,9 @@
 set -u
 cd "$(dirname "$0")/../../mujoco-sim/mjlab" 2>/dev/null || true   # no-op when already in mjlab
 MODE=$1; shift
-pyg_env() { python3 -c "import json,sys;d=json.load(open('$1/repro/launch_manifest.json'))['environment'];print(' '.join(f'{k}={v}' for k,v in sorted(d.items()) if k.startswith('PYG_')))"; }
+# A resumed run directory has no repro/: GAIN_AB_MANIFEST_DIR points at the original run directory,
+# GAIN_AB_DROP lists PYG_* names that do not affect evaluation (training-start-only flags).
+pyg_env() { python3 -c "import json,os;d=json.load(open((os.environ.get('GAIN_AB_MANIFEST_DIR') or '$1')+'/repro/launch_manifest.json'))['environment'];drop=os.environ.get('GAIN_AB_DROP','').split();print(' '.join(f'{k}={v}' for k,v in sorted(d.items()) if k.startswith('PYG_') and k not in drop))"; }
 case $MODE in
   job)
     TAG=$1; D=$2; KIND=$3; S=$4; CK=model_11999.pt
