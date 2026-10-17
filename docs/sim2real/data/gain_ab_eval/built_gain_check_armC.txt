@@ -1,0 +1,41 @@
+##### evaluation environment: with_flag
+PYG_PD_GAIN_DR = '0.8,1.2,0.7,1.3'
+events: ['encoder_bias', 'foot_friction', 'inertial_dr_ankle_pitch_link', 'inertial_dr_foot', 'inertial_dr_hip_pitch_link', 'inertial_dr_hip_roll_link', 'inertial_dr_pelvis', 'inertial_dr_shin', 'inertial_dr_thigh', 'pd_gains', 'pyg_push_clear', 'pyg_push_tick', 'randomize_terrain', 'reset_base', 'reset_robot_joints']
+curriculum: []
+built R_crank_A_joint        Kp   49.088 ..   71.000   Kd  1.9796 ..  3.3698
+built R_crank_B_joint        Kp   50.089 ..   69.076   Kd  2.1783 ..  3.4115
+built L_crank_A_joint        Kp   48.400 ..   69.716   Kd  1.9989 ..  3.3026
+built L_crank_B_joint        Kp   48.534 ..   71.896   Kd  2.0070 ..  3.4405
+built R_hip_yaw_joint        Kp  120.767 ..  175.537   Kd  5.2403 ..  6.8525
+built L_hip_yaw_joint        Kp  123.396 ..  178.200   Kd  4.2608 ..  7.6913
+built R_hip_pitch_joint      Kp  132.961 ..  177.244   Kd  5.3290 ..  7.7644
+built R_hip_roll_joint       Kp  128.105 ..  178.815   Kd  4.3701 ..  7.1789
+built L_hip_pitch_joint      Kp  129.354 ..  166.539   Kd  4.2011 ..  7.5689
+built L_hip_roll_joint       Kp  123.915 ..  179.887   Kd  4.2813 ..  7.3415
+built R_knee_joint           Kp  179.939 ..  237.788   Kd  4.2867 ..  7.7705
+built L_knee_joint           Kp  179.558 ..  262.866   Kd  4.8599 ..  7.3471
+##### evaluation environment: dropped
+PYG_PD_GAIN_DR = None
+events: ['encoder_bias', 'foot_friction', 'inertial_dr_ankle_pitch_link', 'inertial_dr_foot', 'inertial_dr_hip_pitch_link', 'inertial_dr_hip_roll_link', 'inertial_dr_pelvis', 'inertial_dr_shin', 'inertial_dr_thigh', 'pyg_push_clear', 'pyg_push_tick', 'randomize_terrain', 'reset_base', 'reset_robot_joints']
+curriculum: []
+built R_crank_A_joint        Kp   60.000 ..   60.000   Kd  2.7000 ..  2.7000
+built R_crank_B_joint        Kp   60.000 ..   60.000   Kd  2.7000 ..  2.7000
+built L_crank_A_joint        Kp   60.000 ..   60.000   Kd  2.7000 ..  2.7000
+built L_crank_B_joint        Kp   60.000 ..   60.000   Kd  2.7000 ..  2.7000
+built R_hip_yaw_joint        Kp  150.000 ..  150.000   Kd  6.0000 ..  6.0000
+built L_hip_yaw_joint        Kp  150.000 ..  150.000   Kd  6.0000 ..  6.0000
+built R_hip_pitch_joint      Kp  150.000 ..  150.000   Kd  6.0000 ..  6.0000
+built R_hip_roll_joint       Kp  150.000 ..  150.000   Kd  6.0000 ..  6.0000
+built L_hip_pitch_joint      Kp  150.000 ..  150.000   Kd  6.0000 ..  6.0000
+built L_hip_roll_joint       Kp  150.000 ..  150.000   Kd  6.0000 ..  6.0000
+built R_knee_joint           Kp  220.000 ..  220.000   Kd  6.0000 ..  6.0000
+built L_knee_joint           Kp  220.000 ..  220.000   Kd  6.0000 ..  6.0000
+##### run params/env.yaml actuator gains, in file order
+env.yaml stiffness: 60.0
+env.yaml damping: 2.7
+env.yaml stiffness: 150.0
+env.yaml damping: 6.0
+env.yaml stiffness: 150.0
+env.yaml damping: 6.0
+env.yaml stiffness: 220.0
+env.yaml damping: 6.0

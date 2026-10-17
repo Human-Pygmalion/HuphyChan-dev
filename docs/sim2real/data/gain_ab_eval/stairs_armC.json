@@ -1,0 +1,297 @@
+{
+ "run": "logs/rsl_rl/pygmalion_velocity/2026-10-17_07-45-38_rough_gain_crank60_gaindr_v11a",
+ "ckpt": "model_11999.pt",
+ "suite": "stairs",
+ "seconds": 20.0,
+ "envs": 256,
+ "robot_mass_kg": 23.630139999999997,
+ "body_weight_N": 231.8116734,
+ "pyg_flags": {
+  "PYG_ANKLE_MODE": "AB",
+  "PYG_ARM_ABD_DEG": "15",
+  "PYG_BLOWUP_TERM": "1",
+  "PYG_BOX_TERRAIN": "1",
+  "PYG_CMD_VY_STAGES": "1",
+  "PYG_CRANK_KD": "2.7",
+  "PYG_CRANK_KP": "60",
+  "PYG_CRITIC_DR_OBS": "1",
+  "PYG_CRITIC_WARMUP_ITERS": "300",
+  "PYG_DR_END_ITER": "8000",
+  "PYG_DR_START_ITER": "2000",
+  "PYG_ENTROPY_ANNEAL": "1",
+  "PYG_ENTROPY_ANNEAL_END": "0",
+  "PYG_ENTROPY_ANNEAL_START": "0",
+  "PYG_ENTROPY_END_COEF": "0.002",
+  "PYG_ENTROPY_START_COEF": "0.002",
+  "PYG_FRESH_STEPS": "1",
+  "PYG_GATED_CURRICULUM": "1",
+  "PYG_GATE_ERR_RATIO": "1.1",
+  "PYG_GATE_FELL_MAX": "0.005",
+  "PYG_GATE_MAX_DWELL": "0",
+  "PYG_GATE_MIN_DWELL": "0",
+  "PYG_GATE_MIN_EPISODES": "64",
+  "PYG_GATE_WINDOW": "100",
+  "PYG_INERTIAL_DR": "1",
+  "PYG_INIT_BENT": "1",
+  "PYG_INIT_MID": "1",
+  "PYG_KNEE_EXT": "1",
+  "PYG_KNEE_EXT_DEG": "25",
+  "PYG_KNEE_EXT_W": "2.0",
+  "PYG_LOW_BASE_REL": "1",
+  "PYG_MASS_DR_JSON": "/home/syaro/MikuchanRemote/Human-Pygmalion/tools/robot_model/fusion_snapshots/v30_inspection/mass_dr_legonly_fastener50_prototype-tempmass.json",
+  "PYG_MODEL_TAG": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix",
+  "PYG_MOTOR_MEAS": "1",
+  "PYG_NAN_TERM": "1",
+  "PYG_OBS_NAN_GUARD": "1",
+  "PYG_REL_HEADING": "0.3",
+  "PYG_REL_STANDING": "0.1",
+  "PYG_REWARD_TERM_CLAMP": "50",
+  "PYG_SAFE_TARGET_CLIP": "1",
+  "PYG_SOFT_LANDING": "1",
+  "PYG_SOFT_LANDING_MODE": "half",
+  "PYG_STUDENT_TEACHER": "1",
+  "PYG_TN": "1",
+  "PYG_V2": "1"
+ },
+ "conditions": [
+  {
+   "cond": "stairs_up_15cm_vx0.3",
+   "vx": 0.3,
+   "level": 0,
+   "meta": {
+    "riser_m": 0.15,
+    "direction": "up",
+    "tread_m": 0.3,
+    "steps": 20
+   },
+   "wall_s": 161.47323656082153,
+   "n_envs": 256,
+   "steps": 1000,
+   "valid_steps": 97827,
+   "falls": 0.29296875,
+   "truncated_oob": 0.0,
+   "mean_fall_time_s": 11.651467323303223,
+   "fall_causes": {
+    "low_base": 75
+   },
+   "vel_err_mean": 0.3159249424934387,
+   "dist_mean": 2.074124813079834,
+   "reached_feature": 0.83984375,
+   "end_x_mean_m": 3.5588936805725098,
+   "fell_after_feature": 0.29296875,
+   "fell_before_feature": 0.0,
+   "all": {
+    "hip_pitch": {
+     "tau": {
+      "n": 195654,
+      "rms": 14.472545623779297,
+      "p50": 8.318459510803223,
+      "p99": 43.593170166015625,
+      "p999": 60.74658203125,
+      "max": 116.78019714355469
+     },
+     "tau_landing": {
+      "n": 70160,
+      "rms": 16.600845336914062,
+      "p50": 10.461630821228027,
+      "p99": 48.22406768798828,
+      "p999": 64.55083465576172,
+      "max": 108.0983657836914
+     },
+     "tau_other": {
+      "n": 125494,
+      "rms": 13.133213996887207,
+      "p50": 7.107348442077637,
+      "p99": 39.780582427978516,
+      "p999": 57.05354309082031,
+      "max": 116.78019714355469
+     },
+     "err_deg": {
+      "p50": 3.5153005123138428,
+      "p99": 19.488962173461914,
+      "p999": 29.1290283203125
+     },
+     "sat_frac": 0.0,
+     "clip_frac": 0.0022130904253572226,
+     "rms_env_p50": 13.66043472290039,
+     "rms_env_p95": 22.615306854248047,
+     "landing_frac": 0.3585922122001648
+    },
+    "hip_roll": {
+     "tau": {
+      "n": 195654,
+      "rms": 22.92678451538086,
+      "p50": 11.701234817504883,
+      "p99": 63.018280029296875,
+      "p999": 87.57987976074219,
+      "max": 120.0
+     },
+     "tau_landing": {
+      "n": 70160,
+      "rms": 23.90753746032715,
+      "p50": 9.683018684387207,
+      "p99": 72.46514129638672,
+      "p999": 94.36905670166016,
+      "max": 120.0
+     },
+     "tau_other": {
+      "n": 125494,
+      "rms": 22.359737396240234,
+      "p50": 12.939031600952148,
+      "p99": 53.94154357910156,
+      "p999": 74.32843780517578,
+      "max": 110.25465393066406
+     },
+     "err_deg": {
+      "p50": 4.537680149078369,
+      "p99": 24.590696334838867,
+      "p999": 35.02843475341797
+     },
+     "sat_frac": 3.577744428184815e-05,
+     "clip_frac": 0.00076154840644449,
+     "rms_env_p50": 23.032028198242188,
+     "rms_env_p95": 30.699459075927734,
+     "landing_frac": 0.3585922122001648
+    },
+    "hip_yaw": {
+     "tau": {
+      "n": 195654,
+      "rms": 6.186196804046631,
+      "p50": 2.6911849975585938,
+      "p99": 23.124038696289062,
+      "p999": 42.513389587402344,
+      "max": 59.68000030517578
+     },
+     "tau_landing": {
+      "n": 70160,
+      "rms": 6.83294153213501,
+      "p50": 2.5582737922668457,
+      "p99": 27.82887077331543,
+      "p999": 49.682884216308594,
+      "max": 59.68000030517578
+     },
+     "tau_other": {
+      "n": 125494,
+      "rms": 5.793240070343018,
+      "p50": 2.767256736755371,
+      "p99": 20.760475158691406,
+      "p999": 34.5400276184082,
+      "max": 59.68000030517578
+     },
+     "err_deg": {
+      "p50": 1.2063825130462646,
+      "p99": 10.315933227539062,
+      "p999": 18.26444435119629
+     },
+     "sat_frac": 0.00015844295558054,
+     "clip_frac": 0.0,
+     "rms_env_p50": 5.205416679382324,
+     "rms_env_p95": 11.306041717529297,
+     "landing_frac": 0.3585922122001648
+    },
+    "knee": {
+     "tau": {
+      "n": 195654,
+      "rms": 12.804712295532227,
+      "p50": 6.844636917114258,
+      "p99": 42.71280288696289,
+      "p999": 73.44447326660156,
+      "max": 120.0
+     },
+     "tau_landing": {
+      "n": 70160,
+      "rms": 14.779718399047852,
+      "p50": 8.341290473937988,
+      "p99": 49.29737854003906,
+      "p999": 74.64390563964844,
+      "max": 112.55801391601562
+     },
+     "tau_other": {
+      "n": 125494,
+      "rms": 11.554341316223145,
+      "p50": 6.110195159912109,
+      "p99": 35.787601470947266,
+      "p999": 70.33820343017578,
+      "max": 120.0
+     },
+     "err_deg": {
+      "p50": 2.341033697128296,
+      "p99": 15.839282989501953,
+      "p999": 24.681529998779297
+     },
+     "sat_frac": 8.177701238309965e-05,
+     "clip_frac": 0.00035266336635686457,
+     "rms_env_p50": 12.055047035217285,
+     "rms_env_p95": 20.995267868041992,
+     "landing_frac": 0.3585922122001648
+    },
+    "crank": {
+     "tau": {
+      "n": 391308,
+      "rms": 15.591029167175293,
+      "p50": 6.823763847351074,
+      "p99": 48.23948669433594,
+      "p999": 59.68000030517578,
+      "max": 59.68000030517578
+     },
+     "tau_landing": {
+      "n": 140320,
+      "rms": 16.49772834777832,
+      "p50": 3.7072787284851074,
+      "p99": 56.13916015625,
+      "p999": 59.68000030517578,
+      "max": 59.68000030517578
+     },
+     "tau_other": {
+      "n": 250988,
+      "rms": 15.060349464416504,
+      "p50": 8.156939506530762,
+      "p99": 41.353633880615234,
+      "p999": 58.05854797363281,
+      "max": 59.68000030517578
+     },
+     "err_deg": {
+      "p50": 7.863184928894043,
+      "p99": 47.809303283691406,
+      "p999": 67.7979736328125
+     },
+     "sat_frac": 0.003294080263003707,
+     "clip_frac": 0.0033988570794463158,
+     "rms_env_p50": 15.56385326385498,
+     "rms_env_p95": 22.617002487182617,
+     "landing_frac": 0.3585922122001648
+    }
+   },
+   "grf": {
+    "R_foot_link": {
+     "p99_bw": 3.0348026752471924,
+     "max_bw": 10.420451164245605,
+     "env_peak_p50_bw": 4.199801445007324
+    },
+    "L_foot_link": {
+     "p99_bw": 2.855621099472046,
+     "max_bw": 9.192719459533691,
+     "env_peak_p50_bw": 4.466381072998047
+    }
+   }
+  }
+ ],
+ "built_gains_first_env": {
+  "R_crank_A_joint,R_crank_B_joint,L_crank_A_joint,L_crank_B_joint": {
+   "kp_env0": 60.0,
+   "kp_mean": 60.0
+  },
+  "R_hip_yaw_joint,L_hip_yaw_joint": {
+   "kp_env0": 150.0,
+   "kp_mean": 150.0
+  },
+  "R_hip_pitch_joint,R_hip_roll_joint,L_hip_pitch_joint,L_hip_roll_joint": {
+   "kp_env0": 150.0,
+   "kp_mean": 150.0
+  },
+  "R_knee_joint,L_knee_joint": {
+   "kp_env0": 220.0,
+   "kp_mean": 220.0
+  }
+ }
+}

@@ -57,9 +57,14 @@ ap.add_argument("--seed", type=int, default=7)
 ap.add_argument("--out", required=True)
 a = ap.parse_args()
 
+# GAIN_AB_PROBE_DROP="PYG_X PYG_Y": flags that the manifest must NOT set (2026-10-17: PYG_PD_GAIN_DR of arm C, so that the
+# probe runs with the nominal gains; default empty = unchanged behaviour).
+_drop = os.environ.get("GAIN_AB_PROBE_DROP", "").split()
 for k, v in json.load(open(Path(a.manifest_run or a.run) / "repro/launch_manifest.json"))["environment"].items():
-  if k.startswith("PYG_"):
+  if k.startswith("PYG_") and k not in _drop:
     os.environ[k] = str(v)
+for _k in _drop:
+  os.environ.pop(_k, None)
 os.environ.pop("PYG_STAGNATION", None)  # judge walking, not the stagnation rule itself (terrain_eval convention)
 
 import mujoco  # noqa: E402
