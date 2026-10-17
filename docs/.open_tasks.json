@@ -1031,9 +1031,9 @@
   {
     "id": 151,
     "text": "[사용자 2026-10-15] 비교 학습: 기준선+크랭크 60/2.7 단독 vs 기준선+등반 권장 게인 전체 (모터=URDF, 질량=하체만)",
-    "state": "doing",
+    "state": "done",
     "added": 1792070176.7215555,
-    "why": "B 런 6,309회에서 일시 정지(사용자 요청, GPU 비움). 재개: 원격 bash mujoco-sim/mjlab/analysis/resume_gain_mountain.sh"
+    "why": ""
   },
   {
     "id": 152,
