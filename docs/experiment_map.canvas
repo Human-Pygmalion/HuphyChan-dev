@@ -4931,6 +4931,14 @@
       "toNode": "n_rough_gain_gaindr",
       "toSide": "top",
       "label": "분리 비교: + 게인 무작위화만 · 4k: 회전 보상 0.87 (A 0.94) · 8k: 0.75 (A 0.82)"
+    },
+    {
+      "id": "e_gain_a_to_actdelay",
+      "fromNode": "n_rough_gain_crank60",
+      "fromSide": "bottom",
+      "toNode": "n_rough_gain_actdelay",
+      "toSide": "top",
+      "label": "분리 비교: + 명령 지연 무작위화만 · 10-17 19:39 학습 시작"
     }
   ]
 }
