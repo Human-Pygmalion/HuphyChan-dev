@@ -4938,7 +4938,7 @@
       "fromSide": "bottom",
       "toNode": "n_rough_gain_actdelay",
       "toSide": "top",
-      "label": "분리 비교: + 명령 지연 무작위화만 · 10-17 19:39 학습 시작"
+      "label": "분리 비교: + 명령 지연 무작위화만 · 10-17 19:39 학습 시작 · 4k: 회전 보상 0.92 (A 0.94)"
     }
   ]
 }
