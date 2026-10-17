@@ -4930,7 +4930,7 @@
       "fromSide": "bottom",
       "toNode": "n_rough_gain_gaindr",
       "toSide": "top",
-      "label": "분리 비교: + 게인 무작위화만 · 4k: 회전 보상 0.87 (A 0.94)"
+      "label": "분리 비교: + 게인 무작위화만 · 4k: 회전 보상 0.87 (A 0.94) · 8k: 0.75 (A 0.82)"
     }
   ]
 }
