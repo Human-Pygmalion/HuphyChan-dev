@@ -2289,6 +2289,15 @@
    "number": "docs/174",
    "section": "done",
    "changed": "2026-10-17 18:35"
+  },
+  "dr-requirements": {
+   "id": "dr-requirements",
+   "created": "2026-10-17 19:21",
+   "title": "실측·동료 피드백 기반 무작위화 항목 정리 (docs/175)",
+   "finding": "우선 1: 관절 관측 지연 0~1 주기, 명령 지연 0~1 주기, 응답 유실 0~10 %, 게인 Kp×0.8~1.2·Kd×0.7~1.3, 엔코더 ±3°. 우선 2: IMU 부착각 ±5°, IMU 값 멈춤(실기 원인 먼저), 밀기 완화. 우선 3: 모터 세기·마찰·관성·질량. 넣지 말 것: 중력 부호 반전, 0.5배 아래 게인, 정책 주기",
+   "number": "docs/175",
+   "section": "done",
+   "changed": "2026-10-17 19:21"
   }
  },
  "order": [
@@ -2496,7 +2505,8 @@
   "gain-c-4k",
   "gain-c-8k",
   "handoff-174",
-  "digest-174"
+  "digest-174",
+  "dr-requirements"
  ],
- "updated": "2026-10-17 18:42"
+ "updated": "2026-10-17 19:21"
 }
