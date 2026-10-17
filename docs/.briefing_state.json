@@ -2173,7 +2173,8 @@
     "docs/img/pd_tuning_prelim_bode.png"
    ],
    "section": "done",
-   "changed": "2026-10-16 18:01"
+   "changed": "2026-10-16 18:01",
+   "collapsed": true
   },
   "next-actions": {
    "id": "next-actions",
@@ -2245,6 +2246,15 @@
    "number": "사전 기준 6개 중 합격 3 · 불합격 2 · 판정 없음 1",
    "section": "done",
    "changed": "2026-10-17 09:07"
+  },
+  "gain-c-4k": {
+   "id": "gain-c-4k",
+   "created": "2026-10-17 11:50",
+   "title": "C(크랭크 60 + 게인 무작위화) 4,000회 — 회전 추종 보상 0.871, A 런(0.940)보다 7 % 낮음",
+   "finding": "무작위화 33 % 램프 시점. 넘어짐 종료 0.004, 평균 보상 72.9 (A 77.1). 게인 무작위화가 회전을 조금 낮추는 방향. 판단은 8,000회·완주 측정에서",
+   "number": "C 4,063 / 12,000회, 끝 예상 19:20",
+   "section": "done",
+   "changed": "2026-10-17 11:50"
   }
  },
  "order": [
@@ -2448,7 +2458,8 @@
   "real-logs",
   "rough_gain_crank60_gaindr_v11a-heartbeat",
   "팔 B 완주 평가",
-  "gain-ab-armB-final"
+  "gain-ab-armB-final",
+  "gain-c-4k"
  ],
- "updated": "2026-10-17 10:49"
+ "updated": "2026-10-17 11:50"
 }
