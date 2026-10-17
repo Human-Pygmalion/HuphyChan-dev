@@ -4923,6 +4923,14 @@
       "toNode": "n_rough_gain_compare",
       "toSide": "top",
       "label": "팔 B"
+    },
+    {
+      "id": "e_gain_a_gaindr",
+      "fromNode": "n_rough_gain_crank60",
+      "fromSide": "bottom",
+      "toNode": "n_rough_gain_gaindr",
+      "toSide": "top",
+      "label": "분리 비교: + 게인 무작위화만 · 4k: 회전 보상 0.87 (A 0.94)"
     }
   ]
 }
