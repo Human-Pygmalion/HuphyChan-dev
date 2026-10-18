@@ -794,6 +794,8 @@ def main():
                     help="also analyse arm B (m_gmountain_final_*); do not combine with --plot (bars are laid out for 3 policies)")
     ap.add_argument("--with-armC", action="store_true",
                     help="also analyse arm C (m_gaindr_final_*); do not combine with --plot")
+    ap.add_argument("--with-armD", action="store_true",
+                    help="also analyse arm D (m_actdelay_final_*, command delay off); do not combine with --plot")
     a = ap.parse_args()
     if a.with_armB:
         POLICIES["armB"] = "m_gmountain_final"
@@ -801,6 +803,9 @@ def main():
     if a.with_armC:
         POLICIES["armC"] = "m_gaindr_final"
         KO["armC"] = "팔 C"
+    if a.with_armD:
+        POLICIES["armD"] = "m_actdelay_final"
+        KO["armD"] = "팔 D"
 
     meta = load_meta()
     mjm = None

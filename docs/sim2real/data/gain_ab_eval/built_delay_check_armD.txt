@@ -1,0 +1,17 @@
+##### evaluation environment: with_flag
+PYG_ACTION_DELAY=1.0
+PYG_ACTION_DELAY = '1.0'
+curriculum: []
+action cfg class: DelayedJointPositionActionCfg
+action term class: DelayedJointPositionAction
+term.max_delay = 1.0  term.noise = 0.0
+max |raw action stored - action passed| over 3 steps = 2.883817
+RESULT: command delay is active
+##### evaluation environment: dropped
+PYG_ACTION_DELAY = None
+curriculum: []
+action cfg class: JointPositionActionCfg
+action term class: JointPositionAction
+term.max_delay = no such attribute  term.noise = no such attribute
+max |raw action stored - action passed| over 3 steps = 0.000000
+RESULT: no command delay (stored action equals passed action)

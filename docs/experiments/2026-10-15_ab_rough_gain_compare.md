@@ -549,3 +549,4 @@ CUDA_VISIBLE_DEVICES="" nice -n 10 .venv/bin/python3 ../../tools/robot_gains/hea
 - 판정 기준은 두 노트의 §1c 에 같다. 비교 대상은 팔 A 이다.
 - 발사 전 실증: 팔 C 는 팔 A 와 환경 설정이 74줄 다르고(모두 추가: `pd_gains` 이벤트, 곡선 `pd_gain_max`), 팔 D 는 4줄 다르다(모두 추가: 행동 항목 `max_delay`·`noise`, 곡선 `action_delay_max`·`action_noise_max`). 환경 64개 4회 학습은 둘 다 통과했다.
 - 실행: 팔 B 가 끝나면 대기열 `mujoco-sim/mjlab/analysis/gain_queue_cd.sh` 가 팔 C 를 발사하고, 팔 C 가 끝나면 팔 D 를 발사한다. 한 번에 하나만 돈다.
+- 팔 D 완주 (2026-10-18): 사전 등록 5개 중 합격 2, 불합격 2, 값 기록 1. 게인 0.5 생존 8/8 (팔 A 1/8, 팔 C 6/8). 제자리 회전 중앙값 37.7 % (팔 A 53.5 

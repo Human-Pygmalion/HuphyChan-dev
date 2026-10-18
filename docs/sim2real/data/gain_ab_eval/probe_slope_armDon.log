@@ -1,0 +1,3 @@
+Module _tile_cholesky_solve_block__locals__kernel_7d50aafc 50fca6f load on device 'cuda:0' took 21.65 ms  (cached)
+[probe] slope_up_20_vx0.3            falls   0.0 %  valid steps    5250  vel err 0.300  crank|tau| P99  34.0  knee P99  26.4  (30 s)
+[probe] slope_down_20_vx0.3          falls   2.0 %  valid steps    3407  vel err 0.688  crank|tau| P99  43.7  knee P99  85.1  (29 s)

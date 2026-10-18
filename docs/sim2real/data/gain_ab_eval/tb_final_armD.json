@@ -1,0 +1,59 @@
+{
+ "armD": {
+  "Train/mean_reward": {
+   "last_step": 11999,
+   "final200": 63.66285934448242,
+   "n": 200,
+   "last": 69.4251480102539
+  },
+  "Train/mean_episode_length": {
+   "last_step": 11999,
+   "final200": 759.1684982299805,
+   "n": 200,
+   "last": 821.3200073242188
+  },
+  "Episode_Termination/fell_over": {
+   "last_step": 11999,
+   "final200": 0.014429348241537809,
+   "n": 200,
+   "last": 0.0
+  },
+  "Episode_Termination/low_base": {
+   "last_step": 11999,
+   "final200": 1.7393150508403779,
+   "n": 200,
+   "last": 1.375
+  },
+  "Episode_Termination/stagnation": {
+   "last_step": 11999,
+   "final200": 0.6826243574917317,
+   "n": 200,
+   "last": 0.5833333730697632
+  },
+  "Episode_Reward/track_linear_velocity": {
+   "last_step": 11999,
+   "final200": 0.9635265943408012,
+   "n": 200,
+   "last": 1.0794895887374878
+  },
+  "Episode_Reward/track_angular_velocity": {
+   "last_step": 11999,
+   "final200": 0.6920047077536583,
+   "n": 200,
+   "last": 0.783261775970459
+  },
+  "Metrics/twist/error_vel_xy_steady_moving": {
+   "last_step": 11999,
+   "final200": 0.4919904820621014,
+   "n": 200,
+   "last": 0.4881225526332855
+  },
+  "Metrics/twist/error_ang_vel_steady_moving": null,
+  "Curriculum/dr_levels/dr_factor": {
+   "last_step": 11999,
+   "final200": 1.0,
+   "n": 200,
+   "last": 1.0
+  }
+ }
+}
