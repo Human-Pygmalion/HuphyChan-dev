@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "D 런 판정 끝. 원격 3090 비어 있음 — 다음 학습은 사용자 결정 대기",
+  "title": "대기 — 다음 학습은 사용자 결정 대기 (원격 3090 비어 있음)",
   "detail": "",
-  "since": "2026-10-18 10:45"
+  "since": "2026-10-18 14:18"
  },
  "items": {
   "shouldermesh": {
@@ -2314,7 +2314,8 @@
    "finding": "자동 점검(스크립트). 진행 중입니다.",
    "number": "반복 11838 / 12,000",
    "section": "done",
-   "changed": "2026-10-18 08:13"
+   "changed": "2026-10-18 08:13",
+   "collapsed": true
   },
   "gaindr_eval": {
    "id": "gaindr_eval",
@@ -2379,6 +2380,17 @@
    "number": "게인 0.5: D 8/8 · C 6/8 · A 1/8",
    "section": "done",
    "changed": "2026-10-18 10:45"
+  },
+  "dr-doc-176": {
+   "id": "dr-doc-176",
+   "created": "2026-10-18 14:18",
+   "title": "동료 전달용 무작위화 정리 문서 docs/176 작성",
+   "finding": "무작위화 요소 14 개의 범위·근거·효과를 한 문서로 모음. 단독 효과를 잰 것은 게인 무작위화(C)와 명령 지연 무작위화(D) 둘뿐. 나머지 마찰·질량·관측 잡음·밀기 등은 켠 채로만 학습해 효과 숫자 없음. 주의 7 개(명령 지연 세 구현, 관측 지연 학습 이력 없음, D 런 직전 행동 입력 불일치 가능 등)",
+   "media": [
+    "docs/mujoco/assets/176_dr_effects_rough_ab.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-18 14:18"
   }
  },
  "order": [
@@ -2595,7 +2607,8 @@
   "gain-d-8k",
   "gain-d-finish",
   "armD_final_eval",
-  "gain-d-verdict"
+  "gain-d-verdict",
+  "dr-doc-176"
  ],
- "updated": "2026-10-18 10:45"
+ "updated": "2026-10-18 14:18"
 }
