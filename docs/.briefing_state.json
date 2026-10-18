@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "D 런(크랭크 60 + 명령 지연) 완주 측정 중 — 사전 등록 5 개 기준, 원격 3090",
+  "title": "D 런 판정 끝. 원격 3090 비어 있음 — 다음 학습은 사용자 결정 대기",
   "detail": "",
-  "since": "2026-10-18 08:29"
+  "since": "2026-10-18 10:45"
  },
  "items": {
   "shouldermesh": {
@@ -2294,7 +2294,8 @@
    "finding": "다른 세션이 이어받을 수 있게 용어 정의·사실·숫자·원본 링크·열린 문제 6개·함정 6개. 게인 선정 과정은 docs/171 개요 문서로 연결. HUPHY 2fdc139 기준: 응답 번호 충돌 확인·seq 기본, 호스트 ID 분리는 아직 안 함",
    "number": "docs/174",
    "section": "done",
-   "changed": "2026-10-17 18:35"
+   "changed": "2026-10-17 18:35",
+   "collapsed": true
   },
   "dr-requirements": {
    "id": "dr-requirements",
@@ -2303,7 +2304,8 @@
    "finding": "우선 1: 관절 관측 지연 0~1 주기, 명령 지연 0~1 주기, 응답 유실 0~10 %, 게인 Kp×0.8~1.2·Kd×0.7~1.3, 엔코더 ±3°. 우선 2: IMU 부착각 ±5°, IMU 값 멈춤(실기 원인 먼저), 밀기 완화. 우선 3: 모터 세기·마찰·관성·질량. 넣지 말 것: 중력 부호 반전, 0.5배 아래 게인, 정책 주기",
    "number": "docs/175",
    "section": "done",
-   "changed": "2026-10-17 19:21"
+   "changed": "2026-10-17 19:21",
+   "collapsed": true
   },
   "rough_gain_crank60_actdelay_v11a-heartbeat": {
    "id": "rough_gain_crank60_actdelay_v11a-heartbeat",
@@ -2358,6 +2360,25 @@
    "finding": "마지막 기록: 낮은 몸통 종료 1.375, 시간 초과 종료 3.17. 완주 측정 시작 (게인 0.5 배 생존, 제자리 회전 지연 끔·켬, 서기, 방향 치우침, 오르막·계단)",
    "section": "done",
    "changed": "2026-10-18 08:29"
+  },
+  "armD_final_eval": {
+   "id": "armD_final_eval",
+   "created": "2026-10-18 10:44",
+   "title": "Arm D (command-delay randomization only) evaluated: 2 of 5 pre-registered checks pass, 2 fail, 1 recorded",
+   "why": "Arm D separates the command-delay share from the gain-randomization share of the bundle trial's turning loss (arm C already evaluated).",
+   "finding": "Gain 0.5x survival is 8/8 (arm A 1/8, arm C 6/8), but turn-in-place median is 37.7 % (arm A 53.5 %, bar 43.5 %) with 11/64 wrong-way turns (bar 6/64); command delay ON gives 27.4 %. Heading drift +0.47 deg/s (arm A +4.48, arm C +1.68). Final-200 low_base 1.739 vs arm A 1.470 (fail). Overall judgement left to the main session.",
+   "number": "turn reward 0.692 vs A 0.857, C 0.772, bundle 0.671; stand drift 0.328 m; uphill 20 deg at 0.6 m/s falls 18.0 % (A 9.8 %)",
+   "section": "done",
+   "changed": "2026-10-18 10:44"
+  },
+  "gain-d-verdict": {
+   "id": "gain-d-verdict",
+   "created": "2026-10-18 10:45",
+   "title": "D 런 판정 — 게인 0.5 배 생존 8/8 (C 6/8, A 1/8), 회전 37.7 % 로 기준 미달",
+   "finding": "사전 등록 5 개 중 합격 2, 불합격 2, 값 기록 1. 낮은 게인 내성의 주원인은 명령 지연 무작위화였다 (가설 기각). 대가: 제자리 회전 37.7 % (A 53.5), 오르막 20° 넘어짐 18 % (A 9.8). 방향 치우침 +0.47 °/s 로 최소. 실기 서기·밀기 첫 배포 후보 = D, 걷기 후보 = C",
+   "number": "게인 0.5: D 8/8 · C 6/8 · A 1/8",
+   "section": "done",
+   "changed": "2026-10-18 10:45"
   }
  },
  "order": [
@@ -2572,7 +2593,9 @@
   "gain-c-final",
   "gain-d-4k",
   "gain-d-8k",
-  "gain-d-finish"
+  "gain-d-finish",
+  "armD_final_eval",
+  "gain-d-verdict"
  ],
- "updated": "2026-10-18 08:29"
+ "updated": "2026-10-18 10:45"
 }
