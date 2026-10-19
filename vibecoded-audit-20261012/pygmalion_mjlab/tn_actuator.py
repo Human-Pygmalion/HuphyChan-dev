@@ -31,10 +31,19 @@ def tn_limit(w_tab: torch.Tensor, t_tab: torch.Tensor, speed: torch.Tensor) -> t
   return torch.where(s >= w_tab[-1], torch.zeros_like(out), out)
 
 
-def tn_clamp(tau: torch.Tensor, omega: torch.Tensor, w_tab: torch.Tensor, t_tab: torch.Tensor) -> torch.Tensor:
+def tn_clamp(
+  tau: torch.Tensor,
+  omega: torch.Tensor,
+  w_tab: torch.Tensor,
+  t_tab: torch.Tensor,
+  strength_scale: torch.Tensor | None = None,
+) -> torch.Tensor:
   peak = t_tab[0]
   upper = torch.where(omega >= 0, tn_limit(w_tab, t_tab, omega), peak.expand_as(omega))
   lower = torch.where(omega < 0, -tn_limit(w_tab, t_tab, -omega), (-peak).expand_as(omega))
+  if strength_scale is not None:
+    upper = upper * strength_scale
+    lower = lower * strength_scale
   return torch.minimum(torch.maximum(tau, lower), upper)
 
 
@@ -52,6 +61,9 @@ class TnPdActuator(IdealPdActuator[TnPdActuatorCfg]):
     super().initialize(mj_model, model, data, device)
     self.w_tab, self.t_tab = tn_curve_tensor(self.cfg.tn_curve, device)
     self._vel: torch.Tensor | None = None
+    self.unclipped_effort: torch.Tensor | None = None
+    self.applied_effort: torch.Tensor | None = None
+    self.strength_scale = torch.ones_like(self.stiffness)
 
   def compute(self, cmd: ActuatorCmd) -> torch.Tensor:
     self._vel = cmd.vel
@@ -59,5 +71,8 @@ class TnPdActuator(IdealPdActuator[TnPdActuatorCfg]):
 
   def _clip_effort(self, effort: torch.Tensor) -> torch.Tensor:
     assert self._vel is not None
-    return tn_clamp(effort, self._vel, self.w_tab, self.t_tab)
-
+    self.unclipped_effort = effort
+    self.applied_effort = tn_clamp(
+      effort, self._vel, self.w_tab, self.t_tab, self.strength_scale
+    )
+    return self.applied_effort

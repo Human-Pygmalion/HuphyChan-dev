@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import math
+from dataclasses import replace
 from pathlib import Path
 
 import mujoco
@@ -155,3 +156,27 @@ def robot_cfg() -> EntityCfg:
       actuators=ACTUATORS, soft_joint_pos_limit_factor=0.9
     ),
   )
+
+
+GENERALIZED_GAINS = {
+  (".*_crank_[AB]_joint",): (60.0, 2.7),
+  (".*_hip_yaw_joint",): (75.0, 4.0),
+  (".*_hip_pitch_joint", ".*_hip_roll_joint"): (135.0, 6.0),
+  (".*_knee_joint",): (130.0, 6.0),
+}
+
+
+def generalized_robot_cfg() -> EntityCfg:
+  """New-task robot with deployment-matched gains and 0--5 ms action delay."""
+  cfg = robot_cfg()
+  cfg.articulation.actuators = tuple(
+    replace(
+      actuator,
+      stiffness=GENERALIZED_GAINS[actuator.target_names_expr][0],
+      damping=GENERALIZED_GAINS[actuator.target_names_expr][1],
+      delay_min_lag=0,
+      delay_max_lag=1,
+    )
+    for actuator in ACTUATORS
+  )
+  return cfg

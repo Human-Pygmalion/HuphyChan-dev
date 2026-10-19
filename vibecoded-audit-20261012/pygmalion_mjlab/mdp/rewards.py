@@ -13,8 +13,76 @@ import torch
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import ContactSensor
+from mjlab.utils.lab_api.math import quat_apply_inverse
 
 _DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
+
+
+def body_orientation_l2(
+  env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG
+) -> torch.Tensor:
+  """Unitree-style squared roll/pitch orientation cost."""
+  asset: Entity = env.scene[asset_cfg.name]
+  if asset_cfg.body_ids:
+    quat_w = asset.data.body_link_quat_w[:, asset_cfg.body_ids, :].squeeze(1)
+    projected_gravity = quat_apply_inverse(quat_w, asset.data.gravity_vec_w)
+  else:
+    projected_gravity = asset.data.projected_gravity_b
+  return torch.sum(torch.square(projected_gravity[:, :2]), dim=1)
+
+
+def stand_still(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  command_threshold: float = 0.1,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Unitree-style default-pose cost, active only for a near-zero command."""
+  asset: Entity = env.scene[asset_cfg.name]
+  error = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[
+    :, asset_cfg.joint_ids
+  ]
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+  stopped = (torch.norm(command[:, :2], dim=1) + command[:, 2].abs()) <= command_threshold
+  return torch.sum(torch.square(error), dim=1) * stopped.float()
+
+
+def actuator_clipping_fraction(
+  env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG
+) -> torch.Tensor:
+  """Mean fraction of requested PD effort removed by the torque-speed clamp."""
+  asset: Entity = env.scene[asset_cfg.name]
+  fractions = []
+  for actuator in asset.actuators[asset_cfg.actuator_ids]:
+    requested = getattr(actuator, "unclipped_effort", None)
+    applied = getattr(actuator, "applied_effort", None)
+    if requested is not None and applied is not None:
+      fractions.append((requested - applied).abs() / requested.abs().clamp(min=1.0e-6))
+  if not fractions:
+    return torch.zeros(env.num_envs, device=env.device)
+  return torch.cat(fractions, dim=1).mean(dim=1)
+
+
+def negative_mechanical_power(
+  env: ManagerBasedRlEnv,
+  free_fraction: float = 0.3,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Joint-agnostic braking-power cost normalized by each motor's T-N envelope."""
+  asset: Entity = env.scene[asset_cfg.name]
+  costs = []
+  for actuator in asset.actuators[asset_cfg.actuator_ids]:
+    effort = getattr(actuator, "applied_effort", None)
+    velocity = getattr(actuator, "_vel", None)
+    if effort is None or velocity is None or not hasattr(actuator, "w_tab"):
+      continue
+    max_power = torch.max(actuator.w_tab * actuator.t_tab).clamp(min=1.0)
+    braking_ratio = (-effort * velocity / max_power).clamp(min=0.0)
+    costs.append(torch.square((braking_ratio - free_fraction).clamp(min=0.0)))
+  if not costs:
+    return torch.zeros(env.num_envs, device=env.device)
+  return torch.cat(costs, dim=1).mean(dim=1)
 
 
 def track_lin_vel_progress(
@@ -318,4 +386,3 @@ def contact_force_cap(
   cost = torch.sum(excess, dim=1)  # [B]
   env.extras["log"]["Metrics/contact_force_excess_mean"] = excess.mean()
   return cost
-

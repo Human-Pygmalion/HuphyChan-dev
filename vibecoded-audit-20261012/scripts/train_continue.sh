@@ -22,7 +22,8 @@
 #                 warmstart also accepts an actor-only file.
 #   SEED          agent seed (default 43, the released runs' seed)
 # Extra arguments after run_name go to mjlab / scripts/train.py, e.g. the optional randomization
-# --obs-delay 1 --act-delay 1 --gain-dr 0.8 1.2 (all off by default; README section 9),
+# --obs-delay 1 --act-delay 1 --gain-dr 0.8 1.2, --joint-gains ..., or --torso-push ...
+# (all off by default; README section 9),
 # --agent.save-interval 200, or --video False.
 # Logs: logs/rsl_rl/pygmalion_velocity/<date>_<run_name>/ (checkpoints, params/, videos/train/).
 set -euo pipefail

@@ -24,6 +24,11 @@ one changes the environment, so the dumped params/env.yaml records it:
                            drawn per env. Measured on the robot: about 1-1.5 ms, so N = 1 covers it.
   --gain-dr LO HI          at every reset, scale each joint's Kp and Kd by independent draws from
                            U(LO, HI) (mjlab.envs.mdp.dr.pd_gains), e.g. 0.8 1.2.
+  --joint-gains HPR_KP HPR_KD HY_KP HY_KD KNEE_KP KNEE_KD ANKLE_KP ANKLE_KD
+                           override the nominal bilateral joint gains before applying gain DR.
+  --torso-push MIN_N MAX_N MIN_S MAX_S
+                           replace velocity kicks with a 0.1 s horizontal base-link force whose
+                           magnitude and cooldown are sampled uniformly from these ranges.
 
 Measured values behind these ranges: README section 9 (deployment notes).
 
@@ -98,12 +103,13 @@ def _install_entropy_anneal(start_it: int, end_it: int, c0: float, c1: float) ->
   MjlabOnPolicyRunner.learn = learn
 
 
-def _install_env_options(obs_delay: int, act_delay: int, gain_dr) -> None:
+def _install_env_options(obs_delay: int, act_delay: int, gain_dr, joint_gains, torso_push) -> None:
   """Edit the env config before mjlab builds it (wraps the registry lookup the train CLI uses)."""
   import mjlab.scripts.train as mjlab_train_mod
   from mjlab.envs import mdp as envs_mdp
   from mjlab.managers.event_manager import EventTermCfg
   from mjlab.managers.scene_entity_config import SceneEntityCfg
+  from pygmalion_mjlab.mdp import events as pyg_events
 
   orig = mjlab_train_mod.load_env_cfg
 
@@ -117,14 +123,61 @@ def _install_env_options(obs_delay: int, act_delay: int, gain_dr) -> None:
       for act in cfg.scene.entities["robot"].articulation.actuators:
         act.delay_min_lag, act.delay_max_lag = 0, act_delay
       print(f"[pygmalion] actuator command delay 0..{act_delay} physics steps", flush=True)
+    if joint_gains is not None:
+      values = tuple(float(value) for value in joint_gains)
+      gains = {
+        (".*_hip_pitch_joint", ".*_hip_roll_joint"): values[0:2],
+        (".*_hip_yaw_joint",): values[2:4],
+        (".*_knee_joint",): values[4:6],
+        (".*_crank_[AB]_joint",): values[6:8],
+      }
+      for actuator in cfg.scene.entities["robot"].articulation.actuators:
+        actuator.stiffness, actuator.damping = gains[actuator.target_names_expr]
+      print(
+        "[pygmalion] nominal Kp/Kd: "
+        f"hip pitch/roll {values[0]}/{values[1]}, hip yaw {values[2]}/{values[3]}, "
+        f"knee {values[4]}/{values[5]}, ankle crank {values[6]}/{values[7]}",
+        flush=True,
+      )
     if gain_dr is not None:
       lo, hi = float(gain_dr[0]), float(gain_dr[1])
-      cfg.events["pd_gains_dr"] = EventTermCfg(
-        mode="reset", func=envs_mdp.dr.pd_gains,
-        params={"kp_range": (lo, hi), "kd_range": (lo, hi), "asset_cfg": SceneEntityCfg("robot"),
-                "operation": "scale"},
-      )
+      if "pd_gains" in cfg.events:
+        cfg.events["pd_gains"].params["kp_range"] = (lo, hi)
+        cfg.events["pd_gains"].params["kd_range"] = (lo, hi)
+      else:
+        cfg.events["pd_gains"] = EventTermCfg(
+          mode="reset",
+          func=envs_mdp.dr.pd_gains,
+          params={
+            "kp_range": (lo, hi),
+            "kd_range": (lo, hi),
+            "asset_cfg": SceneEntityCfg("robot"),
+            "operation": "scale",
+          },
+        )
       print(f"[pygmalion] Kp/Kd scale U({lo}, {hi}) per joint at every reset", flush=True)
+    if torso_push is not None:
+      min_force, max_force, min_interval, max_interval = (
+        float(value) for value in torso_push
+      )
+      cfg.events.pop("push_robot", None)
+      cfg.events.pop("pyg_push_tick", None)
+      cfg.events.pop("pyg_push_clear", None)
+      cfg.events["torso_push"] = EventTermCfg(
+        mode="step",
+        func=pyg_events.apply_horizontal_body_push,
+        params={
+          "magnitude_range": (min_force, max_force),
+          "duration_s": 0.1,
+          "cooldown_s": (min_interval, max_interval),
+          "asset_cfg": SceneEntityCfg("robot", body_names=("base_link",)),
+        },
+      )
+      print(
+        f"[pygmalion] torso push: horizontal U({min_force}, {max_force}) N for 0.1 s, "
+        f"cooldown U({min_interval}, {max_interval}) s; velocity kicks disabled",
+        flush=True,
+      )
     return cfg
 
   mjlab_train_mod.load_env_cfg = load_env_cfg
@@ -181,14 +234,16 @@ def main() -> None:
   obs_delay = int(_pop("--obs-delay") or 0)
   act_delay = int(_pop("--act-delay") or 0)
   gain_dr = _pop_n("--gain-dr", 2)
+  joint_gains = _pop_n("--joint-gains", 8)
+  torso_push = _pop_n("--torso-push", 4)
   import pygmalion_mjlab  # noqa: F401  (registers the tasks)
 
   if actor_ckpt or critic_warmup:
     _install_warmstart(actor_ckpt, critic_warmup)
   if anneal:
     _install_entropy_anneal(int(anneal[0]), int(anneal[1]), float(anneal[2]), float(anneal[3]))
-  if obs_delay or act_delay or gain_dr:
-    _install_env_options(obs_delay, act_delay, gain_dr)
+  if obs_delay or act_delay or gain_dr or joint_gains or torso_push:
+    _install_env_options(obs_delay, act_delay, gain_dr, joint_gains, torso_push)
   from mjlab.scripts.train import main as mjlab_train
 
   mjlab_train()

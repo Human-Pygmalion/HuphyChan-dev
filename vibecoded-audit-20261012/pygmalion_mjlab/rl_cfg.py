@@ -14,8 +14,12 @@ entropy_coef:
 from mjlab.rl import RslRlModelCfg, RslRlOnPolicyRunnerCfg, RslRlPpoAlgorithmCfg
 
 
-ENTROPY_COEF = {"flat_p1": 0.01, "flat_p2": 0.01, "rough_main": 0.002}
-MAX_ITERATIONS = {"flat_p1": 16_000, "flat_p2": 14_000, "rough_main": 12_000}
+ENTROPY_COEF = {
+  "flat_p1": 0.01, "flat_p2": 0.01, "rough_main": 0.002, "generalized": 0.01
+}
+MAX_ITERATIONS = {
+  "flat_p1": 16_000, "flat_p2": 14_000, "rough_main": 12_000, "generalized": 50_000
+}
 
 
 def pygmalion_ppo_runner_cfg(stage: str = "rough_main") -> RslRlOnPolicyRunnerCfg:
@@ -46,5 +50,6 @@ def pygmalion_ppo_runner_cfg(stage: str = "rough_main") -> RslRlOnPolicyRunnerCf
     num_steps_per_env=24,
     max_iterations=MAX_ITERATIONS[stage],
     seed=43,
-    logger="tensorboard",
+    logger="wandb" if stage == "generalized" else "tensorboard",
+    wandb_project="pygmalion_velocity",
   )
