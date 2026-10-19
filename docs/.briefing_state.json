@@ -2385,7 +2385,8 @@
    "finding": "사전 등록 5 개 중 합격 2, 불합격 2, 값 기록 1. 낮은 게인 내성의 주원인은 명령 지연 무작위화였다 (가설 기각). 대가: 제자리 회전 37.7 % (A 53.5), 오르막 20° 넘어짐 18 % (A 9.8). 방향 치우침 +0.47 °/s 로 최소. 실기 서기·밀기 첫 배포 후보 = D, 걷기 후보 = C",
    "number": "게인 0.5: D 8/8 · C 6/8 · A 1/8",
    "section": "done",
-   "changed": "2026-10-18 10:45"
+   "changed": "2026-10-18 10:45",
+   "collapsed": true
   },
   "dr-doc-176": {
    "id": "dr-doc-176",
@@ -2451,6 +2452,15 @@
    "number": "하나씩 4.3 ms → Host ID 분리 추정 1.5~2.5 ms",
    "section": "done",
    "changed": "2026-10-19 12:06"
+  },
+  "can-adapter-fifo": {
+   "id": "can-adapter-fifo",
+   "created": "2026-10-19 12:52",
+   "title": "Host ID 분리의 이득 = 고정 대기(왕복당 약 0.4 ms)를 6번 → 1번으로 겹침. 어댑터 버퍼 3단은 병목 아님 (docs/178 §9)",
+   "finding": "candleLight 는 모든 ID 를 받음(거르기 없음). '3'은 모터 미응답 한도(몰아 보내기도 모터당 1개)와 bxCAN 수신 FIFO 3단(펌웨어가 64 대기열로 옮김) 두 가지. 루프백 6개 묶음 5,916/5,916, 로봇 몰아 보내기 622/696 주기 6개 전부 수신",
+   "number": "하나씩 4.3 ms → 추정 1.5~2.5 ms",
+   "section": "done",
+   "changed": "2026-10-19 12:52"
   }
  },
  "order": [
@@ -2674,7 +2684,8 @@
   "slcan-gsusb-factcheck",
   "can-id-hostid",
   "can-0xfd-adapter-review",
-  "can-threads-review"
+  "can-threads-review",
+  "can-adapter-fifo"
  ],
- "updated": "2026-10-19 12:06"
+ "updated": "2026-10-19 12:52"
 }
