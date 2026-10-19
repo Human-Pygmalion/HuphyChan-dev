@@ -2335,7 +2335,8 @@
    "finding": "가설 적중: 게인 0.5배 생존 A 1/8 → C 6/8. 제자리 회전 48.0 % (기준선 45.3, A 53.5), 반대 방향 7/64, 직진 치우침 +1.68 °/s (A +4.48). 묶음 시험 런의 회전 손실은 게인 무작위화만으로 설명 안 됨 → D(지연)가 가름",
    "number": "사전 기준 5개: 합격 2, 불합격 2(근소), 기록 1",
    "section": "done",
-   "changed": "2026-10-17 21:39"
+   "changed": "2026-10-17 21:39",
+   "collapsed": true
   },
   "gain-d-4k": {
    "id": "gain-d-4k",
@@ -2401,6 +2402,15 @@
    "number": "VBUS 응답 없음 0.005 % / 0.89 %",
    "section": "done",
    "changed": "2026-10-19 10:56"
+  },
+  "mit-cmd14-live": {
+   "id": "mit-cmd14-live",
+   "created": "2026-10-19 11:06",
+   "title": "MIT 모드 Command 14 실물 직접 시험 — Run 상태에서 VBUS·iqf·mechPos 응답 확인",
+   "finding": "옛 매뉴얼(251112)은 Command 11까지, 새 판(RS04 260713/RS03 261013)에 12~15 추가. 실측: 11비트 0x0FD 600/600, 확장 프레임 0, mechPos 가 상태 위치와 0.03° 이내 일치",
+   "number": "VBUS 48.685 V, 프레임 600/600",
+   "section": "done",
+   "changed": "2026-10-19 11:06"
   }
  },
  "order": [
@@ -2619,7 +2629,8 @@
   "armD_final_eval",
   "gain-d-verdict",
   "dr-doc-176",
-  "mit-cmd14-check"
+  "mit-cmd14-check",
+  "mit-cmd14-live"
  ],
- "updated": "2026-10-19 10:56"
+ "updated": "2026-10-19 11:06"
 }
