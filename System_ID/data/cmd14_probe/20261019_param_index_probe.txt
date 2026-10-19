@@ -1,0 +1,10 @@
+0x701c VBUS(70xx)   reply 1c 70 00 00 71 bd 42 42 float=48.6850
+0x701a iqf(70xx)    reply 1a 70 00 00 00 00 00 00 float=0.0000
+0x300c VBUS(30xx)   reply 0c 30 00 00 00 00 00 00 float=0.0000
+0x302b ibus         reply 2b 30 00 00 00 00 00 00 float=0.0000
+0x3021 iq           reply 21 30 00 00 00 00 00 00 float=0.0000
+0x3022 id           reply 22 30 00 00 00 00 00 00 float=0.0000
+0x3027 Uq           reply 27 30 00 00 00 00 00 00 float=0.0000
+0x301f iqf(30xx)    reply 1f 30 00 00 00 00 00 00 float=0.0000
+0x302c torque_fdb   reply 2c 30 00 00 00 00 00 00 float=0.0000
+0x302d rated_i      reply 2d 30 00 00 00 00 00 00 float=0.0000

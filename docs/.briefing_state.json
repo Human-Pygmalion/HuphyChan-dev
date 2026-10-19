@@ -2397,7 +2397,8 @@
     "docs/mujoco/assets/176_dr_effects_rough_ab.png"
    ],
    "section": "done",
-   "changed": "2026-10-18 14:18"
+   "changed": "2026-10-18 14:18",
+   "collapsed": true
   },
   "mit-cmd14-check": {
    "id": "mit-cmd14-check",
@@ -2461,6 +2462,15 @@
    "number": "하나씩 4.3 ms → 추정 1.5~2.5 ms",
    "section": "done",
    "changed": "2026-10-19 12:52"
+  },
+  "emf-v-i-source": {
+   "id": "emf-v-i-source",
+   "created": "2026-10-19 14:00",
+   "title": "벤치 전압·전류 출처·신뢰도 정리, 소비/회생 분리 조건 (docs/174 §2-2b)",
+   "finding": "VBUS=모터 ADC(0x701C, 0.035 V 눈금), iqf=q축 상전류(버스 전류 아님). 토크 대 iqf 기울기 1.456 N·m/A, R² 0.9925 — 매뉴얼 Kt 1.485 와 2 % 차. 버스 전류 ibus(0x302B) 등 0x30xx 는 MIT 로 읽으면 0. 소비/회생은 τω 부호로 하한만, 정확히는 48 V 선 양방향 전류 센서 필요",
+   "number": "Kt 실측 1.456 vs 매뉴얼 1.485 N·m/A",
+   "section": "done",
+   "changed": "2026-10-19 14:00"
   }
  },
  "order": [
@@ -2685,7 +2695,8 @@
   "can-id-hostid",
   "can-0xfd-adapter-review",
   "can-threads-review",
-  "can-adapter-fifo"
+  "can-adapter-fifo",
+  "emf-v-i-source"
  ],
- "updated": "2026-10-19 12:52"
+ "updated": "2026-10-19 14:00"
 }
