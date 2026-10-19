@@ -2364,7 +2364,8 @@
    "title": "D 런 학습 완주 (11,999 회, 10-18 08:24). 원격 3090 대기열 끝, 그래픽카드 비어 있음",
    "finding": "마지막 기록: 낮은 몸통 종료 1.375, 시간 초과 종료 3.17. 완주 측정 시작 (게인 0.5 배 생존, 제자리 회전 지연 끔·켬, 서기, 방향 치우침, 오르막·계단)",
    "section": "done",
-   "changed": "2026-10-18 08:29"
+   "changed": "2026-10-18 08:29",
+   "collapsed": true
   },
   "armD_final_eval": {
    "id": "armD_final_eval",
@@ -2431,6 +2432,15 @@
    "number": "몰아 보내기 버스 오류 ~1,300 vs 하나씩 4 (개발자 실측)",
    "section": "done",
    "changed": "2026-10-19 11:34"
+  },
+  "can-0xfd-adapter-review": {
+   "id": "can-0xfd-adapter-review",
+   "created": "2026-10-19 12:02",
+   "title": "0xFD 충돌은 USB-CAN 어댑터 병목이 아니라 CAN 선 위 충돌 — 다만 지금 주기 상한은 어댑터 왕복 × 6 (docs/178 §7)",
+   "finding": "근거: 어댑터 루프백 오류 0, 응답이 둘씩 짝으로 빠짐(696주기 중 71), 버스 오류 프레임 몰아 보내기 약 1,300 대 하나씩 4. 어댑터 쪽 병목(옛 gs_usb 드라이버)은 이미 6.1 판으로 고쳐짐. 하나씩 보내기에서 왕복 0.69 ms × 6 = 다리당 4.33 ms",
+   "number": "왕복 0.69 ms, 다리당 4.33 ms",
+   "section": "done",
+   "changed": "2026-10-19 12:02"
   }
  },
  "order": [
@@ -2652,7 +2662,8 @@
   "mit-cmd14-check",
   "mit-cmd14-live",
   "slcan-gsusb-factcheck",
-  "can-id-hostid"
+  "can-id-hostid",
+  "can-0xfd-adapter-review"
  ],
- "updated": "2026-10-19 11:34"
+ "updated": "2026-10-19 12:02"
 }
