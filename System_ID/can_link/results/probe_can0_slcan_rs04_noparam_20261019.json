@@ -1,0 +1,1321 @@
+{
+ "tool": "bus_probe",
+ "version": "1.0",
+ "started": "2026-10-19T11:09:09+0900",
+ "host": "syaro-Standard-PC-Q35-ICH9-2009",
+ "channel": "can0",
+ "fake": false,
+ "ids": [
+  4
+ ],
+ "models": {
+  "4": "RS04"
+ },
+ "params": [],
+ "args": {
+  "channel": "can0",
+  "ids": "4",
+  "model": "RS04",
+  "model_map": "",
+  "mode": "both",
+  "rates": "100,200,300,500,1000",
+  "duration": 5.0,
+  "param": "none",
+  "timeout_ms": 4.0,
+  "expire_ms": 50.0,
+  "max_outstanding": 3,
+  "pause": 0.5,
+  "err_frames": true,
+  "own_msgs": false,
+  "allow_enabled": false,
+  "force_sweep": false,
+  "out": "results/probe_can0_slcan_rs04_noparam_20261019.json",
+  "fake": false,
+  "fake_collide": false
+ },
+ "sent_frame_kinds": [
+  "zero-gain MIT (kp=kd=torque=0)"
+ ],
+ "hello": {
+  "4": 0
+ },
+ "runs": [
+  {
+   "mode": "sequential",
+   "rate_hz": 100.0,
+   "duration_s": 5.0,
+   "cycles": 500,
+   "achieved_cycle_hz": 100.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.099,
+    "p99": 2.579,
+    "max": 3.764
+   },
+   "frames_sent": 500,
+   "send_failures": 0,
+   "state": {
+    "sent": 500,
+    "ontime": 500,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 500,
+     "median": 0.552,
+     "p99": 3.418,
+     "max": 3.931
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 500,
+     "ontime": 500,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 500,
+      "median": 0.552,
+      "p99": 3.418,
+      "max": 3.931
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 500
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 500
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.052,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 4000,
+     "rx_packets": 500,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 4000,
+     "tx_packets": 500,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 4000,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 500,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 4000,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 500,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "sequential    100 Hz  cycles=500    achieved=100.0   overrun=0    ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.552/3.418/3.931 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 200.0,
+   "duration_s": 5.0,
+   "cycles": 995,
+   "achieved_cycle_hz": 199.0,
+   "overrun_cycles": 37,
+   "cycle_start_lateness_ms": {
+    "median": 0.082,
+    "p99": 2.916,
+    "max": 3.208
+   },
+   "frames_sent": 995,
+   "send_failures": 0,
+   "state": {
+    "sent": 995,
+    "ontime": 995,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 995,
+     "median": 0.53,
+     "p99": 3.728,
+     "max": 4.726
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 995,
+     "ontime": 995,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 995,
+      "median": 0.53,
+      "p99": 3.728,
+      "max": 4.726
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 995
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 995
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.058,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 7960,
+     "rx_packets": 995,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 7960,
+     "tx_packets": 995,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 7960,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 995,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 7960,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 995,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "sequential    200 Hz  cycles=995    achieved=199.0   overrun=37   ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.53/3.728/4.726 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 300.0,
+   "duration_s": 5.0,
+   "cycles": 1453,
+   "achieved_cycle_hz": 290.6,
+   "overrun_cycles": 129,
+   "cycle_start_lateness_ms": {
+    "median": 0.08,
+    "p99": 2.985,
+    "max": 4.908
+   },
+   "frames_sent": 1453,
+   "send_failures": 0,
+   "state": {
+    "sent": 1453,
+    "ontime": 1451,
+    "late": 2,
+    "lost": 0,
+    "ontime_pct": 99.862,
+    "late_pct": 0.138,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1453,
+     "median": 0.512,
+     "p99": 3.727,
+     "max": 4.82
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 1453,
+     "ontime": 1451,
+     "late": 2,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1453,
+      "median": 0.512,
+      "p99": 3.727,
+      "max": 4.82
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 1453
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 1453
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.057,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 11624,
+     "rx_packets": 1453,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 11624,
+     "tx_packets": 1453,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 11624,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 1453,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 11624,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 1453,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "sequential    300 Hz  cycles=1453   achieved=290.6   overrun=129  ontime=99.86% late=0.14% lost=0.00%  rtt med/p99/max=0.512/3.727/4.82 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 500.0,
+   "duration_s": 5.0,
+   "cycles": 2281,
+   "achieved_cycle_hz": 456.2,
+   "overrun_cycles": 261,
+   "cycle_start_lateness_ms": {
+    "median": 0.072,
+    "p99": 2.96,
+    "max": 3.616
+   },
+   "frames_sent": 2281,
+   "send_failures": 0,
+   "state": {
+    "sent": 2281,
+    "ontime": 2280,
+    "late": 1,
+    "lost": 0,
+    "ontime_pct": 99.956,
+    "late_pct": 0.044,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 2281,
+     "median": 0.49,
+     "p99": 3.58,
+     "max": 5.382
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 2281,
+     "ontime": 2280,
+     "late": 1,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 2281,
+      "median": 0.49,
+      "p99": 3.58,
+      "max": 5.382
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 2281
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2281
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.059,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 18248,
+     "rx_packets": 2281,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 18248,
+     "tx_packets": 2281,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 18248,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 2281,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 18248,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 2281,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "sequential    500 Hz  cycles=2281   achieved=456.2   overrun=261  ontime=99.96% late=0.04% lost=0.00%  rtt med/p99/max=0.49/3.58/5.382 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "sequential",
+   "rate_hz": 1000.0,
+   "duration_s": 5.0,
+   "cycles": 4228,
+   "achieved_cycle_hz": 845.6,
+   "overrun_cycles": 317,
+   "cycle_start_lateness_ms": {
+    "median": 0.064,
+    "p99": 2.941,
+    "max": 3.847
+   },
+   "frames_sent": 4228,
+   "send_failures": 0,
+   "state": {
+    "sent": 4228,
+    "ontime": 4228,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 4228,
+     "median": 0.478,
+     "p99": 3.789,
+     "max": 3.992
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 4228,
+     "ontime": 4228,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 4228,
+      "median": 0.478,
+      "p99": 3.789,
+      "max": 3.992
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 4228
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 4228
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.063,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 33824,
+     "rx_packets": 4228,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 33824,
+     "tx_packets": 4228,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 33824,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 4228,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 33824,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 4228,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "sequential   1000 Hz  cycles=4228   achieved=845.6   overrun=317  ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.478/3.789/3.992 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 100.0,
+   "duration_s": 5.0,
+   "cycles": 500,
+   "achieved_cycle_hz": 100.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.103,
+    "p99": 3.285,
+    "max": 3.403
+   },
+   "frames_sent": 500,
+   "send_failures": 0,
+   "state": {
+    "sent": 500,
+    "ontime": 500,
+    "late": 0,
+    "lost": 0,
+    "ontime_pct": 100.0,
+    "late_pct": 0.0,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 500,
+     "median": 0.538,
+     "p99": 3.157,
+     "max": 3.637
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 500,
+     "ontime": 500,
+     "late": 0,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 500,
+      "median": 0.538,
+      "p99": 3.157,
+      "max": 3.637
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 500
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 500
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.048,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 4000,
+     "rx_packets": 500,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 4000,
+     "tx_packets": 500,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 4000,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 500,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 4000,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 500,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "pipelined     100 Hz  cycles=500    achieved=100.0   overrun=0    ontime=100.00% late=0.00% lost=0.00%  rtt med/p99/max=0.538/3.157/3.637 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 200.0,
+   "duration_s": 5.0,
+   "cycles": 1000,
+   "achieved_cycle_hz": 200.0,
+   "overrun_cycles": 0,
+   "cycle_start_lateness_ms": {
+    "median": 0.088,
+    "p99": 3.008,
+    "max": 4.006
+   },
+   "frames_sent": 1000,
+   "send_failures": 0,
+   "state": {
+    "sent": 1000,
+    "ontime": 985,
+    "late": 15,
+    "lost": 0,
+    "ontime_pct": 98.5,
+    "late_pct": 1.5,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1000,
+     "median": 0.525,
+     "p99": 3.877,
+     "max": 8.878
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 1000,
+     "ontime": 985,
+     "late": 15,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1000,
+      "median": 0.525,
+      "p99": 3.877,
+      "max": 8.878
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 1000
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 1000
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.054,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 8000,
+     "rx_packets": 1000,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 8000,
+     "tx_packets": 1000,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 8000,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 1000,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 8000,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 1000,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "pipelined     200 Hz  cycles=1000   achieved=200.0   overrun=0    ontime=98.50% late=1.50% lost=0.00%  rtt med/p99/max=0.525/3.877/8.878 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 300.0,
+   "duration_s": 5.0,
+   "cycles": 1499,
+   "achieved_cycle_hz": 299.8,
+   "overrun_cycles": 7,
+   "cycle_start_lateness_ms": {
+    "median": 0.083,
+    "p99": 2.914,
+    "max": 5.905
+   },
+   "frames_sent": 1499,
+   "send_failures": 0,
+   "state": {
+    "sent": 1499,
+    "ontime": 1431,
+    "late": 68,
+    "lost": 0,
+    "ontime_pct": 95.464,
+    "late_pct": 4.536,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 1499,
+     "median": 0.506,
+     "p99": 3.438,
+     "max": 4.173
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 1499,
+     "ontime": 1431,
+     "late": 68,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 1499,
+      "median": 0.506,
+      "p99": 3.438,
+      "max": 4.173
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 1499
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 1499
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.058,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 11992,
+     "rx_packets": 1499,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 11992,
+     "tx_packets": 1499,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 11992,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 1499,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 11992,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 1499,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "pipelined     300 Hz  cycles=1499   achieved=299.8   overrun=7    ontime=95.46% late=4.54% lost=0.00%  rtt med/p99/max=0.506/3.438/4.173 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 500.0,
+   "duration_s": 5.0,
+   "cycles": 2451,
+   "achieved_cycle_hz": 490.2,
+   "overrun_cycles": 119,
+   "cycle_start_lateness_ms": {
+    "median": 0.074,
+    "p99": 2.91,
+    "max": 4.523
+   },
+   "frames_sent": 2451,
+   "send_failures": 0,
+   "state": {
+    "sent": 2451,
+    "ontime": 2212,
+    "late": 239,
+    "lost": 0,
+    "ontime_pct": 90.249,
+    "late_pct": 9.751,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 2451,
+     "median": 0.495,
+     "p99": 3.778,
+     "max": 5.592
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 2451,
+     "ontime": 2212,
+     "late": 239,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 2451,
+      "median": 0.495,
+      "p99": 3.778,
+      "max": 5.592
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 2451
+     },
+     "skipped_by_outstanding_limit": 0
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 2451
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 0,
+   "kernel_counters_delta": {
+    "seconds": 5.062,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 19608,
+     "rx_packets": 2451,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 19608,
+     "tx_packets": 2451,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 19608,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 2451,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 19608,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 2451,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "pipelined     500 Hz  cycles=2451   achieved=490.2   overrun=119  ontime=90.25% late=9.75% lost=0.00%  rtt med/p99/max=0.495/3.778/5.592 ms  errframes=0 kernel bus-errors+=0 skipped=0"
+  },
+  {
+   "mode": "pipelined",
+   "rate_hz": 1000.0,
+   "duration_s": 5.0,
+   "cycles": 4662,
+   "achieved_cycle_hz": 932.4,
+   "overrun_cycles": 193,
+   "cycle_start_lateness_ms": {
+    "median": 0.064,
+    "p99": 2.928,
+    "max": 12.97
+   },
+   "frames_sent": 4567,
+   "send_failures": 0,
+   "state": {
+    "sent": 4567,
+    "ontime": 4091,
+    "late": 476,
+    "lost": 0,
+    "ontime_pct": 89.577,
+    "late_pct": 10.423,
+    "lost_pct": 0.0,
+    "rtt_ms": {
+     "n": 4567,
+     "median": 0.479,
+     "p99": 3.783,
+     "max": 7.072
+    }
+   },
+   "per_motor": {
+    "4": {
+     "sent": 4567,
+     "ontime": 4091,
+     "late": 476,
+     "lost": 0,
+     "rtt_ms": {
+      "n": 4567,
+      "median": 0.479,
+      "p99": 3.783,
+      "max": 7.072
+     },
+     "params": {},
+     "reply_ids": {
+      "0xFD": 4567
+     },
+     "skipped_by_outstanding_limit": 95
+    }
+   },
+   "reply_id_histogram": {
+    "0xFD": 4567
+   },
+   "shared_reply_id": false,
+   "foreign_frames": {},
+   "unmatched_replies": 0,
+   "error_frames": {
+    "total": 0,
+    "by_class": {}
+   },
+   "skipped_by_outstanding_limit": 95,
+   "kernel_counters_delta": {
+    "seconds": 5.063,
+    "ip": {
+     "bitrate": 0,
+     "re-started": 0,
+     "bus-errors": 0,
+     "arbit-lost": 0,
+     "error-warn": 0,
+     "error-pass": 0,
+     "bus-off": 0,
+     "rx_bytes": 36536,
+     "rx_packets": 4567,
+     "rx_errors": 0,
+     "rx_dropped": 0,
+     "rx_missed": 0,
+     "rx_mcast": 0,
+     "tx_bytes": 36536,
+     "tx_packets": 4567,
+     "tx_errors": 0,
+     "tx_dropped": 0,
+     "tx_carrier": 0,
+     "tx_collsns": 0
+    },
+    "sysfs": {
+     "collisions": 0,
+     "multicast": 0,
+     "rx_bytes": 36536,
+     "rx_compressed": 0,
+     "rx_crc_errors": 0,
+     "rx_dropped": 0,
+     "rx_errors": 0,
+     "rx_fifo_errors": 0,
+     "rx_frame_errors": 0,
+     "rx_length_errors": 0,
+     "rx_missed_errors": 0,
+     "rx_nohandler": 0,
+     "rx_over_errors": 0,
+     "rx_packets": 4567,
+     "tx_aborted_errors": 0,
+     "tx_bytes": 36536,
+     "tx_carrier_errors": 0,
+     "tx_compressed": 0,
+     "tx_dropped": 0,
+     "tx_errors": 0,
+     "tx_fifo_errors": 0,
+     "tx_heartbeat_errors": 0,
+     "tx_packets": 4567,
+     "tx_window_errors": 0
+    },
+    "state_after": "ERROR-ACTIVE"
+   },
+   "summary": "pipelined    1000 Hz  cycles=4662   achieved=932.4   overrun=193  ontime=89.58% late=10.42% lost=0.00%  rtt med/p99/max=0.479/3.783/7.072 ms  errframes=0 kernel bus-errors+=0 skipped=95"
+  }
+ ],
+ "adapter": {
+  "before": {
+   "time": 1792375749.0430243,
+   "ip": {
+    "raw_len": 765,
+    "state": "ERROR-ACTIVE",
+    "bitrate": 0,
+    "re-started": 0,
+    "bus-errors": 0,
+    "arbit-lost": 0,
+    "error-warn": 0,
+    "error-pass": 0,
+    "bus-off": 0,
+    "rx_bytes": 1716488,
+    "rx_packets": 214561,
+    "rx_errors": 0,
+    "rx_dropped": 0,
+    "rx_missed": 0,
+    "rx_mcast": 0,
+    "tx_bytes": 985628392,
+    "tx_packets": 123203549,
+    "tx_errors": 0,
+    "tx_dropped": 0,
+    "tx_carrier": 0,
+    "tx_collsns": 0
+   },
+   "sysfs": {
+    "collisions": 0,
+    "multicast": 0,
+    "rx_bytes": 1716488,
+    "rx_compressed": 0,
+    "rx_crc_errors": 0,
+    "rx_dropped": 0,
+    "rx_errors": 0,
+    "rx_fifo_errors": 0,
+    "rx_frame_errors": 0,
+    "rx_length_errors": 0,
+    "rx_missed_errors": 0,
+    "rx_nohandler": 0,
+    "rx_over_errors": 0,
+    "rx_packets": 214561,
+    "tx_aborted_errors": 0,
+    "tx_bytes": 985628392,
+    "tx_carrier_errors": 0,
+    "tx_compressed": 0,
+    "tx_dropped": 0,
+    "tx_errors": 0,
+    "tx_fifo_errors": 0,
+    "tx_heartbeat_errors": 0,
+    "tx_packets": 123203549,
+    "tx_window_errors": 0
+   }
+  },
+  "after": {
+   "time": 1792375804.6486773,
+   "ip": {
+    "raw_len": 765,
+    "state": "ERROR-ACTIVE",
+    "bitrate": 0,
+    "re-started": 0,
+    "bus-errors": 0,
+    "arbit-lost": 0,
+    "error-warn": 0,
+    "error-pass": 0,
+    "bus-off": 0,
+    "rx_bytes": 1872280,
+    "rx_packets": 234035,
+    "rx_errors": 0,
+    "rx_dropped": 0,
+    "rx_missed": 0,
+    "rx_mcast": 0,
+    "tx_bytes": 985784184,
+    "tx_packets": 123223023,
+    "tx_errors": 0,
+    "tx_dropped": 0,
+    "tx_carrier": 0,
+    "tx_collsns": 0
+   },
+   "sysfs": {
+    "collisions": 0,
+    "multicast": 0,
+    "rx_bytes": 1872280,
+    "rx_compressed": 0,
+    "rx_crc_errors": 0,
+    "rx_dropped": 0,
+    "rx_errors": 0,
+    "rx_fifo_errors": 0,
+    "rx_frame_errors": 0,
+    "rx_length_errors": 0,
+    "rx_missed_errors": 0,
+    "rx_nohandler": 0,
+    "rx_over_errors": 0,
+    "rx_packets": 234035,
+    "tx_aborted_errors": 0,
+    "tx_bytes": 985784184,
+    "tx_carrier_errors": 0,
+    "tx_compressed": 0,
+    "tx_dropped": 0,
+    "tx_errors": 0,
+    "tx_fifo_errors": 0,
+    "tx_heartbeat_errors": 0,
+    "tx_packets": 123223023,
+    "tx_window_errors": 0
+   }
+  },
+  "total_delta": {
+   "seconds": 55.606,
+   "ip": {
+    "bitrate": 0,
+    "re-started": 0,
+    "bus-errors": 0,
+    "arbit-lost": 0,
+    "error-warn": 0,
+    "error-pass": 0,
+    "bus-off": 0,
+    "rx_bytes": 155792,
+    "rx_packets": 19474,
+    "rx_errors": 0,
+    "rx_dropped": 0,
+    "rx_missed": 0,
+    "rx_mcast": 0,
+    "tx_bytes": 155792,
+    "tx_packets": 19474,
+    "tx_errors": 0,
+    "tx_dropped": 0,
+    "tx_carrier": 0,
+    "tx_collsns": 0
+   },
+   "sysfs": {
+    "collisions": 0,
+    "multicast": 0,
+    "rx_bytes": 155792,
+    "rx_compressed": 0,
+    "rx_crc_errors": 0,
+    "rx_dropped": 0,
+    "rx_errors": 0,
+    "rx_fifo_errors": 0,
+    "rx_frame_errors": 0,
+    "rx_length_errors": 0,
+    "rx_missed_errors": 0,
+    "rx_nohandler": 0,
+    "rx_over_errors": 0,
+    "rx_packets": 19474,
+    "tx_aborted_errors": 0,
+    "tx_bytes": 155792,
+    "tx_carrier_errors": 0,
+    "tx_compressed": 0,
+    "tx_dropped": 0,
+    "tx_errors": 0,
+    "tx_fifo_errors": 0,
+    "tx_heartbeat_errors": 0,
+    "tx_packets": 19474,
+    "tx_window_errors": 0
+   },
+   "state_after": "ERROR-ACTIVE"
+  }
+ }
+}

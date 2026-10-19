@@ -22,6 +22,8 @@
 
 ## 2. slcan → gs_usb (candleLight) — 무엇이 좋아지나
 
+> **정정 (2026-10-19, [[177_slcan_vs_gs_usb_fact_check]])**: ① "선은 18 % 만 사용" 은 데이터 바이트만 센 값이다. 프레임 전체로 세면 33 ~ 40 % 다. ② 메인라인 candleLight 는 USB 패킷 1 개에 프레임 1 개를 보낸다. 묶어 보내지 않는다. ③ 3090 벤치 slcan 실측에서는 1 ms 묶음이 보이지 않았다 (몰아 보낸 응답 간격 중앙값 0.12 ~ 0.35 ms). 그래서 "gs_usb 에서 이득이 크다" 는 확인되지 않은 주장이다. ④ 메인라인 candleLight 는 CANable2 (STM32G431) 를 지원하지 않는다.
+
 - 지금 어댑터: CANable2, slcan 펌웨어. 2026-09-12 라즈베리파이 실측(`System_ID/FIRMWARE_RUNBOOK.md`): 모터 6개 한 주기 4.07 ms, 12개 6.28 ms. 그중 **응답 기다림 3.9 ms, 응답이 USB 로 1 ms 묶음 간격**으로 들어옴 — 선은 18 % 만 사용. 즉 병목은 선이 아니라 **slcan 의 USB 전달 방식**.
 - candleLight(gs_usb): 프레임을 글자로 바꾸지 않고 USB 대량 전송으로 직접 전달, 커널 기본 드라이버, 하드웨어 시각표, 오류 계수 정상 보고, `slcand` 불필요(`ip link set can0 type can bitrate 1000000`). 기대 효과: 응답 대기의 1 ms 눈금이 사라져 한 주기가 **선 시간에 가까워진다** (실측 전이라 수치는 미확인).
 - 펌웨어 교체는 BOOT 점퍼를 손으로 잡아야 함 — 준비물·절차는 `System_ID/FIRMWARE_RUNBOOK.md`, 파일은 `System_ID/firmware/`. 2026-09-12 에는 사용자가 원격이라 보류됐던 작업.

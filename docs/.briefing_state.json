@@ -2345,7 +2345,8 @@
    "finding": "무작위화 33 % 램프 시점. 넘어짐 종료 0.003. 회전 감소는 C 보다 작음. 판단은 8,000회·완주 측정에서",
    "number": "D 4,017 / 12,000회, 끝 예상 07:15",
    "section": "done",
-   "changed": "2026-10-18 00:22"
+   "changed": "2026-10-18 00:22",
+   "collapsed": true
   },
   "gain-d-8k": {
    "id": "gain-d-8k",
@@ -2411,6 +2412,15 @@
    "number": "VBUS 48.685 V, 프레임 600/600",
    "section": "done",
    "changed": "2026-10-19 11:06"
+  },
+  "slcan-gsusb-factcheck": {
+   "id": "slcan-gsusb-factcheck",
+   "created": "2026-10-19 11:13",
+   "title": "gs_usb 병렬화 주장 사실 확인 — 부분적으로만 참 (docs/177)",
+   "finding": "gs_usb 송신 URB 10개(컴퓨터↔어댑터)뿐, 선 위 병렬 없음. 3090 slcan 실측 1 ms 묶음 없음, 4개 몰아 보내기 마지막 응답 1.28 ms, 손실 0. 기존 문서 2곳 정정(묶음 전송 거짓, 18 %→33~40 %)",
+   "number": "왕복 중앙값 0.48~0.58 ms, 99 % 3.7~3.9 ms",
+   "section": "done",
+   "changed": "2026-10-19 11:13"
   }
  },
  "order": [
@@ -2630,7 +2640,8 @@
   "gain-d-verdict",
   "dr-doc-176",
   "mit-cmd14-check",
-  "mit-cmd14-live"
+  "mit-cmd14-live",
+  "slcan-gsusb-factcheck"
  ],
- "updated": "2026-10-19 11:06"
+ "updated": "2026-10-19 11:13"
 }
