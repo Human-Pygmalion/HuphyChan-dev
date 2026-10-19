@@ -37,6 +37,21 @@
 | slcan 과 gs_usb 의 왕복 시간을 직접 비교한 측정 | **찾지 못함** | 논문 (Sojka·Píša 2011 은 USB 어댑터 미포함), linux-can, ODrive, mjbots, RobStride 포럼 모두 없음. 유일한 단서는 CANine 블로그 (slcan 1.5 ~ 2.0 ms, gs_usb 아닌 자체 펌웨어 1 ms, 방법 미공개) |
 | gs_usb 로 바꾸면 같은 번호 응답 충돌이 없어진다 | **거짓** | 충돌은 CAN 중재 단계의 문제다. 리눅스 CAN 문서: CAN 번호는 버스에서 유일해야 한다 |
 
+### 2-1. 소스 위치 (리눅스 7.3 개발판 master `c03c1a14507d`, 2026-10-18 · kernel.org 와 GitHub 사본 동일 확인)
+
+| 무엇 | 파일 : 줄 | 코드 |
+|---|---|---|
+| gs_usb 동시 송신 한도 | `drivers/net/can/usb/gs_usb.c` : 293–294 | `/* Only send a max of GS_MAX_TX_URBS frames per channel at a time. */` `#define GS_MAX_TX_URBS 10` |
+| gs_usb 수신 요청 수 | 같은 파일 : 295–296 | `#define GS_MAX_RX_URBS 30` |
+| gs_usb 는 10 개가 찼을 때만 멈춤 | 같은 파일 : 929–931 (`gs_can_start_xmit`) | `if (atomic_read(&dev->active_tx_urbs) >= GS_MAX_TX_URBS) netif_stop_queue(netdev);` |
+| gs_usb 는 에코 받을 때 다시 풂 | 같은 파일 : 726–728 | `atomic_dec(&dev->active_tx_urbs);` → `netif_wake_queue(netdev);` |
+| slcan 은 프레임마다 멈춤 | `drivers/net/can/slcan/slcan-core.c` : 626 (`slcan_netdev_xmit`) | `netif_stop_queue(sl->dev);` → `slcan_encaps(...)` |
+| slcan 은 직렬 쓰기 완료 알림 뒤에 풂 | 같은 파일 : 599–603 (`slcan_write_wakeup` → `tx_work`), 570–586 (`slcan_transmit`) | `if (sl->xleft <= 0) { ... netif_wake_queue(sl->dev);` |
+| 그 알림은 USB 송신 완료에서 나옴 | `drivers/usb/class/cdc-acm.c` : 589–606 (`acm_write_bulk`, USB OUT 전송 완료 콜백), 631–632 (`acm_softint`) | `set_bit(EVENT_TTY_WAKEUP, &acm->flags);` → `tty_port_tty_wakeup(&acm->port);` |
+
+- 순서: slcan 송신 → 대기열 멈춤 → 글자 프레임을 cdc-acm 에 씀 → USB OUT 전송 완료 (`acm_write_bulk`) → tty 깨움 → `slcan_write_wakeup` → `slcan_transmit` → 대기열 다시 풂.
+- 3090 의 커널은 6.8 이다. 조사 노트는 6.1·6.6 에서도 `GS_MAX_TX_URBS 10` 이 같다고 적었다. 6.8 판은 직접 열어 보지 않았다.
+
 ## 3. 실측 — RS04 1 개, 3090 가상 머신, CANable2 slcan, 1 Mbit/s (2026-10-19 11:10 ~ 11:25)
 
 - 모터는 토크 꺼짐 상태 (Reset) 였다. 힘 0 MIT 프레임과 Command 14 읽기만 보냈다.
