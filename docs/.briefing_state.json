@@ -2355,7 +2355,8 @@
    "finding": "무작위화 최대 구간에서 명령 지연만으로 회전 보상 −19 %. 묶음 시험 런 회전 손실(−24 %)의 대부분은 명령 지연 몫, 게인 무작위화(−9 %)는 작은 몫. 낮은 몸통 종료 1.94 로 높음",
    "number": "D 8,053 / 12,000회, 끝 예상 07:15",
    "section": "done",
-   "changed": "2026-10-18 04:12"
+   "changed": "2026-10-18 04:12",
+   "collapsed": true
   },
   "gain-d-finish": {
    "id": "gain-d-finish",
@@ -2421,6 +2422,15 @@
    "number": "왕복 중앙값 0.48~0.58 ms, 99 % 3.7~3.9 ms",
    "section": "done",
    "changed": "2026-10-19 11:13"
+  },
+  "can-id-hostid": {
+   "id": "can-id-hostid",
+   "created": "2026-10-19 11:34",
+   "title": "CAN ID 동작 조사 — 응답 ID 0xFD 는 모터 6대 공용, 바꿀 것은 PC 가 아니라 모터마다의 Host CAN ID 설정 (docs/178)",
+   "finding": "Bosch CAN 2.0: ID 는 주소 아님·중재·같은 ID 동시 송신은 데이터 구간 BIT ERROR. 명령 방향은 모터 ID 로 유일, 응답 방향은 6대 모두 0x0FD. 새 Host ID 는 모터 ID 와 겹치면 위험",
+   "number": "몰아 보내기 버스 오류 ~1,300 vs 하나씩 4 (개발자 실측)",
+   "section": "done",
+   "changed": "2026-10-19 11:34"
   }
  },
  "order": [
@@ -2641,7 +2651,8 @@
   "dr-doc-176",
   "mit-cmd14-check",
   "mit-cmd14-live",
-  "slcan-gsusb-factcheck"
+  "slcan-gsusb-factcheck",
+  "can-id-hostid"
  ],
- "updated": "2026-10-19 11:13"
+ "updated": "2026-10-19 11:34"
 }
