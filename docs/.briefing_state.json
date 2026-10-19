@@ -2375,7 +2375,8 @@
    "finding": "Gain 0.5x survival is 8/8 (arm A 1/8, arm C 6/8), but turn-in-place median is 37.7 % (arm A 53.5 %, bar 43.5 %) with 11/64 wrong-way turns (bar 6/64); command delay ON gives 27.4 %. Heading drift +0.47 deg/s (arm A +4.48, arm C +1.68). Final-200 low_base 1.739 vs arm A 1.470 (fail). Overall judgement left to the main session.",
    "number": "turn reward 0.692 vs A 0.857, C 0.772, bundle 0.671; stand drift 0.328 m; uphill 20 deg at 0.6 m/s falls 18.0 % (A 9.8 %)",
    "section": "done",
-   "changed": "2026-10-18 10:44"
+   "changed": "2026-10-18 10:44",
+   "collapsed": true
   },
   "gain-d-verdict": {
    "id": "gain-d-verdict",
@@ -2441,6 +2442,15 @@
    "number": "왕복 0.69 ms, 다리당 4.33 ms",
    "section": "done",
    "changed": "2026-10-19 12:02"
+  },
+  "can-threads-review": {
+   "id": "can-threads-review",
+   "created": "2026-10-19 12:06",
+   "title": "개발자 의견 '0xFD 병렬화엔 스레드 여러 개' 검토 — 스레드로는 0xFD 충돌을 못 푼다 (docs/178 §8)",
+   "finding": "지금도 한 스레드가 두 다리 버스를 엇갈려 동시에 쓴다(6 × 0.69 ms ≈ 4.3 ms). 한 버스에 모터별 스레드는 몰아 보내기와 같아 충돌 재발. 다리별 스레드는 꼬리 지연만 줄임. 한 버스 안 겹쳐 보내기는 Host ID 분리(추정 1.5~2.5 ms, 미실측) 또는 버스 추가",
+   "number": "하나씩 4.3 ms → Host ID 분리 추정 1.5~2.5 ms",
+   "section": "done",
+   "changed": "2026-10-19 12:06"
   }
  },
  "order": [
@@ -2663,7 +2673,8 @@
   "mit-cmd14-live",
   "slcan-gsusb-factcheck",
   "can-id-hostid",
-  "can-0xfd-adapter-review"
+  "can-0xfd-adapter-review",
+  "can-threads-review"
  ],
- "updated": "2026-10-19 12:02"
+ "updated": "2026-10-19 12:06"
 }
