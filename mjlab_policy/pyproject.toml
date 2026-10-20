@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygmalion-mjlab"
+version = "2026.10.12"
+description = "Pygmalion biped rough-terrain velocity task for mjlab (task Pygmalion-Velocity-Rough-Box)"
+requires-python = ">=3.10"
+# mjlab is not pinned here: install mjlab at upstream commit 20f10e96 first (see README).
+dependencies = []
+
+# mjlab imports every package registered under this group at start-up, so the stock
+# `train` / `play` / `list-envs` commands see the task once this package is installed.
+[project.entry-points."mjlab.tasks"]
+pygmalion = "pygmalion_mjlab"
+
+[tool.setuptools.packages.find]
+include = ["pygmalion_mjlab*"]
+
+[tool.setuptools.package-data]
+pygmalion_mjlab = ["assets/*.xml", "assets/meshes/*.STL", "assets/meshes/*.stl", "assets/motor_spec/*.csv"]
