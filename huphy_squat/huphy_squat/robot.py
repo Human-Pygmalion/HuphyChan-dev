@@ -64,13 +64,16 @@ MOTOR_DYNAMICS = {
 RATED_TORQUE = {".*_hip_pitch_joint": 40.0, ".*_hip_roll_joint": 40.0, ".*_hip_yaw_joint": 20.0,
                 ".*_knee_joint": 40.0, ".*_crank_[AB]_joint": 20.0}
 
-# Default (action-offset) pose: slight crouch, hip pitch 0.175 / knee 0.35 rad. Crank angles are
-# the ones that put the ankle at pitch 0.175 / roll 0 (passive joints: assets/linkage_table.npz).
+# Default (action-offset) pose: slight crouch, hip pitch 0.175 / knee 0.35 rad, hips spread
+# outward by HIP_SPREAD (feet 33 cm apart at the foot origins instead of 25 cm). Hip yaw and the
+# crank angles keep each foot level and pointing ahead (ankle pitch 0.175 / roll -0.051);
+# passive joints: assets/linkage_table.npz. Solved by docs/task_design/scripts/hs_reference.py.
+HIP_SPREAD = 0.05  # rad, hip roll outward (R +, L -)
 DEFAULT_MOTOR_POS = {
-  "R_hip_pitch_joint": -0.175, "R_hip_roll_joint": 0.0, "R_hip_yaw_joint": 0.0, "R_knee_joint": 0.35,
-  "R_crank_A_joint": 0.14395487369574003, "R_crank_B_joint": -0.14706307530170212,
-  "L_hip_pitch_joint": 0.175, "L_hip_roll_joint": 0.0, "L_hip_yaw_joint": 0.0, "L_knee_joint": -0.35,
-  "L_crank_A_joint": -0.1438849965517705, "L_crank_B_joint": 0.14687020555452607,
+  "R_hip_pitch_joint": -0.175, "R_hip_roll_joint": 0.05, "R_hip_yaw_joint": 0.008837, "R_knee_joint": 0.35,
+  "R_crank_A_joint": 0.106983, "R_crank_B_joint": -0.184691,
+  "L_hip_pitch_joint": 0.175, "L_hip_roll_joint": -0.05, "L_hip_yaw_joint": -0.008837, "L_knee_joint": -0.35,
+  "L_crank_A_joint": -0.106983, "L_crank_B_joint": 0.184691,
 }
 RESET_CLEARANCE = 0.001  # lowest sole corner this far above the floor at reset [m]
 
@@ -88,13 +91,20 @@ ACTION_CLIP = {
 }
 SOFT_LIMIT_FACTOR = 0.9
 
-# Squat reference q*(h) for the R leg (pelvis upright, feet flat, whole-body CoM over the sole
-# centre), from docs/task_design/height_static.json (reward_design.md section 2.2).
-# L leg: hip pitch and knee negated, ankle pitch same sign. Roll / yaw references are 0.
-SQUAT_REF_H = (0.700, 0.725, 0.750, 0.775, 0.800, 0.825, 0.850, 0.875, 0.8922, 0.895)
-SQUAT_REF_KNEE = (1.479, 1.388, 1.291, 1.186, 1.072, 0.945, 0.795, 0.607, 0.420, 0.378)
-SQUAT_REF_HIP_PITCH = (-1.037, -0.969, -0.897, -0.821, -0.739, -0.648, -0.543, -0.412, -0.283, -0.255)
-SQUAT_REF_ANKLE_PITCH = (0.442, 0.419, 0.394, 0.366, 0.334, 0.297, 0.252, 0.194, 0.136, 0.123)
+# Squat reference q*(h) for the R leg with the hips spread by HIP_SPREAD: pelvis upright, feet
+# level and pointing ahead. Down to h = 0.71 the whole-body CoM is over the sole centre; below,
+# ankle pitch stays at 0.43 (soft limit 0.454) and the CoM moves behind the sole centre
+# (SQUAT_REF_COM_DX, -1.9 cm at 0.65 m): the robot sits back. docs/task_design/height_reference_v2.json
+# (scripts/hs_reference.py). L leg: hip pitch / roll / yaw and knee negated, ankle pitch / roll same sign.
+SQUAT_REF_H = (0.625, 0.65, 0.675, 0.7, 0.725, 0.75, 0.775, 0.8, 0.825, 0.85, 0.875, 0.895)
+SQUAT_REF_KNEE = (1.6872, 1.6189, 1.5451, 1.4659, 1.3781, 1.2818, 1.178, 1.064, 0.9361, 0.7863, 0.5956, 0.3589)
+SQUAT_REF_HIP_PITCH = (-1.2611, -1.192, -1.1177, -1.038, -0.963, -0.8917, -0.8159, -0.7339, -0.643, -0.5378, -0.4052, -0.242)
+SQUAT_REF_ANKLE_PITCH = (0.43, 0.43, 0.43, 0.43, 0.4168, 0.3917, 0.3634, 0.3313, 0.2941, 0.2493, 0.1908, 0.1172)
+SQUAT_REF_HIP_YAW = (0.1552, 0.125, 0.1023, 0.0846, 0.0717, 0.0618, 0.0531, 0.0451, 0.0374, 0.0298, 0.0214, 0.0123)
+SQUAT_REF_ANKLE_ROLL = (-0.163, -0.1346, -0.1139, -0.0983, -0.0874, -0.0795, -0.0729, -0.0673, -0.0625, -0.0582, -0.0544, -0.0515)
+# lateral distance of the two foot-link origins in that pose [m]
+SQUAT_REF_FOOT_WIDTH = (0.4388, 0.4118, 0.3919, 0.3769, 0.3669, 0.3601, 0.3543, 0.3494, 0.3452, 0.3414, 0.338, 0.3352)
+SQUAT_REF_COM_DX = (-0.0249, -0.0192, -0.0123, -0.004, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0, 0.0)
 
 
 def tn_curve(family: str) -> tuple[tuple[float, float], ...]:

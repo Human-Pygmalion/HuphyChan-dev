@@ -22,7 +22,9 @@ from mjlab.viewer.viser.viewer import UpdateReason, ViserPlayViewer
 from ..env_cfg import HEIGHT_RANGE, PUSH
 from ..mdp.commands import base_height
 from ..mdp.events import get_motor
+from .. import robot as robot_def
 from ..mdp.observations import foot_friction, loop_distances
+from ..mdp.rewards import SquatReference, foot_width
 from .dr import DrControl
 from .scene import BOX, BOX_PARK, box_body
 
@@ -59,6 +61,8 @@ class HuphyViewer(ViserPlayViewer):
     self.sweep_period = 8.0
     self._sweep_t = 0.0
     self.falls = 0
+    self._feet = [u.scene["robot"].body_names.index(b) for b in robot_def.FOOT_BODIES]
+    self._ref = SquatReference(u.device)
     self._wrap_height_resample()
     self.set_random_push(False, PUSH["force_range"][1])
 
@@ -376,6 +380,10 @@ class HuphyViewer(ViserPlayViewer):
       tilt = math.degrees(math.acos(max(-1.0, min(1.0, float(-g[2])))))
       ratio = float(m.step_max_ratio[i].max())
       loop = float(loop_distances(u)[i].max()) * 1000
+      width = float(foot_width(robot, self._feet)[i])
+      width_ref = float(self._ref.full(self.cmd.target[i:i + 1, 0])["foot_width"][0])
+      rolls = [float(robot.data.joint_pos[i, robot.joint_names.index(f"{s}_hip_roll_joint")]) * (1 if s == "R" else -1)
+               for s in robot_def.SIDES]
       pushing = float(self.push.remaining[i]) > 0
       fr = float(foot_friction(u, u.event_manager.get_term_cfg("foot_friction").params["asset_cfg"])[i].mean())
       payload = float(getattr(u, "huphy_payload", torch.zeros(u.num_envs))[i])
@@ -393,6 +401,8 @@ class HuphyViewer(ViserPlayViewer):
         <strong>vz</strong> {vz:+.3f} m/s &nbsp; <strong>tilt</strong> {tilt:.1f}°<br/>
         <span style="color:{rat_col};"><strong>max torque / T-N</strong> {ratio:.2f}</span> &nbsp;
         <strong>loop</strong> {loop:.2f} mm<br/>
+        <strong>foot width</strong> {100 * width:.1f} cm (ref {100 * width_ref:.1f}) &nbsp;
+        <strong>hip roll out</strong> R {rolls[0]:+.3f} L {rolls[1]:+.3f}<br/>
         <strong>falls</strong> {self.falls} &nbsp; {'<strong style="color:#d97706;">PUSH</strong>' if pushing else ''}<br/>
         <span style="opacity:0.75;">applied: payload {payload:+.1f} kg, μ {fr:.2f}, Kp×{kp:.2f}, Kd×{kd:.2f},
         cmd {cmd_ms} ms, obs {obs_ms} ms</span>

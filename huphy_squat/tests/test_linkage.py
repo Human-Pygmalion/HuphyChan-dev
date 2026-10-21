@@ -35,14 +35,19 @@ def test_mjcf_names_and_mass(solver):
   assert len([m.geom(i).name for i in range(m.ngeom) if m.geom(i).name.endswith("_rod_A_collision")]) == 2
 
 
-def test_default_pose_matches_previous_task(table):
-  # Same passive angles as mjlab_policy/pygmalion_mjlab/robot.py INIT_STATE (solved there independently).
-  prev = {"L_rod_A_u1": 0.1479036260054202, "L_ankle_pitch_joint": 0.1750072557823706,
-          "R_rod_B_u1": 0.14892320455004768, "R_ankle_pitch_joint": 0.17516470240179116,
-          "R_ankle_roll_joint": -7.751934743886312e-05}
+def test_default_pose_feet_level(solver, table):
+  # Spread default pose (hip roll +-HIP_SPREAD): both feet level and pointing ahead, loops closed,
+  # same ankle angles as docs/task_design/scripts/hs_reference.py solved independently.
   pose = dict(zip(table["default_names"], table["default_values"], strict=True))
-  for k, v in prev.items():
-    assert abs(pose[k] - v) < 1e-6, k
+  for s in "LR":
+    assert abs(pose[f"{s}_ankle_pitch_joint"] - 0.1752) < 2e-4
+    assert abs(pose[f"{s}_ankle_roll_joint"] + 0.0508) < 2e-4
+  solver.d.qpos[:] = solver.m.qpos0
+  solver.set(pose)
+  for s in "LR":
+    assert np.abs(solver.residual(s)).max() < 1e-9
+    R = solver.d.xmat[solver.m.body(f"{s}_foot_link").id].reshape(3, 3)
+    assert abs(R[0, 2]) < 1e-4 and abs(R[1, 2]) < 1e-4 and abs(R[1, 0]) < 1e-4, s
 
 
 def _interp(table, side, ca, cb):

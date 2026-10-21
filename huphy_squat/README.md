@@ -34,7 +34,7 @@ cd ~/huphy/HuphyChan-dev/huphy_squat && scripts/train.sh main
 
 | | |
 |---|---|
-| Command | target pelvis height h* (pelvis z − ground z) ∈ [0.72, 0.895] m; jumps to a new U(0.72, 0.895) every 3–6 s; 20 % of resamples keep the old target |
+| Command | target pelvis height h* (pelvis z − ground z) ∈ [0.65, 0.895] m; jumps to a new U(0.65, 0.895) every 3–6 s; 20 % of resamples keep the old target |
 | Actor obs (43) | IMU gyro (3), IMU gravity (3), 12 encoder angles × 2 frames (24), last action (12), h* (1) |
 | Critic obs (186) | true height / error / base velocity / gravity, motor + passive-ankle angles and speeds, torques, foot contacts and forces, live DR values |
 | Action (12) | motor target = default + 0.25·a, clipped (hips/knee: 90 % of range, cranks ±0.95 rad) |
@@ -49,7 +49,7 @@ Rewards (w · f per step, then × dt):
 | track_height | +2.0 | exp(−(h−h*)²/0.05²) |
 | vz_speed | −600 | relu(\|v_z\|−0.1)², off for the first 0.2 s of an episode |
 | knee_guidance | −0.2 | Σ\|knee − q*_knee(h*)\| · min(\|h−h*\|/0.05, 1) |
-| squat_posture | +1.0 | exp(−mean((q−q*(h*))²/σ²)), σ pitch chain 0.25/0.25/0.15, roll/yaw 0.08 |
+| squat_posture | +1.0 | exp(−mean((q−q*(h*))²/σ²)), σ pitch chain 0.25/0.25/0.15, hip roll 0.12, hip yaw / ankle roll 0.08. q*(h): hips spread 0.05 rad, feet level and straight; below 0.71 m ankle pitch held at 0.43 and the robot sits back (CoM up to 2 cm behind the sole centre at 0.65 m) |
 | pitch_symmetry | +0.5 | L/R mirror of hip pitch, knee, ankle pitch, σ 0.1 |
 | upright | +1.5 | exp(−(g_x²+g_y²)/0.05) |
 | body_ang_vel / angular_momentum | −0.05 / −0.02 | ω_xy² / ‖L‖² |
@@ -61,6 +61,7 @@ Rewards (w · f per step, then × dt):
 | thermal_effort | −0.02 | Σ(τ/rated)² |
 | action_rate / joint_acc | −0.1 / −2.5e-7 | ‖Δa‖² / Σq̈² (motors + ankles) |
 | self_collisions / foot_slip / foot_impact | −1 / −0.5 / −0.5 | contact substeps / sole speed² in contact / descent speed² just before touchdown |
+| stance_width | −10 | metres of foot width (along the pelvis heading's left axis) outside [w*(h*) − 4 cm, w*(h*) + 12 cm]; w* = 34–41 cm |
 
 Every term is clamped to |w·f| ≤ 50.
 
@@ -81,7 +82,8 @@ Domain randomization (all drawn at every reset, full strength from iteration 0):
 | IMU noise | gyro ±0.2 rad/s, gravity ±0.05 (uniform, every step); encoders ±0.01 rad |
 | pelvis push | horizontal force U(0, 60) N for 0.1–0.2 s, every 2–5 s |
 
-Reset: default stance + U(±0.05 rad) on the 12 motors, the passive rod/ankle joints set from a
+Reset: default stance (hips spread 0.05 rad, feet 33 cm apart) + U(±0.05 rad) on the 12 motors; in half the
+resets each hip roll also gets U(−0.10, +0.06) rad outward (narrow / wide stances to step out of, feet not re-levelled); the passive rod/ankle joints set from a
 precomputed closed-loop table (loops start closed, < 0.1 mm), base upright with random yaw, lowest sole
 corner 1 mm above the floor.
 

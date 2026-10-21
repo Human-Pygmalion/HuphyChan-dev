@@ -37,6 +37,9 @@ class reset_squat_pose:
   """Default stance + uniform noise on the 12 motors, ankle loops kept closed, sole on the floor.
 
   * motors: default + U(-noise, noise) (clamped to the soft joint limits);
+  * stance: with probability `spread_prob` each hip roll gets an extra U(spread_range) outward
+    (negative = inward, narrower stance); the feet are not re-levelled, so the policy starts
+    from narrow / wide and slightly tilted stances it has to recover from;
   * passive rod / ankle joints: bilinear lookup in the crank-angle table
     (assets/linkage_table.npz), so the `connect` equalities start satisfied;
   * base: upright, yaw U(yaw_range), at the env origin, height such that the lowest sole
@@ -68,6 +71,9 @@ class reset_squat_pose:
     self.H = torch.tensor(tab["corner_d2z_dq2"], dtype=torch.float, device=dev)
     lim = asset.data.soft_joint_pos_limits[0, self.motor_ids]
     self.lo, self.hi = lim[:, 0], lim[:, 1]
+    # columns of the hip-roll motors in motor order, and their outward sign (R +, L -)
+    self.roll_cols = torch.tensor([motors.index(f"{s}_hip_roll_joint") for s in robot.SIDES], device=dev)
+    self.roll_sign = torch.tensor([1.0 if s == "R" else -1.0 for s in robot.SIDES], device=dev)
 
   @staticmethod
   def _bilinear(grid_a, grid_b, vals, a, b):
@@ -80,6 +86,7 @@ class reset_squat_pose:
             + (1 - u) * v * vals[i, j + 1] + u * v * vals[i + 1, j + 1])
 
   def __call__(self, env: ManagerBasedRlEnv, env_ids: torch.Tensor | None, motor_noise: float = 0.05,
+               spread_range: tuple[float, float] = (0.0, 0.0), spread_prob: float = 0.0,
                yaw_range: tuple[float, float] = (-math.pi, math.pi), clearance: float = robot.RESET_CLEARANCE,
                asset_cfg: SceneEntityCfg = _ROBOT) -> None:
     ids = _ids(env, env_ids)
@@ -87,6 +94,10 @@ class reset_squat_pose:
     asset: Entity = env.scene[asset_cfg.name]
     q = self.default_q.expand(n, -1).clone()
     dq = torch.empty(n, len(self.motor_ids), device=env.device).uniform_(-motor_noise, motor_noise)
+    if spread_prob > 0:
+      extra = torch.empty(n, 2, device=env.device).uniform_(*spread_range)
+      extra *= (torch.rand(n, 1, device=env.device) < spread_prob).float()
+      dq[:, self.roll_cols] += extra * self.roll_sign
     qm = (self.default_q[self.motor_ids] + dq).clamp(self.lo, self.hi)
     dq = qm - self.default_q[self.motor_ids]
     q[:, self.motor_ids] = qm

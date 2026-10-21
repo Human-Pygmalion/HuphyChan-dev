@@ -8,7 +8,7 @@ import pytest
 import torch
 
 from huphy_squat import robot
-from huphy_squat.env_cfg import FOOT_FRICTION, OBS_MAX_LAG, PAYLOAD_KG, PUSH
+from huphy_squat.env_cfg import FOOT_FRICTION, HEIGHT_RANGE, OBS_MAX_LAG, PAYLOAD_KG, PUSH
 from huphy_squat.mdp import commands, events, observations, rewards
 
 from conftest import loop_residual, make_env, sole_corners_z
@@ -40,7 +40,10 @@ def test_reset_state(env):
   r = env.scene["robot"]
   mi = _ids(r, robot.MOTOR_JOINT_NAMES)
   dq = r.data.joint_pos[:, mi] - r.data.default_joint_pos[:, mi]
-  assert dq.abs().max() <= 0.05 + 1e-6 and dq.abs().max() > 0.04  # noise present and bounded
+  roll = torch.tensor([i for i, n in enumerate(robot.MOTOR_JOINT_NAMES) if "hip_roll" in n], device=env.device)
+  other = torch.tensor([i for i, n in enumerate(robot.MOTOR_JOINT_NAMES) if "hip_roll" not in n], device=env.device)
+  assert dq[:, other].abs().max() <= 0.05 + 1e-6 and dq[:, other].abs().max() > 0.04  # noise present and bounded
+  assert dq[:, roll].abs().max() <= 0.15 + 1e-6 and dq[:, roll].abs().max() > 0.1  # + the stance spread
   assert loop_residual(env).max() < 1e-4  # passive joints consistent with the cranks (< 0.1 mm)
   z = sole_corners_z(env).min(dim=1).values
   assert z.min() > -1e-4 and z.max() < 2.5e-3, (z.min(), z.max())  # lowest corner ~1 mm above the floor
@@ -71,7 +74,8 @@ def test_command_first_draw_and_keep(env):
   env.reset()
   c = env.command_manager.get_term("height")
   h = c.command[:, 0]
-  assert h.min() >= 0.72 and h.max() <= 0.895 and h.std() > 0.03
+  lo, hi = HEIGHT_RANGE
+  assert h.min() >= lo and h.max() <= hi and h.std() > 0.03
   old = h.clone()
   ids = torch.arange(env.num_envs, device=env.device)
   c._resample(ids)  # noqa: SLF001
@@ -316,17 +320,16 @@ def test_tn_quadrants():
 # --- rewards ----------------------------------------------------------------------------------
 
 def _set_pose_at_reference(env, h_star: float):
-  """Write the squat-table pose for h* (pelvis upright, feet flat on the floor); h* = h_star."""
+  """Write the squat-table pose for h* (pelvis upright, feet level on the floor); h* = h_star.
+
+  The table gives the six leg joints; cranks / rods are left as they are, so the ankle loops
+  are open in this pose (fine for evaluating the joint-space reward terms)."""
   r = env.scene["robot"]
-  ref = rewards.SquatReference(env.device)
-  hip, knee, ankle = ref(torch.full((env.num_envs,), h_star, device=env.device))
+  ref = rewards.SquatReference(env.device).full(torch.full((env.num_envs,), h_star, device=env.device))
   q = r.data.joint_pos.clone()
-  for s, sg in (("R", 1.0), ("L", -1.0)):
-    q[:, r.joint_names.index(f"{s}_hip_pitch_joint")] = sg * hip
-    q[:, r.joint_names.index(f"{s}_knee_joint")] = sg * knee
-    q[:, r.joint_names.index(f"{s}_ankle_pitch_joint")] = ankle
-    for j in ("hip_roll", "hip_yaw", "ankle_roll"):
-      q[:, r.joint_names.index(f"{s}_{j}_joint")] = 0.0
+  for s in ("R", "L"):
+    for j, sg in rewards.MIRROR.items():
+      q[:, r.joint_names.index(f"{s}_{j}_joint")] = ref[j] * (1.0 if s == "R" else sg)
   r.write_joint_state_to_sim(q, torch.zeros_like(q))
   env.sim.forward()
   st = torch.zeros(env.num_envs, 13, device=env.device)
@@ -340,16 +343,50 @@ def _set_pose_at_reference(env, h_star: float):
 def test_reward_reference_pose(env):
   env.reset()
   ones = torch.ones(env.num_envs, device=env.device)
-  for h_star in (0.72, 0.80, 0.89):
+  zeros = torch.zeros(env.num_envs, device=env.device)
+  for h_star in (HEIGHT_RANGE[0], 0.72, 0.80, 0.89):
     _set_pose_at_reference(env, h_star)
     assert torch.allclose(_eval_term(env, "squat_posture"), ones, atol=1e-6), h_star
     assert torch.allclose(_eval_term(env, "pitch_symmetry"), ones, atol=1e-6), h_star
+    assert torch.allclose(_eval_term(env, "stance_width"), zeros, atol=1e-6), h_star
     h = commands.base_height(env)
-    assert (h - h_star).abs().max() < 0.01, (h_star, h[:4])  # table pose reaches h* (feet flat)
-    assert (sole_corners_z(env).max(dim=1).values < 2e-3).all()  # feet flat
+    assert (h - h_star).abs().max() < 0.01, (h_star, h[:4])  # table pose reaches h* (feet level)
+    assert (sole_corners_z(env).max(dim=1).values < 2e-3).all(), h_star  # feet level
   env.command_manager.get_term("height").target[:, 0] = commands.base_height(env)
   assert torch.allclose(_eval_term(env, "track_height"), ones)
   assert _eval_term(env, "knee_guidance").abs().max() < 1e-6  # h == h*: gate 0
+
+
+def test_stance_width_band(env):
+  env.reset()
+  _set_pose_at_reference(env, 0.80)
+  r = env.scene["robot"]
+  w_ref = rewards.SquatReference(env.device).full(torch.full((env.num_envs,), 0.80, device=env.device))["foot_width"]
+  feet = [r.body_names.index(b) for b in robot.FOOT_BODIES]
+  assert (rewards.foot_width(r, feet) - w_ref).abs().max() < 2e-3  # reference width matches the pose
+  q = r.data.joint_pos.clone()
+  for s, sg in (("R", 1.0), ("L", -1.0)):
+    q[:, r.joint_names.index(f"{s}_hip_roll_joint")] -= sg * 0.08  # both legs inward
+  r.write_joint_state_to_sim(q, torch.zeros_like(q))
+  env.sim.forward()
+  w = rewards.foot_width(r, feet)
+  cost = _eval_term(env, "stance_width")
+  assert (w < w_ref - 0.08).all()
+  assert torch.allclose(cost, (w_ref - 0.04 - w).clamp(min=0), atol=1e-5) and (cost > 0.04).all()
+
+
+def test_reset_stance_spread(env):
+  r = env.scene["robot"]
+  feet = [r.body_names.index(b) for b in robot.FOOT_BODIES]
+  env.reset()
+  env.sim.forward()
+  w = rewards.foot_width(r, feet)
+  # half the envs keep the default width (+- the 0.05 rad motor noise), the rest spread out / in
+  assert w.min() < 0.22 and w.max() > 0.40, (w.min(), w.max())
+  assert sole_corners_z(env).min() > -3e-3  # the corner model still keeps the soles out of the floor
+  for _ in range(25):
+    env.step(_zero(env))
+  assert int(env.termination_manager.get_term("nonfoot_contact").sum()) == 0
 
 
 def test_reward_formulas(env):

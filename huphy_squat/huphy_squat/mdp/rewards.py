@@ -68,14 +68,31 @@ class SquatReference:
     self.knee = torch.tensor(robot.SQUAT_REF_KNEE, device=device)
     self.hip = torch.tensor(robot.SQUAT_REF_HIP_PITCH, device=device)
     self.ankle = torch.tensor(robot.SQUAT_REF_ANKLE_PITCH, device=device)
+    self.hip_yaw = torch.tensor(robot.SQUAT_REF_HIP_YAW, device=device)
+    self.ankle_roll = torch.tensor(robot.SQUAT_REF_ANKLE_ROLL, device=device)
+    self.width = torch.tensor(robot.SQUAT_REF_FOOT_WIDTH, device=device)
 
-  def __call__(self, h: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """(hip pitch, knee, ankle pitch) for the R leg at heights h [B]."""
+  def _lerp(self, h: torch.Tensor):
     hc = h.clamp(float(self.h[0]), float(self.h[-1])).contiguous()
     i = torch.searchsorted(self.h, hc).clamp(1, len(self.h) - 1)
     f = (hc - self.h[i - 1]) / (self.h[i] - self.h[i - 1])
-    lerp = lambda t: t[i - 1] + f * (t[i] - t[i - 1])  # noqa: E731
+    return lambda t: t[i - 1] + f * (t[i] - t[i - 1])
+
+  def __call__(self, h: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """(hip pitch, knee, ankle pitch) for the R leg at heights h [B]."""
+    lerp = self._lerp(h)
     return lerp(self.hip), lerp(self.knee), lerp(self.ankle)
+
+  def full(self, h: torch.Tensor) -> dict[str, torch.Tensor]:
+    """All six posture joints of the R leg + the foot width, at heights h [B]."""
+    lerp = self._lerp(h)
+    return {"hip_pitch": lerp(self.hip), "hip_roll": torch.full_like(h, robot.HIP_SPREAD),
+            "hip_yaw": lerp(self.hip_yaw), "knee": lerp(self.knee), "ankle_pitch": lerp(self.ankle),
+            "ankle_roll": lerp(self.ankle_roll), "foot_width": lerp(self.width)}
+
+
+# L-leg sign of each posture joint relative to the R-leg reference (robot.py mirror convention).
+MIRROR = {"hip_pitch": -1.0, "hip_roll": -1.0, "hip_yaw": -1.0, "knee": -1.0, "ankle_pitch": 1.0, "ankle_roll": 1.0}
 
 
 # --- task ---------------------------------------------------------------------------------
@@ -123,7 +140,8 @@ class knee_guidance:
 class squat_posture:
   """exp(-mean_j (q_j - q*_j(h*))^2 / std_j^2) over hip pitch/roll/yaw, knee, ankle pitch/roll.
 
-  Pitch chain reference from the squat table at the commanded height, roll / yaw reference 0.
+  Reference = the squat table at the commanded height (hips spread by robot.HIP_SPREAD, feet
+  level and pointing ahead).
   """
 
   def __init__(self, cfg, env: ManagerBasedRlEnv):
@@ -133,31 +151,51 @@ class squat_posture:
     _, _, std = resolve_matching_names_values(cfg.params["std"], names)
     self.std = torch.tensor(std, device=env.device)
     self.ref = SquatReference(env.device)
-    sgn = lambda n: 1.0 if n.startswith("R") else -1.0  # noqa: E731
-    # which table column each joint follows (0 hip, 1 knee, 2 ankle, -1 zero) and its sign
-    col, s = [], []
-    for n in names:
-      if "hip_pitch" in n:
-        col.append(0), s.append(sgn(n))
-      elif "knee" in n:
-        col.append(1), s.append(sgn(n))
-      elif "ankle_pitch" in n:
-        col.append(2), s.append(1.0)
-      else:
-        col.append(-1), s.append(0.0)
-    self.col = torch.tensor(col, device=env.device)
-    self.sign = torch.tensor(s, device=env.device)
+    self.keys = [n.split("_", 1)[1].removesuffix("_joint") for n in names]
+    self.sign = torch.tensor([1.0 if n.startswith("R") else MIRROR[k] for n, k in zip(names, self.keys, strict=True)],
+                             device=env.device)
 
   def reference(self, h_star: torch.Tensor) -> torch.Tensor:
-    hip, knee, ankle = self.ref(h_star)
-    tab = torch.stack((hip, knee, ankle, torch.zeros_like(hip)), dim=1)  # [B, 4]
-    return tab[:, self.col] * self.sign  # col -1 picks the zero column
+    full = self.ref.full(h_star)
+    return torch.stack([full[k] for k in self.keys], dim=1) * self.sign
 
   def __call__(self, env: ManagerBasedRlEnv, std, command_name: str = "height") -> torch.Tensor:
     del std
     q = env.scene["robot"].data.joint_pos[:, self.ids]
     ref = self.reference(env.command_manager.get_command(command_name)[:, 0])
     return torch.exp(-((q - ref) / self.std).square().mean(dim=1))
+
+
+class stance_width:
+  """Distance [m] of the foot width outside the band [w*(h*) - narrow, w*(h*) + wide].
+
+  w = lateral distance of the two foot-link origins, measured along the pelvis heading's
+  left axis (yaw only); w* = the reference width at the commanded height. Lets the feet sit
+  anywhere inside the band, and keeps pushing them back out once they get too close (e.g.
+  after a push slid them together), which needs a step.
+  """
+
+  def __init__(self, cfg, env: ManagerBasedRlEnv):
+    a: Entity = env.scene["robot"]
+    self.feet = [a.body_names.index(b) for b in robot.FOOT_BODIES]  # R, L
+    self.ref = SquatReference(env.device)
+
+  def __call__(self, env: ManagerBasedRlEnv, narrow: float, wide: float, command_name: str = "height") -> torch.Tensor:
+    a = env.scene["robot"]
+    w = foot_width(a, self.feet)
+    w_ref = self.ref.full(env.command_manager.get_command(command_name)[:, 0])["foot_width"]
+    _log(env, "foot_width", w)
+    return (w_ref - narrow - w).clamp(min=0) + (w - w_ref - wide).clamp(min=0)
+
+
+def foot_width(asset, feet: list[int]) -> torch.Tensor:
+  """Lateral distance of feet[1] (L) minus feet[0] (R) along the pelvis heading's left axis."""
+  q = asset.data.root_link_quat_w
+  w, x, y, z = q.unbind(-1)
+  yaw = torch.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
+  left = torch.stack((-torch.sin(yaw), torch.cos(yaw)), dim=1)
+  p = asset.data.body_link_pos_w[:, feet, :2]
+  return ((p[:, 1] - p[:, 0]) * left).sum(dim=1)
 
 
 class pitch_symmetry:

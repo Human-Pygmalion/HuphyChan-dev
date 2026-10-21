@@ -4,7 +4,7 @@ Written from scratch on stock mjlab (no velocity-task base cfg); design record:
 docs/task_design/decisions.md, reward_design.md, height_range.md.
 
   policy        50 Hz (decimation 4 x 5 ms physics), 20 s episodes
-  command       target pelvis height h* in [0.72, 0.895] m, new value every 3-6 s (20 % keep)
+  command       target pelvis height h* in [0.65, 0.895] m, new value every 3-6 s (20 % keep)
   actor obs     IMU gyro, IMU gravity, 12 encoder angles (2 frames), last action, h*
   action        12 motor position targets = default + 0.25 * a, clipped, sent to explicit
                 PD + T-N motors (real-robot gains)
@@ -39,7 +39,7 @@ from .mdp import observations as obs
 from .mdp import rewards as rew
 from .mdp import terminations as term
 
-HEIGHT_RANGE = (0.72, 0.895)
+HEIGHT_RANGE = (0.65, 0.895)  # first version (0.72, 0.895); below 0.71 m the robot sits back
 
 # Per-link inertial DR (mass x e^(2 alpha), CoM shift t, shape d) from the CAD mass uncertainty
 # (same ranges as mjlab_policy Rough-Box). Cranks and rods are not randomized.
@@ -68,8 +68,11 @@ REWARD_WEIGHTS = {
   "lin_vel_xy": -0.5, "ang_vel_z": -0.2, "motor_limits": -5.0, "ankle_limits": -10.0,
   "loop_residual": -1.0, "rod_collision": -2.0, "torque_margin": -2.0, "thermal_effort": -0.02,
   "action_rate": -0.1, "joint_acc": -2.5e-7, "self_collisions": -1.0, "foot_slip": -0.5,
-  "foot_impact": -0.5,
+  "foot_impact": -0.5, "stance_width": -10.0,
 }
+# Reset stance: half of the resets add U(-0.10, +0.06) rad outward to each hip roll (independent per
+# leg; -0.10 on both legs = -17 cm foot width, 6 cm between the soles) so the policy learns to step back out of narrow stances.
+RESET_SPREAD = dict(spread_range=(-0.10, 0.06), spread_prob=0.5)
 
 
 def _robot(**kw) -> SceneEntityCfg:
@@ -184,7 +187,7 @@ def events() -> dict[str, EventTermCfg]:
   deg2 = math.radians(2.0)
   out["imu_mount"] = E(mode="reset", func=dr.site_quat, params={"asset_cfg": _robot(site_names=(robot.IMU_SITE,)), "roll_range": (-deg2, deg2), "pitch_range": (-deg2, deg2), "yaw_range": (-deg2, deg2)})
   out["obs_lag"] = E(mode="reset", func=ev.sample_obs_lag, params={"max_lag": OBS_MAX_LAG})
-  out["reset_pose"] = E(mode="reset", func=ev.reset_squat_pose, params={"motor_noise": 0.05})
+  out["reset_pose"] = E(mode="reset", func=ev.reset_squat_pose, params={"motor_noise": 0.05, **RESET_SPREAD})
   out["push"] = E(mode="step", func=ev.push_pelvis, params={**PUSH, "asset_cfg": PELVIS})
   out["motor_step_end"] = E(mode="step", func=ev.motor_step_end)
   return out
@@ -195,7 +198,7 @@ def rewards() -> dict[str, RewardTermCfg]:
     "track_height": (rew.track_height, {"std": 0.05}),
     "vz_speed": (rew.vz_speed, {"threshold": 0.1, "grace_s": 0.2}),
     "knee_guidance": (rew.knee_guidance, {"gate": 0.05}),
-    "squat_posture": (rew.squat_posture, {"std": {r".*_hip_roll_joint": 0.08, r".*_hip_yaw_joint": 0.08, r".*_ankle_roll_joint": 0.08,
+    "squat_posture": (rew.squat_posture, {"std": {r".*_hip_roll_joint": 0.12, r".*_hip_yaw_joint": 0.08, r".*_ankle_roll_joint": 0.08,
                                                  r".*_hip_pitch_joint": 0.25, r".*_knee_joint": 0.25, r".*_ankle_pitch_joint": 0.15}}),
     "pitch_symmetry": (rew.pitch_symmetry, {"std": 0.10}),
     "upright": (rew.upright, {"std": math.sqrt(0.05)}),
@@ -214,6 +217,7 @@ def rewards() -> dict[str, RewardTermCfg]:
     "self_collisions": (rew.contact_count, {"sensor_name": "self_collision", "force_threshold": 10.0}),
     "foot_slip": (rew.foot_slip, {"sensor_name": "feet_ground_contact", "asset_cfg": FEET}),
     "foot_impact": (rew.foot_impact, {"sensor_name": "feet_ground_contact", "asset_cfg": FEET}),
+    "stance_width": (rew.stance_width, {"narrow": 0.04, "wide": 0.12}),
   }
   assert P.keys() == REWARD_WEIGHTS.keys()
   return {k: RewardTermCfg(func=rew.clamped(f, REWARD_WEIGHTS[k]), weight=REWARD_WEIGHTS[k], params=p) for k, (f, p) in P.items()}
