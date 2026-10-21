@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "huphy-squat"
+version = "2026.10.21"
+description = "HUPHY biped in-place squat (target pelvis height) task for mjlab: Huphy-Squat-Flat-v0"
+requires-python = ">=3.10"
+# mjlab is not pinned here: install mjlab at upstream commit 20f10e96 first (see README).
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+# mjlab imports every package registered under this group at start-up, so the stock
+# `train` / `play` / `list-envs` commands see the task once this package is installed.
+[project.entry-points."mjlab.tasks"]
+huphy_squat = "huphy_squat"
+
+[tool.setuptools.packages.find]
+include = ["huphy_squat*"]
+
+[tool.setuptools.package-data]
+huphy_squat = ["assets/*.xml", "assets/*.npz", "assets/meshes/*.stl", "assets/meshes/*.STL", "assets/motor_spec/*.csv"]
