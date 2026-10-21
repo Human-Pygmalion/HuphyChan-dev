@@ -23,6 +23,9 @@ cd ~/huphy/HuphyChan-dev/huphy_squat && scripts/train.sh main
 # watch it (stock viewer)
 ~/huphy/mjlab/.venv/bin/play Huphy-Squat-Flat-v0 --checkpoint-file logs/rsl_rl/huphy_squat/<run>/model_<it>.pt
 
+# interactive viewer: h* control, DR sliders (Random / Clean / Apply & Reset), pushes, thrown box
+~/huphy/mjlab/.venv/bin/python scripts/view.py logs/rsl_rl/huphy_squat/<run>/model_<it>.pt [--port 8080]
+
 # tests (CPU linkage tests + GPU env tests)
 ~/huphy/mjlab/.venv/bin/python -m pytest -q tests
 ```
@@ -93,5 +96,6 @@ corner 1 mm above the floor.
 | `huphy_squat/linkage.py` | CPU closed-loop solver used to build the table |
 | `huphy_squat/env_cfg.py`, `rl_cfg.py` | the task |
 | `huphy_squat/mdp/` | command, observations, events (reset, push, payload, lags), rewards, terminations |
-| `scripts/` | `train.sh`, `eval_squat.py`, `build_linkage_table.py` |
+| `huphy_squat/viewer/` | viser viewer (`scripts/view.py`): viewer env cfg with a free box, DR knobs, GUI tabs; not used in training |
+| `scripts/` | `train.sh`, `eval_squat.py`, `eval_ood.py`, `view.py`, `build_linkage_table.py` |
 | `tests/` | `test_linkage.py` (CPU), `test_env.py` (GPU) |
