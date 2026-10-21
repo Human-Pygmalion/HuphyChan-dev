@@ -53,9 +53,14 @@ INERTIAL_DR = {
   "foot": (("L_foot_link", "R_foot_link"), dict(alpha_range=(-0.0256, 0.0647), t1_range=(-0.0053, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005), d_range=(-0.02, 0.02))),
 }
 
-# Horizontal pelvis push: impulse <= 35 N x 0.2 s = 7 N*s -> delta v <= 0.30 m/s (23.6 kg),
-# 0.24 m/s (+5 kg); recoverable in place for the stance width and squat CoM heights.
-PUSH = dict(force_range=(0.0, 35.0), duration_s=(0.1, 0.2), interval_s=(2.0, 5.0))
+# Horizontal pelvis push: impulse <= 60 N x 0.2 s = 12 N*s -> delta v <= 0.51 m/s (23.6 kg),
+# 0.38 m/s (+8 kg). (First version: 35 N; widened 2026-10-21 after the out-of-range eval:
+# the 35 N policy starts to fall at 50 N and mostly falls at 65 N.)
+PUSH = dict(force_range=(0.0, 60.0), duration_s=(0.1, 0.2), interval_s=(2.0, 5.0))
+FOOT_FRICTION = (0.3, 1.2)  # first version (0.4, 1.0)
+PAYLOAD_KG = (-1.0, 8.0)  # first version (-1, 5)
+OBS_MAX_LAG = 2  # policy steps -> 0 / 20 / 40 ms; first version 1 (0 / 20 ms)
+# Command delay 0-20 ms: robot.ACTUATOR delay_max_lag = 4 physics steps (first version 2).
 
 REWARD_WEIGHTS = {
   "track_height": 2.0, "vz_speed": -600.0, "knee_guidance": -0.2, "squat_posture": 1.0,
@@ -168,17 +173,17 @@ def events() -> dict[str, EventTermCfg]:
   out: dict[str, EventTermCfg] = {}
   for link, (bodies, ranges) in INERTIAL_DR.items():
     out[f"inertia_{link}"] = E(mode="reset", func=dr.pseudo_inertia, params={"asset_cfg": _robot(body_names=bodies), **ranges})
-  out["payload"] = E(mode="reset", func=ev.payload_mass, params={"mass_range": (-1.0, 5.0), "asset_cfg": PELVIS})  # after inertia_pelvis
+  out["payload"] = E(mode="reset", func=ev.payload_mass, params={"mass_range": PAYLOAD_KG, "asset_cfg": PELVIS})  # after inertia_pelvis
   for field_name, fn in (("friction", dr.joint_friction), ("damping", dr.joint_damping), ("armature", dr.joint_armature)):
     out[f"motor_{field_name}"] = E(mode="reset", func=fn, params={"asset_cfg": MOTORS, "operation": "scale", "ranges": (0.8, 1.2)})
   out["passive_friction"] = E(mode="reset", func=dr.joint_friction, params={"asset_cfg": PASSIVE, "operation": "abs", "ranges": (0.0, 0.5)})
   out["passive_damping"] = E(mode="reset", func=dr.joint_damping, params={"asset_cfg": PASSIVE, "operation": "abs", "ranges": (0.0, 0.05)})
-  out["foot_friction"] = E(mode="reset", func=dr.geom_friction, params={"asset_cfg": FOOT_GEOMS, "operation": "abs", "ranges": (0.4, 1.0), "shared_random": True})
+  out["foot_friction"] = E(mode="reset", func=dr.geom_friction, params={"asset_cfg": FOOT_GEOMS, "operation": "abs", "ranges": FOOT_FRICTION, "shared_random": True})
   out["pd_gains"] = E(mode="reset", func=dr.pd_gains, params={"asset_cfg": _robot(), "kp_range": (0.8, 1.2), "kd_range": (0.8, 1.2), "operation": "scale"})
   out["encoder_bias"] = E(mode="reset", func=dr.encoder_bias, params={"asset_cfg": MOTORS, "bias_range": (-0.015, 0.015)})
   deg2 = math.radians(2.0)
   out["imu_mount"] = E(mode="reset", func=dr.site_quat, params={"asset_cfg": _robot(site_names=(robot.IMU_SITE,)), "roll_range": (-deg2, deg2), "pitch_range": (-deg2, deg2), "yaw_range": (-deg2, deg2)})
-  out["obs_lag"] = E(mode="reset", func=ev.sample_obs_lag, params={"max_lag": 1})
+  out["obs_lag"] = E(mode="reset", func=ev.sample_obs_lag, params={"max_lag": OBS_MAX_LAG})
   out["reset_pose"] = E(mode="reset", func=ev.reset_squat_pose, params={"motor_noise": 0.05})
   out["push"] = E(mode="step", func=ev.push_pelvis, params={**PUSH, "asset_cfg": PELVIS})
   out["motor_step_end"] = E(mode="step", func=ev.motor_step_end)

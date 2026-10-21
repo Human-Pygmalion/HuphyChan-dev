@@ -122,10 +122,10 @@ ACTUATOR = HuphyMotorCfg(
   joint_family=FAMILY,
   tn_curves={f: tn_curve(f) for f in ("RS03", "RS04")},
   motor_dynamics=MOTOR_DYNAMICS,
-  # Command (bus) delay 0 / 5 / 10 ms: one lag per env for all 12 motors, drawn at the first
+  # Command (bus) delay 0 / 5 / 10 / 15 / 20 ms: one lag per env for all 12 motors, drawn at the first
   # physics step after a reset and held for the episode (update period > episode length).
   delay_min_lag=0,
-  delay_max_lag=2,
+  delay_max_lag=4,
   delay_update_period=1_000_000,
   delay_per_env_phase=False,
 )

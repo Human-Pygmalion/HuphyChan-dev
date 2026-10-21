@@ -66,17 +66,17 @@ Domain randomization (all drawn at every reset, full strength from iteration 0):
 | what | range |
 |---|---|
 | link inertia (pseudo-inertia, CAD uncertainty), 7 link groups | as Rough-Box |
-| payload (point mass at pelvis CoM) | −1 … +5 kg |
+| payload (point mass at pelvis CoM) | −1 … +8 kg |
 | PD gains Kp, Kd | × U(0.8, 1.2) per motor |
 | motor frictionloss / damping / armature | × U(0.8, 1.2) per motor |
 | rod + ankle joint frictionloss / damping | abs U(0, 0.5) N·m / U(0, 0.05) N·m·s/rad per joint |
-| foot friction | U(0.4, 1.0) |
+| foot friction | U(0.3, 1.2) |
 | encoder bias (12 motors; same value in obs and in the command) | ±0.015 rad |
 | IMU mounting (roll, pitch, yaw) | ±2° each |
-| command delay (all 12 motors, one lag per env, held for the episode) | 0 / 5 / 10 ms |
-| observation delay (IMU + encoders together, one lag per env, held for the episode) | 0 / 20 ms |
+| command delay (all 12 motors, one lag per env, held for the episode) | 0 / 5 / 10 / 15 / 20 ms |
+| observation delay (IMU + encoders together, one lag per env, held for the episode) | 0 / 20 / 40 ms |
 | IMU noise | gyro ±0.2 rad/s, gravity ±0.05 (uniform, every step); encoders ±0.01 rad |
-| pelvis push | horizontal force U(0, 35) N for 0.1–0.2 s, every 2–5 s |
+| pelvis push | horizontal force U(0, 60) N for 0.1–0.2 s, every 2–5 s |
 
 Reset: default stance + U(±0.05 rad) on the 12 motors, the passive rod/ankle joints set from a
 precomputed closed-loop table (loops start closed, < 0.1 mm), base upright with random yaw, lowest sole

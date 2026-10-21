@@ -8,6 +8,7 @@ import pytest
 import torch
 
 from huphy_squat import robot
+from huphy_squat.env_cfg import FOOT_FRICTION, OBS_MAX_LAG, PAYLOAD_KG, PUSH
 from huphy_squat.mdp import commands, events, observations, rewards
 
 from conftest import loop_residual, make_env, sole_corners_z
@@ -162,7 +163,7 @@ def test_dr_ranges_and_resample(env):
     live, _ = _dof(env, field, robot.ROD_JOINT_NAMES + robot.ANKLE_JOINT_NAMES)
     assert live.min() >= 0 and live.max() <= hi + 1e-6 and live.std() > hi / 5, field
   fr = observations.foot_friction(env, _cfg(env, geom_names=(robot.FOOT_GEOM_EXPR,)))
-  assert fr.min() >= 0.4 - 1e-6 and fr.max() <= 1.0 + 1e-6
+  assert fr.min() >= FOOT_FRICTION[0] - 1e-6 and fr.max() <= FOOT_FRICTION[1] + 1e-6
   m = events.get_motor(env)
   kp, kd = m.stiffness / m.default_stiffness, m.damping / m.default_damping
   assert kp.min() >= 0.8 - 1e-5 and kp.max() <= 1.2 + 1e-5 and kd.min() >= 0.8 - 1e-5 and kd.max() <= 1.2 + 1e-5
@@ -183,7 +184,7 @@ def test_dr_ranges_and_resample(env):
     env.reset()
     pl = env.huphy_payload
     base = env.sim.model.body_mass[:, pel] - pl
-    assert pl.min() >= -1 and pl.max() <= 5 and pl.std() > 1.0
+    assert pl.min() >= PAYLOAD_KG[0] and pl.max() <= PAYLOAD_KG[1] and pl.std() > 1.0
     assert base.min() >= nom * math.exp(2 * -0.0256) - 1e-4 and base.max() <= nom * math.exp(2 * 0.0699) + 1e-4
   # everything is redrawn at reset
   for field in snap:
@@ -217,14 +218,14 @@ def test_lags(env):
   for _ in range(3):
     env.step(_zero(env))
   act = events.get_motor(env)._delay_buffer.current_lags  # noqa: SLF001
-  assert set(act.unique().tolist()) == {0, 1, 2}
+  assert set(act.unique().tolist()) == set(range(robot.ACTUATOR.delay_max_lag + 1))
   first = act.clone()
   was_reset = torch.zeros_like(first, dtype=torch.bool)
   for _ in range(20):
     env.step(_zero(env))
     was_reset |= env.reset_buf
   assert ((act == first) | was_reset).all()  # held for the episode
-  assert set(env.huphy_obs_lag.unique().tolist()) == {0, 1}
+  assert set(env.huphy_obs_lag.unique().tolist()) == set(range(OBS_MAX_LAG + 1))
   terms = {n: c.func for n, c in zip(env.observation_manager._group_obs_term_names["actor"],  # noqa: SLF001
                                      env.observation_manager._group_obs_term_cfgs["actor"], strict=True)}  # noqa: SLF001
   for n in ("base_ang_vel", "projected_gravity", "motor_pos"):
@@ -276,7 +277,7 @@ def test_push_force():
     seen += int(on.sum())
     forces.append(p.force[on, :2].norm(dim=1))
   f = torch.cat(forces)
-  assert f.max() <= 35.0 + 1e-4 and f.mean() > 10
+  assert f.max() <= PUSH["force_range"][1] + 1e-4 and f.mean() > 10
   frac = seen / (400 * env.num_envs)
   assert 0.02 < frac < 0.08, frac  # duration 0.15 s / (0.15 + 3.5 s) ~ 4 %
 

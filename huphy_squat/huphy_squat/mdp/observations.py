@@ -3,7 +3,7 @@
 Actor (deployable): IMU gyro, IMU gravity direction, 12 motor encoder angles (with the
 encoder bias), last action, h*. The three sensor terms go through one shared lag per env
 and episode (`env.huphy_obs_lag`, 0 or 1 policy step, drawn by the `sample_obs_lag` reset
-event), so on a delayed step IMU and encoders are equally old, like one sensor packet.
+event, 0 / 20 / 40 ms), so on a delayed step IMU and encoders are equally old, like one sensor packet.
 
 Critic (privileged): true state + the DR values that actually change the dynamics.
 """
@@ -34,7 +34,7 @@ class _SharedLagTerm:
   the previous episode). Called once per env step by the observation manager.
   """
 
-  max_lag = 1
+  max_lag = 2  # policy steps; keep >= the `obs_lag` event's max_lag
 
   def __init__(self, cfg, env: ManagerBasedRlEnv):
     self._hist: torch.Tensor | None = None
@@ -175,10 +175,10 @@ def encoder_bias(env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg = _ROBOT, sca
 
 
 def lags(env: ManagerBasedRlEnv) -> torch.Tensor:
-  """[action lag (physics steps) / 2, obs lag (policy steps)]."""
+  """[action lag (physics steps) / 4, obs lag (policy steps) / 2]."""
   m = get_motor(env)
-  act = m._delay_buffer.current_lags.float() / 2.0 if m._delay_buffer is not None else torch.zeros(env.num_envs, device=env.device)  # noqa: SLF001
-  obs = getattr(env, "huphy_obs_lag", torch.zeros(env.num_envs, dtype=torch.long, device=env.device)).float()
+  act = m._delay_buffer.current_lags.float() / 4.0 if m._delay_buffer is not None else torch.zeros(env.num_envs, device=env.device)  # noqa: SLF001
+  obs = getattr(env, "huphy_obs_lag", torch.zeros(env.num_envs, dtype=torch.long, device=env.device)).float() / 2.0
   return torch.stack((act, obs), dim=1)
 
 
@@ -216,7 +216,7 @@ def imu_mount(env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor
   return vec / 0.01745
 
 
-def push_state(env: ManagerBasedRlEnv, scale: float = 1.0 / 35.0) -> torch.Tensor:
+def push_state(env: ManagerBasedRlEnv, scale: float = 1.0 / 60.0) -> torch.Tensor:
   """[pelvis push force x, y (scaled), seconds left of the push]."""
   p = getattr(env, "huphy_push", None)
   if p is None:
