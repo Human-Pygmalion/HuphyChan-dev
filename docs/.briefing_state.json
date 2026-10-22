@@ -2499,7 +2499,8 @@
    "id": "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms",
    "created": "2026-10-22 20:56",
    "section": "done",
-   "changed": "2026-10-22 20:56"
+   "changed": "2026-10-22 20:56",
+   "title": "시뮬레이터 기준 데이터 완료 (4e393c6) — 시뮬레이터는 명령 0 에서 그냥 서 있음, 52 ms 간격은 걸음 25 % 감소·행동 변화량 2 배, 20 ms 의 −1.8 °/s 방향 치우침은 씨앗과 무관하나 52 ms 에서 사라짐"
   },
   "s2r-stage5": {
    "id": "s2r-stage5",
