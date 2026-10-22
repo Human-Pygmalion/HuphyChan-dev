@@ -23,7 +23,8 @@ cd ~/huphy/HuphyChan-dev/huphy_squat && scripts/train.sh main
 # watch it (stock viewer)
 ~/huphy/mjlab/.venv/bin/play Huphy-Squat-Flat-v0 --checkpoint-file logs/rsl_rl/huphy_squat/<run>/model_<it>.pt
 
-# interactive viewer: h* control, DR sliders (Random / Clean / Apply & Reset), pushes, thrown box
+# interactive viewer: h* control (default-pose height shown), every DR element as a slider (per motor / joint / body,
+# Random / Clean / Apply & Reset), pushes, thrown box
 ~/huphy/mjlab/.venv/bin/python scripts/view.py logs/rsl_rl/huphy_squat/<run>/model_<it>.pt [--port 8080]
 
 # tests (CPU linkage tests + GPU env tests)

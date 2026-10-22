@@ -57,7 +57,9 @@ class HuphyViewer(ViserPlayViewer):
     self.cmd = u.command_manager.get_term("height")
     self.push = u.huphy_push  # push_pelvis instance (step event)
     self.h_mode = "Manual"
-    self.h_value = float(self.cmd.cfg.height_range[1])
+    _, base_z = robot_def.load_default_pose()
+    self.h_default = round(base_z - robot_def.RESET_CLEARANCE, 4)  # pelvis height of the default pose, soles flat
+    self.h_value = self.h_default
     self.sweep_period = 8.0
     self._sweep_t = 0.0
     self.falls = 0
@@ -218,11 +220,16 @@ class HuphyViewer(ViserPlayViewer):
     gui = self._server.gui
     lo, hi = HEIGHT_RANGE
     with gui.add_folder("Height command h*"):
+      gui.add_html(f'''<div style="font-size:0.85em;line-height:1.35;padding:0 1em 0.4em 1em;">
+        <strong>기본 자세 높이: {self.h_default:.3f} m</strong><br/>
+        <span style="opacity:0.8;">실기 배포는 기본 자세로 세운 뒤 h* = {self.h_default:.3f}에서 시작해
+        조금씩 바꿀 것. 학습 범위 {lo:.2f}–{hi:.3f} m.</span></div>''')
       mode = gui.add_dropdown("mode", options=("Manual", "Train", "Sweep"), initial_value=self.h_mode,
                               hint="Manual: 슬라이더 값 / Train: 학습처럼 3-6 s마다 무작위 / Sweep: 학습 범위를 cos으로 왕복")
       h = gui.add_slider("h* [m]", min=0.60, max=0.95, step=0.001, initial_value=self.h_value,
                          hint=f"학습 범위 {lo:.3f}-{hi:.3f} m. 바로 반영됨 (Manual)")
-      presets = gui.add_button_group("preset", options=(f"low {lo:.2f}", "mid", f"high {hi:.3f}"))
+      presets = gui.add_button_group("preset", options=(f"low {lo:.2f}", "mid", f"default {self.h_default:.3f}",
+                                                        f"high {hi:.3f}"))
       period = gui.add_slider("sweep period [s]", min=2.0, max=30.0, step=0.5, initial_value=self.sweep_period)
 
     @mode.on_update
@@ -236,7 +243,7 @@ class HuphyViewer(ViserPlayViewer):
     @presets.on_click
     def _(ev) -> None:
       v = ev.target.value
-      h.value = lo if v.startswith("low") else hi if v.startswith("high") else round(0.5 * (lo + hi), 3)
+      h.value = {"low": lo, "high": hi, "default": self.h_default}.get(v.split()[0], round(0.5 * (lo + hi), 3))
       self.h_value = float(h.value)
       if mode.value != "Manual":
         mode.value = "Manual"
@@ -259,22 +266,31 @@ class HuphyViewer(ViserPlayViewer):
     gui = self._server.gui
     self._dr_status = gui.add_html("")
     buttons = gui.add_button_group("", options=("Random", "Clean", "Apply & Reset"))
+    gui.add_html('<div style="font-size:0.8em;padding:0 1em 0.5em 1em;opacity:0.8;">'
+                 "학습과 같이 요소마다 따로: 모터 12개, 수동 관절 12개, 링크 14개. Random = 요소마다 학습 범위에서 독립 샘플. "
+                 "폴더의 <i>set all</i>은 그 폴더 전체를 한 값으로.</div>")
     self._dr_handles: dict[str, Any] = {}
-    folders: dict[str, list] = {}
+    tree: dict[str, Any] = {}
     for k in self.dr.knobs:
-      folders.setdefault(k.folder, []).append(k)
-    inertia = [f for f in folders if f.startswith("Inertia/")]
-    for folder, knobs in folders.items():
-      if folder in inertia:
-        continue
-      with gui.add_folder(folder, expand_by_default=folder in ("Mass", "Contact", "Latency")):
-        for k in knobs:
-          self._add_knob(k)
-    with gui.add_folder("Inertia (pseudo-inertia)", expand_by_default=False):
-      for folder in inertia:
-        with gui.add_folder(folder.split("/", 1)[1], expand_by_default=False):
-          for k in folders[folder]:
-            self._add_knob(k)
+      node = tree
+      for part in k.folder.split("/"):
+        node = node.setdefault(part, {})
+      node.setdefault("__knobs__", []).append(k)
+    expanded = ("Mass", "Contact", "Latency")
+
+    def build(node: dict, depth: int) -> None:
+      knobs = node.get("__knobs__", [])
+      if len(knobs) > 1 and depth > 1:
+        self._add_set_all(knobs)
+      for k in knobs:
+        self._add_knob(k)
+      for name, child in node.items():
+        if name == "__knobs__":
+          continue
+        with gui.add_folder(name, expand_by_default=depth == 0 and name in expanded):
+          build(child, depth + 1)
+
+    build(tree, 0)
 
     @buttons.on_click
     def _(ev) -> None:
@@ -288,6 +304,18 @@ class HuphyViewer(ViserPlayViewer):
       self._refresh_dr_status()
 
     self._refresh_dr_status()
+
+  def _add_set_all(self, knobs) -> None:
+    k0 = knobs[0]
+    handle = self._server.gui.add_slider("set all", min=k0.lo, max=k0.hi, step=k0.step, initial_value=k0.clean,
+                                         hint="이 폴더의 모든 요소를 이 값으로")
+
+    @handle.on_update
+    def _(_) -> None:
+      for k in knobs:
+        self.dr.values[k.key] = float(handle.value)
+        self._dr_handles[k.key].value = float(handle.value)
+      self._refresh_dr_status()
 
   def _add_knob(self, k) -> None:
     lo, hi = k.train
@@ -387,8 +415,9 @@ class HuphyViewer(ViserPlayViewer):
       pushing = float(self.push.remaining[i]) > 0
       fr = float(foot_friction(u, u.event_manager.get_term_cfg("foot_friction").params["asset_cfg"])[i].mean())
       payload = float(getattr(u, "huphy_payload", torch.zeros(u.num_envs))[i])
-      kp = float((m.stiffness[i] / m.default_stiffness[i]).mean())
-      kd = float((m.damping[i] / m.default_damping[i]).mean())
+      kps, kds = m.stiffness[i] / m.default_stiffness[i], m.damping[i] / m.default_damping[i]
+      kp = f"{float(kps.min()):.2f}–{float(kps.max()):.2f}"
+      kd = f"{float(kds.min()):.2f}–{float(kds.max()):.2f}"
       buf = m._delay_buffer  # noqa: SLF001
       cmd_ms = 5 * int(buf.current_lags[i]) if buf is not None else 0
       obs_ms = 20 * int(u.huphy_obs_lag[i])
@@ -404,6 +433,6 @@ class HuphyViewer(ViserPlayViewer):
         <strong>foot width</strong> {100 * width:.1f} cm (ref {100 * width_ref:.1f}) &nbsp;
         <strong>hip roll out</strong> R {rolls[0]:+.3f} L {rolls[1]:+.3f}<br/>
         <strong>falls</strong> {self.falls} &nbsp; {'<strong style="color:#d97706;">PUSH</strong>' if pushing else ''}<br/>
-        <span style="opacity:0.75;">applied: payload {payload:+.1f} kg, μ {fr:.2f}, Kp×{kp:.2f}, Kd×{kd:.2f},
+        <span style="opacity:0.75;">applied: payload {payload:+.1f} kg, μ {fr:.2f}, Kp×{kp}, Kd×{kd},
         cmd {cmd_ms} ms, obs {obs_ms} ms</span>
       </div>"""

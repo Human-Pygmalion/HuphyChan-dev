@@ -6,8 +6,9 @@
 
 Open http://<host>:<port> in a browser (from a laptop over SSH: `ssh -L 8080:localhost:8080 <host>`).
 Tabs added to the stock mjlab viewer:
-  Squat    h* (Manual slider / Train-style random / Sweep), live monitor
-  DR       every training DR as one slider; Random (train ranges) / Clean / Apply & Reset
+  Squat    default-pose height, h* (Manual slider / Train-style random / Sweep), live monitor
+  DR       every training DR element as its own slider (per motor, passive joint, body; "set all" per
+           folder); Random (independent draws from the train ranges) / Clean / Apply & Reset
   Disturb  pelvis push button, train-style random pushes, throw a box at the pelvis
 The robot spawns with clean DR (nominal model); slider changes apply at the next reset.
 Observations keep the training noise. Other checkpoints of the same run are in the
