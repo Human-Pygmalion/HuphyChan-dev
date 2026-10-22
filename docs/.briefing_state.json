@@ -2479,11 +2479,11 @@
   "s2r-colleague": {
    "id": "s2r-colleague",
    "created": "2026-10-22 17:38",
-   "title": "동료 비평 반영 재분석 (docs/177 §9)",
-   "finding": "ROS 발목 0 은 맞음: control_node.py:141 이 ankle_pitch/roll 만 발행, policy_node.py:227 이 ankle_a/b 를 .get(...,0.0) 로 읽음. HUPHY convert.py 로 재현. 이번 실험 무관. 5 Hz 떨림은 게인 1.0 에서만, 간격 31→53 ms 에 진동수 5.7→5.1 Hz (10 %) → 진동수는 하드웨어 동역학, 에너지는 정책 되먹임. 게인 0.6·Kd×1.5 에서 사라짐",
+   "title": "5 Hz 떨림의 경로 정정: 엉덩이 좌우 관절각이 아니라 자이로·직전 행동 입력을 거친 몸 전체 흔들림 순환",
+   "finding": "1 차 감사: 14 개 중 확인 11, 정정 3. 5 Hz 는 겹침 아님. 39~115 초·130~192 초 두 구간에서만, 7.8° 기울어짐·124 °/s 자이로 외란 뒤 시작. 구간 안 진폭 목표 2.6° / 관절 0.7°. 관절각 입력을 고정해도 그대로(1.06 배) → 자이로·직전 행동 경로",
    "number": "5 Hz: 게인 1 만, 목표값이 관절의 3.5~4 배",
-   "section": "done",
-   "changed": "2026-10-22 17:38"
+   "section": "correct",
+   "changed": "2026-10-22 20:37"
   },
   "s2r-sim-baseline": {
    "id": "s2r-sim-baseline",
@@ -2723,5 +2723,5 @@
   "s2r-colleague",
   "s2r-sim-baseline"
  ],
- "updated": "2026-10-22 20:15"
+ "updated": "2026-10-22 20:37"
 }
