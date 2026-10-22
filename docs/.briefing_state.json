@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "실기 걷기 차이 연구 단계 6 — 시뮬레이터에서 5 Hz 재현 조건 탐색 (CPU)",
+  "title": "Stage 6 (docs/177): 5 Hz reproduction lab built (tools/sim2real/walk/s6_oscillation_lab.py); impulse calibrated 80 N x 80 ms (tilt 7.6 deg, gyro peak 128 deg/s vs real 7.8 / 124); main sweep T0-T6, 23 conditions x 8 envs x 30 s running on CPU. Sim baseline finding so far: the sim robot at command 0 is NOT quiet (gyro 8 deg/s rms, 6-12 Hz roll chatter, 3-8 Hz target amp 0.7 deg) while the real one is dead calm (0.05 deg) before the burst.",
   "detail": "",
-  "since": "2026-10-22 20:57"
+  "since": "2026-10-22 21:12"
  },
  "items": {
   "shouldermesh": {
@@ -2415,7 +2415,8 @@
     "docs/sim2real/img/2026-10-21_gw_hanging_jitter.png"
    ],
    "section": "done",
-   "changed": "2026-10-21 19:21"
+   "changed": "2026-10-21 19:21",
+   "collapsed": true
   },
   "walkaudit": {
    "id": "walkaudit",
@@ -2513,6 +2514,15 @@
    ],
    "section": "done",
    "changed": "2026-10-22 20:57"
+  },
+  "s2r-veer": {
+   "id": "s2r-veer",
+   "created": "2026-10-22 21:27",
+   "title": "쏠림 판정: 실기·시뮬레이터 모두 오른쪽 → 정책 자체의 치우침",
+   "finding": "사용자 확인: 실기 오른쪽 쏠림. 시뮬레이터 20 ms 명목 조건도 오른쪽 −1.8 °/s (환경 8/8, 씨앗 3/3). IMU·영점 기여는 작음. 분석 영상 3 개 렌더 시작",
+   "number": "시뮬레이터 −1.8 °/s (오른쪽)",
+   "section": "done",
+   "changed": "2026-10-22 21:27"
   }
  },
  "order": [
@@ -2743,7 +2753,8 @@
   "s2r-colleague",
   "s2r-sim-baseline",
   "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms",
-  "s2r-stage5"
+  "s2r-stage5",
+  "s2r-veer"
  ],
- "updated": "2026-10-22 20:57"
+ "updated": "2026-10-22 21:27"
 }
