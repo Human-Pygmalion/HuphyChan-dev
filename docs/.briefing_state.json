@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Stage 6 main sweep T0-T6 done (23 conditions x 8 envs x 30 s, CPU): NO condition shows a 4-6.5 Hz line. Impulse alone, IMU age/still-zero, torque/position lag, ankle-loop softness, joint friction x2/x4 all damp within ~2 s back to the sim's own 8 Hz low-level chatter (0.55 deg). Spring-damper hold (T2) gives a SUSTAINED but 2-3 Hz oscillation (amp 2-4 deg). Running batch 2 (gains 0.6/Kd 1.5/20 ms repeats on the hold, stiffer holds, torsion hold, chatter diagnostics).",
+  "title": "실기 걷기 차이 연구 — 2 차 감사 대기 후 보고 확정",
   "detail": "",
-  "since": "2026-10-22 21:47"
+  "since": "2026-10-22 22:57"
  },
  "items": {
   "shouldermesh": {
@@ -2465,7 +2465,8 @@
    "title": "IMU 멈춤은 '정지 시 세 축 0 출력', 불감대 아님",
    "finding": "0 이 아닌 최소 |자이로| 0.01 °/s 로 느린 회전도 읽힘. 멈춘 행 뺀 자이로 치우침 0.0017 rad/s 이하, 기울기 0.57°. 치우침·영점을 지워도 엉덩이 비틀기 좌우 차는 절반만 줄어듦 → 쏠림 주원인 아님 (열린 고리)",
    "section": "done",
-   "changed": "2026-10-22 16:54"
+   "changed": "2026-10-22 16:54",
+   "collapsed": true
   },
   "s2r-colleague": {
    "id": "s2r-colleague",
@@ -2483,7 +2484,8 @@
    "finding": "명목 조건(20 ms, 무작위화 끔) 20 초 직진: vx 0.5 −32.5°, vx 1.0 −46.4°. 보폭 좌우 차 +24~29 %. 쏠림 첫 후보 = 정책 자체 치우침. 실기 방향 일치 확인 필요. 멈춘 시뮬레이터·감사 에이전트 재개",
    "number": "시뮬레이터 방향 변화 −1.8 °/s (vx 0.5)",
    "section": "done",
-   "changed": "2026-10-22 20:15"
+   "changed": "2026-10-22 20:15",
+   "collapsed": true
   },
   "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms": {
    "id": "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms",
@@ -2547,6 +2549,25 @@
    "number": "크랭크 A 이득 0.30 vs 0.51~0.66",
    "section": "done",
    "changed": "2026-10-22 22:34"
+  },
+  "stage6-5hz": {
+   "id": "stage6-5hz",
+   "created": "2026-10-22 22:54",
+   "title": "Stage 6: which simulator change reproduces the real 5 Hz oscillation",
+   "finding": "No simulator condition reproduces the real 5.1 Hz line at the real call interval (53 ms). Impulse alone (tilt 7.6 deg, 128 deg/s), IMU age 10 ms, gyro still-zero, torque lag 2-10 ms, position lag, softer ankle linkage and joint friction x2/x4 all decay within 2 s. A hand-hold spring-damper (k >= 1000 N/m) gives sustained episodic oscillation, but at 2-3 Hz. With call interval 20 ms and k = 3000 it rises to 4.1 Hz (12/20 envs in 4-6.5 Hz). Gain x0.6 cuts it by 35-57 %, Kd x1.5 by 29 %, a 20 ms interval does not remove it.",
+   "number": "joint/target 0.14, lag 32 ms (sim, 20 ms) vs 0.24, 60 ms (real); standing 3-8 Hz band power 0.16 deg^2 (sim) vs 0.0021 deg^2 (real quiet)",
+   "needs": "Real hand-hold stiffness is unknown. A hand-held --hz 50 run would test the sim prediction (oscillation stays, frequency rises).",
+   "section": "done",
+   "changed": "2026-10-22 22:54"
+  },
+  "s2r-report-draft": {
+   "id": "s2r-report-draft",
+   "created": "2026-10-22 22:57",
+   "title": "실기 걷기 연구 7 단계 보고 초안 (docs/177 §4~§7)",
+   "finding": "쏠림 원인 = 정책 자체 치우침(실기·시뮬레이터 모두 오른쪽). 걸음새 원인 = 정책 간격 52 ms (주기 수로 부르는 held()). 5 Hz = 자이로·직전 행동 경로의 정책 되먹임 순환, 게인 1.0·잡는 손이 기여, 5.1 Hz 진동수는 시뮬레이터 재현 안 됨(실기 응답 차이 유력). 하드웨어 7 항목·제어단 6 항목·정책 제작자 5 항목·다음 실기 시험 5 단계. 2 차 감사 진행 중",
+   "number": "단계 6: 잡는 손만 진동 지속 (2.7~3.2 Hz)",
+   "section": "done",
+   "changed": "2026-10-22 22:57"
   }
  },
  "order": [
@@ -2780,7 +2801,9 @@
   "s2r-veer",
   "s2rvideos",
   "s2r-videos",
-  "s2r-sysid"
+  "s2r-sysid",
+  "stage6-5hz",
+  "s2r-report-draft"
  ],
- "updated": "2026-10-22 22:34"
+ "updated": "2026-10-22 22:57"
 }
