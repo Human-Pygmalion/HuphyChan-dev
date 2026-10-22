@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "실기 걷기 시뮬레이터–실기 차이 연구 (docs/177) — 실기 기록 분석·배포 경로 재현·시뮬레이터 기준 데이터 진행 중",
+  "title": "실기 걷기 시뮬레이터–실기 차이 연구 (docs/177) — 1 차 감사와 시뮬레이터 기준 데이터 진행 중",
   "detail": "",
-  "since": "2026-10-22 15:50"
+  "since": "2026-10-22 16:49"
  },
  "items": {
   "shouldermesh": {
@@ -2358,7 +2358,8 @@
    "finding": "근거: 어댑터 루프백 오류 0, 응답이 둘씩 짝으로 빠짐(696주기 중 71), 버스 오류 프레임 몰아 보내기 약 1,300 대 하나씩 4. 어댑터 쪽 병목(옛 gs_usb 드라이버)은 이미 6.1 판으로 고쳐짐. 하나씩 보내기에서 왕복 0.69 ms × 6 = 다리당 4.33 ms",
    "number": "왕복 0.69 ms, 다리당 4.33 ms",
    "section": "done",
-   "changed": "2026-10-19 12:02"
+   "changed": "2026-10-19 12:02",
+   "collapsed": true
   },
   "can-threads-review": {
    "id": "can-threads-review",
@@ -2430,6 +2431,36 @@
    "number": "정책 간격 중앙 52 ms vs 학습 20 ms",
    "section": "done",
    "changed": "2026-10-22 15:50"
+  },
+  "policy-replay": {
+   "id": "policy-replay",
+   "created": "2026-10-22 16:10",
+   "title": "정책 재생 검사와 민감도",
+   "finding": "실기는 terrain10 체크포인트를 기록 입력으로 그대로 실행함 (최대 차이 3.2e-5). IMU 편향 없음(각속도 1e-5 rad/s, 기울기 0.41도). 정지 요 비대칭 -0.42도는 신경망 자체 값.",
+   "number": "재생 차이 3.2e-5; 기울기 0.41도; 관절 오프셋 최대 1.8도; 정책 간격 50-63ms",
+   "section": "sim2real",
+   "changed": "2026-10-22 16:10"
+  },
+  "real-walk-log-analysis": {
+   "id": "real-walk-log-analysis",
+   "created": "2026-10-22 16:18",
+   "title": "Real-robot walking log analysis (sim-to-real gap study)",
+   "finding": "Policy-call interval 50-63 ms in 1021 runs vs 20 ms training; loop 63-79 Hz at --hz 200; 5.09 Hz vibration line in the standing run; IMU gyro freezes (always value 0) only in vx0 runs, none in walking runs",
+   "number": "policy interval median 49.7-62.6 ms; gyro frozen rows 4.6-20.6 % (vx0 runs), longest 138 rows = 8.1 s; heading drift vx0 -0.49..+0.70 deg/s (sign mixed); wz0.5 achieved 16.7 vs 28.6 deg/s commanded; ankle crank tgt-pos mean 1.9-7.8 deg",
+   "section": "sim2real",
+   "changed": "2026-10-22 16:18"
+  },
+  "s2r-walk-reallog": {
+   "id": "s2r-walk-reallog",
+   "created": "2026-10-22 16:49",
+   "title": "실기 걷기 기록 분석 (감사 전) — 정책 출력이 5.09 Hz 로 흔들림, 배포 경로는 학습과 동일",
+   "finding": "기록된 입력을 정책에 다시 넣으면 기록된 행동과 3.2e-5 차이(배포 경로 정확). 서 있는 진동 기록 12 관절 모두 5.09 Hz 봉우리, 행동–관절각 결맞음 0.98. 발목 크랭크 목표 대비 1.9~7.8° 덜 감(좌우 대칭). 엉덩이 비틀기 좌우 차 +0.6~+2.2° (서기 5 기록 같은 부호). IMU 값 멈춤 최대 20.6 % (정지 시 0 고정). 걷기 명령 기록은 5 초 이하라 쏠림 판정 불가. 독립 감사 진행 중",
+   "number": "떨림 5.09 Hz · 정책 간격 52 ms",
+   "media": [
+    "docs/sim2real/img/2026-10-22_real_walk_timing.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-22 16:49"
   }
  },
  "order": [
@@ -2652,7 +2683,10 @@
   "battery-regen-spec",
   "gw-jitter",
   "walkaudit",
-  "s2r-walk-first"
+  "s2r-walk-first",
+  "policy-replay",
+  "real-walk-log-analysis",
+  "s2r-walk-reallog"
  ],
- "updated": "2026-10-22 15:50"
+ "updated": "2026-10-22 16:49"
 }
