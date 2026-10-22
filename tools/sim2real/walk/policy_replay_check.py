@@ -188,6 +188,65 @@ def task1(actor, logs, rep):
         print(f"| {L['name']} | {len(X)} | {c} | {d.max():.2e} | {d.mean():.2e} | {tdeg(d.max()):.2e} | {d_no:.2f} | {d_sh:.2f} | {la:.3f} | {qp:.3f} | {dev:.3f} |")
 
 
+STILL_DEG = 0.1   # a row counts as joint-still when no joint moved more than this since the previous policy call
+
+
+def runs_longest(m):
+    best = c = 0
+    for v in m:
+        c = c + 1 if v else 0
+        best = max(best, c)
+    return best
+
+
+def freeze(logs, stand, rep):
+    """Mark rows whose gyro triple (gravity triple) equals the previous row exactly; estimate bias/tilt from non-frozen rows only."""
+    print("\n### frozen IMU rows (a row is frozen when its gyro triple, or separately its gravity triple, equals the previous row exactly)\n")
+    print("| file | rows | gyro frozen | longest gyro run (rows) | frozen gyro rows equal to (0,0,0) | gravity changed while gyro frozen | gravity frozen | longest gravity run | joint step on frozen-gyro rows median / max (deg per call) | joint step on other rows median (deg) |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    out = {}
+    for L in logs:
+        if L["has_vy"]:
+            continue
+        X = L["X"]
+        fg = np.r_[False, (np.diff(X[:, 0:3], axis=0) == 0).all(1)]
+        fv = np.r_[False, (np.diff(X[:, 3:6], axis=0) == 0).all(1)]
+        dq = np.r_[np.inf, np.degrees(np.abs(np.diff(X[:, 18:30], axis=0)).max(1))]
+        L["fg"], L["fv"], L["dq"] = fg, fv, dq
+        zero = (np.abs(X[:, 0:3]).max(1) == 0)
+        mf = f"{np.median(dq[fg]):.3f} / {dq[fg].max():.3f}" if fg.any() else "-"
+        out[L["name"]] = dict(rows=len(X), gyro_frozen=float(fg.mean()), gyro_run=int(runs_longest(fg)), frozen_is_zero=float(zero[fg].mean()) if fg.any() else None, grav_changed_while_gyro_frozen=float((~fv[fg]).mean()) if fg.any() else None,
+                              grav_frozen=float(fv.mean()), grav_run=int(runs_longest(fv)), dq_frozen_med=float(np.median(dq[fg])) if fg.any() else None,
+                              dq_frozen_max=float(dq[fg].max()) if fg.any() else None, dq_other_med=float(np.median(dq[~fg][1:])))
+        print(f"| {L['name']} | {len(X)} | {fg.mean()*100:.1f} % | {runs_longest(fg)} | {zero[fg].mean()*100 if fg.any() else 0:.0f} % | {(~fv[fg]).mean()*100 if fg.any() else 0:.0f} % | {fv.mean()*100:.1f} % | {runs_longest(fv)} | {mf} | {np.median(dq[~fg][1:]):.3f} |")
+    rep["freeze"] = out
+    print("\nQuiet windows of section 2: rows that are NOT frozen\n")
+    print("| file | window rows | gyro non-frozen rows | gravity non-frozen rows |")
+    print("|---|---|---|---|")
+    for L in stand:
+        w = L["quiet"]; sl = slice(w["i0"], w["i0"] + w["n"])
+        print(f"| {L['name']} | {w['n']} | {int((~L['fg'][sl]).sum())} | {int((~L['fv'][sl]).sum())} |")
+    print(f"\nRe-estimate from non-frozen rows only: rows of the stand files where no joint moved more than {STILL_DEG} deg since the previous call (selection by joints, not by gyro, so the bias estimate is not circular).\n")
+    print("| file | joint-still rows | gyro non-frozen rows | gyro mean x,y,z (rad/s) | gyro std x,y,z | gravity non-frozen rows | gravity mean x,y,z | tilt pitch / roll / total (deg) |")
+    print("|---|---|---|---|---|---|---|---|")
+    gm, gs, vm, est = [], [], [], {}
+    for L in stand:
+        X = L["X"]; still = L["dq"] <= STILL_DEG
+        a = still & ~L["fg"]; b = still & ~L["fv"]
+        g, v = X[a, 0:3], X[b, 3:6]
+        gm.append(g.mean(0)); vm.append(v.mean(0))
+        tl = tilt_deg(v.mean(0))
+        est[L["name"]] = dict(still=int(still.sum()), n_gyro=int(a.sum()), gyro_mean=g.mean(0).tolist(), gyro_std=g.std(0).tolist(), n_grav=int(b.sum()), g_mean=v.mean(0).tolist(), tilt=tl)
+        print(f"| {L['name']} | {int(still.sum())} | {int(a.sum())} | {g.mean(0)[0]:+.4f}, {g.mean(0)[1]:+.4f}, {g.mean(0)[2]:+.4f} | {g.std(0)[0]:.3f}, {g.std(0)[1]:.3f}, {g.std(0)[2]:.3f} | {int(b.sum())} | {v.mean(0)[0]:+.4f}, {v.mean(0)[1]:+.4f}, {v.mean(0)[2]:+.4f} | {tl['pitch']:+.2f} / {tl['roll']:+.2f} / {tl['total']:.2f} |")
+    gm, vm = np.array(gm), np.array(vm)
+    ref = dict(gyro=gm.mean(0), gyro_sd=gm.std(0), g=vm.mean(0), g_sd=vm.std(0))
+    ref["tilt"] = tilt_deg(ref["g"])
+    rep["nonfrozen_estimate"] = dict(per_file=est, **{k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in ref.items()})
+    print(f"\n- gyro bias from non-frozen joint-still rows (mean over files): ({ref['gyro'][0]:+.5f}, {ref['gyro'][1]:+.5f}, {ref['gyro'][2]:+.5f}) rad/s; spread between files {ref['gyro_sd'][0]:.5f}, {ref['gyro_sd'][1]:.5f}, {ref['gyro_sd'][2]:.5f}")
+    print(f"- gravity from non-frozen joint-still rows: ({ref['g'][0]:+.4f}, {ref['g'][1]:+.4f}, {ref['g'][2]:+.4f}); spread {ref['g_sd'][0]:.4f}, {ref['g_sd'][1]:.4f}; tilt pitch {ref['tilt']['pitch']:+.2f} deg, roll {ref['tilt']['roll']:+.2f} deg, total {ref['tilt']['total']:.2f} deg")
+    return ref
+
+
 # ---------------------------------------------------------------- 2 input sanity
 def task2(logs, norm_mean, norm_std, rep):
     print("\n## 2 input sanity\n")
@@ -219,10 +278,14 @@ def task2(logs, norm_mean, norm_std, rep):
                g=np.mean([L["quiet"]["g_mean"] for L in stand], 0), g_sd=np.std([L["quiet"]["g_mean"] for L in stand], 0),
                q=np.mean([L["quiet"]["q_mean"] for L in stand], 0), q_sd=np.std([L["quiet"]["q_mean"] for L in stand], 0))
     ref["tilt"] = tilt_deg(ref["g"])
+    nf = freeze(logs, stand, rep)
+    ref["gyro_window"], ref["g_window"], ref["tilt_window"] = ref["gyro"], ref["g"], ref["tilt"]
+    ref["gyro_sd_window"], ref["g_sd_window"] = ref["gyro_sd"], ref["g_sd"]   # window estimate, includes frozen rows
+    ref.update(nf)                                   # gyro bias and gravity now come from non-frozen rows only
     rep["quiet_ref"] = {k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in ref.items()}
-    print(f"\nQuiet-standing reference = mean over {len(stand)} files with command 0 and motion score < {STAND_SCORE}: {', '.join(ref['files'])}\n")
-    print(f"- gyro bias mean (x,y,z) = {ref['gyro'][0]:+.5f}, {ref['gyro'][1]:+.5f}, {ref['gyro'][2]:+.5f} rad/s; spread between files (std) = {ref['gyro_sd'][0]:.5f}, {ref['gyro_sd'][1]:.5f}, {ref['gyro_sd'][2]:.5f}")
-    print(f"- gravity mean = {ref['g'][0]:+.4f}, {ref['g'][1]:+.4f}, {ref['g'][2]:+.4f}; spread = {ref['g_sd'][0]:.4f}, {ref['g_sd'][1]:.4f}, {ref['g_sd'][2]:.5f}; implied tilt pitch {ref['tilt']['pitch']:+.2f} deg, roll {ref['tilt']['roll']:+.2f} deg, total {ref['tilt']['total']:.2f} deg")
+    print(f"\nQuiet-WINDOW reference (includes frozen rows, superseded for gyro and gravity by the non-frozen estimate above) = mean over {len(stand)} files with command 0 and motion score < {STAND_SCORE}: {', '.join(ref['files'])}\n")
+    print(f"- gyro bias mean (x,y,z) = {ref['gyro_window'][0]:+.5f}, {ref['gyro_window'][1]:+.5f}, {ref['gyro_window'][2]:+.5f} rad/s; spread between files (std) = {ref['gyro_sd_window'][0]:.5f}, {ref['gyro_sd_window'][1]:.5f}, {ref['gyro_sd_window'][2]:.5f}")
+    print(f"- gravity mean = {ref['g_window'][0]:+.4f}, {ref['g_window'][1]:+.4f}, {ref['g_window'][2]:+.4f}; spread = {ref['g_sd_window'][0]:.4f}, {ref['g_sd_window'][1]:.4f}, {ref['g_sd_window'][2]:.5f}; implied tilt pitch {ref['tilt_window']['pitch']:+.2f} deg, roll {ref['tilt_window']['roll']:+.2f} deg, total {ref['tilt_window']['total']:.2f} deg")
     print("\n### joint offset obs/q at the quiet window (deg, = measured minus HUPHY default pose)\n")
     print("| joint | " + " | ".join(L["name"][:14] for L in stand) + " | mean | spread (std) | training reset+bias range (deg) |")
     print("|---|" + "---|" * (len(stand) + 3))
@@ -424,6 +487,46 @@ def task4(actor, logs, ref, rep):
         print(f"| {n} | {a['yaw_R']:+.3f} | {a['yaw_L']:+.3f} | {a['yaw_A']:+.3f} | {a['roll_R']:+.3f} | {a['roll_L']:+.3f} | {a['roll_A']:+.3f} | {ch:.3f} |")
 
 
+def task5(actor, logs, rep):
+    print("\n## 5 stale or frozen IMU while the body moves (open loop, moving files only)\n")
+    print("The logs show no frozen IMU row while joints move (section 2). This section asks what the NETWORK would do if it happened. Variant lag-k: the gyro and/or gravity entry of row i is replaced by the value of row i-k (k policy calls old, first rows keep row 0). Variant hold-k: sample-and-hold, the entry is refreshed only every k-th row. Compared with the logged action (= baseline replay). Only files with at least 2k rows are used for each k. Policy period is about 55 ms, so k=5 is 0.3 s, k=20 is 1.1 s, k=100 is 5.5 s.\n")
+    mov = [L for L in logs if not L["has_vy"] and not L["cmd_zero"]]
+    chans = {"gyro": slice(0, 3), "gravity": slice(3, 6), "both": slice(0, 6)}
+    res = {}
+    print("| variant | channel | k | files (rows) | mean abs change, all 12 targets (deg) | mean abs change hip_yaw R / L | mean abs change hip_roll R / L | signed mean change hip_yaw R / L | signed mean change hip_roll R / L | change of A_yaw | change of A_roll |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|")
+    for mode in ("lag", "hold"):
+        for ch, sl in chans.items():
+            for k in (5, 20, 100):
+                sel = [L for L in mov if len(L["X"]) >= 2 * k]
+                if not sel:
+                    continue
+                D = []
+                per = {}
+                for L in sel:
+                    X = L["X"].copy(); n = len(X); idx = np.arange(n)
+                    src = np.maximum(idx - k, 0) if mode == "lag" else (idx // k) * k
+                    X[:, sl] = L["X"][src][:, sl]
+                    d = tdeg(run(actor, X)) - tdeg(run(actor, L["X"]))
+                    D.append(d)
+                    ad = asym(d)
+                    per[L["name"]] = dict(mean_abs=float(np.abs(d).mean()), dA_yaw=float(ad["yaw_A"]), dA_roll=float(ad["roll_A"]))
+                D = np.vstack(D); m = D.mean(0); a = np.abs(D).mean(0); ad = asym(D)
+                res[f"{mode}/{ch}/k{k}"] = dict(files=[L["name"] for L in sel], rows=len(D), mean_abs=float(np.abs(D).mean()), abs_mean=a.tolist(), signed_mean=m.tolist(),
+                                              dA_yaw=float(ad["yaw_A"]), dA_roll=float(ad["roll_A"]), per_file=per)
+                print(f"| {mode} | {ch} | {k} | {len(sel)} ({len(D)}) | {np.abs(D).mean():.2f} | {a[2]:.2f} / {a[8]:.2f} | {a[1]:.2f} / {a[7]:.2f} | {m[2]:+.3f} / {m[8]:+.3f} | {m[1]:+.3f} / {m[7]:+.3f} | {ad['yaw_A']:+.3f} | {ad['roll_A']:+.3f} |")
+    rep["freeze_counterfactual"] = res
+    print("\nPer file, variant lag, channel both: mean abs change of all targets (deg) and change of A_yaw / A_roll\n")
+    print("| file | k=5 | k=20 | k=100 |")
+    print("|---|---|---|---|")
+    for L in mov:
+        cells = []
+        for k in (5, 20, 100):
+            r = res.get(f"lag/both/k{k}", {}).get("per_file", {}).get(L["name"])
+            cells.append(f"{r['mean_abs']:.2f} ({r['dA_yaw']:+.2f} / {r['dA_roll']:+.2f})" if r else "-")
+        print(f"| {L['name']} | " + " | ".join(cells) + " |")
+
+
 def plot(rep, path):
     import matplotlib
     matplotlib.use("Agg")
@@ -471,6 +574,7 @@ def main():
     ref = task2(logs, nm, ns, rep)
     task3(actor, actor64, [L for L in logs], rep)
     task4(actor, logs, ref, rep)
+    task5(actor, logs, rep)
     if a.png:
         plot(rep, a.png)
     if a.json:
