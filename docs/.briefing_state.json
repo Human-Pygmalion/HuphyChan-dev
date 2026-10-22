@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "Stage 6 (docs/177): 5 Hz reproduction lab built (tools/sim2real/walk/s6_oscillation_lab.py); impulse calibrated 80 N x 80 ms (tilt 7.6 deg, gyro peak 128 deg/s vs real 7.8 / 124); main sweep T0-T6, 23 conditions x 8 envs x 30 s running on CPU. Sim baseline finding so far: the sim robot at command 0 is NOT quiet (gyro 8 deg/s rms, 6-12 Hz roll chatter, 3-8 Hz target amp 0.7 deg) while the real one is dead calm (0.05 deg) before the burst.",
+  "title": "Stage 6 main sweep T0-T6 done (23 conditions x 8 envs x 30 s, CPU): NO condition shows a 4-6.5 Hz line. Impulse alone, IMU age/still-zero, torque/position lag, ankle-loop softness, joint friction x2/x4 all damp within ~2 s back to the sim's own 8 Hz low-level chatter (0.55 deg). Spring-damper hold (T2) gives a SUSTAINED but 2-3 Hz oscillation (amp 2-4 deg). Running batch 2 (gains 0.6/Kd 1.5/20 ms repeats on the hold, stiffer holds, torsion hold, chatter diagnostics).",
   "detail": "",
-  "since": "2026-10-22 21:12"
+  "since": "2026-10-22 21:47"
  },
  "items": {
   "shouldermesh": {
@@ -2426,7 +2426,8 @@
    "finding": "Gains, default pose, action scale, observation layout and gravity sign math match the contract. Found: in the ROS path the 4 ankle crank angles reach the policy as 0.0 (reproduced offline); joint zero offsets are placeholders (all 0) that pass the code gate through a note string \"0\"; the inertial sensor has no tilt or bias handling and the policy is sensitive to a 2 degree tilt (0.7 of its trained spread); policy timing at --hz 100 was measured earlier at 33 +/- 10 ms vs 20 ms in training. Offline probes only, nothing measured on the robot.",
    "needs": "Command line and logs from the robot, where the inertial sensor is bolted, how the motor zeros were set. Details: docs/sim2real/2026-10-22_walk_control_stack_audit.md",
    "section": "done",
-   "changed": "2026-10-22 15:41"
+   "changed": "2026-10-22 15:41",
+   "collapsed": true
   },
   "s2r-walk-first": {
    "id": "s2r-walk-first",
@@ -2435,7 +2436,8 @@
    "finding": "10-21 기록은 --hz 200 으로 돌았고 제어 주기 중앙값 12.4 ms (목표 5 ms). 정책은 4 주기마다 불려 간격이 약 52 ms. 학습의 2.5~3 배. 응답 유실 0 %. 제어단 감사 F1~F11 완료 (영점 미측정, IMU 장착 보정 없음 등)",
    "number": "정책 간격 중앙 52 ms vs 학습 20 ms",
    "section": "done",
-   "changed": "2026-10-22 15:50"
+   "changed": "2026-10-22 15:50",
+   "collapsed": true
   },
   "policy-replay": {
    "id": "policy-replay",
@@ -2523,6 +2525,32 @@
    "number": "시뮬레이터 −1.8 °/s (오른쪽)",
    "section": "done",
    "changed": "2026-10-22 21:27"
+  },
+  "s2rvideos": {
+   "id": "s2rvideos",
+   "created": "2026-10-22 21:51",
+   "title": "Real-walk sim-to-real: three analysis videos rendered",
+   "why": "The outside reader needs to see the three symptoms (veers right, gait differs, 5 Hz shaking after a push) instead of reading tables.",
+   "finding": "Three real-time videos (20 s, 20 s, 50 s) play back recorded states. Veer: with the robot's real call intervals the simulated walk still drifts right (-10 deg over 20 s, 8 of 8 envs negative; -38 deg with the trained 20 ms interval). Gait: the real robot turns 17.8 deg/s where the simulation turns 24.4 deg/s (command 28.6), and the real target-vs-measured error is about twice the simulated one. 5 Hz: shaking starts 1.7 s after a forward lean begins (lean 38.0 s, burst 39.75 s) and stays at 4.8-5.4 Hz with about 2-3 deg amplitude.",
+   "number": "frames / fps = duration for all three (500/25, 400/20, 1000/20); 2.5, 4.7, 7.1 MB; real robot panes carry no load data",
+   "media": [
+    "docs/video/2026-10-22_s2r_walk_veer.mp4",
+    "docs/video/2026-10-22_s2r_walk_gait.mp4",
+    "docs/video/2026-10-22_s2r_walk_5hz.mp4"
+   ],
+   "section": "done",
+   "changed": "2026-10-22 21:51"
+  },
+  "s2r-videos": {
+   "id": "s2r-videos",
+   "created": "2026-10-22 21:52",
+   "title": "분석 영상 3 개 (쏠림·걸음새·5 Hz), 실시간 재생, 프레임 검수 완료",
+   "finding": "쏠림: 20 ms·실기 간격 모두 8/8 환경이 오른쪽 (20 초: −37.9° vs −10.5°, 중앙 환경). 걸음새: 회전 0.5 rad/s 에서 시뮬레이터 24.4 °/s, 실기 17.8 °/s; 실기 목표값이 훨씬 들쭉날쭉. 5 Hz: 38.0 초 앞기울기 외란 → 39.75 초 진동 시작, 4.8~5.4 Hz 진폭 0.14° → 1.9~2.7°",
+   "media": [
+    "docs/video/2026-10-22_s2r_walk_5hz.mp4"
+   ],
+   "section": "done",
+   "changed": "2026-10-22 21:52"
   }
  },
  "order": [
@@ -2754,7 +2782,9 @@
   "s2r-sim-baseline",
   "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms",
   "s2r-stage5",
-  "s2r-veer"
+  "s2r-veer",
+  "s2rvideos",
+  "s2r-videos"
  ],
- "updated": "2026-10-22 21:27"
+ "updated": "2026-10-22 21:52"
 }
