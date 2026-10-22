@@ -1427,20 +1427,6 @@
    "section": "correct",
    "changed": "2026-10-08 15:11"
   },
-  "trail-video": {
-   "id": "trail-video",
-   "created": "2026-10-08 22:14",
-   "title": "산길 182 m 오르막 완주 영상 + 기사 그림 배경 변형 7장",
-   "finding": "스캔 그대로의 지형에서 오르막 방향은 v11a 가 끝까지 걷는다(내리막은 29 m 에서 넘어짐). Isaac Sim RTX 로 전신 로봇·스캔 나무·HDRI 산 하늘을 실시간 영상으로 렌더. 기사 그림은 단색 2 + HDRI 5",
-   "number": "182 m, +8.9 m, 499 초, 넘어짐 0 · 렌더 0.12 초/프레임 · 영상 143 MB",
-   "media": [
-    "docs/img/terrain_nav/trail_video_frames.jpg",
-    "docs/img/terrain_nav/bg_variants/overview_backgrounds.jpg"
-   ],
-   "section": "done",
-   "changed": "2026-10-08 22:14",
-   "collapsed": true
-  },
   "rough-stag-attempts": {
    "id": "rough-stag-attempts",
    "created": "2026-10-10 10:33",
@@ -2470,7 +2456,8 @@
     "docs/sim2real/img/2026-10-22_real_walk_timing.png"
    ],
    "section": "done",
-   "changed": "2026-10-22 16:49"
+   "changed": "2026-10-22 16:49",
+   "collapsed": true
   },
   "s2r-imu-zero": {
    "id": "s2r-imu-zero",
@@ -2551,6 +2538,15 @@
    ],
    "section": "done",
    "changed": "2026-10-22 21:52"
+  },
+  "s2r-sysid": {
+   "id": "s2r-sysid",
+   "created": "2026-10-22 22:34",
+   "title": "시스템 식별 점검: 모터값은 맞게 들어감, 실기 응답이 다른 곳 두 군데 (발목 크랭크 A 이득 절반, 엉덩이 앞뒤 약 80 ms 지연)",
+   "finding": "같은 정책·실기 간격·회전 0.5 에서 목표값→관절각 전달 함수(1.3 Hz): 무릎 실기 0.80(−39°) vs 시뮬레이터 0.72(−43°) 일치. 엉덩이 앞뒤 실기 −39° vs 시뮬레이터 ~0°. 크랭크 A 실기 0.30 vs 시뮬레이터 0.51~0.66. 정지 오차는 1° 안팎 일치 → Kp·중력 부하는 맞음. 미식별: 발목 연결부 마찰·유격, 발 질량(0.618 vs 0.182 kg), MIT 게인 단위",
+   "number": "크랭크 A 이득 0.30 vs 0.51~0.66",
+   "section": "done",
+   "changed": "2026-10-22 22:34"
   }
  },
  "order": [
@@ -2683,7 +2679,6 @@
   "local-gpu-missing-1001",
   "isaac-warehouse-demo",
   "trail-flat",
-  "trail-video",
   "rough-stag-attempts",
   "rough-stag-ab",
   "audit-rough-main",
@@ -2784,7 +2779,8 @@
   "s2r-stage5",
   "s2r-veer",
   "s2rvideos",
-  "s2r-videos"
+  "s2r-videos",
+  "s2r-sysid"
  ],
- "updated": "2026-10-22 21:52"
+ "updated": "2026-10-22 22:34"
 }
