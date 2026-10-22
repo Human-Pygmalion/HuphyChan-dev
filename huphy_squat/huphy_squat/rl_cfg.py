@@ -1,6 +1,21 @@
-"""PPO settings: same as mjlab_policy's Generalized task (B) except the run length / logging."""
+"""PPO settings: same as mjlab_policy's Generalized task (B) except the run length / logging,
+plus the CAPS smoothness loss (caps.py)."""
+
+from dataclasses import dataclass
 
 from mjlab.rl import RslRlModelCfg, RslRlOnPolicyRunnerCfg, RslRlPpoAlgorithmCfg
+
+from .env_cfg import ACTOR_NOISE
+
+
+@dataclass
+class HuphyPpoAlgorithmCfg(RslRlPpoAlgorithmCfg):
+  class_name: str = "huphy_squat.caps:CapsPPO"
+  caps_coef: float = 0.3
+  """Weight of mean ||mu(o) - mu(o + eps)||^2 (0 disables it). 1000-it smoke tests (2026-10-22): 1.0 cuts the
+  hold-still jitter 81 % but falls more at 50 N pushes; 0.3 cuts it 69 % with pushes close to v2."""
+  caps_noise: tuple[float, ...] = ACTOR_NOISE
+  """Half-width of eps per actor dim (= the training observation noise)."""
 
 
 def huphy_squat_ppo_cfg() -> RslRlOnPolicyRunnerCfg:
@@ -12,7 +27,7 @@ def huphy_squat_ppo_cfg() -> RslRlOnPolicyRunnerCfg:
       distribution_cfg={"class_name": "GaussianDistribution", "init_std": 1.0, "std_type": "scalar"},
     ),
     critic=RslRlModelCfg(hidden_dims=(512, 256, 128), activation="elu", obs_normalization=True),
-    algorithm=RslRlPpoAlgorithmCfg(
+    algorithm=HuphyPpoAlgorithmCfg(
       value_loss_coef=1.0,
       use_clipped_value_loss=True,
       clip_param=0.2,

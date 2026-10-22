@@ -294,6 +294,26 @@ class thermal_effort:
     return (get_motor(env).applied_effort / self.rated).square().sum(dim=1)
 
 
+class torque_rate:
+  """sum_motors (tau_t - tau_{t-1})^2 [N^2 m^2], applied motor torque at consecutive env steps;
+  0 on the first step after a reset."""
+
+  def __init__(self, cfg, env: ManagerBasedRlEnv):
+    m = get_motor(env)
+    self.prev = torch.zeros_like(m.applied_effort)
+    self.valid = torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+
+  def __call__(self, env: ManagerBasedRlEnv) -> torch.Tensor:
+    tau = get_motor(env).applied_effort
+    cost = (tau - self.prev).square().sum(dim=1) * self.valid.float()
+    self.prev.copy_(tau)
+    self.valid[:] = True
+    return cost
+
+  def reset(self, env_ids: torch.Tensor | None = None) -> None:
+    self.valid[slice(None) if env_ids is None else env_ids] = False
+
+
 def action_rate(env: ManagerBasedRlEnv) -> torch.Tensor:
   am = env.action_manager
   return (am.action - am.prev_action).square().sum(dim=1)

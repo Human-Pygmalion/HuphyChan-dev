@@ -62,14 +62,24 @@ PAYLOAD_KG = (-1.0, 8.0)  # first version (-1, 5)
 OBS_MAX_LAG = 2  # policy steps -> 0 / 20 / 40 ms; first version 1 (0 / 20 ms)
 # Command delay 0-20 ms: robot.ACTUATOR delay_max_lag = 4 physics steps (first version 2).
 
+# Actor observation noise (uniform +-n, every step) and its per-dimension layout, used by the
+# observation terms and by the CAPS smoothness loss (caps.py, rl_cfg.py).
+GYRO_NOISE, GRAVITY_NOISE, ENCODER_NOISE = 0.2, 0.05, 0.01
+ACTOR_NOISE = (GYRO_NOISE,) * 3 + (GRAVITY_NOISE,) * 3 + (ENCODER_NOISE,) * 24 + (0.0,) * 12 + (0.0,)
+"""gyro 3, gravity 3, encoders 12 x 2 frames, last action 12, h* 1 (= the actor obs order)."""
+
 REWARD_WEIGHTS = {
   "track_height": 2.0, "vz_speed": -600.0, "knee_guidance": -0.2, "squat_posture": 1.0,
   "pitch_symmetry": 0.5, "upright": 1.5, "body_ang_vel": -0.05, "angular_momentum": -0.02,
   "lin_vel_xy": -0.5, "ang_vel_z": -0.2, "motor_limits": -5.0, "ankle_limits": -10.0,
   "loop_residual": -1.0, "rod_collision": -2.0, "torque_margin": -2.0, "thermal_effort": -0.02,
-  "action_rate": -0.1, "joint_acc": -2.5e-7, "self_collisions": -1.0, "foot_slip": -0.5,
-  "foot_impact": -0.5, "stance_width": -10.0,
+  "action_rate": -0.3, "joint_acc": -2.5e-7, "self_collisions": -1.0, "foot_slip": -0.5,
+  "foot_impact": -0.5, "stance_width": -10.0, "torque_rate": -1.0e-4,
 }
+# Smoothness (2026-10-22, v3): action_rate -0.1 -> -0.3, + torque_rate, + CAPS loss in PPO.
+# During training both rate terms are dominated by the exploration noise (std ~0.4: ~3.8 / step for
+# action_rate, ~2700 N^2m^2 / step for torque_rate vs ~0.09 / ~48 from the policy mean), so they
+# are kept moderate; the noise-driven jitter of the mean is the CAPS loss's job.
 # Reset stance: half of the resets add U(-0.10, +0.06) rad outward to each hip roll (independent per
 # leg; -0.10 on both legs = -17 cm foot width, 6 cm between the soles) so the policy learns to step back out of narrow stances.
 RESET_SPREAD = dict(spread_range=(-0.10, 0.06), spread_prob=0.5)
@@ -126,10 +136,10 @@ def sensors() -> tuple:
 
 def observations() -> dict[str, ObservationGroupCfg]:
   actor = {
-    "base_ang_vel": ObservationTermCfg(func=obs.imu_gyro, noise=Unoise(n_min=-0.2, n_max=0.2)),
-    "projected_gravity": ObservationTermCfg(func=obs.imu_gravity, noise=Unoise(n_min=-0.05, n_max=0.05)),
+    "base_ang_vel": ObservationTermCfg(func=obs.imu_gyro, noise=Unoise(n_min=-GYRO_NOISE, n_max=GYRO_NOISE)),
+    "projected_gravity": ObservationTermCfg(func=obs.imu_gravity, noise=Unoise(n_min=-GRAVITY_NOISE, n_max=GRAVITY_NOISE)),
     "motor_pos": ObservationTermCfg(func=obs.motor_encoder, params={"asset_cfg": MOTORS},
-                                    noise=Unoise(n_min=-0.01, n_max=0.01), history_length=2),
+                                    noise=Unoise(n_min=-ENCODER_NOISE, n_max=ENCODER_NOISE), history_length=2),
     "actions": ObservationTermCfg(func=envs_mdp.last_action),
     "height_command": ObservationTermCfg(func=envs_mdp.generated_commands, params={"command_name": "height"}),
   }
@@ -213,6 +223,7 @@ def rewards() -> dict[str, RewardTermCfg]:
     "torque_margin": (rew.torque_margin, {"soft_ratio": 0.9}),
     "thermal_effort": (rew.thermal_effort, {"rated": robot.RATED_TORQUE}),
     "action_rate": (rew.action_rate, {}),
+    "torque_rate": (rew.torque_rate, {}),
     "joint_acc": (rew.joint_acc, {"asset_cfg": MOTORS_AND_ANKLES}),
     "self_collisions": (rew.contact_count, {"sensor_name": "self_collision", "force_threshold": 10.0}),
     "foot_slip": (rew.foot_slip, {"sensor_name": "feet_ground_contact", "asset_cfg": FEET}),

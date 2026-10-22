@@ -60,7 +60,8 @@ Rewards (w · f per step, then × dt):
 | rod_collision | −2 | substeps with a rod-capsule contact |
 | torque_margin | −2 | Σ relu(max-substep \|τ_req\|/T-N bound − 0.9) |
 | thermal_effort | −0.02 | Σ(τ/rated)² |
-| action_rate / joint_acc | −0.1 / −2.5e-7 | ‖Δa‖² / Σq̈² (motors + ankles) |
+| action_rate / joint_acc / torque_rate | −0.3 / −2.5e-7 / −1e-4 | ‖Δa‖² / Σq̈² (motors + ankles) / Σ(τ_t − τ_t−1)² [N²m²] |
+| (PPO loss) CAPS | 0.3 | mean ‖μ(o) − μ(o+ε)‖², ε ~ the training obs noise (`caps.py`): policy mean insensitive to sensor noise |
 | self_collisions / foot_slip / foot_impact | −1 / −0.5 / −0.5 | contact substeps / sole speed² in contact / descent speed² just before touchdown |
 | stance_width | −10 | metres of foot width (along the pelvis heading's left axis) outside [w*(h*) − 4 cm, w*(h*) + 12 cm]; w* = 34–41 cm |
 

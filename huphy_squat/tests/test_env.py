@@ -433,3 +433,35 @@ def test_reward_weights_registered(env):
   for name, w in REWARD_WEIGHTS.items():
     assert _term(env, name).weight == w
   assert env.cfg.scale_rewards_by_dt
+
+
+def test_actor_noise_layout(env):
+  """env_cfg.ACTOR_NOISE (CAPS loss) matches the actor terms: order, dims and noise widths."""
+  from huphy_squat.env_cfg import ACTOR_NOISE
+
+  om = env.observation_manager
+  names = om._group_obs_term_names["actor"]  # noqa: SLF001
+  cfgs = om._group_obs_term_cfgs["actor"]  # noqa: SLF001
+  dims = om._group_obs_term_dim["actor"]  # noqa: SLF001
+  want = []
+  for c, d in zip(cfgs, dims, strict=True):
+    n = int(torch.tensor(d).prod())  # includes the history frames
+    want += [c.noise.n_max if c.noise is not None else 0.0] * n
+  assert len(ACTOR_NOISE) == om.group_obs_dim["actor"][0] == len(want), names
+  assert ACTOR_NOISE == tuple(want)
+
+
+def test_torque_rate(env):
+  env.reset()
+  t = _term(env, "torque_rate")
+  for _ in range(3):
+    env.step(_zero(env))
+  m = events.get_motor(env)
+  prev = m.applied_effort.clone()
+  env.step(_zero(env))
+  want = (m.applied_effort - prev).square().sum(dim=1)
+  got = t.func.inner.prev  # the term stored this step's torque
+  assert torch.allclose(got, m.applied_effort)
+  rew = env.reward_manager._step_reward[:, list(env.reward_manager.active_terms).index("torque_rate")]  # noqa: SLF001
+  ok = ~env.reset_buf
+  assert torch.allclose(rew[ok], (t.weight * want.clamp(max=50 / abs(t.weight)))[ok], rtol=1e-4, atol=1e-6)
