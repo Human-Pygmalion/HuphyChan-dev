@@ -1,0 +1,33 @@
+{
+ "root": "/home/syaro/MikuchanRemote/Human-Pygmalion/Expr_Data",
+ "fig_runs": ["1021 vx0 g1 vib-check", "1021 wz0.5 g1", "1020 vx0 g1 hz100", "1021 vx0.5 g1"],
+ "runs": [
+  {"label": "1019 stand g0.8", "date": "1019", "policy": "1019gain0.8 stand.csv", "body_gain": 0.8, "ankle_gain": null, "note": "stand policy log (82 columns); ankle factor not stated in file name"},
+  {"label": "1019 stand g1 #1", "date": "1019", "policy": "1019gain1stand1.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "stand policy log (82 columns)"},
+  {"label": "1019 stand g1 #2", "date": "1019", "policy": "1019gain1stand2.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "stand policy log (82 columns)"},
+  {"label": "1019 stand g1 #3", "date": "1019", "policy": "1019gain1stand3.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "stand policy log (82 columns)"},
+  {"label": "1020 vx0 g1 hz100", "date": "1020", "policy": "policy_generalized_walk_20261020_185916.csv", "latency": "1020generalizedwalk00.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "generalized_walk, --hz 100; command read from log"},
+  {"label": "1021 vx0 g0.6/1 A", "date": "1021", "policy": "1021ob061vx0.csv", "latency": "1021laten061vx0.csv", "body_gain": 0.6, "ankle_gain": 1.0, "note": "file name gain 061, mtime 04:20"},
+  {"label": "1021 vx0 g1 vib-check", "date": "1021", "policy": "vx0gain1walkob(진동확인용)1021.csv", "latency": "vx0gain1walklatency(진동확인용)1021.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "run made to check vibration"},
+  {"label": "1021 vx0 g1 Kd x1.5", "date": "1021", "policy": "vx0gain1kdx1.5walkob1021.csv", "latency": "vx0gain1kdx1.5walklaten1021.csv", "body_gain": 1.0, "ankle_gain": 1.0, "kd_scale": 1.5},
+  {"label": "1021 vx0.3 g1", "date": "1021", "policy": "1021vx0.3ob.csv", "latency": "1021vx0.3laten.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "gain not in file name, assumed 1"},
+  {"label": "1021 vx0.5 g1", "date": "1021", "policy": "1021vx0.5ob.csv", "latency": "1021vx0.5laten.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "gain not in file name, assumed 1"},
+  {"label": "1021 vx0.5 g0.6/1.5 broken", "date": "1021", "policy": "1021vx0.5gain0615ob_broken.csv", "latency": "1021vx0.5gain0615laten_broken.csv", "body_gain": 0.6, "ankle_gain": 1.5, "note": "run marked broken by the user"},
+  {"label": "1021 vx0 g0.6/1 B", "date": "1021", "policy": "1021vx0obgain0.61.csv", "latency": "1021vx0latengain061.csv", "body_gain": 0.6, "ankle_gain": 1.0, "note": "file name gain0.61, mtime 05:11"},
+  {"label": "1021 wz0.5 g1", "date": "1021", "policy": "1021vz0.5ob.csv", "latency": "1021vz0.5laten.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "yaw-rate command; gain not in file name, assumed 1"},
+  {"label": "1021 wz0.5 g1 soles", "date": "1021", "policy": "1021vz0.5ob발바닥 붙임.csv", "latency": "1021vz0.5laten발바닥붙임.csv", "body_gain": 1.0, "ankle_gain": 1.0, "note": "something attached to the soles; gain assumed 1"},
+  {"label": "1021 wz0.5 g0.6/1", "date": "1021", "policy": "1021vz0.5obgain0.61.csv", "latency": "1021vz0.5latengain0.61.csv", "body_gain": 0.6, "ankle_gain": 1.0}
+ ],
+ "contrasts": [
+  {"name": "gain 1 vs 0.6 (vx0, standing command)", "a": "1021 vx0 g1 vib-check", "b": "1021 vx0 g0.6/1 B"},
+  {"name": "gain 1 vs 0.6, first 0.6 run", "a": "1021 vx0 g1 vib-check", "b": "1021 vx0 g0.6/1 A"},
+  {"name": "Kd x1 vs x1.5 (vx0)", "a": "1021 vx0 g1 vib-check", "b": "1021 vx0 g1 Kd x1.5"},
+  {"name": "gain 1 vs 0.6 (wz0.5)", "a": "1021 wz0.5 g1", "b": "1021 wz0.5 g0.6/1"},
+  {"name": "soles attached (wz0.5)", "a": "1021 wz0.5 g1", "b": "1021 wz0.5 g1 soles"},
+  {"name": "vx 0.3 vs 0.5", "a": "1021 vx0.3 g1", "b": "1021 vx0.5 g1"},
+  {"name": "vx 0 vs 0.5 (gain 1)", "a": "1021 vx0 g1 vib-check", "b": "1021 vx0.5 g1"},
+  {"name": "vx 0 vs wz 0.5 (gain 1)", "a": "1021 vx0 g1 vib-check", "b": "1021 wz0.5 g1"},
+  {"name": "loop 100 Hz (1020) vs 200 Hz (1021), vx0 gain 1", "a": "1020 vx0 g1 hz100", "b": "1021 vx0 g1 vib-check"},
+  {"name": "vx0.5 gain 1 vs gain 0.6/1.5 (broken)", "a": "1021 vx0.5 g1", "b": "1021 vx0.5 g0.6/1.5 broken"}
+ ]
+}
