@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "실기 걷기 차이 연구 (docs/177) — 시뮬레이터–실기 같은 도구 비교와 1 차 감사 재개, CPU 실행",
+  "title": "실기 걷기 차이 연구 단계 6 — 시뮬레이터에서 5 Hz 재현 조건 탐색 (CPU)",
   "detail": "",
-  "since": "2026-10-22 20:15"
+  "since": "2026-10-22 20:57"
  },
  "items": {
   "shouldermesh": {
@@ -2401,7 +2401,8 @@
     "docs/mujoco/assets/battery_regen_current_sim.png"
    ],
    "section": "done",
-   "changed": "2026-10-19 14:06"
+   "changed": "2026-10-19 14:06",
+   "collapsed": true
   },
   "gw-jitter": {
    "id": "gw-jitter",
@@ -2493,6 +2494,24 @@
    "number": "시뮬레이터 방향 변화 −1.8 °/s (vx 0.5)",
    "section": "done",
    "changed": "2026-10-22 20:15"
+  },
+  "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms": {
+   "id": "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms",
+   "created": "2026-10-22 20:56",
+   "section": "done",
+   "changed": "2026-10-22 20:56"
+  },
+  "s2r-stage5": {
+   "id": "s2r-stage5",
+   "created": "2026-10-22 20:57",
+   "title": "단계 5: 걸음새 차이는 정책 간격 52 ms 로 대부분 설명됨 — 행동 변화량 시뮬레이터 0.439 vs 실기 0.453",
+   "finding": "20→52 ms: 행동 변화량 2 배(0.218→0.439, 실기 0.453), 걸음 1.43→1.07 Hz, 3 Hz 이상 봉우리 3.3~3.4 Hz(실기 3.0~3.6), vx 1.0 넘어짐 2/8. 크랭크 오차는 시뮬레이터에도 같음(실기만의 차이 아님). 쏠림: 20 ms 에서 −1.8 °/s 일정, 52 ms 에서 무작위 확대. 5 Hz 는 시뮬레이터 재현 안 됨 → 단계 6 재현 조건 탐색 시작",
+   "number": "행동 변화량 sim 0.439 / real 0.453",
+   "media": [
+    "docs/mujoco/assets/2026-10-22_sim_walk_reference.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-22 20:57"
   }
  },
  "order": [
@@ -2721,7 +2740,9 @@
   "s2r-walk-reallog",
   "s2r-imu-zero",
   "s2r-colleague",
-  "s2r-sim-baseline"
+  "s2r-sim-baseline",
+  "Sim reference data for the walking policy delivered (commit 4e393c6): sim vx0 stands still, 52 ms interval cuts gait 25 percent and doubles action rate, yaw drift -1.8 deg/s at 20 ms is seed-robust but gone at 52 ms",
+  "s2r-stage5"
  ],
- "updated": "2026-10-22 20:37"
+ "updated": "2026-10-22 20:57"
 }
