@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "실기 걷기 시뮬레이터–실기 차이 연구 (docs/177) — 1 차 감사와 시뮬레이터 기준 데이터 진행 중",
+  "title": "실기 걷기 차이 연구 (docs/177) — 시뮬레이터–실기 같은 도구 비교와 1 차 감사 재개, CPU 실행",
   "detail": "",
-  "since": "2026-10-22 16:49"
+  "since": "2026-10-22 20:15"
  },
  "items": {
   "shouldermesh": {
@@ -2388,7 +2388,8 @@
    "finding": "VBUS=모터 ADC(0x701C, 0.035 V 눈금), iqf=q축 상전류(버스 전류 아님). 토크 대 iqf 기울기 1.456 N·m/A, R² 0.9925 — 매뉴얼 Kt 1.485 와 2 % 차. 버스 전류 ibus(0x302B) 등 0x30xx 는 MIT 로 읽으면 0. 소비/회생은 τω 부호로 하한만, 정확히는 48 V 선 양방향 전류 센서 필요",
    "number": "Kt 실측 1.456 vs 매뉴얼 1.485 N·m/A",
    "section": "done",
-   "changed": "2026-10-19 14:00"
+   "changed": "2026-10-19 14:00",
+   "collapsed": true
   },
   "battery-regen-spec": {
    "id": "battery-regen-spec",
@@ -2483,6 +2484,15 @@
    "number": "5 Hz: 게인 1 만, 목표값이 관절의 3.5~4 배",
    "section": "done",
    "changed": "2026-10-22 17:38"
+  },
+  "s2r-sim-baseline": {
+   "id": "s2r-sim-baseline",
+   "created": "2026-10-22 20:15",
+   "title": "시뮬레이터에서도 이 정책은 직진 중 한쪽으로 돈다 (−1.8~−2.6 °/s)",
+   "finding": "명목 조건(20 ms, 무작위화 끔) 20 초 직진: vx 0.5 −32.5°, vx 1.0 −46.4°. 보폭 좌우 차 +24~29 %. 쏠림 첫 후보 = 정책 자체 치우침. 실기 방향 일치 확인 필요. 멈춘 시뮬레이터·감사 에이전트 재개",
+   "number": "시뮬레이터 방향 변화 −1.8 °/s (vx 0.5)",
+   "section": "done",
+   "changed": "2026-10-22 20:15"
   }
  },
  "order": [
@@ -2710,7 +2720,8 @@
   "real-walk-log-analysis",
   "s2r-walk-reallog",
   "s2r-imu-zero",
-  "s2r-colleague"
+  "s2r-colleague",
+  "s2r-sim-baseline"
  ],
- "updated": "2026-10-22 17:38"
+ "updated": "2026-10-22 20:15"
 }
