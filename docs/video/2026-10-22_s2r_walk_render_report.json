@@ -1,0 +1,95 @@
+{
+ "v1": {
+  "env": 0,
+  "fps": 25,
+  "frames": 500,
+  "info": {
+   "R3": {
+    "heading_change_deg": [
+     -37.9,
+     -45.2,
+     -36.3,
+     -30.6,
+     -29.5,
+     -26.6,
+     -38.3,
+     -39.2
+    ],
+    "median": -37.1
+   },
+   "R8": {
+    "heading_change_deg": [
+     -10.5,
+     -10.0,
+     -55.1,
+     -0.2,
+     -12.1,
+     -9.8,
+     -26.7,
+     -11.5
+    ],
+    "median": -11.0
+   }
+  },
+  "render_s": 137.8,
+  "probe": {
+   "codec": "h264",
+   "size": "1400x502",
+   "fps": 25.0,
+   "frames": 500,
+   "frames_over_fps": 20.0,
+   "duration_stream": 20.0,
+   "duration_format": 20.0,
+   "size_mb": 2.45
+  }
+ },
+ "v2": {
+  "env": 1,
+  "fps": 20,
+  "frames": 400,
+  "info": {
+   "W5_real": {
+    "heading_change_deg": [
+     486.4,
+     487.1,
+     488.7,
+     487.8,
+     488.4,
+     482.3,
+     466.7,
+     500.9
+    ],
+    "median": 487.4
+   }
+  },
+  "render_s": 124.5,
+  "probe": {
+   "codec": "h264",
+   "size": "1400x644",
+   "fps": 20.0,
+   "frames": 400,
+   "frames_over_fps": 20.0,
+   "duration_stream": 20.0,
+   "duration_format": 20.0,
+   "size_mb": 4.73
+  }
+ },
+ "v3": {
+  "fps": 20,
+  "frames": 1000,
+  "t_lean": 38.0433,
+  "t_burst": 39.75,
+  "peak_lean_deg": 7.750524447719981,
+  "render_s": 113.2,
+  "probe": {
+   "codec": "h264",
+   "size": "1280x688",
+   "fps": 20.0,
+   "frames": 1000,
+   "frames_over_fps": 50.0,
+   "duration_stream": 50.0,
+   "duration_format": 50.0,
+   "size_mb": 7.08
+  }
+ }
+}
