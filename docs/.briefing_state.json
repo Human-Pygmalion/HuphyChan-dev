@@ -2378,7 +2378,8 @@
    "finding": "candleLight 는 모든 ID 를 받음(거르기 없음). '3'은 모터 미응답 한도(몰아 보내기도 모터당 1개)와 bxCAN 수신 FIFO 3단(펌웨어가 64 대기열로 옮김) 두 가지. 루프백 6개 묶음 5,916/5,916, 로봇 몰아 보내기 622/696 주기 6개 전부 수신",
    "number": "하나씩 4.3 ms → 추정 1.5~2.5 ms",
    "section": "done",
-   "changed": "2026-10-19 12:52"
+   "changed": "2026-10-19 12:52",
+   "collapsed": true
   },
   "emf-v-i-source": {
    "id": "emf-v-i-source",
@@ -2473,6 +2474,15 @@
    "finding": "0 이 아닌 최소 |자이로| 0.01 °/s 로 느린 회전도 읽힘. 멈춘 행 뺀 자이로 치우침 0.0017 rad/s 이하, 기울기 0.57°. 치우침·영점을 지워도 엉덩이 비틀기 좌우 차는 절반만 줄어듦 → 쏠림 주원인 아님 (열린 고리)",
    "section": "done",
    "changed": "2026-10-22 16:54"
+  },
+  "s2r-colleague": {
+   "id": "s2r-colleague",
+   "created": "2026-10-22 17:38",
+   "title": "동료 비평 반영 재분석 (docs/177 §9)",
+   "finding": "ROS 발목 0 은 맞음: control_node.py:141 이 ankle_pitch/roll 만 발행, policy_node.py:227 이 ankle_a/b 를 .get(...,0.0) 로 읽음. HUPHY convert.py 로 재현. 이번 실험 무관. 5 Hz 떨림은 게인 1.0 에서만, 간격 31→53 ms 에 진동수 5.7→5.1 Hz (10 %) → 진동수는 하드웨어 동역학, 에너지는 정책 되먹임. 게인 0.6·Kd×1.5 에서 사라짐",
+   "number": "5 Hz: 게인 1 만, 목표값이 관절의 3.5~4 배",
+   "section": "done",
+   "changed": "2026-10-22 17:38"
   }
  },
  "order": [
@@ -2699,7 +2709,8 @@
   "policy-replay",
   "real-walk-log-analysis",
   "s2r-walk-reallog",
-  "s2r-imu-zero"
+  "s2r-imu-zero",
+  "s2r-colleague"
  ],
- "updated": "2026-10-22 16:54"
+ "updated": "2026-10-22 17:38"
 }
