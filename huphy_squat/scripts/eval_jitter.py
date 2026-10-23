@@ -14,8 +14,9 @@ gets a fixed h*, settles for 3 s, then 8 s are measured at 50 Hz:
   z_std        std of the pelvis height [mm]
   hf_frac      share of the action variance above 5 Hz
   h_err        mean |h - h*| [mm]
-plus the per-joint RMS of the target change. Works with any version of the huphy_squat
-package on the path (to compare an old checkpoint: PYTHONPATH=<old checkout>/huphy_squat).
+plus the per-joint RMS of the target change. Uses only the registered task cfg, so it also runs
+against another checkout of the package put first on the path, e.g. to evaluate a checkpoint
+with the code it was trained with: PYTHONPATH=<checkout>/huphy_squat eval_jitter.py CKPT.
 """
 
 from __future__ import annotations

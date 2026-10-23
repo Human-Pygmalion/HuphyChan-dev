@@ -1,4 +1,4 @@
-"""HUPHY squat task for stock mjlab (independent of mjlab_policy / pygmalion_mjlab).
+"""HUPHY squat task for stock mjlab (self-contained: stock mjlab + rsl_rl only).
 
 Importing this package registers
   Huphy-Squat-Flat-v0   in-place squat with target pelvis height, flat ground, full DR.

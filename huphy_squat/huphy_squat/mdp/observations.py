@@ -2,8 +2,8 @@
 
 Actor (deployable): IMU gyro, IMU gravity direction, 12 motor encoder angles (with the
 encoder bias), last action, h*. The three sensor terms go through one shared lag per env
-and episode (`env.huphy_obs_lag`, 0 or 1 policy step, drawn by the `sample_obs_lag` reset
-event, 0 / 20 / 40 ms), so on a delayed step IMU and encoders are equally old, like one sensor packet.
+and episode (`env.huphy_obs_lag`, 0-2 policy steps = 0 / 20 / 40 ms, drawn by the
+`sample_obs_lag` reset event), so IMU and encoders are always equally old, like one sensor packet.
 
 Critic (privileged): true state + the DR values that actually change the dynamics.
 """

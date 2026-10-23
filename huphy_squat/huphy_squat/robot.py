@@ -1,6 +1,6 @@
 """HUPHY LegOnly robot (2-RSU "AB" ankle) for the squat task.
 
-Model: assets/huphy_legonly_ab.xml (copy of the Pygmalion MJCF with fixed names and rod
+Model: assets/huphy_legonly_ab.xml (the Pygmalion LegOnly MJCF with fixed names and rod
 collision capsules; see the comment at the top of the file). 23.63 kg, 12 motors:
 hip pitch / hip roll / knee (RS04), hip yaw / crank A / crank B (RS03) per leg. The ankle
 pitch / roll hinges and the rod U-joints are passive; four `connect` equalities close the
@@ -50,7 +50,7 @@ FAMILY = {
   ".*_hip_yaw_joint": "RS03",
   ".*_crank_[AB]_joint": "RS03",
 }
-# Real-robot driver gains (MIT mode, ~/huphy/docs/pd_gains.md).
+# Real-robot driver gains (MIT mode).
 STIFFNESS = {".*_hip_pitch_joint": 135.0, ".*_hip_roll_joint": 135.0, ".*_hip_yaw_joint": 75.0,
              ".*_knee_joint": 130.0, ".*_crank_[AB]_joint": 60.0}
 DAMPING = {".*_hip_pitch_joint": 6.0, ".*_hip_roll_joint": 6.0, ".*_hip_yaw_joint": 4.0,
@@ -65,9 +65,9 @@ RATED_TORQUE = {".*_hip_pitch_joint": 40.0, ".*_hip_roll_joint": 40.0, ".*_hip_y
                 ".*_knee_joint": 40.0, ".*_crank_[AB]_joint": 20.0}
 
 # Default (action-offset) pose: slight crouch, hip pitch 0.175 / knee 0.35 rad, hips spread
-# outward by HIP_SPREAD (feet 33 cm apart at the foot origins instead of 25 cm). Hip yaw and the
+# outward by HIP_SPREAD (feet 33 cm apart at the foot origins; 25 cm without the spread). Hip yaw and the
 # crank angles keep each foot level and pointing ahead (ankle pitch 0.175 / roll -0.051);
-# passive joints: assets/linkage_table.npz. Solved by docs/task_design/scripts/hs_reference.py.
+# passive joints: assets/linkage_table.npz. Solved by scripts/reference/squat_reference.py.
 HIP_SPREAD = 0.05  # rad, hip roll outward (R +, L -)
 DEFAULT_MOTOR_POS = {
   "R_hip_pitch_joint": -0.175, "R_hip_roll_joint": 0.05, "R_hip_yaw_joint": 0.008837, "R_knee_joint": 0.35,
@@ -94,8 +94,9 @@ SOFT_LIMIT_FACTOR = 0.9
 # Squat reference q*(h) for the R leg with the hips spread by HIP_SPREAD: pelvis upright, feet
 # level and pointing ahead. Down to h = 0.71 the whole-body CoM is over the sole centre; below,
 # ankle pitch stays at 0.43 (soft limit 0.454) and the CoM moves behind the sole centre
-# (SQUAT_REF_COM_DX, -1.9 cm at 0.65 m): the robot sits back. docs/task_design/height_reference_v2.json
-# (scripts/hs_reference.py). L leg: hip pitch / roll / yaw and knee negated, ankle pitch / roll same sign.
+# (SQUAT_REF_COM_DX, -1.9 cm at 0.65 m): the robot sits back. Computed by
+# scripts/reference/squat_reference.py (CPU MuJoCo pose solve on the knee grid, linearly interpolated at
+# SQUAT_REF_H, 4 decimals). L leg: hip pitch / roll / yaw and knee negated, ankle pitch / roll same sign.
 SQUAT_REF_H = (0.625, 0.65, 0.675, 0.7, 0.725, 0.75, 0.775, 0.8, 0.825, 0.85, 0.875, 0.895)
 SQUAT_REF_KNEE = (1.6872, 1.6189, 1.5451, 1.4659, 1.3781, 1.2818, 1.178, 1.064, 0.9361, 0.7863, 0.5956, 0.3589)
 SQUAT_REF_HIP_PITCH = (-1.2611, -1.192, -1.1177, -1.038, -0.963, -0.8917, -0.8159, -0.7339, -0.643, -0.5378, -0.4052, -0.242)

@@ -161,7 +161,6 @@ class push_pelvis:
     self.force = torch.zeros(n, 3, device=self.dev)
     self.remaining = torch.zeros(n, device=self.dev)  # >0 while pushing
     self.pause = self._u(self.interval, n)
-    self.count = torch.zeros(n, device=self.dev)
     env.huphy_push = self  # critic observation reads force / remaining
 
   def _u(self, r: tuple[float, float], n: int) -> torch.Tensor:
@@ -190,7 +189,6 @@ class push_pelvis:
       self.force[start] = torch.stack((mag * torch.cos(ang), mag * torch.sin(ang), torch.zeros_like(mag)), dim=1)
       self.remaining[start] = self._u(duration_s, k)
       self.pause[start] = 0.0
-      self.count[start] += 1
     self._write()
 
   def reset(self, env_ids: torch.Tensor | None = None) -> None:
@@ -199,7 +197,6 @@ class push_pelvis:
     self.remaining[idx] = 0.0
     n = self.num(idx)
     self.pause[idx] = self._u(self.interval, n)
-    self.count[idx] = 0.0
     self._write()
 
   def num(self, idx) -> int:

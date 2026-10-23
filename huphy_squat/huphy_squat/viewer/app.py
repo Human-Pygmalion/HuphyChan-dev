@@ -19,14 +19,14 @@ from mjlab.managers.event_manager import RecomputeLevel
 from mjlab.viewer.base import ViewerAction
 from mjlab.viewer.viser.viewer import UpdateReason, ViserPlayViewer
 
+from .. import robot as robot_def
 from ..env_cfg import HEIGHT_RANGE, PUSH
 from ..mdp.commands import base_height
 from ..mdp.events import get_motor
-from .. import robot as robot_def
 from ..mdp.observations import foot_friction, loop_distances
 from ..mdp.rewards import SquatReference, foot_width
 from .dr import DrControl
-from .scene import BOX, BOX_PARK, box_body
+from .scene import BOX, box_body, park_box
 
 if TYPE_CHECKING:
   from mjlab.envs import ManagerBasedRlEnv
@@ -155,7 +155,6 @@ class HuphyViewer(ViserPlayViewer):
     p.force[ids, 1] = force * torch.sin(ang)
     p.force[ids, 2] = 0.0
     p.remaining[ids] = duration
-    p.count[ids] += 1
 
   def throw_box(self, mass: float, speed: float, dist: float, z_off: float, direction: str, all_envs: bool) -> None:
     """Launch the box from `dist` m away (direction in the robot frame) so that its ballistic
@@ -180,14 +179,7 @@ class HuphyViewer(ViserPlayViewer):
     u.scene[BOX].write_root_state_to_sim(root, env_ids=ids)
 
   def park_box(self, all_envs: bool) -> None:
-    ids = self._env_ids(all_envs)
-    root = torch.zeros(len(ids), 13, device=self.u.device)
-    root[:, :3] = self.u.scene.env_origins[ids]
-    root[:, 0] += BOX_PARK[0]
-    root[:, 1] += BOX_PARK[1]
-    root[:, 2] += self.box_edge / 2
-    root[:, 3] = 1.0
-    self.u.scene[BOX].write_root_state_to_sim(root, env_ids=ids)
+    park_box(self.u, self._env_ids(all_envs), self.box_edge)
 
   # ------------------------------------------------------------------ GUI
 

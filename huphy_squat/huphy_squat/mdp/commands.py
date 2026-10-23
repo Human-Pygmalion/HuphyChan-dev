@@ -29,7 +29,7 @@ def base_height(env: ManagerBasedRlEnv, entity_name: str = "robot") -> torch.Ten
 @dataclass(kw_only=True)
 class HeightCommandCfg(CommandTermCfg):
   entity_name: str = "robot"
-  height_range: tuple[float, float] = (0.72, 0.895)
+  height_range: tuple[float, float] = (0.65, 0.895)
   keep_prob: float = 0.2
   """Probability that a resample keeps the previous target (never at the episode start)."""
   resampling_time_range: tuple[float, float] = (3.0, 6.0)

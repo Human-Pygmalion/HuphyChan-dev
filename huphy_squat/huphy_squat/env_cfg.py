@@ -1,7 +1,6 @@
 """Huphy-Squat-Flat-v0: in-place squat with pelvis-height control on flat ground.
 
-Written from scratch on stock mjlab (no velocity-task base cfg); design record:
-docs/task_design/decisions.md, reward_design.md, height_range.md.
+Built directly on stock mjlab managers (no velocity-task base cfg).
 
   policy        50 Hz (decimation 4 x 5 ms physics), 20 s episodes
   command       target pelvis height h* in [0.65, 0.895] m, new value every 3-6 s (20 % keep)
@@ -39,10 +38,10 @@ from .mdp import observations as obs
 from .mdp import rewards as rew
 from .mdp import terminations as term
 
-HEIGHT_RANGE = (0.65, 0.895)  # first version (0.72, 0.895); below 0.71 m the robot sits back
+HEIGHT_RANGE = (0.65, 0.895)  # below 0.71 m the robot sits back (robot.SQUAT_REF_COM_DX)
 
-# Per-link inertial DR (mass x e^(2 alpha), CoM shift t, shape d) from the CAD mass uncertainty
-# (same ranges as mjlab_policy Rough-Box). Cranks and rods are not randomized.
+# Per-link inertial DR (mass x e^(2 alpha), CoM shift t, shape d) from the CAD mass uncertainty;
+# cranks and rods are not randomized.
 INERTIAL_DR = {
   "pelvis": (("base_link",), dict(alpha_range=(-0.0256, 0.0699), t1_range=(-0.02, 0.02), t2_range=(-0.02, 0.02), t3_range=(-0.02, 0.02), d_range=(-0.0154, 0.0154))),
   "hip_pitch_link": (("L_hip_pitch_link", "R_hip_pitch_link"), dict(alpha_range=(-0.0256, 0.0364), t1_range=(-0.005, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005), d_range=(-0.02, 0.02))),
@@ -54,13 +53,13 @@ INERTIAL_DR = {
 }
 
 # Horizontal pelvis push: impulse <= 60 N x 0.2 s = 12 N*s -> delta v <= 0.51 m/s (23.6 kg),
-# 0.38 m/s (+8 kg). (First version: 35 N; widened 2026-10-21 after the out-of-range eval:
-# the 35 N policy starts to fall at 50 N and mostly falls at 65 N.)
+# 0.38 m/s (+8 kg). 60 N because a policy trained with 35 N pushes starts to fall at 50 N and
+# mostly falls at 65 N.
 PUSH = dict(force_range=(0.0, 60.0), duration_s=(0.1, 0.2), interval_s=(2.0, 5.0))
-FOOT_FRICTION = (0.3, 1.2)  # first version (0.4, 1.0)
-PAYLOAD_KG = (-1.0, 8.0)  # first version (-1, 5)
-OBS_MAX_LAG = 2  # policy steps -> 0 / 20 / 40 ms; first version 1 (0 / 20 ms)
-# Command delay 0-20 ms: robot.ACTUATOR delay_max_lag = 4 physics steps (first version 2).
+FOOT_FRICTION = (0.3, 1.2)
+PAYLOAD_KG = (-1.0, 8.0)  # point mass at the pelvis CoM
+OBS_MAX_LAG = 2  # policy steps -> 0 / 20 / 40 ms
+# Command delay 0-20 ms: robot.ACTUATOR delay_max_lag = 4 physics steps.
 
 # Actor observation noise (uniform +-n, every step) and its per-dimension layout, used by the
 # observation terms and by the CAPS smoothness loss (caps.py, rl_cfg.py).
@@ -76,7 +75,7 @@ REWARD_WEIGHTS = {
   "action_rate": -0.3, "joint_acc": -2.5e-7, "self_collisions": -1.0, "foot_slip": -0.5,
   "foot_impact": -0.5, "stance_width": -10.0, "torque_rate": -1.0e-4,
 }
-# Smoothness (2026-10-22, v3): action_rate -0.1 -> -0.3, + torque_rate, + CAPS loss in PPO.
+# Smoothness: action_rate, torque_rate and the CAPS loss in PPO (caps.py, rl_cfg.py).
 # During training both rate terms are dominated by the exploration noise (std ~0.4: ~3.8 / step for
 # action_rate, ~2700 N^2m^2 / step for torque_rate vs ~0.09 / ~48 from the policy mean), so they
 # are kept moderate; the noise-driven jitter of the mean is the CAPS loss's job.

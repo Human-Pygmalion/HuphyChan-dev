@@ -37,7 +37,7 @@ def test_mjcf_names_and_mass(solver):
 
 def test_default_pose_feet_level(solver, table):
   # Spread default pose (hip roll +-HIP_SPREAD): both feet level and pointing ahead, loops closed,
-  # same ankle angles as docs/task_design/scripts/hs_reference.py solved independently.
+  # same ankle angles as scripts/reference/squat_reference.py solved independently.
   pose = dict(zip(table["default_names"], table["default_values"], strict=True))
   for s in "LR":
     assert abs(pose[f"{s}_ankle_pitch_joint"] - 0.1752) < 2e-4
@@ -100,9 +100,8 @@ def _contacts_with(m, d, names):
   return [(m.geom(c.geom1).name, m.geom(c.geom2).name) for c in d.contact[: d.ncon] if c.geom1 in ids or c.geom2 in ids]
 
 
-def test_rod_capsules_free_over_ankle_rom(solver):
+def test_rod_capsules_free_over_ankle_rom():
   """No rod-capsule contact (self or other leg) over a crank x knee grid, robot in the air."""
-  m, d = solver.m, solver.d
   # emulate the task collision setup: only *_collision geoms collide
   m2 = mujoco.MjModel.from_xml_path(str(robot.XML))
   for i in range(m2.ngeom):
@@ -124,4 +123,3 @@ def test_rod_capsules_free_over_ankle_rom(solver):
       if c:
         bad.append((knee, ca, cb, c))
   assert not bad, bad[:5]
-  del m, d

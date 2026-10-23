@@ -4,15 +4,16 @@
 Everything else stays at the training distribution (full DR, training pushes, random h*
 commands every 3-6 s). Per condition: 512 envs x 20 s, deterministic policy.
 
-  eval_ood.py --ckpt PATH [--num-envs 512] [--out ood.json]
+  eval_ood.py --ckpt PATH [--num-envs 512] [--only action_delay obs_delay friction payload push]
+      [--out ood.json]
 
 Factors
-  action_delay_ms  command delay fixed to the value (training: 0 / 5 / 10 ms)
-  obs_delay_ms     IMU + encoder delay fixed to the value (training: 0 / 20 ms)
-  foot_friction    fixed foot friction (training: U(0.4, 1.0))
-  payload_kg       fixed pelvis payload (training: U(-1, 5))
+  action_delay_ms  command delay fixed to the value (training: 0-20 ms in 5 ms steps)
+  obs_delay_ms     IMU + encoder delay fixed to the value (training: 0 / 20 / 40 ms)
+  foot_friction    fixed foot friction (training: U(0.3, 1.2))
+  payload_kg       fixed pelvis payload (training: U(-1, 8))
   push_N           directed pelvis push F x 0.2 s, 8 directions, at h* 0.72 / 0.80 / 0.89
-                   (training: U(0, 35) N); no random pushes in this test
+                   (training: U(0, 60) N x 0.1-0.2 s); no random pushes in this test
 """
 
 from __future__ import annotations
@@ -25,10 +26,10 @@ from dataclasses import asdict, replace
 import torch
 
 ACTION_DELAY_MS = (0, 10, 20, 30, 40)
-OBS_DELAY_MS = (0, 20, 40)
-FRICTION = (0.2, 0.3, 0.4, 0.7, 1.0, 1.3)
-PAYLOAD = (-1.0, 0.0, 5.0, 8.0, 12.0, 15.0)
-PUSH_N = (35.0, 50.0, 65.0, 80.0)
+OBS_DELAY_MS = (0, 20, 40, 60, 80)
+FRICTION = (0.15, 0.2, 0.3, 0.7, 1.2, 1.5)
+PAYLOAD = (-1.0, 0.0, 8.0, 12.0, 15.0, 20.0)
+PUSH_N = (60.0, 80.0, 100.0, 120.0)
 PUSH_HEIGHTS = (0.72, 0.80, 0.89)
 
 
@@ -102,7 +103,6 @@ def run_condition(name, value, edit, ckpt, num_envs, fixed_obs_lag=None):
 
 def push_sweep(ckpt, num_envs):
   from huphy_squat import robot
-  from huphy_squat.mdp import commands
 
   def edit(cfg):
     cfg.events.pop("push")
@@ -139,7 +139,6 @@ def push_sweep(ckpt, num_envs):
              "fall_frac_by_direction": [round(float(fell[ang == a].float().mean()), 2) for a in ang[:8]]}
       print(json.dumps(res), flush=True)
       out.append(res)
-  del commands
   return out
 
 
@@ -163,11 +162,15 @@ def main():
           rb.articulation.actuators = tuple(replace(x, delay_min_lag=lag, delay_max_lag=lag) for x in rb.articulation.actuators)
         res.append(run_condition("action_delay_ms", ms, edit, ckpt, n))
     if want("obs_delay"):
-      from huphy_squat.mdp import observations
-      observations._SharedLagTerm.max_lag = 2  # noqa: SLF001
-      for ms in OBS_DELAY_MS:
-        res.append(run_condition("obs_delay_ms", ms, lambda cfg: None, ckpt, n, fixed_obs_lag=ms // 20))
-      observations._SharedLagTerm.max_lag = 1  # noqa: SLF001
+      from huphy_squat.mdp.observations import _SharedLagTerm
+
+      train_max_lag = _SharedLagTerm.max_lag
+      _SharedLagTerm.max_lag = max(OBS_DELAY_MS) // 20  # longer sensor ring buffer for this sweep only
+      try:
+        for ms in OBS_DELAY_MS:
+          res.append(run_condition("obs_delay_ms", ms, lambda cfg: None, ckpt, n, fixed_obs_lag=ms // 20))
+      finally:
+        _SharedLagTerm.max_lag = train_max_lag
     if want("friction"):
       for mu in FRICTION:
         def edit(cfg, mu=mu):

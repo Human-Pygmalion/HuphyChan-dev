@@ -114,7 +114,7 @@ def _no_dr_hanging(cfg):
   cfg.events["reset_pose"].params["motor_noise"] = 0.0
   cfg.terminations = {"time_out": cfg.terminations["time_out"]}
 
-  def lift(env, env_ids, **kw):  # keep the base 1 m above the floor, fixed (weld-like hold)
+  def lift(env, env_ids, **kw):  # keep the base 1.5 m above the floor, fixed (weld-like hold)
     r = env.scene["robot"]
     st = torch.zeros(len(env_ids), 13, device=env.device)
     st[:, :3] = env.scene.env_origins[env_ids]
@@ -297,12 +297,10 @@ def test_single_torque_clip_and_tn(env):
     applied = m.applied_effort
     # MuJoCo never clips a second time: the <motor> force equals the T-N-clamped torque
     assert torch.allclose(env.sim.data.actuator_force[:, m.global_ctrl_ids], applied, atol=1e-4)
-    lo, hi = m.bounds(env.scene["robot"].data.joint_vel[:, m.target_ids])
   sat = (m.requested_effort.abs() > m.applied_effort.abs() + 1e-3).float().mean()
   assert sat > 0.001  # large random targets do saturate
   assert (m.step_max_ratio >= 0).all()
   assert torch.allclose(m.peak, torch.tensor([120.09, 120.09, 59.68, 120.09, 59.68, 59.68] * 2, device=env.device))
-  del lo, hi
 
 
 def test_tn_quadrants():

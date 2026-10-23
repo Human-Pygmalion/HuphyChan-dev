@@ -1,5 +1,4 @@
-"""PPO settings: same as mjlab_policy's Generalized task (B) except the run length / logging,
-plus the CAPS smoothness loss (caps.py)."""
+"""PPO settings (rsl_rl) plus the CAPS smoothness loss (caps.py)."""
 
 from dataclasses import dataclass
 
@@ -12,8 +11,10 @@ from .env_cfg import ACTOR_NOISE
 class HuphyPpoAlgorithmCfg(RslRlPpoAlgorithmCfg):
   class_name: str = "huphy_squat.caps:CapsPPO"
   caps_coef: float = 0.3
-  """Weight of mean ||mu(o) - mu(o + eps)||^2 (0 disables it). 1000-it smoke tests (2026-10-22): 1.0 cuts the
-  hold-still jitter 81 % but falls more at 50 N pushes; 0.3 cuts it 69 % with pushes close to v2."""
+  """Weight of mean ||mu(o) - mu(o + eps)||^2 (0 disables it). In 1000-iteration tests 1.0 cut the
+  hold-still jitter by 81 % but fell more under 50 N pushes; 0.3 cuts it by 69 % with push
+  robustness close to a policy trained without the smoothness terms (action_rate -0.1, no
+  torque_rate, no CAPS)."""
   caps_noise: tuple[float, ...] = ACTOR_NOISE
   """Half-width of eps per actor dim (= the training observation noise)."""
 

@@ -91,7 +91,7 @@ def liveness(ckpt, num_envs, seconds, baseline="zero"):
 
   for _ in range(n):
     with torch.inference_mode():
-      obs, _, dones, _ = wrapped.step(pol(obs))
+      obs, _, _, _ = wrapped.step(pol(obs))
     st = rm._step_reward  # noqa: SLF001  [B, T] = w * f
     sum_wf += st.sum(0)
     nonzero += (st != 0).float().sum(0)

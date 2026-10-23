@@ -1,6 +1,6 @@
-<!-- huphy_squat copy of mjlab_policy/pygmalion_mjlab/assets/pygmalion_legonly_ab.xml.
+<!-- Derived from the Pygmalion LegOnly MJCF (pygmalion_legonly_ab.xml).
      Geometry, masses, inertias, axes, ranges and the closed-loop equalities are unchanged.
-     Changes in this copy (2026-10-21):
+     Changes relative to that model:
        1. Foot sites renamed to the leg they sit on: the site on R_foot_link was "left_foot",
           the one on L_foot_link was "right_foot". Now R_foot_site / L_foot_site.
        2. Shin motor visual geoms renamed to the crank they drive: the cylinder at the
@@ -10,8 +10,8 @@
           the rod's U-joint centre to its *_rod_*_end site). Excluded against their own shin,
           the other rod of the same leg and the ankle pitch link, so they only touch the
           ground and the other leg.
-     Frame: +x forward, +y left, +z up. Mesh file names still carry the pre-2026-09-12 L/R
-     letters; the asset `name` is what counts. -->
+     Frame: +x forward, +y left, +z up. Some mesh file names carry swapped L/R letters;
+     the asset `name` is what counts. -->
 <mujoco model="LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop">
   <!-- RS03 mass 0.9195 kg; source: physical scale measurement supplied by user (0.9195 kg; catalogue 0.880 kg); RS04 mass 1.5140 kg; source: physical scale measurement supplied by user (1.514 kg) -->
   <compiler angle="radian" meshdir="meshes/"/>

@@ -1,4 +1,4 @@
-"""Reward terms of the squat task (docs/task_design/reward_design.md, decisions.md).
+"""Reward terms of the squat task.
 
 Sign convention for weights: positive terms return values in [0, 1], penalties return
 non-negative costs (the env cfg gives them negative weights). Every term is wrapped by
@@ -109,7 +109,7 @@ def vz_speed(env: ManagerBasedRlEnv, threshold: float, grace_s: float = 0.2,
   """relu(|v_z| - threshold)^2, v_z = pelvis world vertical speed; 0 during the first
   `grace_s` of an episode. With the +-0.05 rad reset noise the soles start slightly tilted and
   the robot rocks onto them in ~0.1 s (|v_z| up to ~0.5 m/s even when the action holds the
-  pose), which the policy cannot avoid (reward_design.md section 5, item 18)."""
+  pose), which the policy cannot avoid."""
   vz = env.scene[asset_cfg.name].data.root_link_lin_vel_w[:, 2]
   _log(env, "pelvis_abs_vz", vz.abs())
   active = (env.episode_length_buf.float() * env.step_dt) > grace_s

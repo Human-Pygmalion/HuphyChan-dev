@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Interactive viser viewer for a Huphy-Squat-Flat-v0 checkpoint.
 
-  ~/huphy/mjlab/.venv/bin/python scripts/view.py logs/rsl_rl/huphy_squat/<run>/model_4000.pt
+  python scripts/view.py logs/rsl_rl/huphy_squat/<run>/model_5000.pt   (python of the mjlab venv)
       [--num-envs 1] [--port 8080] [--box-edge 0.2] [--box-mass 3.0]
 
 Open http://<host>:<port> in a browser (from a laptop over SSH: `ssh -L 8080:localhost:8080 <host>`).
