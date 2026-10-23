@@ -1,105 +1,259 @@
-# huphy_squat — HUPHY in-place squat task for mjlab
+# huphy_squat — HUPHY 제자리 스쿼트 정책
 
-Task id **`Huphy-Squat-Flat-v0`**: the HUPHY LegOnly biped (2-RSU "AB" ankle) holds and changes its
-pelvis height on flat ground while being pushed. This package is independent of `mjlab_policy/`
-(`pygmalion_mjlab`). It copied the robot assets and the few pieces it needs, and it is built on stock mjlab
-(upstream commit 20f10e96) without patches.
+HUPHY LegOnly 이족(2-RSU "AB" 발목)이 평지에서 **목표 골반 높이 h\* 를 따라 앉았다 일어서는** 정책입니다.
+밀려도 버티고, 발이 좁게 모이면 다시 디뎌 벌립니다.
 
-Design record (why every number is what it is): `~/huphy/docs/task_design/decisions.md`,
-`reward_design.md`, `height_range.md`, `review_plan.md`.
+- mjlab 태스크 id: `Huphy-Squat-Flat-v0`
+- 바탕: stock mjlab (upstream 20f10e96, 패치 없음) + rsl_rl PPO
 
-## Install / train / evaluate
+## 배포
+
+로봇에 올리는 꾸러미는 [`../deploy_asset/huphy_squat/`](../deploy_asset/huphy_squat/README.md) 에 있습니다.
+- ONNX 정책 세 개: 체크포인트 5000 (기본), 4500, 4000
+- 입출력 명세, runner, self-test
+
+로봇에서 돌리는 법, **목표 높이를 정책에 주는 법**, 드라이버 게인과 켜기 전 점검은 그 README 를 보십시오.
+꾸러미를 다시 만드는 스크립트는 `scripts/export_deploy.py`, 학습 환경과 나란히 돌려 검증하는 스크립트는 `scripts/verify_deploy.py` 입니다.
+
+## 설치 / 학습 / 평가 / 뷰어
 
 ```bash
-# once (mjlab venv at ~/huphy/mjlab/.venv, stock mjlab 20f10e96 + cu128 torch)
+# 한 번 (mjlab venv: ~/huphy/mjlab/.venv, stock mjlab 20f10e96 + cu128 torch)
 cd ~/huphy/mjlab && uv pip install --python .venv/bin/python -e ../HuphyChan-dev/huphy_squat
 
-# train: 5,001 iterations x 4096 envs (~3.2 h on an RTX 5060 Ti), wandb project "huphy_squat"
+# 학습: 5,001 iteration x 4096 env (RTX 5060 Ti 에서 약 3.2 시간), wandb 프로젝트 "huphy_squat"
 cd ~/huphy/HuphyChan-dev/huphy_squat && scripts/train.sh main
 
-# evaluate a checkpoint (tracking, push resistance, margins, reward liveness)
-~/huphy/mjlab/.venv/bin/python scripts/eval_squat.py all --ckpt logs/rsl_rl/huphy_squat/<run>/model_<it>.pt --out eval.json
+# 평가: 높이 추종, 밀기, 여유, 보상 항별 기여
+~/huphy/mjlab/.venv/bin/python scripts/eval_squat.py all --ckpt <ckpt.pt> --out eval.json
+# 정지 시 떨림 (노이즈·DR 조건별)
+~/huphy/mjlab/.venv/bin/python scripts/eval_jitter.py <ckpt.pt>
+# 학습 범위 밖 조건 (지연, 마찰, 짐, 밀기)
+~/huphy/mjlab/.venv/bin/python scripts/eval_ood.py --help
 
-# watch it (stock viewer)
-~/huphy/mjlab/.venv/bin/play Huphy-Squat-Flat-v0 --checkpoint-file logs/rsl_rl/huphy_squat/<run>/model_<it>.pt
+# 대화형 뷰어 (viser, 기본 포트 8080)
+~/huphy/mjlab/.venv/bin/python scripts/view.py <ckpt.pt> [--port 8080]
 
-# interactive viewer: h* control (default-pose height shown), every DR element as a slider (per motor / joint / body,
-# Random / Clean / Apply & Reset), pushes, thrown box
-~/huphy/mjlab/.venv/bin/python scripts/view.py logs/rsl_rl/huphy_squat/<run>/model_<it>.pt [--port 8080]
-
-# tests (CPU linkage tests + GPU env tests)
+# 테스트 (CPU 링크 테스트 + GPU 환경 테스트)
 ~/huphy/mjlab/.venv/bin/python -m pytest -q tests
 ```
 
-## What the task is
+- 최종 체크포인트는 `../deploy_asset/huphy_squat/policy_{5000,4500,4000}.pt` 에 있습니다. `logs/` 는 git 에 없습니다.
+- 뷰어:
+  - h\* 를 직접 조절할 수 있고, 기본자세 높이를 같이 보여 줍니다.
+  - 랜덤화되는 모든 요소(모터·관절·링크마다)를 슬라이더로 바꿀 수 있습니다. 바꾼 값은 리셋할 때 적용되고, Random(학습 범위에서 뽑기)과 Clean(공칭 모델) 버튼이 있습니다.
+  - 밀기와 상자 던지기를 할 수 있습니다.
+  - 관측 노이즈는 항상 켜져 있습니다.
+
+## 1. 과제
 
 | | |
 |---|---|
-| Command | target pelvis height h* (pelvis z − ground z) ∈ [0.65, 0.895] m; jumps to a new U(0.65, 0.895) every 3–6 s; 20 % of resamples keep the old target |
-| Actor obs (43) | IMU gyro (3), IMU gravity (3), 12 encoder angles × 2 frames (24), last action (12), h* (1) |
-| Critic obs (186) | true height / error / base velocity / gravity, motor + passive-ankle angles and speeds, torques, foot contacts and forces, live DR values |
-| Action (12) | motor target = default + 0.25·a, clipped (hips/knee: 90 % of range, cranks ±0.95 rad) |
-| Actuator | explicit PD (real driver gains: hip pitch/roll 135/6, yaw 75/4, knee 130/6, crank 60/2.7) clamped once by the measured T-N curve (peak when braking) |
-| Episode | 20 s; ends on tilt > 70°, any non-foot contact with the ground, NaN, blow-up |
-| Policy | MLP 512-256-128 ELU, PPO (rsl_rl), entropy 0.01, 50 Hz, physics 5 ms |
+| 명령 | 목표 골반 높이 h\* ∈ [0.65, 0.895] m. 3~6 초마다 새 값을 뽑고, 그중 20 % 는 이전 값 유지 |
+| h\* 정의 | 바닥에서 골반(base_link) 원점까지의 높이 (`mdp/commands.py: base_height`) |
+| 주기 | 정책 50 Hz, 물리 5 ms (decimation 4) |
+| 에피소드 | 20 초 |
+| 종료 | 기울기 > 70°, 발 이외의 부분이 바닥에 닿음, NaN, 물리 발산 |
+| 학습 | 4096 env × 24 step × 5,001 iteration |
 
-Rewards (w · f per step, then × dt):
+## 2. 로봇과 액추에이터
 
-| term | w | f |
+- **모터 12 개** (다리마다 hip pitch / roll / yaw, knee, crank A / B).
+  - 발목은 2-RSU 병렬 구조입니다. 크랭크 두 개가 로드로 수동 발목 피치·롤을 움직입니다.
+  - 정책은 **크랭크 모터 각**을 보고 크랭크 목표각을 냅니다. 발목 각을 직접 다루지 않습니다.
+  - 닫힌 링크는 MJCF 의 equality 제약으로 풉니다.
+  - 리셋할 때 쓰는 크랭크 → 수동 관절 표는 `assets/linkage_table.npz` 이고, `scripts/build_linkage_table.py` 와 `linkage.py` 로 만듭니다.
+- **명시적 PD + T-N 곡선.** τ = Kp (q\* − q) − Kd q̇ 를 5 ms 마다 계산합니다.
+  - 그 뒤 측정한 48 V 토크-속도 곡선으로 한 번 자릅니다. 구동 방향만 자르고, 제동일 때는 최대 토크까지 허용합니다.
+  - 게인은 **실제 드라이버 값**입니다 (`robot.py`).
+
+  | 모터 | Kp | Kd |
+  |---|---|---|
+  | hip pitch / roll | 135 | 6 |
+  | hip yaw | 75 | 4 |
+  | knee | 130 | 6 |
+  | crank A / B | 60 | 2.7 |
+- **명령 지연**: 0~20 ms (5 ms 단위). env 마다 뽑고 에피소드 동안 유지합니다.
+
+## 3. 기본자세와 높이별 기준자세 q\*(h)
+
+- **기본자세** (행동 오프셋 = 리셋 자세)
+  - 정의: 무릎 0.35, hip pitch −0.175, 양 hip roll 0.05 rad 바깥으로, 발바닥 수평, 발끝 정면.
+  - 결과: 발 간격 약 33 cm, **골반 높이 0.8914 m**. 실기 시작 h\* 로 이 값을 씁니다.
+- **기준자세 q\*(h)**: 높이마다 12 모터와 발목의 기준 각도를 정한 표입니다 (`robot.py` 의 `SQUAT_REF_*`). 보상에서 쓰입니다.
+  - **0.71 m 이상**: 정강이를 앞으로 기울이고, 무게중심을 발바닥 중앙 위에 둔 균형 자세입니다.
+  - **0.71 m 아래**: 발목 피치가 소프트 한계(0.454 rad)에 걸리므로 0.43 rad 에 고정하고 무릎만 더 굽힙니다. 무게중심이 발바닥 중앙보다 뒤로 가고(0.65 m 에서 약 2 cm), 로봇은 **엉덩이를 뒤로 빼고 앉습니다**.
+  - 만든 스크립트는 `scripts/reference/squat_reference.py` (+ `spread.py`, scipy 필요) 입니다. 무릎 격자에서 자세를 풀고, `SQUAT_REF_H` 에서 선형 보간합니다.
+- **다리를 벌려도 더 낮게 앉지는 못합니다.** 먼저 걸리는 것은 발목 피치이고, 벌림 폭은 수동 발목 롤 범위(±18°)가 제한합니다. 벌림 0.05 rad 는 높이를 낮추려는 것이 아니라 **옆 방향 지지를 넓히려고** 넣었습니다.
+
+## 4. 관측과 행동
+
+| actor 관측 (43) | 칸 | 학습 노이즈 (균등, 매 step) |
 |---|---|---|
-| track_height | +2.0 | exp(−(h−h*)²/0.05²) |
-| vz_speed | −600 | relu(\|v_z\|−0.1)², off for the first 0.2 s of an episode |
-| knee_guidance | −0.2 | Σ\|knee − q*_knee(h*)\| · min(\|h−h*\|/0.05, 1) |
-| squat_posture | +1.0 | exp(−mean((q−q*(h*))²/σ²)), σ pitch chain 0.25/0.25/0.15, hip roll 0.12, hip yaw / ankle roll 0.08. q*(h): hips spread 0.05 rad, feet level and straight; below 0.71 m ankle pitch held at 0.43 and the robot sits back (CoM up to 2 cm behind the sole centre at 0.65 m) |
-| pitch_symmetry | +0.5 | L/R mirror of hip pitch, knee, ankle pitch, σ 0.1 |
-| upright | +1.5 | exp(−(g_x²+g_y²)/0.05) |
-| body_ang_vel / angular_momentum | −0.05 / −0.02 | ω_xy² / ‖L‖² |
-| lin_vel_xy / ang_vel_z | −0.5 / −0.2 | pelvis v_xy² / ω_z² |
-| motor_limits / ankle_limits | −5 / −10 | distance outside the 90 % range (12 motors / 4 passive ankle joints) |
-| loop_residual | −1 | Σ relu(loop gap − 0.5 mm)/0.5 mm |
-| rod_collision | −2 | substeps with a rod-capsule contact |
-| torque_margin | −2 | Σ relu(max-substep \|τ_req\|/T-N bound − 0.9) |
-| thermal_effort | −0.02 | Σ(τ/rated)² |
-| action_rate / joint_acc / torque_rate | −0.3 / −2.5e-7 / −1e-4 | ‖Δa‖² / Σq̈² (motors + ankles) / Σ(τ_t − τ_t−1)² [N²m²] |
-| (PPO loss) CAPS | 0.3 | mean ‖μ(o) − μ(o+ε)‖², ε ~ the training obs noise (`caps.py`): policy mean insensitive to sensor noise |
-| self_collisions / foot_slip / foot_impact | −1 / −0.5 / −0.5 | contact substeps / sole speed² in contact / descent speed² just before touchdown |
-| stance_width | −10 | metres of foot width (along the pelvis heading's left axis) outside [w*(h*) − 4 cm, w*(h*) + 12 cm]; w* = 34–41 cm |
+| IMU 자이로 (IMU 좌표계) | 3 | ±0.2 rad/s |
+| IMU 중력 방향 단위벡터 | 3 | ±0.05 |
+| 모터 엔코더각 − 기본자세, 2 프레임 (오래된 것 먼저) | 24 | ±0.01 rad |
+| 직전 행동 (날 것) | 12 | – |
+| h\* [m] | 1 | – |
 
-Every term is clamped to |w·f| ≤ 50.
+- **관측 노이즈는 학습 내내 켜져 있습니다.** 하드웨어 센서를 믿기 어려워서 일부러 그렇게 했습니다. 센서 값은 그 밖에도 지연(0~40 ms), 엔코더 오프셋(±0.015 rad), IMU 장착 각(±2°) 오차를 받습니다.
+- **critic (186)** 은 특권 정보를 받습니다: 참 높이·오차·몸통 속도, 모터·발목 각과 속도, 토크, 발 접촉·힘, 밀기 상태, 그 에피소드의 DR 값과 지연.
+- **행동 (12)**: 모터 목표각 = 기본자세 + 0.25 · a. 그 뒤 범위로 자릅니다 (hip / knee 는 관절 범위의 90 %, 크랭크는 ±0.95 rad).
 
-Domain randomization (all drawn at every reset, full strength from iteration 0):
+## 5. 보상
 
-| what | range |
+w · f 를 매 step 계산하고, 항마다 |w · f| ≤ 50 으로 자른 뒤 dt 를 곱합니다.
+
+| 묶음 | 항 | w | f |
+|---|---|---|---|
+| 추종 | track_height | +2.0 | exp(−(h − h\*)² / 0.05²) |
+| | vz_speed | −600 | relu(\|v_z\| − 0.1)². 에피소드 첫 0.2 초는 끔 (너무 빠른 상하 운동 억제) |
+| | knee_guidance | −0.2 | Σ\|knee − q\*_knee(h\*)\| · min(\|h − h\*\| / 0.05, 1): 높이가 틀렸을 때 무릎을 어느 쪽으로 움직일지 알려 줌 |
+| 자세 | squat_posture | +1.0 | exp(−mean((q − q\*(h\*))² / σ²)). σ: hip pitch / knee 0.25, 발목 피치 0.15, hip roll 0.12, hip yaw / 발목 롤 0.08 |
+| | pitch_symmetry | +0.5 | 좌우 hip pitch / knee / 발목 피치 거울 대칭, σ 0.1 |
+| | stance_width | −10 | 발 간격이 [w\*(h\*) − 4 cm, w\*(h\*) + 12 cm] 밖으로 나간 거리 [m] (w\* = 34~41 cm) |
+| | upright | +1.5 | exp(−(g_x² + g_y²) / 0.05) |
+| 안정 | body_ang_vel / angular_momentum | −0.05 / −0.02 | ω_xy² / ‖L‖² |
+| | lin_vel_xy / ang_vel_z | −0.5 / −0.2 | 골반 v_xy² / ω_z² |
+| | foot_slip / foot_impact | −0.5 / −0.5 | 접촉 중 발바닥 속도² / 착지 직전 하강 속도² |
+| 제약 | motor_limits / ankle_limits | −5 / −10 | 90 % 범위를 벗어난 거리 (모터 12 / 수동 발목 4) |
+| | loop_residual | −1 | Σ relu(링크 틈 − 0.5 mm) / 0.5 mm |
+| | rod_collision / self_collisions | −2 / −1 | 로드 캡슐 접촉 / 자기 충돌 substep 수 |
+| | torque_margin / thermal_effort | −2 / −0.02 | Σ relu(\|τ_req\| / T-N 한계 − 0.9) / Σ(τ / 정격)² |
+| 부드러움 | action_rate | −0.3 | ‖a_t − a_t−1‖² |
+| | torque_rate | −1e-4 | Σ(τ_t − τ_t−1)² [N²m²] |
+| | joint_acc | −2.5e-7 | Σ q̈² (모터 + 발목) |
+| (PPO 손실) | CAPS | 0.3 | 6 절 |
+
+- **기준자세 보상** (squat_posture, knee_guidance) 이 높이별 자세를 정해 줍니다. 그래서 정책이 이상한 자세로 높이만 맞추지 못합니다.
+- **좁은 자세에서 다시 벌리기**: 리셋의 절반에서 양쪽 hip roll 에 각각 U(−0.10, +0.06) rad 를 더해 시작합니다. 양쪽 다 −0.10 이면 발 간격이 17 cm 줄어듭니다.
+  - 여기에 stance_width 띠 벌점을 함께 주면, 정책이 발을 디뎌 원래 간격으로 돌아가는 법을 배웁니다.
+
+## 6. 떨림 줄이기 (CAPS)
+
+- **문제의 원인**: 정지 시 떨림은 **정책이 센서 노이즈를 따라 움직여서** 생깁니다. 노이즈를 끄면 목표각 변화가 0.03 mrad 로 사라집니다.
+  - 가장 큰 원인은 엔코더 노이즈이고, 그다음이 중력, 자이로 순입니다.
+  - 노이즈는 그대로 두고 (하드웨어를 믿기 어려우므로), 정책이 노이즈에 덜 반응하게 만들었습니다.
+- **CAPS 손실** (`caps.py`): PPO 손실에 `0.3 · mean‖μ(o) − μ(o + ε)‖²` 를 더합니다.
+  - ε 는 학습 관측 노이즈 범위의 균등 분포입니다.
+  - 같은 상태에서 센서 노이즈만 다를 때 정책 출력이 같아지도록 합니다. 그래서 의도한 움직임은 벌하지 않습니다.
+  - rsl_rl 의 symmetry 손실 자리를 빌려 씁니다 (`CapsPPO`).
+- **action_rate·torque_rate 만으로 안 되는 이유**: 학습 중에는 이 두 벌점이 탐색 노이즈(std 약 0.4)에 지배됩니다. 정책 평균에서 나오는 몫의 약 40~60 배입니다. 그래서 크게 올리면 탐색만 막히고, 평균의 떨림은 잘 줄지 않습니다.
+- **계수 0.3 을 고른 이유**: 1,000 iteration 시험에서 1.0 은 떨림을 81 % 줄였지만 50 N 밀기에 더 잘 넘어졌습니다. 0.3 은 69 % 줄이면서 밀기 견딤을 유지했습니다.
+
+## 7. 도메인 랜덤화
+
+리셋마다 처음부터 최대 범위로 뽑습니다. 모터·관절·링크는 **요소마다 따로** 뽑습니다.
+
+| 대상 | 범위 |
 |---|---|
-| link inertia (pseudo-inertia, CAD uncertainty), 7 link groups | as Rough-Box |
-| payload (point mass at pelvis CoM) | −1 … +8 kg |
-| PD gains Kp, Kd | × U(0.8, 1.2) per motor |
-| motor frictionloss / damping / armature | × U(0.8, 1.2) per motor |
-| rod + ankle joint frictionloss / damping | abs U(0, 0.5) N·m / U(0, 0.05) N·m·s/rad per joint |
-| foot friction | U(0.3, 1.2) |
-| encoder bias (12 motors; same value in obs and in the command) | ±0.015 rad |
-| IMU mounting (roll, pitch, yaw) | ±2° each |
-| command delay (all 12 motors, one lag per env, held for the episode) | 0 / 5 / 10 / 15 / 20 ms |
-| observation delay (IMU + encoders together, one lag per env, held for the episode) | 0 / 20 / 40 ms |
-| IMU noise | gyro ±0.2 rad/s, gravity ±0.05 (uniform, every step); encoders ±0.01 rad |
-| pelvis push | horizontal force U(0, 60) N for 0.1–0.2 s, every 2–5 s |
+| 링크 관성 (pseudo-inertia, CAD 불확실성), 링크 묶음 7 개 | `env_cfg.INERTIAL_DR` |
+| 짐 (골반 CoM 점질량) | −1 … +8 kg |
+| PD 게인 Kp, Kd | 모터마다 × U(0.8, 1.2) |
+| 모터 frictionloss / damping / armature | 모터마다 × U(0.8, 1.2) |
+| 로드·발목 수동 관절 frictionloss / damping | 관절마다 U(0, 0.5) N·m / U(0, 0.05) N·m·s/rad |
+| 발 마찰 (양발 공통) | U(0.3, 1.2) |
+| 엔코더 오프셋 (관측과 명령에 같이 들어감) | 모터마다 ±0.015 rad |
+| IMU 장착 각 (roll, pitch, yaw) | 각 ±2° |
+| 명령 지연 / 관측 지연 (IMU + 엔코더 같이) | 0~20 ms / 0 · 20 · 40 ms, env 마다 |
+| 관측 노이즈 | 4 절 표 |
+| 골반 밀기 | 수평 U(0, 60) N, 0.1~0.2 초, 2~5 초마다 |
+| 리셋 자세 | 기본자세 + 모터마다 U(±0.05 rad), 절반은 hip roll 벌림 추가 (5 절), 방향(yaw) 무작위 |
 
-Reset: default stance (hips spread 0.05 rad, feet 33 cm apart) + U(±0.05 rad) on the 12 motors; in half the
-resets each hip roll also gets U(−0.10, +0.06) rad outward (narrow / wide stances to step out of, feet not re-levelled); the passive rod/ankle joints set from a
-precomputed closed-loop table (loops start closed, < 0.1 mm), base upright with random yaw, lowest sole
-corner 1 mm above the floor.
+## 8. 네트워크 / PPO
 
-## Files
-
-| path | content |
+| 항목 | 값 |
 |---|---|
-| `huphy_squat/assets/huphy_legonly_ab.xml` | MJCF copy: foot sites and shin motor geoms renamed correctly, rod collision capsules added (header comment lists the changes) |
-| `huphy_squat/assets/linkage_table.npz` | crank → passive-joint table + sole-corner height model (`scripts/build_linkage_table.py`) |
-| `huphy_squat/robot.py` | joints, gains, default pose, action clip, squat reference table q*(h) |
-| `huphy_squat/actuator.py` | one 12-motor PD + T-N actuator group (single torque clip, shared delay, torque-ratio tracking) |
-| `huphy_squat/linkage.py` | CPU closed-loop solver used to build the table |
-| `huphy_squat/env_cfg.py`, `rl_cfg.py` | the task |
-| `huphy_squat/mdp/` | command, observations, events (reset, push, payload, lags), rewards, terminations |
-| `huphy_squat/viewer/` | viser viewer (`scripts/view.py`): viewer env cfg with a free box, DR knobs, GUI tabs; not used in training |
-| `scripts/` | `train.sh`, `eval_squat.py`, `eval_ood.py`, `view.py`, `build_linkage_table.py` |
+| 네트워크 | actor·critic 모두 MLP 512-256-128 ELU, 관측 정규화 |
+| 행동 분포 | Gaussian, 초기 std 1.0 |
+| PPO | clip 0.2, entropy 0.01, epoch 5 × mini-batch 4, lr 1e-3 (adaptive, KL 0.01), γ 0.99, λ 0.95 |
+| 기타 | CAPS 0.3, seed 43 |
+
+## 9. 성능 (시뮬레이션, 체크포인트 5000)
+
+모두 학습 환경에서 결정적 actor 로 쟀습니다.
+
+| 시험 | 결과 |
+|---|---|
+| 높이 추종 (학습 DR, h\* 0.895→0.80→0.72→0.85→0.75→0.895→0.72, 각 5 초) | 정상 오차 평균 **7.7 mm**, 최대 구간 12.7 mm, 넘어짐 0 |
+| 정지 시 높이 오차 (공칭 모델 + 노이즈) | h\* 0.891: 4 mm, 0.72: 15 mm, 0.68: 22 mm, **0.65: 33 mm** |
+| 밀기 (h\* 0.72 / 0.80 / 0.89, 골반 수평 0.2 초, 8 방향) | 20 N / 35 N / 50 N 넘어짐 **0 / 0 / 0.7 %**. 50 N 에서 23 % 는 발을 2 cm 넘게 디딤 |
+| 정지 시 떨림 (공칭 + 노이즈, h\* 0.75~0.89) | 목표각 변화 RMS **5.8 mrad/step**, 토크 변화 RMS 0.58 N·m. 노이즈를 끄면 0.03 mrad |
+| 학습 조건 (DR + 무작위 밀기, 512 env × 20 초) | 넘어짐 3/512, 발목 소프트 한계 초과 0.8 % 시간 |
+
+| 체크포인트 | 추종 오차 | 밀기 넘어짐 20 / 35 / 50 N | 떨림 |
+|---|---|---|---|
+| **5000** (기본) | 7.7 mm | 0 / 0 / 0.7 % | 5.8 mrad |
+| 4500 | 6.8 mm (추종 중 2 회 넘어짐) | 0.3 / 0.1 / 1.2 % | 6.4 mrad |
+| 4000 | 8.7 mm | 0.1 / 0.1 / 0.5 % | 6.2 mrad |
+
+## 10. 알려진 한계
+
+- 평지만 학습했습니다.
+- 양발을 디딘 상태만 학습했습니다. 공중에 들린 상태는 학습하지 않았습니다.
+- **낮은 쪽은 정확히 내려가지 않습니다.** 0.65 m 를 주면 약 0.683 m 에서 멈춥니다. 정확한 범위는 0.70~0.891 m 입니다.
+- 밀기 60 N 이상, 지연 40 ms 이상은 학습 범위 밖입니다. 이런 조건의 시험은 `eval_ood.py` 로 합니다.
+- 결과는 모두 시뮬레이션입니다. 실기 검증은 아직 안 했습니다.
+
+## 11. 파일
+
+| 경로 | 내용 |
+|---|---|
+| `huphy_squat/assets/huphy_legonly_ab.xml` | MJCF: 발 site·정강이 모터 geom 이름 정리, 로드 충돌 캡슐 추가 (머리 주석에 변경 목록) |
+| `huphy_squat/assets/linkage_table.npz` | 크랭크 → 수동 관절 표 + 발바닥 모서리 높이 모델 |
+| `huphy_squat/robot.py` | 관절, 게인, 기본자세, 행동 범위, 기준자세 표 q\*(h) |
+| `huphy_squat/actuator.py` | 12 모터 PD + T-N 액추에이터 (토크 한 번 자르기, 공통 지연) |
+| `huphy_squat/linkage.py` | 링크 표를 만드는 CPU 닫힌 루프 풀이기 |
+| `huphy_squat/env_cfg.py`, `rl_cfg.py`, `caps.py` | 태스크, PPO 설정, CAPS 손실 |
+| `huphy_squat/mdp/` | 명령, 관측, 이벤트 (리셋·밀기·짐·지연), 보상, 종료 |
+| `huphy_squat/viewer/` | viser 뷰어 (`scripts/view.py`). 학습에는 안 씀 |
+| `scripts/` | `train.sh`, `eval_squat.py`, `eval_jitter.py`, `eval_ood.py`, `view.py`, `export_deploy.py`, `verify_deploy.py`, `build_linkage_table.py`, `reference/` |
 | `tests/` | `test_linkage.py` (CPU), `test_env.py` (GPU) |
+
+## 부록: 시행착오
+
+지금의 설계는 세 단계를 거쳐 정해졌습니다. 각 단계는 5,001 iteration 전체 학습입니다.
+
+**0. 첫 학습 전 — 랜덤화 넓히기.** 35 N 밀기로 학습한 초기 정책을 학습 범위 밖에서 시험했습니다. 50 N 부터 넘어지기 시작했고, 65 N 에서는 대부분 넘어졌습니다. 그래서 다음처럼 넓혔습니다.
+
+| 항목 | 이전 | 이후 |
+|---|---|---|
+| 밀기 | 35 N | 60 N |
+| 발 마찰 | 0.4~1.0 | 0.3~1.2 |
+| 짐 | −1~+5 kg | −1~+8 kg |
+| 관측 지연 | ≤ 20 ms | ≤ 40 ms |
+| 명령 지연 | ≤ 10 ms | ≤ 20 ms |
+
+**1단계: 기본 과제.**
+- 설정: 다리를 벌리지 않은 기본자세 (발 간격 약 25 cm), h\* ∈ [0.72, 0.895].
+- 결과: 추종과 밀기는 좋았습니다 (추종 7.3 mm, 50 N 넘어짐 0.4 %).
+- 남은 문제:
+  - 뷰어에서 보니 발이 한번 좁게 모이면 **다시 벌리지 않았습니다.**
+  - 더 낮게 앉기를 원했습니다.
+
+**2단계: 넓은 자세·낮은 높이.**
+- 바꾼 것:
+  - 기본자세와 기준자세에 hip 벌림 0.05 rad 를 넣었습니다 (발 간격 25 → 33 cm).
+  - h_min 을 0.72 → 0.65 m 로 낮추고, 0.71 m 아래는 엉덩이를 빼는 기준자세로 만들었습니다.
+  - squat_posture 가 hip roll / yaw 와 발목 롤도 보게 했습니다.
+  - stance_width 띠 벌점과, 리셋 절반의 hip roll 벌림을 추가했습니다.
+- 알게 된 것: 다리를 벌려도 도달 높이는 거의 낮아지지 않습니다. 발목 피치가 먼저 걸립니다.
+- 결과:
+  - 좁은 자세에서 다시 디뎌 벌리게 됐습니다. 밀기 견딤은 같았습니다 (50 N 0.7 %).
+  - 추종 오차는 9.7 mm 로 조금 늘었습니다.
+  - 정지 시 떨림은 22 mrad 그대로였습니다.
+
+**3단계: 떨림 줄이기.**
+- 진단: 노이즈를 끄면 떨림이 사라집니다. 즉 정책이 센서 노이즈를 따라 움직이고 있었습니다.
+- 바꾼 것: 노이즈는 유지하고, action_rate −0.1 → −0.3, torque_rate −1e-4 추가, CAPS 0.3 추가 (6 절).
+
+| 지표 (체크포인트 5000) | 1단계 | 2단계 | **3단계 (최종)** |
+|---|---|---|---|
+| h\* 범위 [m] | 0.72~0.895 | 0.65~0.895 | 0.65~0.895 |
+| 좁은 자세에서 다시 벌림 | 안 함 | 함 | 함 |
+| 추종 오차 평균 (학습 DR) | 7.3 mm | 9.7 mm | **7.7 mm** |
+| 밀기 넘어짐 20 / 35 / 50 N | 0 / 0 / 0.4 % | 0 / 0 / 0.7 % | 0 / 0 / 0.7 % |
+| 정지 떨림: 목표각 변화 RMS | 22.4 mrad | 22.2 mrad | **5.8 mrad** (−74 %) |
+| 정지 떨림: 토크 변화 RMS | 2.0 N·m | 2.0 N·m | **0.58 N·m** (−71 %) |
+| 행동 분산 중 5 Hz 이상 비율 | 0.82 | 0.78 | 0.41 |
+| h\* 0.65 에서 정지 오차 | (범위 밖) | 31 mm | 33 mm |

@@ -1,0 +1,494 @@
+{
+ "control": "Joint-space PD on each motor driver (MIT mode): tau = Kp (q_target - q) - Kd qdot, q_target from the policy at 50 Hz, held for 20 ms (no interpolation in training). Velocity target 0, feed-forward torque 0. In training the PD ran every 5 ms physics step.",
+ "torque_limit": "tau clamped to the measured 48 V torque-speed curve in the motoring quadrant (tau * qdot > 0): |tau| <= T_N(|qdot|); when braking up to the peak torque. T_N is flat (= peak) below the first curve point and 0 at the last (no-load) point.",
+ "gains_note": "These Kp / Kd are the real-robot driver gains the policy was trained with (randomized x0.8-1.2 per episode in training). Set exactly these on the drivers.",
+ "command_delay_trained_s": [
+  0.0,
+  0.02
+ ],
+ "motors": [
+  {
+   "joint": "R_hip_pitch_joint",
+   "family": "RS04",
+   "kp_Nm_per_rad": 135.0,
+   "kd_Nms_per_rad": 6.0,
+   "peak_torque_Nm": 120.09,
+   "rated_continuous_torque_Nm": 40.0,
+   "armature": 0.0773,
+   "frictionloss": 0.519,
+   "viscous_damping": 0.0275,
+   "joint_axis_in_parent_link": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -2.0944,
+    0.436332
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.967863,
+    0.309795
+   ],
+   "target_clip_rad": [
+    -1.9678634,
+    0.3097954
+   ],
+   "default_rad": -0.175
+  },
+  {
+   "joint": "R_hip_roll_joint",
+   "family": "RS04",
+   "kp_Nm_per_rad": 135.0,
+   "kd_Nms_per_rad": 6.0,
+   "peak_torque_Nm": 120.09,
+   "rated_continuous_torque_Nm": 40.0,
+   "armature": 0.0773,
+   "frictionloss": 0.519,
+   "viscous_damping": 0.0275,
+   "joint_axis_in_parent_link": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -0.436332,
+    1.48353
+   ],
+   "soft_range_rad_(0.9)": [
+    -0.340339,
+    1.387537
+   ],
+   "target_clip_rad": [
+    -0.3403389,
+    1.3875369
+   ],
+   "default_rad": 0.05
+  },
+  {
+   "joint": "R_hip_yaw_joint",
+   "family": "RS03",
+   "kp_Nm_per_rad": 75.0,
+   "kd_Nms_per_rad": 4.0,
+   "peak_torque_Nm": 59.68,
+   "rated_continuous_torque_Nm": 20.0,
+   "armature": 0.0638,
+   "frictionloss": 0.251,
+   "viscous_damping": 0.0252,
+   "joint_axis_in_parent_link": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "joint_range_rad": [
+    -0.785398,
+    0.785398
+   ],
+   "soft_range_rad_(0.9)": [
+    -0.706858,
+    0.706858
+   ],
+   "target_clip_rad": [
+    -0.7068582,
+    0.7068582
+   ],
+   "default_rad": 0.008837
+  },
+  {
+   "joint": "R_knee_joint",
+   "family": "RS04",
+   "kp_Nm_per_rad": 130.0,
+   "kd_Nms_per_rad": 6.0,
+   "peak_torque_Nm": 120.09,
+   "rated_continuous_torque_Nm": 40.0,
+   "armature": 0.0773,
+   "frictionloss": 0.519,
+   "viscous_damping": 0.0275,
+   "joint_axis_in_parent_link": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    0.0,
+    2.0944
+   ],
+   "soft_range_rad_(0.9)": [
+    0.10472,
+    1.98968
+   ],
+   "target_clip_rad": [
+    0.10472,
+    1.98968
+   ],
+   "default_rad": 0.35
+  },
+  {
+   "joint": "R_crank_A_joint",
+   "family": "RS03",
+   "kp_Nm_per_rad": 60.0,
+   "kd_Nms_per_rad": 2.7,
+   "peak_torque_Nm": 59.68,
+   "rated_continuous_torque_Nm": 20.0,
+   "armature": 0.0638,
+   "frictionloss": 0.251,
+   "viscous_damping": 0.0252,
+   "joint_axis_in_parent_link": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -1.2,
+    1.2
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.08,
+    1.08
+   ],
+   "target_clip_rad": [
+    -0.95,
+    0.95
+   ],
+   "default_rad": 0.106983
+  },
+  {
+   "joint": "R_crank_B_joint",
+   "family": "RS03",
+   "kp_Nm_per_rad": 60.0,
+   "kd_Nms_per_rad": 2.7,
+   "peak_torque_Nm": 59.68,
+   "rated_continuous_torque_Nm": 20.0,
+   "armature": 0.0638,
+   "frictionloss": 0.251,
+   "viscous_damping": 0.0252,
+   "joint_axis_in_parent_link": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -1.2,
+    1.2
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.08,
+    1.08
+   ],
+   "target_clip_rad": [
+    -0.95,
+    0.95
+   ],
+   "default_rad": -0.184691
+  },
+  {
+   "joint": "L_hip_pitch_joint",
+   "family": "RS04",
+   "kp_Nm_per_rad": 135.0,
+   "kd_Nms_per_rad": 6.0,
+   "peak_torque_Nm": 120.09,
+   "rated_continuous_torque_Nm": 40.0,
+   "armature": 0.0773,
+   "frictionloss": 0.519,
+   "viscous_damping": 0.0275,
+   "joint_axis_in_parent_link": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -0.436332,
+    2.0944
+   ],
+   "soft_range_rad_(0.9)": [
+    -0.309795,
+    1.967863
+   ],
+   "target_clip_rad": [
+    -0.3097954,
+    1.9678634
+   ],
+   "default_rad": 0.175
+  },
+  {
+   "joint": "L_hip_roll_joint",
+   "family": "RS04",
+   "kp_Nm_per_rad": 135.0,
+   "kd_Nms_per_rad": 6.0,
+   "peak_torque_Nm": 120.09,
+   "rated_continuous_torque_Nm": 40.0,
+   "armature": 0.0773,
+   "frictionloss": 0.519,
+   "viscous_damping": 0.0275,
+   "joint_axis_in_parent_link": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -1.48353,
+    0.436332
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.387537,
+    0.340339
+   ],
+   "target_clip_rad": [
+    -1.3875369,
+    0.3403389
+   ],
+   "default_rad": -0.05
+  },
+  {
+   "joint": "L_hip_yaw_joint",
+   "family": "RS03",
+   "kp_Nm_per_rad": 75.0,
+   "kd_Nms_per_rad": 4.0,
+   "peak_torque_Nm": 59.68,
+   "rated_continuous_torque_Nm": 20.0,
+   "armature": 0.0638,
+   "frictionloss": 0.251,
+   "viscous_damping": 0.0252,
+   "joint_axis_in_parent_link": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "joint_range_rad": [
+    -0.785398,
+    0.785398
+   ],
+   "soft_range_rad_(0.9)": [
+    -0.706858,
+    0.706858
+   ],
+   "target_clip_rad": [
+    -0.7068582,
+    0.7068582
+   ],
+   "default_rad": -0.008837
+  },
+  {
+   "joint": "L_knee_joint",
+   "family": "RS04",
+   "kp_Nm_per_rad": 130.0,
+   "kd_Nms_per_rad": 6.0,
+   "peak_torque_Nm": 120.09,
+   "rated_continuous_torque_Nm": 40.0,
+   "armature": 0.0773,
+   "frictionloss": 0.519,
+   "viscous_damping": 0.0275,
+   "joint_axis_in_parent_link": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -2.0944,
+    0.0
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.98968,
+    -0.10472
+   ],
+   "target_clip_rad": [
+    -1.98968,
+    -0.10472
+   ],
+   "default_rad": -0.35
+  },
+  {
+   "joint": "L_crank_A_joint",
+   "family": "RS03",
+   "kp_Nm_per_rad": 60.0,
+   "kd_Nms_per_rad": 2.7,
+   "peak_torque_Nm": 59.68,
+   "rated_continuous_torque_Nm": 20.0,
+   "armature": 0.0638,
+   "frictionloss": 0.251,
+   "viscous_damping": 0.0252,
+   "joint_axis_in_parent_link": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -1.2,
+    1.2
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.08,
+    1.08
+   ],
+   "target_clip_rad": [
+    -0.95,
+    0.95
+   ],
+   "default_rad": -0.106983
+  },
+  {
+   "joint": "L_crank_B_joint",
+   "family": "RS03",
+   "kp_Nm_per_rad": 60.0,
+   "kd_Nms_per_rad": 2.7,
+   "peak_torque_Nm": 59.68,
+   "rated_continuous_torque_Nm": 20.0,
+   "armature": 0.0638,
+   "frictionloss": 0.251,
+   "viscous_damping": 0.0252,
+   "joint_axis_in_parent_link": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "joint_range_rad": [
+    -1.2,
+    1.2
+   ],
+   "soft_range_rad_(0.9)": [
+    -1.08,
+    1.08
+   ],
+   "target_clip_rad": [
+    -0.95,
+    0.95
+   ],
+   "default_rad": 0.184691
+  }
+ ],
+ "tn_curves_48V": {
+  "RS03": {
+   "speed_rad_s": [
+    12.56637,
+    12.77581,
+    12.98525,
+    13.19469,
+    13.40413,
+    13.61357,
+    13.82301,
+    14.03245,
+    14.24189,
+    14.45133,
+    14.66077,
+    14.87021,
+    15.07964,
+    15.28908,
+    15.49852,
+    15.70796,
+    15.9174,
+    16.12684,
+    16.33628,
+    16.54572,
+    16.75516,
+    16.9646,
+    17.17404,
+    17.38348,
+    17.59292,
+    17.80236,
+    18.0118,
+    18.22124,
+    18.43068,
+    18.64012,
+    18.84956,
+    19.059,
+    19.26843,
+    19.47787,
+    19.58259,
+    19.68731,
+    20.94395
+   ],
+   "torque_Nm": [
+    59.68,
+    58.92,
+    58.15,
+    57.42,
+    56.75,
+    55.99,
+    55.22,
+    54.46,
+    53.76,
+    52.95,
+    52.05,
+    51.21,
+    50.25,
+    49.24,
+    48.24,
+    47.15,
+    46.05,
+    44.96,
+    43.86,
+    42.74,
+    41.55,
+    40.33,
+    39.16,
+    37.9,
+    36.62,
+    35.37,
+    34.08,
+    32.68,
+    31.27,
+    29.95,
+    28.39,
+    26.64,
+    24.52,
+    21.76,
+    19.95,
+    10.11,
+    0.0
+   ],
+   "source": "huphy_squat/huphy_squat/assets/motor_spec/RS03_TN_curve_48V.csv (+ a 200 rpm no-load point)"
+  },
+  "RS04": {
+   "speed_rad_s": [
+    9.94838,
+    10.47198,
+    10.99557,
+    11.51917,
+    12.04277,
+    12.56637,
+    13.08997,
+    13.61357,
+    14.13717,
+    14.66077,
+    15.18436,
+    15.70796,
+    16.23156,
+    16.75516,
+    17.27876,
+    17.80236,
+    18.32596,
+    18.84956,
+    19.37315,
+    19.68731,
+    19.89675,
+    20.94395
+   ],
+   "torque_Nm": [
+    120.09,
+    116.5,
+    112.91,
+    109.32,
+    105.88,
+    102.31,
+    98.89,
+    95.15,
+    91.37,
+    87.31,
+    82.82,
+    78.03,
+    68.62,
+    60.27,
+    55.81,
+    52.44,
+    49.15,
+    45.21,
+    38.51,
+    26.67,
+    11.2,
+    0.0
+   ],
+   "source": "huphy_squat/huphy_squat/assets/motor_spec/RS04_TN_curve_48V.csv (+ a 200 rpm no-load point)"
+  }
+ },
+ "motor_dynamics_note": "armature [kg m^2], frictionloss [N m], viscous_damping [N m s/rad] are bench-measured on the output shaft and written into the sim joints (randomized x0.8-1.2 in training). They describe the motor, nothing to set on the driver."
+}

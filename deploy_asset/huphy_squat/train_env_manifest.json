@@ -1,0 +1,320 @@
+{
+ "task": "Huphy-Squat-Flat-v0",
+ "training_code": "huphy_squat/huphy_squat (git c4d1b98)",
+ "checkpoints": [
+  5000,
+  4500,
+  4000
+ ],
+ "training": "one PPO run (rsl_rl, 4096 envs, 5001 iterations, seed 43), actor 43-512-256-128-12 ELU with empirical obs normalization, CAPS smoothness loss 0.3; checkpoints 4000 / 4500 / 5000 of the same run",
+ "sim": {
+  "physics_dt_s": 0.005,
+  "decimation": 4,
+  "policy_dt_s": 0.02,
+  "episode_s": 20.0,
+  "terrain": "flat plane",
+  "robot_mass_kg": 23.63
+ },
+ "command": {
+  "h_star_range_m": [
+   0.65,
+   0.895
+  ],
+  "resampling_s": [
+   3.0,
+   6.0
+  ],
+  "keep_prob": 0.2,
+  "profile": "step change to U(range) every 3-6 s (20 % keep the old value); first value of an episode drawn fresh"
+ },
+ "reset": {
+  "pose": "default pose + U(-0.05, 0.05) rad per motor; with prob 0.5 each hip roll gets U(-0.10, +0.06) rad extra outward; feet on the floor, yaw random",
+  "params": {
+   "motor_noise": 0.05,
+   "spread_range": [
+    -0.1,
+    0.06
+   ],
+   "spread_prob": 0.5
+  }
+ },
+ "observation_noise_uniform": {
+  "gyro_rad_s": 0.2,
+  "gravity": 0.05,
+  "encoder_rad": 0.01,
+  "last_action": 0.0,
+  "h_star": 0.0
+ },
+ "observation_lag": {
+  "policy_steps": [
+   0,
+   2
+  ],
+  "s": [
+   0.0,
+   0.04
+  ],
+  "note": "one lag per episode, same for IMU and encoders (one sensor packet); h* and last action not delayed"
+ },
+ "command_delay": {
+  "physics_steps": [
+   0,
+   4
+  ],
+  "s": [
+   0.0,
+   0.02
+  ],
+  "note": "one lag per episode for all 12 motor targets"
+ },
+ "encoder_bias_rad": [
+  -0.015,
+  0.015
+ ],
+ "imu_mount_rpy_deg": [
+  -2.0,
+  2.0
+ ],
+ "pd_gain_scale": {
+  "kp": [
+   0.8,
+   1.2
+  ],
+  "kd": [
+   0.8,
+   1.2
+  ]
+ },
+ "motor_friction_damping_armature_scale": [
+  0.8,
+  1.2
+ ],
+ "passive_joint_friction_Nm": [
+  0.0,
+  0.5
+ ],
+ "passive_joint_damping": [
+  0.0,
+  0.05
+ ],
+ "foot_friction": [
+  0.3,
+  1.2
+ ],
+ "payload_kg_at_pelvis_com": [
+  -1.0,
+  8.0
+ ],
+ "link_inertial_dr": {
+  "pelvis": {
+   "bodies": [
+    "base_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0699
+   ],
+   "t1_range": [
+    -0.02,
+    0.02
+   ],
+   "t2_range": [
+    -0.02,
+    0.02
+   ],
+   "t3_range": [
+    -0.02,
+    0.02
+   ],
+   "d_range": [
+    -0.0154,
+    0.0154
+   ]
+  },
+  "hip_pitch_link": {
+   "bodies": [
+    "L_hip_pitch_link",
+    "R_hip_pitch_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0364
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "hip_roll_link": {
+   "bodies": [
+    "L_hip_roll_link",
+    "R_hip_roll_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0378
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "thigh": {
+   "bodies": [
+    "L_thigh_link",
+    "R_thigh_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0455
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.0066
+   ],
+   "d_range": [
+    -0.0146,
+    0.0146
+   ]
+  },
+  "shin": {
+   "bodies": [
+    "L_shin_link",
+    "R_shin_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0508
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "ankle_pitch_link": {
+   "bodies": [
+    "L_ankle_pitch_link",
+    "R_ankle_pitch_link"
+   ],
+   "alpha_range": [
+    -0.059,
+    0.0554
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "foot": {
+   "bodies": [
+    "L_foot_link",
+    "R_foot_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0647
+   ],
+   "t1_range": [
+    -0.0053,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  }
+ },
+ "pushes": {
+  "force_N": [
+   0.0,
+   60.0
+  ],
+  "duration_s": [
+   0.1,
+   0.2
+  ],
+  "interval_s": [
+   2.0,
+   5.0
+  ],
+  "where": "pelvis, horizontal, random direction"
+ },
+ "terminations": [
+  "timeout 20 s",
+  "tilt > 70 deg",
+  "non-foot ground contact",
+  "NaN / physics blow-up"
+ ],
+ "dr_schedule": "all DR at full strength from iteration 0, redrawn at every reset",
+ "not_in_training": [
+  "robot lifted / feet off the ground",
+  "slopes, steps, soft ground",
+  "IMU gyro bias / drift",
+  "loss of a sensor packet or control-rate jitter",
+  "motor gains other than motor_params.json (beyond x0.8-1.2)"
+ ]
+}
