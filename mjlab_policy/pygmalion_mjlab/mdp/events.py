@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from mjlab.entity import Entity
+from mjlab.managers.event_manager import RecomputeLevel, requires_model_fields
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.utils.lab_api.math import (
   sample_uniform,
@@ -133,6 +134,49 @@ def randomize_motor_strength(
     actuator.strength_scale[env_ids] = samples
 
 
+@requires_model_fields("body_mass", recompute=RecomputeLevel.set_const)
+def add_payload_mass(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None,
+  mass_range: tuple[float, float],
+  asset_cfg: SceneEntityCfg = SceneEntityCfg("robot", body_names=("base_link",)),
+) -> None:
+  """Add an episode-fixed point payload at the selected body's nominal CoM."""
+  env_ids = resolve_env_ids(env, env_ids)
+  asset: Entity = env.scene[asset_cfg.name]
+  body_ids = asset.indexing.body_ids[asset_cfg.body_ids].long()
+  offsets = torch.empty(
+    len(env_ids), len(body_ids), device=env.device
+  ).uniform_(*mass_range)
+  env.sim.model.body_mass[env_ids[:, None], body_ids] += offsets
+
+
+def add_hip_roll_reset_spread(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None,
+  spread_range: tuple[float, float],
+  spread_prob: float,
+  asset_cfg: SceneEntityCfg,
+) -> None:
+  """Add the squat task's independent outward hip-roll reset perturbation."""
+  env_ids = resolve_env_ids(env, env_ids)
+  asset: Entity = env.scene[asset_cfg.name]
+  joint_ids = asset_cfg.joint_ids
+  if isinstance(joint_ids, list):
+    joint_ids = torch.tensor(joint_ids, device=env.device)
+  joint_pos = asset.data.joint_pos[env_ids][:, asset_cfg.joint_ids].clone()
+  joint_vel = asset.data.joint_vel[env_ids][:, asset_cfg.joint_ids].clone()
+  spread = torch.empty(len(env_ids), 2, device=env.device).uniform_(*spread_range)
+  spread *= (torch.rand(len(env_ids), 1, device=env.device) < spread_prob)
+  spread[:, 1] *= -1.0
+  joint_pos += spread
+  limits = asset.data.soft_joint_pos_limits[env_ids][:, asset_cfg.joint_ids]
+  joint_pos.clamp_(limits[..., 0], limits[..., 1])
+  asset.write_joint_state_to_sim(
+    joint_pos, joint_vel, env_ids=env_ids, joint_ids=joint_ids
+  )
+
+
 class apply_horizontal_body_push:
   """Apply fixed-duration horizontal forces with uniform magnitude and direction."""
 
@@ -163,7 +207,7 @@ class apply_horizontal_body_push:
     env: ManagerBasedRlEnv,
     env_ids: torch.Tensor | None,
     magnitude_range: tuple[float, float],
-    duration_s: float,
+    duration_s: float | tuple[float, float],
     cooldown_s: tuple[float, float],
     asset_cfg: SceneEntityCfg,
   ) -> None:
@@ -195,4 +239,18 @@ class apply_horizontal_body_push:
     )
     self._write_force(trigger_ids, forces)
     self._active[trigger_ids] = True
-    self._time_remaining[trigger_ids] = duration_s
+    if isinstance(duration_s, tuple):
+      self._time_remaining[trigger_ids] = self._sample_uniform(duration_s, count)
+    else:
+      self._time_remaining[trigger_ids] = duration_s
+
+  def reset(self, env_ids: torch.Tensor | None = None) -> None:
+    ids = (
+      torch.arange(self._num_envs, device=self._device)
+      if env_ids is None
+      else env_ids
+    )
+    self._write_force(ids, torch.zeros((len(ids), 3), device=self._device))
+    self._active[ids] = False
+    self._time_remaining[ids] = 0.0
+    self._cooldown_remaining[ids] = self._sample_uniform(self._cooldown_s, len(ids))

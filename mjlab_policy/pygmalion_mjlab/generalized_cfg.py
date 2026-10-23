@@ -211,6 +211,170 @@ def _general_events() -> dict[str, EventTermCfg]:
   }
 
 
+_WALK_ALPHA = (0.5 * math.log(0.9), 0.5 * math.log(1.1))
+_UNION_INERTIAL_DR = {
+  "pelvis": (
+    ("base_link",),
+    dict(
+      alpha_range=(_WALK_ALPHA[0], 0.0699),
+      t1_range=(-0.03, 0.03), t2_range=(-0.03, 0.03), t3_range=(-0.03, 0.03),
+      d_range=(-0.0154, 0.0154),
+    ),
+  ),
+  "hip_pitch": (
+    (".*_hip_pitch_link",),
+    dict(
+      alpha_range=_WALK_ALPHA,
+      t1_range=(-0.005, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005),
+      d_range=(-0.02, 0.02),
+    ),
+  ),
+  "hip_roll": (
+    (".*_hip_roll_link",),
+    dict(
+      alpha_range=_WALK_ALPHA,
+      t1_range=(-0.005, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005),
+      d_range=(-0.02, 0.02),
+    ),
+  ),
+  "thigh": (
+    (".*_thigh_link",),
+    dict(
+      alpha_range=_WALK_ALPHA,
+      t1_range=(-0.005, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.0066),
+      d_range=(-0.0146, 0.0146),
+    ),
+  ),
+  "shin": (
+    (".*_shin_link",),
+    dict(
+      alpha_range=(_WALK_ALPHA[0], 0.0508),
+      t1_range=(-0.005, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005),
+      d_range=(-0.02, 0.02),
+    ),
+  ),
+  "ankle_pitch": (
+    (".*_ankle_pitch_link",),
+    dict(
+      alpha_range=(-0.059, 0.0554),
+      t1_range=(-0.005, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005),
+      d_range=(-0.02, 0.02),
+    ),
+  ),
+  "foot": (
+    (".*_foot_link",),
+    dict(
+      alpha_range=(_WALK_ALPHA[0], 0.0647),
+      t1_range=(-0.0053, 0.005), t2_range=(-0.005, 0.005), t3_range=(-0.005, 0.005),
+      d_range=(-0.02, 0.02),
+    ),
+  ),
+  "crank_rod": (
+    (".*_crank_[AB]", ".*_rod_[AB]"),
+    dict(alpha_range=_WALK_ALPHA),
+  ),
+}
+
+
+def _apply_union_dr(cfg: ManagerBasedRlEnvCfg) -> None:
+  """Apply the envelope of the walking and Huphy-squat DR configurations."""
+  events = cfg.events
+  events.pop("inertial_density")
+  events.pop("base_com")
+
+  for name, (body_names, ranges) in _UNION_INERTIAL_DR.items():
+    events[f"union_inertia_{name}"] = EventTermCfg(
+      func=dr.pseudo_inertia,
+      mode="reset",
+      params={
+        "asset_cfg": SceneEntityCfg("robot", body_names=body_names),
+        **ranges,
+      },
+    )
+
+  events["payload"] = EventTermCfg(
+    func=pyg_events.add_payload_mass,
+    mode="reset",
+    params={
+      "mass_range": (-1.0, 8.0),
+      "asset_cfg": SceneEntityCfg("robot", body_names=("base_link",)),
+    },
+  )
+  events["pd_gains"].params.update(
+    {"kp_range": (0.8, 1.2), "kd_range": (0.8, 1.2)}
+  )
+  events["motor_armature"] = EventTermCfg(
+    func=dr.joint_armature,
+    mode="reset",
+    params={
+      "ranges": (0.8, 1.2), "operation": "scale",
+      "asset_cfg": SceneEntityCfg("robot", joint_names=robot.MOTOR_JOINTS),
+    },
+  )
+  passive_joints = (".*_rod_[AB]_u[12]", ".*_ankle_(pitch|roll)_joint")
+  events["passive_friction"] = EventTermCfg(
+    func=dr.joint_friction,
+    mode="reset",
+    params={
+      "ranges": (0.0, 0.5), "operation": "abs",
+      "asset_cfg": SceneEntityCfg("robot", joint_names=passive_joints),
+    },
+  )
+  events["passive_damping"] = EventTermCfg(
+    func=dr.joint_damping,
+    mode="reset",
+    params={
+      "ranges": (0.0, 0.05), "operation": "abs",
+      "asset_cfg": SceneEntityCfg("robot", joint_names=passive_joints),
+    },
+  )
+  events["encoder_bias"].params["bias_range"] = (-0.015, 0.015)
+  imu_angle = math.radians(2.0)
+  events["imu_mount"] = EventTermCfg(
+    func=dr.site_quat,
+    mode="reset",
+    params={
+      "roll_range": (-imu_angle, imu_angle),
+      "pitch_range": (-imu_angle, imu_angle),
+      "yaw_range": (-imu_angle, imu_angle),
+      "asset_cfg": SceneEntityCfg("robot", site_names=("imu_in_base",)),
+    },
+  )
+  events["reset_hip_spread"] = EventTermCfg(
+    func=pyg_events.add_hip_roll_reset_spread,
+    mode="reset",
+    params={
+      "spread_range": (-0.10, 0.06), "spread_prob": 0.5,
+      "asset_cfg": SceneEntityCfg(
+        "robot",
+        joint_names=("R_hip_roll_joint", "L_hip_roll_joint"),
+        preserve_order=True,
+      ),
+    },
+  )
+  events["torso_push"].params.update(
+    {
+      "magnitude_range": (0.0, 100.0),
+      "duration_s": (0.1, 0.2),
+      "cooldown_s": (2.0, 10.0),
+    }
+  )
+
+  for term_name in ("base_ang_vel", "projected_gravity", "motor_pos_history"):
+    term = cfg.observations["actor"].terms[term_name]
+    term.delay_min_lag = 0
+    term.delay_max_lag = 2
+    term.delay_per_env = True
+    term.delay_update_period = 1_000_000
+    term.delay_per_env_phase = False
+
+  for actuator in cfg.scene.entities["robot"].articulation.actuators:
+    actuator.delay_min_lag = 0
+    actuator.delay_max_lag = 4
+    actuator.delay_update_period = 1_000_000
+    actuator.delay_per_env_phase = False
+
+
 def pygmalion_generalized_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg = pygmalion_rough_env_cfg(play=False)
   cfg.scene.entities["robot"] = robot.generalized_robot_cfg()
@@ -340,4 +504,14 @@ def pygmalion_generalized_terrain10_2k_resume_env_cfg(
         "start_max_level": 3,
       },
     )
+  return cfg
+
+
+def pygmalion_generalized_union_dr_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Terrain10 resume task with the envelope of walking and squat DR."""
+  cfg = pygmalion_generalized_terrain10_2k_resume_env_cfg(play=play)
+  if not play:
+    _apply_union_dr(cfg)
   return cfg
