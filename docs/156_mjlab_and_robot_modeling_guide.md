@@ -450,6 +450,7 @@ LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.xml
 - mjlab 원본 문서: `mujoco-sim/mjlab/docs/source/` — `architecture_overview.rst`, `installation.rst`,
   `migration_isaac_lab.rst`, 관리자별 페이지
 - 모델 재구축 기록: `docs/111_fusion_v30_urdf_rebuild.md`, `docs/117_model_finalization_and_oneleg_training_plan.md`
+- 모델 파일 지도와 **수정 이력 표**: `docs/181_mjcf_urdf_models.md` (D455 카메라판: `docs/180_d455_camera_on_legonly.md`)
 - 질량 감사: `docs/120_design_vs_measured_mass_audit.md`, `docs/82_final_design_mass_review.md`
 - 모터: `docs/129_mujoco_motor_parameters.md`(넣는 법), `docs/130_system_id_eli5.md`(재는 법),
   `docs/144_urdf_motor_params_portability.md`

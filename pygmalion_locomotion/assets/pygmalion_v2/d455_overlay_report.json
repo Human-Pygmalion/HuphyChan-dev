@@ -1,0 +1,97 @@
+{
+ "cad_document": "260923_Huphy_1.0_wShell",
+ "cad_version": 40,
+ "cad_unsaved_edits": true,
+ "base_link_origin_cad_mm": [
+  0.0,
+  70.0,
+  60.0
+ ],
+ "camera_axes_in_cad": {
+  "forward": [
+   -0.0,
+   -0.5,
+   -0.866025
+  ],
+  "left": [
+   1.0,
+   0.0,
+   -0.0
+  ],
+  "up": [
+   0.0,
+   -0.866025,
+   0.5
+  ]
+ },
+ "mesh_extent_mm_fwd_left_up": [
+  26.0,
+  124.0,
+  29.0
+ ],
+ "d455_mount_in_cad_mm": [
+  0.0,
+  -38.5,
+  102.5
+ ],
+ "d455_link_in_cad_mm": [
+  47.5,
+  -49.175,
+  84.01
+ ],
+ "d455_mount_in_base_link_m": [
+  0.1085,
+  0.0,
+  0.0425
+ ],
+ "d455_mount_rpy_rad": [
+  0.0,
+  1.047197,
+  0.0
+ ],
+ "pitch_deg": 60.0,
+ "d455_link_in_base_link_m": [
+  0.119175,
+  0.0475,
+  0.02401
+ ],
+ "mass_kg": 0.116,
+ "mass_source": "datasheet 116 g +-10 %",
+ "mount": {
+  "mass_kg": 0.06196589963999999,
+  "com_base_link_m": [
+   0.0873156,
+   0.0005771,
+   0.0432725
+  ],
+  "inertia_base_link_kg_m2": [
+   [
+    6.9593e-05,
+    5.4e-08,
+    -3.129e-06
+   ],
+   [
+    5.4e-08,
+    2.1719e-05,
+    4.96e-07
+   ],
+   [
+    -3.129e-06,
+    4.96e-07,
+    6.6923e-05
+   ]
+  ],
+  "volume_cm3": 69.8286,
+  "cad_material": "Steel",
+  "cad_mass_kg": 0.548154,
+  "density_g_cm3": 0.8874,
+  "mass_scale_vs_cad": 0.11304469116343215,
+  "attached": "fixed joint on base_link (rigid)",
+  "density_source": "shell_overlay/manifest.json structural_printed = docs/89 printed ratio 0.329 x 2.70"
+ },
+ "assumptions": [
+  "design origin = back plate, left-right and height centre (M4 hole midpoint not measured in the CAD)",
+  "mass is the datasheet value, not the CAD body"
+ ],
+ "not_placed": []
+}

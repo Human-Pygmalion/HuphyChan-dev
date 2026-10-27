@@ -1,0 +1,16 @@
+{
+ "camera_mesh_transform_route_difference_mm": 0.000187,
+ "closest_gap_camera_to_bracket_mm": {
+  "measured_in_CAD": 0.006,
+  "measured_through_URDF": 0.002
+ },
+ "p1_gap_mm": {
+  "CAD": 0.196,
+  "URDF": 0.187
+ },
+ "bracket_mass_g": 61.97,
+ "bracket_cad_mass_g": 548.2,
+ "bracket_volume_cm3": 69.8286,
+ "density_g_cm3": 0.8874,
+ "mass_check_g": 61.97
+}

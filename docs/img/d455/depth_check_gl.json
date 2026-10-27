@@ -1,0 +1,65 @@
+{
+ "camera_pose_error_mm": 0.00013906553478917454,
+ "camera_rotation_error_deg": 0.00043649130696705145,
+ "camera_world_m": [
+  0.119175,
+  0.0475,
+  0.92701
+ ],
+ "image": "848x480",
+ "hfov_deg": 87.0,
+ "mjcf_fovy_deg": 56.48493019066967,
+ "robot_pixels": 0,
+ "robot_pixel_fraction": 0.0,
+ "centre_pixel_expected_m": 0.6629420896683136,
+ "results": [
+  {
+   "renderer": "R: MuJoCo ray casting (mj_multiRay)",
+   "pixels_compared": 407040,
+   "max_abs_mm": 0.02312258502723541,
+   "mean_abs_mm": 0.003967571413061292,
+   "p99_abs_mm": 0.01850375733666863,
+   "rms_mm": 0.005627662219457836
+  },
+  {
+   "renderer": "A: MuJoCo OpenGL renderer (mujoco.Renderer)",
+   "pixels_compared": 407040,
+   "max_abs_mm": 2.025045910197143,
+   "mean_abs_mm": 0.5028581719855759,
+   "p99_abs_mm": 1.8732362320987703,
+   "rms_mm": 0.6316283582951281
+  }
+ ],
+ "sensitivity_if_pose_were_wrong": [
+  {
+   "case": "camera pitched +0.1 deg",
+   "max_abs_mm": 4.683707875714815,
+   "mean_abs_mm": 0.804970521269841
+  },
+  {
+   "case": "camera pitched +1 deg",
+   "max_abs_mm": 44.89405525056145,
+   "mean_abs_mm": 8.045334962271541
+  },
+  {
+   "case": "camera moved 5 mm forward",
+   "max_abs_mm": 14.602214003326175,
+   "mean_abs_mm": 4.437802225680316
+  },
+  {
+   "case": "camera moved 1 mm up",
+   "max_abs_mm": 1.0443528229918675,
+   "mean_abs_mm": 0.21797725591794911
+  },
+  {
+   "case": "camera turned upside down (180 deg about its axis)",
+   "max_abs_mm": 648.1562018032407,
+   "mean_abs_mm": 325.58968581513574
+  },
+  {
+   "case": "Left IR on the wrong side (mirrored left-right)",
+   "max_abs_mm": 230.74433485017255,
+   "mean_abs_mm": 26.912065806734937
+  }
+ ]
+}

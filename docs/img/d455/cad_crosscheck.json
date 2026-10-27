@@ -1,0 +1,177 @@
+{
+ "extent_mm": {
+  "x": [
+   -21.35,
+   4.65
+  ],
+  "y": [
+   -109.5,
+   14.5
+  ],
+  "z": [
+   -14.5,
+   14.5
+  ]
+ },
+ "datasheet_box_mm": {
+  "x": [
+   -21.35,
+   4.65
+  ],
+  "y": [
+   -109.5,
+   14.5
+  ],
+  "z": [
+   -14.5,
+   14.5
+  ]
+ },
+ "extent_error_mm": 0.0,
+ "front_windows": {
+  "RGB window centre": {
+   "expected_y_mm": -59.0,
+   "found_y_mm": -58.62,
+   "error_mm": 0.38
+  },
+  "IR projector window centre (2 halves)": {
+   "expected_y_mm": -37.5,
+   "found_y_mm": -37.62,
+   "error_mm": -0.12
+  },
+  "midpoint of the two IR windows": {
+   "expected_y_mm": -47.5,
+   "found_y_mm": -47.62,
+   "error_mm": -0.12
+  },
+  "Left IR window centre (wider than the lens)": {
+   "expected_y_mm": 0.0,
+   "found_y_mm": 2.75,
+   "error_mm": 2.75
+  },
+  "Right IR window centre (wider than the lens)": {
+   "expected_y_mm": -95.0,
+   "found_y_mm": -98.0,
+   "error_mm": -3.0
+  }
+ },
+ "front_window_boxes_yz_mm": [
+  [
+   -108.8,
+   -87.2,
+   -13.8,
+   13.5
+  ],
+  [
+   -85.0,
+   -69.2,
+   -8.0,
+   7.8
+  ],
+  [
+   -67.0,
+   -50.2,
+   -11.5,
+   11.2
+  ],
+  [
+   -49.5,
+   -40.0,
+   -8.0,
+   7.8
+  ],
+  [
+   -35.2,
+   -25.8,
+   -8.0,
+   7.8
+  ],
+  [
+   -8.0,
+   13.5,
+   -13.8,
+   13.5
+  ]
+ ],
+ "usb_c_centre_link_mm": [
+  -15.66,
+  -84.51,
+  -9.46
+ ],
+ "usb_c_expected_y_mm": -84.51,
+ "usb_c_is_on_underside": true,
+ "imu_expected_mm": [
+  -16.02,
+  -30.22,
+  7.4
+ ],
+ "imu_nearest_cad_parts": [
+  {
+   "dist_mm": 18.9,
+   "part": "MEC060316_8:1#0",
+   "centre_mm": [
+    -14.2,
+    -47.5,
+    -0.0
+   ]
+  },
+  {
+   "dist_mm": 19.6,
+   "part": "MEC060318_11:1#0",
+   "centre_mm": [
+    -11.9,
+    -47.5,
+    -0.8
+   ]
+  },
+  {
+   "dist_mm": 19.8,
+   "part": "MEC060019_1:1#0",
+   "centre_mm": [
+    -17.0,
+    -49.9,
+    9.5
+   ]
+  }
+ ],
+ "official_mesh_extent_mm": {
+  "x": [
+   -21.35,
+   4.65
+  ],
+  "y": [
+   -109.5,
+   14.5
+  ],
+  "z": [
+   -14.5,
+   14.5
+  ]
+ },
+ "official_outer_surface_to_our_cad": {
+  "as_placed_by_xacro": {
+   "median_mm": 0.151,
+   "p90_mm": 0.306
+  },
+  "control_if_shifted_1mm_forward": {
+   "median_mm": 0.345,
+   "p90_mm": 0.801
+  },
+  "control_if_shifted_3mm_left": {
+   "median_mm": 0.179,
+   "p90_mm": 1.05
+  },
+  "control_if_turned_1deg_about_up": {
+   "median_mm": 0.266,
+   "p90_mm": 0.744
+  },
+  "control_if_mirrored_left_right": {
+   "median_mm": 0.152,
+   "p90_mm": 0.301
+  },
+  "control_if_turned_upside_down": {
+   "median_mm": 35.388,
+   "p90_mm": 84.042
+  }
+ }
+}
