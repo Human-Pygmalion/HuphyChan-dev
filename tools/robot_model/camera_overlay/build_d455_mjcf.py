@@ -73,6 +73,14 @@ def main():
                                  '(pose from d455_overlay_report.json). Do not hand-edit; rebuild. '))
     tree.write(f'{XMLS}/{OUT}.xml', encoding='utf-8', xml_declaration=False, pretty_print=True)
     print('wrote', f'{OUT}.xml', ' fx=fy=%.2f px' % fx)
+    # a second copy next to the URDF (this repo's GitHub copy): same file, meshes found through the URDF's own mesh folders, so it loads
+    # in plain MuJoCo without the mjlab tree.  (The mjlab fork's origin is the public mujocolab/mjlab, so the xmls folder is not on our GitHub.)
+    root.find('compiler').set('meshdir', 'meshes_v30_armfix/')
+    for m in root.find('asset').findall('mesh'):
+        if (m.get('file') or '').startswith(f'../{MESHLINK}/'):
+            m.set('file', m.get('file').replace(f'../{MESHLINK}/', '../meshes_d455/'))
+    tree.write(f'{B.ASSETS}/{OUT}.xml', encoding='utf-8', xml_declaration=False, pretty_print=True)
+    print('wrote', f'{B.ASSETS}/{OUT}.xml')
 
 
 if __name__ == '__main__':
