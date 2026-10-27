@@ -1427,76 +1427,6 @@
    "section": "correct",
    "changed": "2026-10-08 15:11"
   },
-  "rough-stag-attempts": {
-   "id": "rough-stag-attempts",
-   "created": "2026-10-10 10:33",
-   "title": "험지 정체 종료 비교 학습의 첫 세 번 시도가 실패했고, 원인을 찾아 고쳤습니다",
-   "why": "정체 종료(시킨 방향으로 3초 동안 10 cm도 못 가면 실패로 끝냄)를 넣으면 험지 학습이 나아지는지 두 학습을 나란히 돌려 비교하는 중입니다. 비교가 성립하려면 두 학습이 끝까지, 같은 조건으로 돌아야 합니다.",
-   "section": "done",
-   "changed": "2026-10-10 10:33",
-   "finding": "세 번 모두 시뮬레이션 쪽 결함으로 실패했고, 고친 넷째 시도가 지금 정상 진행 중입니다. 결함 셋: (1) 232회째에 물리 계산이 발산한 로봇 하나가 숫자가 아닌 값을 내 학습 전체가 멈춤, (2) 658회째에 학습 평가용 센서 값 하나가 약 6,000만 걸음에 한 번 숫자가 아닌 값을 냄, (3) 3,000회를 다 돌았지만 물리 폭주(백만 걸음에 2번, 발목 연결봉이 초당 141 라디안으로 돎. 평소 상위 1%가 17)가 한 번마다 10의 24승이 넘는 보상을 만들어 학습을 망쳐 무효.",
-   "number": "고친 것: 발산한 로봇만 실패로 끝내고 재시작, 숫자 아닌 센서 값은 그 한 걸음만 0으로 바꾸고 기록, 관절이 초당 100 라디안 넘거나 몸통이 초당 10 m 넘으면 실패로 끝냄, 보상 항목마다 한 걸음 ±50으로 묶음(정상 항목은 최대 약 6이라 영향 없음). 시험에서 폭주 종료가 51.2만 걸음에 1번 = 측정과 일치. 부수 확인: '몸통이 너무 낮음' 종료 1,243번 중 97%가 실제로 주저앉은 것이었음(발 평균보다 0.55 m 위, 평소 0.85 m).",
-   "collapsed": true
-  },
-  "rough-stag-ab": {
-   "id": "rough-stag-ab",
-   "created": "2026-10-10 12:08",
-   "title": "험지 학습 A/B(정체 종료) 완료 — 두 팔 모두 산길 182 m 양방향 완주",
-   "finding": "험지 학습으로 v11a 의 내리막 29 m 낙상이 해결. 정체 종료 자체는 사전 기준(험지 단계·정체 감소)으로 이득 없음 — 멈춰 서기가 원래 드묾. 오르막에서 B 가 더 안정(약한 근거). 앞 세 번의 실패는 NaN·물리 폭주(발목 연결봉 141 rad/s, 보상 1e24+)였고 보호 장치로 해결",
-   "number": "험지 단계 A 5.55 / B 5.43 · 산길 8 조건 모두 완주 · 정체 종료 0.7/회 · 물리 폭주 백만 걸음당 2 번",
-   "section": "done",
-   "changed": "2026-10-10 12:08",
-   "collapsed": true
-  },
-  "audit-rough-main": {
-   "id": "audit-rough-main",
-   "created": "2026-10-12 19:28",
-   "title": "최신 정책 감사 문서 + 배포 꾸러미 완료",
-   "finding": "감사 문서(영어 ASD-STE100 + RL·mjlab 독자용 한글판): 학습 환경·stock mjlab 수정·커리큘럼·무작위화·로봇 모델·관절별 Kp/Kd, 지적 20건(High 3: 실기 게인이 학습 게인의 1/15~1/22, 영점 무작위화 ±0.86° 대 실측 9.4°, 지연·IMU·모터 무작위화 없음). 배포 꾸러미 pyg_rough_main_v11a: 학습 코드와 배포 코드의 관측·출력·관절 목표각을 1,050걸음 비교, 최대 차이 목표각 4.8e-6 rad로 통과",
-   "number": "finding 20 (High 3); I/O 검증 최대 차이 1.9e-5",
-   "media": [
-    "docs/audit/2026-10-12_rough_box_main_v11a/README_ko.md",
-    "deploy_asset/pyg_rough_main_v11a/README.md"
-   ],
-   "section": "done",
-   "changed": "2026-10-12 19:28",
-   "collapsed": true
-  },
-  "viser-action-scale": {
-   "id": "viser-action-scale",
-   "created": "2026-10-12 22:18",
-   "title": "viser viewer: Action scale slider (multiplies motor Kp and Kd)",
-   "why": "User asked to soften the simulated/real motor controller live without reloading",
-   "finding": "Slider 0.05-1.0 step 0.05 in the Policy panel; torque = clip(s*Kp*(target-q) - s*Kd*qdot) then the usual effort and torque-speed clamps; at s=1.0 torques are bit-identical to before; at s=0.5 the PD part is exactly half (5 new tests pass). Driven in a real browser on the trail viewer: typed 0.30, readout showed knee Kp 220 to 66, Kd 6 to 1.8, the robot kept running (and collapsed, as expected at 30 percent gains).",
-   "number": "5/5 new tests pass; 36 older failures are identical before and after (stale local cache)",
-   "section": "done",
-   "changed": "2026-10-12 22:18",
-   "collapsed": true
-  },
-  "viser-terrain-choice": {
-   "id": "viser-terrain-choice",
-   "created": "2026-10-12 22:38",
-   "title": "viser viewer: Terrain dropdown (rough trail / flat)",
-   "why": "User asked to pick the rough mountain trail or flat ground in the same viewer, live",
-   "finding": "Dropdown 'Terrain' in the Policy panel. Flat levels the trail heightfield to z=0 and turns the tree trunks off, then resets the robot standing; policy, mode and Action scale are kept. Lifting the floor plane (first idea) failed: moving a static geom at run time keeps its old collision box, the robot sank 0.90 to 0.15 m in 3 s. Browser check at vx 0.6 on flat: base height min 0.881 m, x 7.4 to 13.5 over 10 s; back to rough: stands at 0.897 m on the trail.",
-   "number": "3 new tests + 5 gain-scale tests pass on the trail model",
-   "section": "done",
-   "changed": "2026-10-12 22:38",
-   "collapsed": true
-  },
-  "foot-sole-survey": {
-   "id": "foot-sole-survey",
-   "created": "2026-10-13 09:32",
-   "title": "휴머노이드 발바닥 설계 서베이 (QDD 계열 최신 로봇)",
-   "finding": "QDD 계열 연구용 휴머노이드의 발은 대부분 단단한 판 위에 얇은 탄성 층을 얹는 단순한 구조다. 재질까지 공개된 것은 AGILOped(발포 TPU), Digit(Vibram 밑창), Atlas(신발형 밑창), EcoWalker-2(2 mm 실리콘)뿐이고 Unitree·Figure·Tesla 는 발바닥 재질 공개 자료를 찾지 못했다. Huphy 는 알루미늄 판 위에 교체형 얇은 고무 밑창부터 붙이고 마찰 범위를 실측으로 맞추는 것을 제안한다(검증 전).",
-   "number": "조사 로봇 10종, 논문·특허 12건 직접 확인; Huphy 발 260x115 mm, 마찰 랜덤화 0.3~1.2 (Berkeley 0.2~1.25, G1 0.1~1.25)",
-   "media": [
-    "docs/img/foot_survey/f01_agiloped_foot_fig3.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-13 09:32",
-   "collapsed": true
-  },
   "battery-bms": {
    "id": "battery-bms",
    "created": "2026-10-13 10:24",
@@ -1511,30 +1441,6 @@
    "changed": "2026-10-13 11:01",
    "was": "모터 저항이 상저항인지 단자 간인지 불명이라 전력이 2배 불확실하다고 적음",
    "now_": "기존 노트가 이미 단자 간(line) 저항으로 정리했고, 동종 로봇 12종과 비교해도 중심 모델이 맞다(보수 모델은 비현실적). 우리 전력은 동종의 1.3~2배라는 점이 진짜 불확실성"
-  },
-  "battery-peer": {
-   "id": "battery-peer",
-   "created": "2026-10-13 11:25",
-   "title": "배터리 설계 동종 비교·시각화",
-   "why": "우리 배터리·전력 계산이 다른 휴머노이드와 비교해 타당한지 확인",
-   "finding": "전압(13S)과 팩 크기(Minimum)는 동종과 맞음. 서 있을 때 전력은 동종의 약 2배, 걸을 때 1.3~2배라 효율 개선 여지가 큼. 제동 초퍼는 Robstride 제동 모듈로 시작 가능, 전원 보드 기본 ON(64 V)은 모터 한계(60 V)보다 높아 55 V로 낮춰야 함",
-   "number": "35 Wh/kg(우리 Minimum) vs 12~41(동종) / 9.3 W/kg 서기 vs 1.8~4.6 / 운반비 1.65~1.9 vs Cassie 0.7",
-   "media": [
-    "docs/img/battery/fig5_peer_power.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-13 11:25",
-   "collapsed": true
-  },
-  "battery-inquiry": {
-   "id": "battery-inquiry",
-   "created": "2026-10-13 14:06",
-   "title": "배터리 업체 문의서 작성",
-   "why": "배터리 제작사에 모터·부하·공간 정보를 한 장으로 전달해 팩 질량·크기를 받기 위해",
-   "finding": "모터 19개(RS04 7, RS03 12), 배터리 제외 39.2 kg, 시뮬레이션 버스 전류(서기·걷기·험지·낙하)와 요구 사양을 정리. 토르소 내부 공간은 CAD 서버가 꺼져 있어 미확정",
-   "section": "done",
-   "changed": "2026-10-13 14:06",
-   "collapsed": true
   },
   "stand10_audit": {
    "id": "stand10_audit",
@@ -2492,7 +2398,8 @@
    "created": "2026-10-22 20:56",
    "section": "done",
    "changed": "2026-10-22 20:56",
-   "title": "시뮬레이터 기준 데이터 완료 (4e393c6) — 시뮬레이터는 명령 0 에서 그냥 서 있음, 52 ms 간격은 걸음 25 % 감소·행동 변화량 2 배, 20 ms 의 −1.8 °/s 방향 치우침은 씨앗과 무관하나 52 ms 에서 사라짐"
+   "title": "시뮬레이터 기준 데이터 완료 (4e393c6) — 시뮬레이터는 명령 0 에서 그냥 서 있음, 52 ms 간격은 걸음 25 % 감소·행동 변화량 2 배, 20 ms 의 −1.8 °/s 방향 치우침은 씨앗과 무관하나 52 ms 에서 사라짐",
+   "collapsed": true
   },
   "s2r-stage5": {
    "id": "s2r-stage5",
@@ -2504,7 +2411,8 @@
     "docs/mujoco/assets/2026-10-22_sim_walk_reference.png"
    ],
    "section": "done",
-   "changed": "2026-10-22 20:57"
+   "changed": "2026-10-22 20:57",
+   "collapsed": true
   },
   "s2r-veer": {
    "id": "s2r-veer",
@@ -2513,7 +2421,8 @@
    "finding": "사용자 확인: 실기 오른쪽 쏠림. 시뮬레이터 20 ms 명목 조건도 오른쪽 −1.8 °/s (환경 8/8, 씨앗 3/3). IMU·영점 기여는 작음. 분석 영상 3 개 렌더 시작",
    "number": "시뮬레이터 −1.8 °/s (오른쪽)",
    "section": "done",
-   "changed": "2026-10-22 21:27"
+   "changed": "2026-10-22 21:27",
+   "collapsed": true
   },
   "s2rvideos": {
    "id": "s2rvideos",
@@ -2528,7 +2437,8 @@
     "docs/video/2026-10-22_s2r_walk_5hz.mp4"
    ],
    "section": "done",
-   "changed": "2026-10-22 21:51"
+   "changed": "2026-10-22 21:51",
+   "collapsed": true
   },
   "s2r-videos": {
    "id": "s2r-videos",
@@ -2568,6 +2478,56 @@
    "number": "단계 6: 잡는 손만 진동 지속 (2.7~3.2 Hz)",
    "section": "done",
    "changed": "2026-10-22 22:57"
+  },
+  "urdf_origin_cad": {
+   "id": "urdf_origin_cad",
+   "created": "2026-10-27 22:16",
+   "title": "로봇 설명서(URDF)의 원점이 도면(CAD)의 어디인지 그림으로 표시",
+   "why": "ROS 에서 RealSense 카메라와 좌표계(TF)를 맞추려면, 도면 프로그램에서 원점을 정확히 찍을 수 있어야 합니다.",
+   "finding": "원점은 두 엉덩이 관절의 정중앙입니다. 도면 전역 좌표로 (X 0, Y 70, Z 60) mm 이고, 로봇 앞쪽은 도면의 -Y 방향입니다. 최신 모델(shell, 10-07)에는 카메라 프레임이 있고 원점에서 앞 75.9 mm, 위 731 mm 에 있습니다. 모델을 영점 자세로 놓고 점들을 도면 좌표로 되돌려 확인했습니다.",
+   "number": "원점 (0, 70, 60) mm / 카메라 원점 기준 (+75.9, 0.05, +731) mm",
+   "media": [
+    "docs/img/base_link_origin_cad.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-27 22:16"
+  },
+  "d455_camera": {
+   "id": "d455_camera",
+   "created": "2026-10-27 23:21",
+   "title": "LegOnly 로봇 골반에 깊이 카메라(D455) 추가 + 무결성 검증",
+   "why": "ROS 에서 RealSense 카메라와 로봇 좌표계(TF)를 맞추고, 시뮬레이터에서 깊이 영상을 쓰려면 카메라 위치·방향이 정확해야 합니다.",
+   "finding": "CAD 의 Pelvis_Camera 에서 D455 를 읽어 하체 로봇(AB 발목)의 URDF 와 MJCF 에 더했습니다. 원본은 고치지 않았고 모터 13개도 그대로입니다. 카메라는 골반 앞 10.9 cm, 위 4.3 cm 에 아래로 60° 숙여 달려 있습니다. mjlab 깊이 영상은 수식 정답과 40만 화소 전부 0.023 mm 이내로 일치했고, 좌우·위아래가 뒤집혔다면 잡혔을 시험입니다. 위치·방향은 데이터시트·인텔 공식 모델·CAD 세 곳에서 0.4 mm 안에 맞았습니다. 한계: 뒷판 나사 구멍 중점은 직접 재지 못했고, 그래픽카드가 없어 mjlab GPU 경로는 못 돌렸습니다.",
+   "number": "깊이 오차 최대 0.023 mm (407,040 화소) / 방향 오차 0.0004° / 원점 CAD (0, 70, 60) mm",
+   "media": [
+    "docs/img/d455/rviz_close_oblique.png",
+    "docs/img/d455/depth_check.png",
+    "docs/img/d455/cad_crosscheck.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-27 23:21"
+  },
+  "d455_mount": {
+   "id": "d455_mount",
+   "created": "2026-10-28 02:05",
+   "title": "D455 카메라 마운트 브래킷(PLA) 추가",
+   "why": "카메라는 3D 프린트 브래킷으로 골반에 달리므로, 질량과 위치를 모델에 넣어야 합니다.",
+   "finding": "브래킷 Pelvis_Camera_Mount 를 로봇 몸통(base_link)에 단단히 고정하는 방식으로 URDF 와 MJCF 에 넣었습니다. CAD 는 강철로 가정해 548 g 이지만 출력물이라 기존 출력 부품과 같은 밀도(0.8874 g/cm³)로 61.97 g 으로 계산했습니다. 카메라와 브래킷은 0.006 mm 이내로 맞닿고, 두 변환 경로의 차이는 0.0002 mm 입니다. 깊이 영상 검증은 브래킷을 넣은 뒤에도 그대로 0.023 mm 이내입니다. 브래킷 질량은 추정값이라 실물을 재면 바꿔야 합니다.",
+   "number": "브래킷 61.97 g / 전체 +0.178 kg (카메라 0.116 + 브래킷 0.062)",
+   "media": [
+    "docs/img/d455/rviz_close_side.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-28 02:05"
+  },
+  "model_files_doc": {
+   "id": "model_files_doc",
+   "created": "2026-10-28 02:17",
+   "title": "MJCF·URDF 모델 파일 안내서와 수정 이력 표 작성",
+   "why": "모델 파일이 6종에 겉껍데기판·카메라판까지 늘어나 어떤 파일이 무엇인지, 무엇이 언제 바뀌었는지 한곳에서 볼 수 있어야 합니다.",
+   "finding": "docs/181 에 파일 이름 읽는 법, MJCF 와 URDF 의 차이(모터 모양은 MJCF 에만 있음), 만드는 방법, 2026-08-22 부터 2026-10-28 까지의 수정 이력 표를 정리했습니다. D455 카메라판 작업도 같은 표에 기록했고, 모델 계획 문서(117)와 모델링 안내서(156)에 링크를 걸었습니다.",
+   "section": "done",
+   "changed": "2026-10-28 02:17"
   }
  },
  "order": [
@@ -2700,15 +2660,7 @@
   "local-gpu-missing-1001",
   "isaac-warehouse-demo",
   "trail-flat",
-  "rough-stag-attempts",
-  "rough-stag-ab",
-  "audit-rough-main",
-  "viser-action-scale",
-  "viser-terrain-choice",
-  "foot-sole-survey",
   "battery-bms",
-  "battery-peer",
-  "battery-inquiry",
   "stand10_audit",
   "stand10-audit-1014",
   "stand10-schedule-1014",
@@ -2803,7 +2755,11 @@
   "s2r-videos",
   "s2r-sysid",
   "stage6-5hz",
-  "s2r-report-draft"
+  "s2r-report-draft",
+  "urdf_origin_cad",
+  "d455_camera",
+  "d455_mount",
+  "model_files_doc"
  ],
- "updated": "2026-10-22 22:57"
+ "updated": "2026-10-28 02:17"
 }
