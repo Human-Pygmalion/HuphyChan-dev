@@ -2449,7 +2449,8 @@
     "docs/video/2026-10-22_s2r_walk_5hz.mp4"
    ],
    "section": "done",
-   "changed": "2026-10-22 21:52"
+   "changed": "2026-10-22 21:52",
+   "collapsed": true
   },
   "s2r-sysid": {
    "id": "s2r-sysid",
@@ -2528,6 +2529,16 @@
    "finding": "docs/181 에 파일 이름 읽는 법, MJCF 와 URDF 의 차이(모터 모양은 MJCF 에만 있음), 만드는 방법, 2026-08-22 부터 2026-10-28 까지의 수정 이력 표를 정리했습니다. D455 카메라판 작업도 같은 표에 기록했고, 모델 계획 문서(117)와 모델링 안내서(156)에 링크를 걸었습니다.",
    "section": "done",
    "changed": "2026-10-28 02:17"
+  },
+  "model_urls": {
+   "id": "model_urls",
+   "created": "2026-10-28 02:39",
+   "title": "학습용 로봇 모델 파일의 GitHub 위치 정리",
+   "why": "다른 컴퓨터나 팀원이 학습에 쓸 모델 파일을 GitHub 주소로 받을 수 있어야 합니다.",
+   "finding": "다리만 있는 학습용 원본(URDF·MJCF·메시)은 이미 GitHub main 에 있습니다. 카메라판은 로컬 커밋 3개(34커밋 중)라 아직 푸시 전이며, 푸시 여부는 사용자 확인을 기다립니다. mjlab 안의 MJCF 는 공개 mujocolab 저장소라 우리 GitHub 에 없어서, 같은 MJCF 를 URDF 옆에도 저장했습니다. 두 복사본은 같은 모델(23.8081 kg, 카메라 1개)로 컴파일됩니다. 한계: 메시 링크가 이 컴퓨터 절대 경로라 다른 컴퓨터에서는 링크를 다시 만들어야 합니다.",
+   "number": "GitHub 보다 앞선 커밋 34개 / 카메라판 MJCF 두 복사본 모두 23.8081 kg",
+   "section": "done",
+   "changed": "2026-10-28 02:39"
   }
  },
  "order": [
@@ -2759,7 +2770,8 @@
   "urdf_origin_cad",
   "d455_camera",
   "d455_mount",
-  "model_files_doc"
+  "model_files_doc",
+  "model_urls"
  ],
- "updated": "2026-10-28 02:17"
+ "updated": "2026-10-28 02:39"
 }
