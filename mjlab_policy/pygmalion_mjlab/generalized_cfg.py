@@ -15,15 +15,17 @@ from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.observation_manager import ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
+from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.tasks.velocity import mdp
 from mjlab.tasks.velocity.mdp import UniformVelocityCommandCfg
 from mjlab.terrains import TerrainEntityCfg, TerrainGeneratorCfg
 from mjlab.terrains.config import ROUGH_TERRAINS_CFG
 
-from . import robot, terrain10, unitree_rough
+from . import robot, stairs_slopes, terrain10, unitree_rough
 from .env_cfg import pygmalion_rough_env_cfg
 from .mdp import events as pyg_events
 from .mdp import rewards as pyg_rew
+from .mdp import terminations as pyg_term
 
 
 def vx_wz_commands(env, command_name: str) -> torch.Tensor:
@@ -61,7 +63,7 @@ def _general_rewards() -> dict[str, RewardTermCfg]:
       func=pyg_rew.body_orientation_l2, weight=-1.0,
       params={"asset_cfg": SceneEntityCfg("robot", body_names=("base_link",))},
     ),
-    "pose": RewardTermCfg(func=mdp.variable_posture, weight=1.0, params=pose_params),
+    "pose": RewardTermCfg(func=mdp.variable_posture, weight=0.5, params=pose_params),
     "body_ang_vel": RewardTermCfg(
       func=mdp.body_angular_velocity_penalty, weight=-0.05,
       params={"asset_cfg": SceneEntityCfg("robot", body_names=("base_link",))},
@@ -514,4 +516,79 @@ def pygmalion_generalized_union_dr_env_cfg(
   cfg = pygmalion_generalized_terrain10_2k_resume_env_cfg(play=play)
   if not play:
     _apply_union_dr(cfg)
+  return cfg
+
+
+def pygmalion_generalized_stairs_slopes_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Union-DR task with a progressive 12-stage stairs/slopes curriculum."""
+  cfg = pygmalion_generalized_union_dr_env_cfg(play=play)
+  cfg.scene.terrain = TerrainEntityCfg(
+    terrain_type="generator",
+    terrain_generator=stairs_slopes.curriculum_terrain_cfg(),
+    max_init_terrain_level=0,
+  )
+
+  # This is a fixed world-frame course, not a free-heading velocity task.  Keep
+  # commands forward along world +X and start close enough to the target heading
+  # that the 45 degree course boundary is meaningful from the first step.
+  twist = cfg.commands["twist"]
+  assert isinstance(twist, UniformVelocityCommandCfg)
+  twist.ranges.lin_vel_x = (0.1, 2.0)
+  twist.ranges.lin_vel_y = (0.0, 0.0)
+  twist.ranges.ang_vel_z = (0.0, 0.0)
+  twist.rel_world_envs = 0.0
+  twist.rel_forward_envs = 1.0
+  cfg.events["reset_base"].params["pose_range"]["yaw"] = (
+    -math.radians(15.0), math.radians(15.0)
+  )
+
+  cfg.rewards.pop("track_linear_velocity", None)
+  cfg.rewards.pop("track_angular_velocity", None)
+  cfg.rewards.pop("foot_clearance", None)
+  cfg.rewards["course_forward_progress"] = RewardTermCfg(
+    func=pyg_rew.course_forward_progress,
+    weight=2.0,
+    params={
+      "command_name": "twist",
+      "target_heading": 0.0,
+      "heading_gain": 2.0,
+      "reverse_scale": 0.5,
+      "command_threshold": 0.1,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  cfg.terminations["course_heading_error"] = TerminationTermCfg(
+    func=pyg_term.course_heading_error,
+    params={
+      "max_error": math.radians(45.0),
+      "target_heading": 0.0,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  cfg.terminations["course_stagnation"] = TerminationTermCfg(
+    func=pyg_term.course_stagnation,
+    params={
+      "command_name": "twist",
+      "window_s": 1.0,
+      "failure_hold_s": 0.5,
+      "min_cmd_speed": 0.2,
+      "min_progress_m": 0.10,
+      "target_heading": 0.0,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  if not play:
+    cfg.curriculum = {
+      "terrain_2k_unlock": CurriculumTermCfg(
+        func=stairs_slopes.progressive_uniform_curriculum,
+        params={
+          "start_step": 1_200_048,
+          "iterations_per_level": 2_000,
+          "steps_per_iteration": 24,
+          "num_levels": 12,
+        },
+      )
+    }
   return cfg

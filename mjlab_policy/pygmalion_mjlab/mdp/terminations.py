@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -12,8 +13,85 @@ import torch
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import RayCastSensor
+from mjlab.utils.lab_api.math import wrap_to_pi
 
 _DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
+
+
+def course_heading_error(
+  env: ManagerBasedRlEnv,
+  max_error: float = math.pi / 4.0,
+  target_heading: float = 0.0,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Terminate when the base yaw leaves the fixed world-frame course heading."""
+  asset: Entity = env.scene[asset_cfg.name]
+  error = torch.abs(wrap_to_pi(asset.data.heading_w - target_heading))
+  # Keep an angle represented as float32 at exactly the configured boundary
+  # from being classified as an exceedance due only to rounding.
+  return error > (max_error + 1.0e-6)
+
+
+def course_stagnation(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  window_s: float = 1.0,
+  failure_hold_s: float = 0.5,
+  min_cmd_speed: float = 0.2,
+  min_progress_m: float = 0.10,
+  target_heading: float = 0.0,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Terminate sustained failure to advance along a fixed world-frame course.
+
+  A sliding window integrates root velocity projected onto the course direction.
+  Once the window is full, a moving command with too little progress must remain
+  bad for ``failure_hold_s`` before termination.  Standing commands reset the
+  failure counter.
+  """
+  asset: Entity = env.scene[asset_cfg.name]
+  command = env.command_manager.get_command(command_name)
+  assert command is not None, f"Command '{command_name}' not found."
+
+  window_steps = max(1, round(window_s / env.step_dt))
+  hold_steps = max(1, round(failure_hold_s / env.step_dt))
+  buf = getattr(env, "_pyg_course_stagnation_buf", None)
+  if buf is None or buf.shape[1] != window_steps:
+    buf = torch.zeros(env.num_envs, window_steps, 2, device=env.device)
+    env._pyg_course_stagnation_buf = buf  # type: ignore[attr-defined]
+  bad_count = getattr(env, "_pyg_course_stagnation_bad_count", None)
+  if bad_count is None:
+    bad_count = torch.zeros(env.num_envs, dtype=torch.long, device=env.device)
+    env._pyg_course_stagnation_bad_count = bad_count  # type: ignore[attr-defined]
+
+  fresh = env.episode_length_buf <= 1
+  buf[fresh] = 0.0
+  bad_count[fresh] = 0
+
+  direction = torch.tensor(
+    [math.cos(target_heading), math.sin(target_heading)],
+    device=env.device,
+    dtype=asset.data.root_link_lin_vel_w.dtype,
+  )
+  projected_speed = torch.sum(
+    asset.data.root_link_lin_vel_w[:, :2] * direction, dim=1
+  )
+  command_speed = command[:, 0].abs()
+  slot = env.episode_length_buf % window_steps
+  rows = torch.arange(env.num_envs, device=env.device)
+  buf[rows, slot, 0] = projected_speed * env.step_dt
+  buf[rows, slot, 1] = command_speed * env.step_dt
+
+  progress = buf[:, :, 0].sum(dim=1)
+  mean_command_speed = buf[:, :, 1].sum(dim=1) / window_s
+  window_full = env.episode_length_buf >= window_steps
+  bad_window = (
+    window_full
+    & (mean_command_speed > min_cmd_speed)
+    & (progress < min_progress_m)
+  )
+  bad_count[:] = torch.where(bad_window, bad_count + 1, torch.zeros_like(bad_count))
+  return bad_count >= hold_steps
 
 
 def stagnation(

@@ -14,8 +14,12 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pygmalion_mjlab  # noqa: E402,F401  (registers the task)
+from pygmalion_mjlab import robot  # noqa: E402
+from pygmalion_mjlab.obstacle_course import four_step_downslope_terrain_cfg  # noqa: E402
 from pygmalion_mjlab.tn_actuator import TnPdActuator, tn_limit  # noqa: E402
 import mjlab.scripts.play as mjlab_play  # noqa: E402
+from mjlab.envs.mdp import dr  # noqa: E402
+from mjlab.managers import EventTermCfg, SceneEntityCfg  # noqa: E402
 from mjlab.tasks.velocity.mdp import (  # noqa: E402
   UniformVelocityCommand,
   UniformVelocityCommandCfg,
@@ -116,15 +120,24 @@ def _install_play_overrides(
   terrain_scale: float,
   staged_forward: bool,
   training_dr: bool,
+  custom_course: bool = False,
+  slope_first: bool = False,
+  foot_friction: float | None = None,
 ) -> None:
   original = mjlab_play.load_env_cfg
 
   def load_env_cfg(task_id, *args, **kwargs):
     kwargs["play"] = not training_dr
     cfg = original(task_id, *args, **kwargs)
-    generator = cfg.scene.terrain.terrain_generator
+    generator = (
+      four_step_downslope_terrain_cfg(slope_first=slope_first)
+      if custom_course
+      else cfg.scene.terrain.terrain_generator
+    )
     if generator is None:
       raise ValueError(f"Task {task_id} has no generated terrain")
+    if custom_course:
+      cfg.scene.terrain.terrain_generator = generator
     name, terrain = tuple(generator.sub_terrains.items())[level - 1]
     generator.sub_terrains = {name: terrain}
     generator.num_rows = 1
@@ -135,6 +148,17 @@ def _install_play_overrides(
     cfg.curriculum = {}
     cfg.episode_length_s = int(1e9)
     cfg.terminations.pop("out_of_terrain_bounds", None)
+    if foot_friction is not None:
+      cfg.events["play_foot_friction"] = EventTermCfg(
+        func=dr.geom_friction,
+        mode="reset",
+        params={
+          "ranges": (foot_friction, foot_friction),
+          "operation": "abs",
+          "shared_random": True,
+          "asset_cfg": SceneEntityCfg("robot", geom_names=robot.FOOT_GEOMS),
+        },
+      )
     twist = cfg.commands.get("twist")
     if staged_forward:
       assert isinstance(twist, UniformVelocityCommandCfg)
@@ -149,6 +173,10 @@ def _install_play_overrides(
       staged_cfg.rel_world_envs = 0.0
       staged_cfg.rel_forward_envs = 0.0
       staged_cfg.init_velocity_prob = 0.0
+      # Viser cannot construct a slider from a zero-width range.  The staged
+      # command still writes vy=wz=0 while joystick control is disabled.
+      staged_cfg.ranges.lin_vel_y = (-0.1, 0.1)
+      staged_cfg.ranges.ang_vel_z = (-0.1, 0.1)
       cfg.commands["twist"] = staged_cfg
     elif twist is not None and twist.ranges.lin_vel_y == (0.0, 0.0):
       twist.ranges.lin_vel_y = (-0.1, 0.1)
@@ -165,6 +193,8 @@ def _install_play_overrides(
       )
     if training_dr:
       print("[pygmalion] play uses the full training DR/event config", flush=True)
+    if foot_friction is not None:
+      print(f"[pygmalion] fixed foot sliding friction: mu={foot_friction:g}", flush=True)
     return cfg
 
   mjlab_play.load_env_cfg = load_env_cfg
@@ -174,11 +204,30 @@ if __name__ == "__main__":
   terrain_scale = _pop_float("--terrain-scale", 1.0)
   staged_forward = _pop_flag("--staged-forward")
   training_dr = _pop_flag("--training-dr")
+  foot_friction = (
+    _pop_float("--foot-friction", 0.6)
+    if "--foot-friction" in sys.argv
+    else None
+  )
+  if foot_friction is not None and foot_friction < 0.0:
+    raise ValueError("--foot-friction must be non-negative")
+  steps_first_course = _pop_flag("--four-step-downslope-course")
+  slope_first_course = _pop_flag("--four-step-upslope-course")
+  if steps_first_course and slope_first_course:
+    raise ValueError("choose only one custom course orientation")
+  custom_course = steps_first_course or slope_first_course
+  if custom_course:
+    if terrain_level is not None:
+      raise ValueError("--four-step-downslope-course cannot be combined with --terrain-level")
+    terrain_level = 1
   if terrain_level is not None:
     _install_play_overrides(
       terrain_level,
       terrain_scale,
       staged_forward,
       training_dr,
+      custom_course,
+      slope_first_course,
+      foot_friction,
     )
   mjlab_play.main()

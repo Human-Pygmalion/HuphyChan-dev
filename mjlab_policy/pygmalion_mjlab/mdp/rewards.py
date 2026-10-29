@@ -13,7 +13,7 @@ import torch
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import ContactSensor
-from mjlab.utils.lab_api.math import quat_apply_inverse
+from mjlab.utils.lab_api.math import quat_apply_inverse, wrap_to_pi
 
 _DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
 
@@ -46,6 +46,49 @@ def stand_still(
   assert command is not None
   stopped = (torch.norm(command[:, :2], dim=1) + command[:, 2].abs()) <= command_threshold
   return torch.sum(torch.square(error), dim=1) * stopped.float()
+
+
+def course_forward_progress(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  target_heading: float = 0.0,
+  heading_gain: float = 2.0,
+  reverse_scale: float = 0.5,
+  command_threshold: float = 0.1,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Reward normalized progress along a fixed world-frame course direction.
+
+  The stairs/slopes course runs along world +X.  Progress is normalized by the
+  commanded forward speed and capped to [-1, 1].  Forward progress receives
+  its signed normalized value, while reverse progress is scaled by
+  ``reverse_scale`` and remains negative.  A smooth heading multiplier reduces
+  the magnitude as the base yaws away from the course direction.
+  """
+  asset: Entity = env.scene[asset_cfg.name]
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+
+  course_direction = torch.tensor(
+    [math.cos(target_heading), math.sin(target_heading)],
+    device=env.device,
+    dtype=asset.data.root_link_lin_vel_w.dtype,
+  )
+  projected_speed = torch.sum(
+    asset.data.root_link_lin_vel_w[:, :2] * course_direction, dim=1
+  )
+  commanded_speed = command[:, 0].abs()
+  progress = torch.clamp(
+    projected_speed / commanded_speed.clamp(min=command_threshold), min=-1.0, max=1.0
+  )
+  progress = torch.where(
+    commanded_speed > command_threshold, progress, torch.zeros_like(progress)
+  )
+  signed_progress = torch.where(progress >= 0.0, progress, reverse_scale * progress)
+
+  heading_error = wrap_to_pi(asset.data.heading_w - target_heading)
+  heading_smooth = torch.exp(-heading_gain * torch.square(heading_error))
+  return signed_progress * heading_smooth
 
 
 def actuator_clipping_fraction(
