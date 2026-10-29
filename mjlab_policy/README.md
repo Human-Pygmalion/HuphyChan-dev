@@ -60,6 +60,9 @@ Pygmalion 하체 이족 로봇의 보행 RL 학습 환경과, 그것으로 만�
 
 세 단계 모두 이 패키지의 task 로 재현한다 (`scripts/train_from_scratch.sh` 가 순서대로 실행). Rough 단계만 다시 돌리려면 `checkpoints/parent_flat_actor_model_29998.pt` (원 P2 의 끝 actor) 에서 시작하면 된다 (`scripts/train_released.sh`).
 
+최신 Union-DR 계단/경사 정책의 full checkpoint, ONNX, 정확한 학습 설정과 재현 절차는
+[`checkpoints/stairs_slopes12_union_dr_99998/`](checkpoints/stairs_slopes12_union_dr_99998/)에 있다.
+
 **배포 policy 의 성능** (원 fork 의 평가 도구로 측정, 학습 전에 고정한 기준 대비, 2026-10-12):
 
 | 항목 | 기준 | 결과 | 판정 |

@@ -1,0 +1,156 @@
+schema_version: 1
+
+policy:
+  name: stairs_slopes12_union_dr_model_99998
+  source_run: 2026-10-25_11-36-56_generalized_stairs_slopes12_courseprogress_stagnation_resume49999_50k_v1
+  task: Pygmalion-Velocity-Generalized-StairsSlopes12-UnionDR
+  checkpoint: model_99998.pt
+  onnx: policy.onnx
+  iteration: 99998
+  common_step_counter: 2400048
+  control_rate_hz: 50
+  physics_timestep_s: 0.005
+  decimation: 4
+  actor_input_dim: 44
+  actor_output_dim: 12
+  critic_input_dim: 268
+  onnx_batch_size: 1
+  onnx_normalizer_embedded: true
+
+training:
+  seed: 43
+  num_envs: 2048
+  updates_requested: 50000
+  resume_mode: full_actor_critic_optimizer_and_env_step
+  parent_checkpoint: ../terrain10_union_dr_49999/model_49999.pt
+  parent_iteration: 49999
+  parent_common_step_counter: 1200048
+  union_dr_enabled: true
+  actor_observation_corruption_enabled: true
+  reproduce_script: scripts/train_stairs_slopes_resume.sh
+
+terrain_curriculum:
+  size_m: [54.0, 45.0]
+  sampling: cumulative_uniform
+  unlock_every_iterations: 2000
+  start_common_step: 1200048
+  levels:
+    - slope_05deg
+    - stairs_03cm
+    - slope_10deg
+    - stairs_06cm
+    - slope_15deg
+    - stairs_09cm
+    - slope_20deg
+    - stairs_12cm
+    - slope_25deg
+    - stairs_15cm
+    - slope_30deg
+    - stairs_18cm
+
+observations:
+  - name: base_ang_vel
+    slice: [0, 3]
+    unit: rad/s
+    frame: body
+    source: imu_ang_vel
+  - name: projected_gravity
+    slice: [3, 6]
+    frame: body
+  - name: motor_pos_history
+    slice: [6, 30]
+    unit: rad
+    relative_to_default: true
+    frames: 2
+    order: oldest_to_newest
+    joint_order: &joint_order
+      - R_hip_pitch_joint
+      - R_hip_roll_joint
+      - R_hip_yaw_joint
+      - R_knee_joint
+      - R_crank_A_joint
+      - R_crank_B_joint
+      - L_hip_pitch_joint
+      - L_hip_roll_joint
+      - L_hip_yaw_joint
+      - L_knee_joint
+      - L_crank_A_joint
+      - L_crank_B_joint
+  - name: previous_action
+    slice: [30, 42]
+    description: previous raw network output before scale, offset, and clipping
+  - name: command
+    slice: [42, 44]
+    fields: [lin_vel_x_mps, ang_vel_z_radps]
+    frame: body
+
+commands:
+  lin_vel_x_mps: [0.1, 2.0]
+  lin_vel_y_mps: [0.0, 0.0]
+  ang_vel_z_radps: [0.0, 0.0]
+  resampling_time_s: [3.0, 8.0]
+  standing_fraction: 0.05
+  frame: body_forward_aligned_to_world_course_x
+  note: The parent learned yaw commands, but this 50k stairs/slopes fine-tune was forward-only.
+
+actions:
+  type: joint_position_target
+  joint_order: *joint_order
+  scale_rad_per_unit: 0.25
+  default_position_rad:
+    [-0.175, 0.0, 0.0, 0.35, 0.1439548737, -0.1470630753,
+      0.175, 0.0, 0.0, -0.35, -0.1438849966, 0.1468702056]
+  clip_rad:
+    - [-1.9678634, 0.3097954]
+    - [-0.3403389, 1.3875369]
+    - [-0.7068582, 0.7068582]
+    - [0.10472, 1.98968]
+    - [-1.08, 1.08]
+    - [-1.08, 1.08]
+    - [-0.3097954, 1.9678634]
+    - [-1.3875369, 0.3403389]
+    - [-0.7068582, 0.7068582]
+    - [-1.98968, -0.10472]
+    - [-1.08, 1.08]
+    - [-1.08, 1.08]
+
+pd_gains:
+  stiffness_nm_per_rad:
+    [135.0, 135.0, 75.0, 130.0, 60.0, 60.0,
+      135.0, 135.0, 75.0, 130.0, 60.0, 60.0]
+  damping_nm_s_per_rad:
+    [6.0, 6.0, 4.0, 6.0, 2.7, 2.7,
+      6.0, 6.0, 4.0, 6.0, 2.7, 2.7]
+
+artifacts:
+  model_99998.pt:
+    sha256: 421789aa723ccd66acc758864bc34d01490f554a31e33831a3df6d26a57cbea2
+    purpose: full_resume_actor_critic_optimizer
+  policy.onnx:
+    sha256: a86bad7641e475c582604321556c72f51a66d7fb4f93ee4c22fbc9409d44c2c7
+    purpose: deterministic_actor_inference
+  env.yaml:
+    sha256: bfbf92ab1e229b4ba579e5107070fafba98edd33767246d1408e944892504c64
+    purpose: exact_training_environment_snapshot
+  agent.yaml:
+    sha256: 76a522cffab94320cfd1e517adedad64f106758c554ccf48406444c0b346c7ba
+    purpose: exact_ppo_configuration_snapshot
+
+onnx_verification:
+  checkpoint: model_99998.pt
+  samples: 32
+  seed: 20261029
+  max_abs_error: 0.00048828125
+  mean_abs_error: 0.0000193764772
+  allclose_rtol: 0.00001
+  allclose_atol: 0.000001
+  passed: true
+
+source_versions:
+  huphychan_git: 981a245d3ca124467d83d83aceffb0462b7953cd
+  mjlab_git: 20f10e96b
+
+safety:
+  simulation_validated: true
+  real_robot_validated: false
+  note: Verify sensor signs, joint order, PD gains, limits, emergency stop, and fall protection before enabling motors.
