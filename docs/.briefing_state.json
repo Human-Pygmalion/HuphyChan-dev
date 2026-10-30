@@ -1471,29 +1471,6 @@
    "section": "experiments",
    "changed": "2026-10-16 12:23"
   },
-  "stance-inertia": {
-   "id": "stance-inertia",
-   "created": "2026-10-16 17:55",
-   "title": "디딤 상태 유효 관성·중력 강성 계산 (docs/169 §10-3)",
-   "finding": "디딤 발 고정·다른 관절 고정 조건. 발목 디딤 관성 10.3 kg·m² (흔들 때 0.006의 약 1,700배), 중력 강성 +135 N·m/rad(불안정). 크랭크 60 이면 한 발 디딤 순 강성 −58, 쓰러짐 시간 상수 0.42초(정책 주기 20 ms의 21배). 디딤 감쇠비는 엉덩이·무릎 0.14~0.21 로 낮다 → 균형 감쇠는 정책이 담당",
-   "number": "한 발 디딤 수동 안정에 필요한 크랭크 Kp ≥ 105",
-   "section": "done",
-   "changed": "2026-10-16 17:55",
-   "collapsed": true
-  },
-  "real-pd-guide": {
-   "id": "real-pd-guide",
-   "created": "2026-10-16 18:01",
-   "title": "실물 모터 PD 게인 조사·절차·학습 경로 문서 (docs/172) + 기존 벤치 데이터 예비 분석",
-   "finding": "문헌은 실물로 학습 게인을 고르지 않는다 — 게인은 기준으로 먼저 정하고, 실물은 시뮬 관절을 실물에 맞추는 데(관성·마찰·지연) 쓴다. 게인 무작위화 문헌 범위: Cassie ±30 %, Isaac Lab 0.8~1.2배, Guan ±10 %, Booster ±5 %, Berkeley 없음. 기존 벤치(모터만) 주파수 응답은 시뮬과 0.1~0.6 dB·0.4~4.4° 차이로 일치(0.5~6 Hz)",
-   "number": "학습 경로 7단계 (2차 시스템 → 위치 제어 → 주파수 응답 → 표본화·지연 → 시스템 식별 → 모터 구동기 내부 → 시뮬-실물 이전)",
-   "media": [
-    "docs/img/pd_tuning_prelim_bode.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-16 18:01",
-   "collapsed": true
-  },
   "next-actions": {
    "id": "next-actions",
    "created": "2026-10-17 03:29",
@@ -2102,6 +2079,18 @@
    "number": "25.3 / 25.7 cm",
    "section": "docs/178 §5-2",
    "changed": "2026-10-30 17:47"
+  },
+  "u49999-videos": {
+   "id": "u49999-videos",
+   "created": "2026-10-30 18:14",
+   "title": "49999 발 간격 분석영상 2편 (실시간, 정책 목표 자세 반투명)",
+   "finding": "실기 대 시뮬 정면 영상: 서 있을 때 실기는 21~23 cm 에 머물고 hip_roll 전류 6~10 A 로 바깥을 계속 밂, 시뮬은 27->30 cm 로 벌어짐. 걷기 폭은 같음(22.5/23.0). 렌더 중 stance_fk 가지 오류 발견(최대 1.9 cm, 결론 불변)",
+   "media": [
+    "docs/video/2026-10-30_u49999_stance_real_vs_sim.mp4",
+    "docs/video/2026-10-30_u49999_stance_variants.mp4"
+   ],
+   "section": "docs/sim2real/2026-10-30_union49999_stance_width.md §9",
+   "changed": "2026-10-30 18:14"
   }
  },
  "order": [
@@ -2238,8 +2227,6 @@
   "gain-reco-1014",
   "gain-ab-heartbeat",
   "heading-drift-probe",
-  "stance-inertia",
-  "real-pd-guide",
   "next-actions",
   "gain-ab-armB-8k",
   "real-stand-logs-0310405",
@@ -2296,7 +2283,8 @@
   "u49-audit",
   "u49999-stance-verdict",
   "u49999-default-pose",
-  "u49999-deploy-fix"
+  "u49999-deploy-fix",
+  "u49999-videos"
  ],
- "updated": "2026-10-30 17:53"
+ "updated": "2026-10-30 18:14"
 }
