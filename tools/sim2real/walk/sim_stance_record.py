@@ -18,6 +18,12 @@ Variants (one change each, applied on top of the mode; all via reset events of t
   payloadN         pelvis point mass +N kg                         kpR_<f>   hip_roll Kp x f        kdR_<f>   hip_roll Kd x f
   frictR_<f>       hip_roll joint friction loss x f                encM<d>   hip_roll encoder offset, adduction direction, d deg
   imuR<d>          IMU mount roll +d deg                           footmu<f> foot friction coefficient f      torqR_<f> hip_roll torque limit x f
+  rollout<d>       DEPLOY FIX, target only: +d deg on the right hip_roll target and -d deg on the left one (right + = outward, left - = outward)
+                   after the policy (after scale/offset/clip, before the PD controller). The policy observation (joint angles, last action) is unchanged.
+Combined variants: parts joined by "+" (e.g. payload6+kpR_1.3, kpR_0.7+rollout2) are applied in order. Gain factors COMPOSE BY PRODUCT:
+the task's pd_gains event scales the DEFAULT gain (it does not stack), so all kpR / kdR / kpkdR factors of one variant are multiplied first
+and written as ONE event (kpR_0.7+kpR_1.4 -> Kp x 0.98; kdR is multiplied separately; Kp and Kd never reset each other). rolloutN offsets add up.
+Every other part is an independent reset event with its own key.
 Output: <out>/<name>.npz (keys as sim_walk_record.py plus q_true16, foot_contact, base_quat, base_pos) and <out>/csv/<name>_env<k>.csv
 """
 from __future__ import annotations
@@ -75,6 +81,7 @@ MOTORS = [f"{s}_{j}_joint" for s in "RL" for j in ("hip_pitch", "hip_roll", "hip
 PASSIVE = [f"{s}_ankle_{j}_joint" for s in "RL" for j in ("pitch", "roll")]
 JOINTS16 = MOTORS + PASSIVE
 ROLL = ("R_hip_roll_joint", "L_hip_roll_joint")
+ROLL_OUT_DEG = [0.0]  # set by apply_variant (rolloutN), used by install_roll_offset
 
 
 def load_trace(path, seg):
@@ -136,7 +143,7 @@ def hiproll_strength(env, env_ids, scale, asset_cfg=SceneEntityCfg("robot")):
         a.strength_scale[env_ids, j] = scale
 
 
-def apply_variant(cfg, v):
+def _apply_one(cfg, v, acc):
   ev = cfg.events
   roll = SceneEntityCfg("robot", joint_names=ROLL, preserve_order=True)
   rollre = SceneEntityCfg("robot", joint_names=(".*_hip_roll_joint",))
@@ -151,15 +158,16 @@ def apply_variant(cfg, v):
     return
   m = re.fullmatch(r"(kp|kd)R_(\d+(?:\.\d+)?)", v)
   if m:
-    f = float(m.group(2))
-    kw = {"kp_range": (f, f), "kd_range": (1.0, 1.0)} if m.group(1) == "kp" else {"kp_range": (1.0, 1.0), "kd_range": (f, f)}
-    ev["gain_" + v] = EventTermCfg(func=dr.pd_gains, mode="reset", params={**kw, "operation": "scale", "asset_cfg": rollre})
+    acc[m.group(1)] *= float(m.group(2))
     return
   m = re.fullmatch(r"kpkdR_(\d+(?:\.\d+)?)", v)
   if m:
-    f = float(m.group(1))
-    ev["gain_" + v] = EventTermCfg(func=dr.pd_gains, mode="reset",
-                                   params={"kp_range": (f, f), "kd_range": (f, f), "operation": "scale", "asset_cfg": rollre})
+    acc["kp"] *= float(m.group(1))
+    acc["kd"] *= float(m.group(1))
+    return
+  m = re.fullmatch(r"rollout(-?\d+(?:\.\d+)?)", v)
+  if m:
+    ROLL_OUT_DEG[0] += float(m.group(1))
     return
   m = re.fullmatch(r"frictR_(\d+(?:\.\d+)?)", v)
   if m:
@@ -205,6 +213,35 @@ def apply_variant(cfg, v):
     ev["torq_" + v] = EventTermCfg(func=hiproll_strength, mode="reset", params={"scale": float(m.group(1))})
     return
   raise SystemExit(f"unknown variant {v}")
+
+
+def apply_variant(cfg, v):
+  """Apply a variant, or several joined by "+" in order (see the module docstring for how the parts compose)."""
+  ROLL_OUT_DEG[0] = 0.0
+  acc = {"kp": 1.0, "kd": 1.0}
+  for part in (v.split("+") if v else []):
+    _apply_one(cfg, part, acc)
+  if acc["kp"] != 1.0 or acc["kd"] != 1.0:
+    rollre = SceneEntityCfg("robot", joint_names=(".*_hip_roll_joint",))
+    cfg.events["gain_" + v] = EventTermCfg(func=dr.pd_gains, mode="reset", params={
+      "kp_range": (acc["kp"], acc["kp"]), "kd_range": (acc["kd"], acc["kd"]), "operation": "scale", "asset_cfg": rollre})
+
+
+def install_roll_offset(at):
+  """Deploy fix: add +d deg (right) / -d deg (left) to the hip_roll TARGET after the policy action term (post scale/offset/clip)."""
+  d = math.radians(ROLL_OUT_DEG[0])
+  if d == 0.0:
+    return
+  off = torch.zeros(1, len(MOTORS), device=at._processed_actions.device)
+  off[0, MOTORS.index(ROLL[0])] = +d
+  off[0, MOTORS.index(ROLL[1])] = -d
+  orig = at.process_actions
+
+  def process_actions(actions):
+    orig(actions)
+    at._processed_actions = at._processed_actions + off
+
+  at.process_actions = process_actions
 
 
 def build_cfg(vx, wz, variant):
@@ -262,6 +299,7 @@ def run_one(name, variant):
   idx16 = torch.tensor([names.index(n) for n in JOINTS16], device=env.device)
   at = env.action_manager.get_term("joint_pos")
   assert list(at.target_names) == MOTORS
+  install_roll_offset(at)  # recorded D["target"] then INCLUDES the rolloutN offset (what the motors are commanded)
   default12 = robot.data.default_joint_pos[:, idx16[:12]].cpu().numpy()
   sensor = env.scene["feet_ground_contact"]
   pn = [p.split("/")[-1] for p in sensor.primary_names]
