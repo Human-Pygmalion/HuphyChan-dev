@@ -18,13 +18,17 @@ Variants (one change each, applied on top of the mode; all via reset events of t
   payloadN         pelvis point mass +N kg                         kpR_<f>   hip_roll Kp x f        kdR_<f>   hip_roll Kd x f
   frictR_<f>       hip_roll joint friction loss x f                encM<d>   hip_roll encoder offset, adduction direction, d deg
   imuR<d>          IMU mount roll +d deg                           footmu<f> foot friction coefficient f      torqR_<f> hip_roll torque limit x f
+  cone_ell         friction cone elliptic (task: pyramidal)       impratio<f>  friction-to-normal impedance ratio f (task: 1)
+  noslip<n>        noslip_iterations n (NOT implemented by mujoco-warp: raises NotImplementedError, recorded as FAILED)
   rollout<d>       DEPLOY FIX, target only: +d deg on the right hip_roll target and -d deg on the left one (right + = outward, left - = outward)
                    after the policy (after scale/offset/clip, before the PD controller). The policy observation (joint angles, last action) is unchanged.
 Combined variants: parts joined by "+" (e.g. payload6+kpR_1.3, kpR_0.7+rollout2) are applied in order. Gain factors COMPOSE BY PRODUCT:
 the task's pd_gains event scales the DEFAULT gain (it does not stack), so all kpR / kdR / kpkdR factors of one variant are multiplied first
 and written as ONE event (kpR_0.7+kpR_1.4 -> Kp x 0.98; kdR is multiplied separately; Kp and Kd never reset each other). rolloutN offsets add up.
 Every other part is an independent reset event with its own key.
-Output: <out>/<name>.npz (keys as sim_walk_record.py plus q_true16, foot_contact, base_quat, base_pos) and <out>/csv/<name>_env<k>.csv
+Output: <out>/<name>.npz (keys as sim_walk_record.py plus q_true16, foot_contact, base_quat, base_pos, foot_pos_w/foot_quat_w = world pose of
+R_foot_link, L_foot_link). <out>/<name>.json also holds the compiled contact settings (opt.cone, impratio, noslip, solver, foot/floor geom
+condim, priority, friction, solref, solimp) -- docs/sim2real/2026-10-30_union49999_sim_contact_creep.md. and <out>/csv/<name>_env<k>.csv
 """
 from __future__ import annotations
 
@@ -82,6 +86,7 @@ PASSIVE = [f"{s}_ankle_{j}_joint" for s in "RL" for j in ("pitch", "roll")]
 JOINTS16 = MOTORS + PASSIVE
 ROLL = ("R_hip_roll_joint", "L_hip_roll_joint")
 ROLL_OUT_DEG = [0.0]  # set by apply_variant (rolloutN), used by install_roll_offset
+NOSLIP = [0]  # set by apply_variant (noslipN); written into model.opt by the patched MujocoCfg.apply
 
 
 def load_trace(path, seg):
@@ -169,6 +174,17 @@ def _apply_one(cfg, v, acc):
   if m:
     ROLL_OUT_DEG[0] += float(m.group(1))
     return
+  if v == "cone_ell":
+    cfg.sim.mujoco.cone = "elliptic"
+    return
+  m = re.fullmatch(r"impratio(\d+(?:\.\d+)?)", v)
+  if m:
+    cfg.sim.mujoco.impratio = float(m.group(1))
+    return
+  m = re.fullmatch(r"noslip(\d+)", v)
+  if m:
+    NOSLIP[0] = int(m.group(1))
+    return
   m = re.fullmatch(r"frictR_(\d+(?:\.\d+)?)", v)
   if m:
     f = float(m.group(1))
@@ -218,6 +234,7 @@ def _apply_one(cfg, v, acc):
 def apply_variant(cfg, v):
   """Apply a variant, or several joined by "+" in order (see the module docstring for how the parts compose)."""
   ROLL_OUT_DEG[0] = 0.0
+  NOSLIP[0] = 0
   acc = {"kp": 1.0, "kd": 1.0}
   for part in (v.split("+") if v else []):
     _apply_one(cfg, part, acc)
@@ -242,6 +259,39 @@ def install_roll_offset(at):
     at._processed_actions = at._processed_actions + off
 
   at.process_actions = process_actions
+
+
+def _patch_noslip():
+  from mjlab.sim import sim as mjsim
+  if getattr(mjsim.MujocoCfg, "_noslip_patched", False):
+    return
+  orig = mjsim.MujocoCfg.apply
+
+  def apply(self, model):
+    orig(self, model)
+    model.opt.noslip_iterations = NOSLIP[0]
+
+  mjsim.MujocoCfg.apply = apply
+  mjsim.MujocoCfg._noslip_patched = True
+
+
+def contact_report(env):
+  """Compiled contact settings of world 0 (CPU MjModel): option block + foot and floor geoms."""
+  import mujoco
+  m = env.sim.mj_model
+  o = m.opt
+  rep = dict(cone=int(o.cone), cone_name={0: "pyramidal", 1: "elliptic"}[int(o.cone)], impratio=float(o.impratio),
+             noslip_iterations=int(o.noslip_iterations), noslip_tolerance=float(o.noslip_tolerance), solver=int(o.solver),
+             iterations=int(o.iterations), tolerance=float(o.tolerance), timestep=float(o.timestep), integrator=int(o.integrator),
+             o_solref=[float(x) for x in o.o_solref], o_solimp=[float(x) for x in o.o_solimp], o_margin=float(o.o_margin), geoms={})
+  for g in range(m.ngeom):
+    nm = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_GEOM, g) or ""
+    if re.search(r"[LR]_foot\d+_collision$", nm) or m.geom_bodyid[g] == 0 and m.geom_type[g] == mujoco.mjtGeom.mjGEOM_PLANE or "terrain" in nm or "floor" in nm.lower():
+      rep["geoms"][nm or f"geom{g}"] = dict(type=int(m.geom_type[g]), condim=int(m.geom_condim[g]), priority=int(m.geom_priority[g]),
+        friction=[float(x) for x in m.geom_friction[g]], solref=[float(x) for x in m.geom_solref[g]],
+        solimp=[float(x) for x in m.geom_solimp[g]], margin=float(m.geom_margin[g]), gap=float(m.geom_gap[g]),
+        solmix=float(m.geom_solmix[g]))
+  return rep
 
 
 def build_cfg(vx, wz, variant):
@@ -283,6 +333,7 @@ def run_one(name, variant):
   vx, wz = load_trace(args.trace, args.seg)
   T = len(vx)
   cfg = build_cfg(vx, wz, variant)
+  _patch_noslip()
   env = ManagerBasedRlEnv(cfg=cfg, device=args.device)
   agent_cfg = load_rl_cfg(args.task)
   wenv = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
@@ -304,10 +355,13 @@ def run_one(name, variant):
   sensor = env.scene["feet_ground_contact"]
   pn = [p.split("/")[-1] for p in sensor.primary_names]
   fo = [pn.index("R_foot_link"), pn.index("L_foot_link")]
+  bn = list(robot.body_names)
+  fbody = torch.tensor([bn.index("R_foot_link"), bn.index("L_foot_link")], device=env.device)
+  creport = contact_report(env)
   E = env.num_envs
   f = lambda *s: np.full(s, np.nan, np.float32)  # noqa: E731
   D = dict(obs=f(T, E, 44), action=f(T, E, 12), target=f(T, E, 12), q_true16=f(T, E, 16), tau=f(T, E, 12), command=f(T, E, 3),
-           base_pos=f(T, E, 3), base_quat=f(T, E, 4), foot_contact=np.zeros((T, E, 2), bool), foot_force_w=f(T, E, 2, 3),
+           base_pos=f(T, E, 3), base_quat=f(T, E, 4), foot_pos_w=f(T, E, 2, 3), foot_quat_w=f(T, E, 2, 4), foot_contact=np.zeros((T, E, 2), bool), foot_force_w=f(T, E, 2, 3),
            terminated=np.zeros((T, E), bool))
   acts = []
   for a in robot.actuators:
@@ -322,6 +376,8 @@ def run_one(name, variant):
       D["command"][i] = env.command_manager.get_command("twist").cpu().numpy()
       D["base_pos"][i] = d.root_link_pos_w.cpu().numpy()
       D["base_quat"][i] = d.root_link_quat_w.cpu().numpy()
+      D["foot_pos_w"][i] = d.body_link_pos_w[:, fbody].cpu().numpy()
+      D["foot_quat_w"][i] = d.body_link_quat_w[:, fbody].cpu().numpy()
       s = sensor.data
       D["foot_contact"][i] = s.found[:, fo].cpu().numpy() > 0
       D["foot_force_w"][i] = s.force[:, fo].cpu().numpy()
@@ -350,7 +406,7 @@ def run_one(name, variant):
   fall_t = [float(D["t"][np.argmax(D["terminated"][:, e])]) if D["terminated"][:, e].any() else None for e in range(E)]
   meta = dict(name=name, mode=args.mode, variant=variant, trace=args.trace, seg=args.seg, seed=args.seed, num_envs=E,
               steps=T, duration_s=T * DT, checkpoint=str(ckpt), falls=nfall, fall_times_s=fall_t,
-              kp=None, wall_s=round(time.time() - t0, 1), mjlab=getattr(mjlab, "__version__", "?"))
+              kp=None, contact=creport, wall_s=round(time.time() - t0, 1), mjlab=getattr(mjlab, "__version__", "?"))
   (out / f"{name}.json").write_text(json.dumps(meta, indent=1))
   print(f"[{name}] done: falls={nfall}/{E} wall={time.time() - t0:.0f}s", flush=True)
   try:
