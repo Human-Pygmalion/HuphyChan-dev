@@ -1,0 +1,99 @@
+{
+ "v1": {
+  "fps": 25,
+  "frames": 1625,
+  "env": 7,
+  "sim_env_mean_widths_cm": [
+   26.47,
+   26.56,
+   26.15,
+   25.84,
+   26.08,
+   26.29,
+   26.39,
+   26.3
+  ],
+  "fk_resid": 9.983658066925472e-10,
+  "ghost_resid": 9.944001108652678e-10,
+  "unsolved_rows": {
+   "real": {
+    "pos": 0,
+    "tgt": 0
+   },
+   "sim": {
+    "pos": 0,
+    "tgt": 0
+   }
+  },
+  "real_width_mean_cm": 22.88,
+  "sim_width_mean_cm": 26.3,
+  "real_target_mean_cm": 39.5,
+  "sim_target_mean_cm": 38.17,
+  "real_stand_mean_cm": 23.34,
+  "sim_stand_mean_cm": 27.9,
+  "data_duration_s": 64.992509,
+  "render_s": 515.1,
+  "file": "docs/video/2026-10-30_u49999_stance_real_vs_sim.mp4",
+  "probe": {
+   "codec": "h264",
+   "size": "1280x806",
+   "fps": 25.0,
+   "frames": 1625,
+   "frames_over_fps": 65.0,
+   "duration_stream": 65.0,
+   "duration_format": 65.0,
+   "size_mb": 14.06
+  },
+  "fps_ok": true
+ },
+ "v2": {
+  "fps": 25,
+  "frames": 500,
+  "envs": {
+   "base": 2,
+   "kp": 1,
+   "pay": 1,
+   "enc": 1
+  },
+  "env_mean_width_cm": {
+   "base": 25.44,
+   "kp": 22.62,
+   "pay": 21.1,
+   "enc": 20.13,
+   "real": 22.03
+  },
+  "ghost_resid": 9.99952065594556e-10,
+  "unsolved_rows": {
+   "base": {
+    "pos": 0,
+    "tgt": 0
+   },
+   "kp": {
+    "pos": 0,
+    "tgt": 0
+   },
+   "pay": {
+    "pos": 0,
+    "tgt": 0
+   },
+   "enc": {
+    "pos": 0,
+    "tgt": 0
+   }
+  },
+  "data_duration_s": 20.0,
+  "render_s": 292.4,
+  "file": "docs/video/2026-10-30_u49999_stance_variants.mp4",
+  "probe": {
+   "codec": "h264",
+   "size": "1440x850",
+   "fps": 25.0,
+   "frames": 500,
+   "frames_over_fps": 20.0,
+   "duration_stream": 20.0,
+   "duration_format": 20.0,
+   "size_mb": 3.62
+  },
+  "fps_ok": true
+ }
+}
