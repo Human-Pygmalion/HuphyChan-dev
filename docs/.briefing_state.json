@@ -2092,6 +2092,15 @@
    "finding": "env.yaml·deploy.yaml·HUPHY 계약 기본 자세 차이 < 1e-6 rad, 정책은 기본 자세에서 시작. 그러나 HUPHY 1.0 보정 파일은 offset 0, '아직 아무것도 재기 전'. 관절 0 의 실물 자세는 모름",
    "section": "docs/178 §4-3",
    "changed": "2026-10-30 17:34"
+  },
+  "u49999-deploy-fix": {
+   "id": "u49999-deploy-fix",
+   "created": "2026-10-30 17:47",
+   "title": "배포 처방: hip_roll Kp x1.4 가 두 후보 조건 모두에서 폭 회복",
+   "finding": "강성x0.7 조건 22.7->25.3 cm, 몸통+6kg 조건 20.5->25.7 cm, 넘어짐 0. 바깥 목표 고정값은 무거운 조건에서 안 듣고 3도에서 4/4 넘어짐. 시뮬은 지연·잡음 없음 - 실기 떨림 재발 감시 필요",
+   "number": "25.3 / 25.7 cm",
+   "section": "docs/178 §5-2",
+   "changed": "2026-10-30 17:47"
   }
  },
  "order": [
@@ -2285,7 +2294,8 @@
   "u49-first",
   "u49-audit",
   "u49999-stance-verdict",
-  "u49999-default-pose"
+  "u49999-default-pose",
+  "u49999-deploy-fix"
  ],
- "updated": "2026-10-30 17:34"
+ "updated": "2026-10-30 17:47"
 }
