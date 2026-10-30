@@ -1471,27 +1471,6 @@
    "section": "experiments",
    "changed": "2026-10-16 12:23"
   },
-  "huphy-can-link": {
-   "id": "huphy-can-link",
-   "created": "2026-10-16 14:38",
-   "title": "HUPHY 통신 개선 꾸러미 완성 (System_ID/can_link)",
-   "finding": "수거를 프레임 개수가 아니라 모터별 도착 시각으로 판정하도록 고친 개선판 파일 2개를 만들었습니다. 가짜 버스에서 응답이 한 번 늦으면 원본은 이후 54주기 중 54주기 값이 한 주기 묵은 채 정상으로 보이고, 개선판은 0주기입니다. 실물 기록(양다리 12개 관절)에서도 한 사건 뒤 59~71주기(1.2~1.4초) 연속 늦음이 있었고 늦음 비율이 보내는 순서를 따라 늘어납니다. 같은 응답 번호 0xFD 충돌은 여전히 가설이며 로봇에서 재는 도구(bus_probe)와 모터 하나씩 바꾸는 절차(host_id_tool)를 같이 만들었습니다.",
-   "number": "시험 71개 통과 / 손실: 오른다리 3.5%, 왼다리 2.8% (200Hz), 모터 1개 벤치 0.009% / 가장 긴 연속 늦음 82주기 (100Hz 왼다리)",
-   "needs": "벤치 모터 전원 복구(48V) 후 host_id_tool read 와 bus_probe 실측, 이어서 로봇에서 번호 같음/다름 비교",
-   "section": "done",
-   "changed": "2026-10-16 14:38",
-   "collapsed": true
-  },
-  "can-link": {
-   "id": "can-link",
-   "created": "2026-10-16 14:45",
-   "title": "CAN 링크 작업공간 완성 (System_ID/can_link): 시험 도구 3종 + HUPHY 갈아끼움 개선판 + 개발자 README",
-   "finding": "로봇 기록: 유실 2.2~3.5 %, 한 사건 뒤 오른다리 6관절이 59~71 주기 연속 늦음(밀림 지속 확인). 개선판(모터별 완료 판정)은 가상 시험에서 묵은 주기 54/54→0/54. 기본값은 HUPHY 동작과 동일 — HUPHY 시험 1,265 통과·4 실패(원본과 같은 환경 원인). 수신 스레드·미응답 상한·모터별 응답 번호는 켜는 순서와 근거를 README 에. 실물 검증은 벤치 모터 전원 꺼져 보류",
-   "number": "커밋 3fa891d, docs/124 항목 1-3a",
-   "section": "done",
-   "changed": "2026-10-16 14:45",
-   "collapsed": true
-  },
   "gain-naming-limits": {
    "id": "gain-naming-limits",
    "created": "2026-10-16 17:31",
@@ -2016,7 +1995,8 @@
    "number": "joint/target 0.14, lag 32 ms (sim, 20 ms) vs 0.24, 60 ms (real); standing 3-8 Hz band power 0.16 deg^2 (sim) vs 0.0021 deg^2 (real quiet)",
    "needs": "Real hand-hold stiffness is unknown. A hand-held --hz 50 run would test the sim prediction (oscillation stays, frequency rises).",
    "section": "done",
-   "changed": "2026-10-22 22:54"
+   "changed": "2026-10-22 22:54",
+   "collapsed": true
   },
   "s2r-report-draft": {
    "id": "s2r-report-draft",
@@ -2095,6 +2075,15 @@
    "number": "목표 벌림 +9.2° / 실제 −1.6°",
    "section": "done",
    "changed": "2026-10-30 14:26"
+  },
+  "u49-audit": {
+   "id": "u49-audit",
+   "created": "2026-10-30 15:16",
+   "title": "49999 무작위화 대조·위험: 떨림 해결 확인, 발 간격 22 cm(기본 24.7), 학습에 발 간격 보상 없음 + 시작 외란이 안쪽 치우침",
+   "finding": "3~8 Hz 0.62→0.04~0.07 deg². 발목 사이 걷기 중앙 22 cm, 최소 14.2 cm. 원인 후보(학습): 발 간격 항 없음, 엉덩이 좌우 시작 외란 U(-0.10,0.06) 을 스쿼트(기본 +0.05)에서 복사 → 걷기에선 안쪽 치우침(3 % 는 다리 닿은 채 시작). 미커버: 영점 1~5° vs ±0.86°, IMU 멈춤, 명령 범위. 오른 크랭크 A 추종 1.2° vs 목표 6.7°. 직진 쏠림 −4.6 °/s",
+   "number": "발 간격 22 cm / 기본 24.7 cm",
+   "section": "done",
+   "changed": "2026-10-30 15:16"
   }
  },
  "order": [
@@ -2231,8 +2220,6 @@
   "gain-reco-1014",
   "gain-ab-heartbeat",
   "heading-drift-probe",
-  "huphy-can-link",
-  "can-link",
   "gain-naming-limits",
   "stance-inertia",
   "real-pd-guide",
@@ -2288,7 +2275,8 @@
   "d455_mount",
   "model_files_doc",
   "model_urls",
-  "u49-first"
+  "u49-first",
+  "u49-audit"
  ],
- "updated": "2026-10-30 14:26"
+ "updated": "2026-10-30 15:16"
 }
