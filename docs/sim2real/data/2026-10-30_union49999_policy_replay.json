@@ -1,0 +1,37 @@
+{
+ "1028_teleop_ob.csv": {
+  "rows": 5899,
+  "onnx_vs_logged_act_max": 3.263874053954785e-05,
+  "onnx_vs_logged_act_mean": 2.554704621805479e-06,
+  "torch_vs_logged_act_max": 3.2608938217160155e-05,
+  "torch_vs_onnx_max": 8.344650268554688e-07,
+  "tgt_contract_max_deg": 5.0546441054066804e-05,
+  "lastact_chain_max": 1.0397338856549254e-07,
+  "cmd_vx_range": [
+   0.0,
+   0.5
+  ],
+  "cmd_wz_range": [
+   -0.5,
+   0.5
+  ]
+ },
+ "1028_teleop_extra2_ob.csv": {
+  "rows": 3250,
+  "onnx_vs_logged_act_max": 3.432064056396733e-05,
+  "onnx_vs_logged_act_mean": 2.4492543660860427e-06,
+  "torch_vs_logged_act_max": 3.426103591919194e-05,
+  "torch_vs_onnx_max": 6.556510925292969e-07,
+  "tgt_contract_max_deg": 5.055430438982711e-05,
+  "lastact_chain_max": 8.035278309392879e-08,
+  "cmd_vx_range": [
+   0.0,
+   0.5
+  ],
+  "cmd_wz_range": [
+   -0.5,
+   0.0
+  ]
+ },
+ "onnx_sha256": "ac9a076ef2e9356350e77b759a227eaf515d9bb193002022635ca5ef0b5d4372"
+}
