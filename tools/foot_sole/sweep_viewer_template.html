@@ -1,0 +1,124 @@
+<title>Sole Sweep Variants</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #eef1f3; --panel: #ffffff; --fg: #1d2429; --muted: #5d6a73; --line: #cfd6db; --stage: #e3e8eb; --accent: #d9771e; --ref: #7f8b93;
+  --font-body: "IBM Plex Sans KR", "Noto Sans KR", system-ui, sans-serif; --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161b1f; --panel: #1e252a; --fg: #e3e8eb; --muted: #94a1aa; --line: #33404a; --stage: #11161a; --accent: #f08f3a; --ref: #8d99a1; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #161b1f; --panel: #1e252a; --fg: #e3e8eb; --muted: #94a1aa; --line: #33404a; --stage: #11161a; --accent: #f08f3a; --ref: #8d99a1; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); margin: 0; }
+.app { display: grid; grid-template-columns: 300px 1fr; gap: 12px; min-height: 100%; box-sizing: border-box;
+  padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+h1 { font-size: 1.1rem; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 0.82rem; line-height: 1.45; margin: 0; }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+button { font: inherit; font-size: 0.8rem; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); cursor: pointer; text-align: left; }
+button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.main { display: grid; grid-template-rows: minmax(320px, 1fr) auto; gap: 12px; min-width: 0; }
+.stage { position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--stage); min-height: 320px; }
+#cv { width: 100%; height: 100%; display: block; }
+.chart { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 10px 12px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+.sw { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; }
+@media (max-width: 760px) { .app { grid-template-columns: 1fr; } .main { grid-template-rows: 60vh auto; } }
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div>
+      <h1>발바닥 1단계 변형 15종</h1>
+      <p class="sub">오른발 충돌 형상. 주황 = 고른 변형, 회색 반투명 = v5 기준. 보라 = 부드러운 아치 쐐기 조각(접촉 solref 0.08). 발 질량은 모든 변형이 같다(1.186 kg).</p>
+    </div>
+    <div><span class="label">변형</span><div class="list" id="list"></div></div>
+    <p class="sub" id="desc"></p>
+  </aside>
+  <section class="main">
+    <div class="stage"><canvas id="cv"></canvas></div>
+    <div class="chart">
+      <div class="legend">
+        <span><span class="sw" style="background:var(--accent)"></span>고른 변형</span>
+        <span><span class="sw" style="background:var(--ref)"></span>v5 기준</span>
+        <span>실선 = 발 가운데 줄, 점선 = 안쪽으로 45 mm (아치 쪽)</span>
+      </div>
+      <svg id="prof" viewBox="0 0 900 230" role="img" aria-label="ground-contact side profile"></svg>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DATA = __DATA__;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function dec(b, T) { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new T(u.buffer); }
+function geo(p) { const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(dec(p.v, Float32Array), 3));
+  g.setIndex(new THREE.BufferAttribute(dec(p.f, Uint32Array), 1)); g.computeVertexNormals(); return g; }
+const canvas = document.getElementById("cv");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); const cam = new THREE.PerspectiveCamera(35, 1, 1, 5000); cam.up.set(0, 0, 1);
+const ctl = new THREE.OrbitControls(cam, canvas); ctl.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 0.9));
+const dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(200, -300, -400); scene.add(dl);
+const grid = new THREE.GridHelper(400, 40, 0x7f8b93, 0x7f8b93); grid.rotation.x = Math.PI / 2; grid.position.set(50, 0, -57); grid.material.opacity = 0.25; grid.material.transparent = true; scene.add(grid);
+const COL = { sole: 0xd9771e, soft: 0x8a5cd6, bracket: 0x6f8f7a };
+function build(V, ghost) {
+  const g = new THREE.Group();
+  Object.entries(V.layers).forEach(([k, p]) => {
+    if (!p) return;
+    const mat = ghost ? new THREE.MeshStandardMaterial({ color: 0x9aa4ab, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide })
+                      : new THREE.MeshStandardMaterial({ color: COL[k], transparent: k === "bracket", opacity: k === "bracket" ? 0.25 : 1, roughness: 0.7, side: THREE.DoubleSide });
+    const m = new THREE.Mesh(geo(p), mat);
+    if (!ghost) m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 25), new THREE.LineBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.35 })));
+    g.add(m);
+  });
+  return g;
+}
+const ref = DATA.variants.find(v => v.name === "v5fullm") || DATA.variants[0];
+scene.add(build(ref, true));
+let cur = null;
+const list = document.getElementById("list");
+const X = DATA.x, x0 = X[0], x1 = X[X.length - 1];
+function pathOf(zs, sx, sy) { let d = "", pen = false; zs.forEach((z, i) => { if (z === null) { pen = false; return; } d += (pen ? "L" : "M") + sx(X[i]).toFixed(1) + "," + sy(z).toFixed(1); pen = true; }); return d; }
+function drawProfile(V) {
+  const svg = document.getElementById("prof"), W = 900, H = 230, L = 46, R = 10, T = 10, B = 30;
+  const zmin = -58, zmax = -30;
+  const sx = x => L + (x - x0) / (x1 - x0) * (W - L - R), sy = z => T + (zmax - z) / (zmax - zmin) * (H - T - B);
+  const fg = css("--fg"), mu = css("--muted"), ln = css("--line"), ac = css("--accent"), rf = css("--ref");
+  let s = "";
+  for (let z = -55; z <= -30; z += 5) s += `<line x1="${L}" x2="${W - R}" y1="${sy(z)}" y2="${sy(z)}" stroke="${ln}" stroke-width="1"/><text x="${L - 6}" y="${sy(z) + 4}" font-size="11" text-anchor="end" fill="${mu}">${z}</text>`;
+  for (let x = -80; x <= 180; x += 20) s += `<text x="${sx(x)}" y="${H - 10}" font-size="11" text-anchor="middle" fill="${mu}">${x}</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${sy(-57)}" y2="${sy(-57)}" stroke="${mu}" stroke-width="1.2"/><text x="${W - R}" y="${sy(-57) + 14}" font-size="11" text-anchor="end" fill="${mu}">지면 (발목 기준 z = −57 mm) · x: 발목 기준 앞쪽 + [mm]</text>`;
+  [[ref, rf], [V, ac]].forEach(([v, c]) => {
+    s += `<path d="${pathOf(v.prof.mid, sx, sy)}" fill="none" stroke="${c}" stroke-width="2"/>`;
+    s += `<path d="${pathOf(v.prof.medial, sx, sy)}" fill="none" stroke="${c}" stroke-width="2" stroke-dasharray="5 4"/>`;
+  });
+  svg.innerHTML = s;
+}
+function select(V, btn) {
+  if (cur) scene.remove(cur);
+  cur = build(V, false); scene.add(cur);
+  list.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
+  document.getElementById("desc").textContent = V.label;
+  drawProfile(V);
+}
+DATA.variants.forEach((V, i) => {
+  const b = document.createElement("button"); b.textContent = V.name; b.title = V.label;
+  b.addEventListener("click", () => select(V, b)); list.appendChild(b);
+  if (i === 0) select(V, b);
+});
+ctl.target.set(50, 0, -50); cam.position.set(50 - 220, -320, -140); ctl.update();
+function theme() { scene.background = new THREE.Color(css("--stage") || "#e3e8eb"); if (cur) drawProfile(DATA.variants.find(v => v.label === document.getElementById("desc").textContent) || ref); }
+theme(); matchMedia("(prefers-color-scheme: dark)").addEventListener("change", theme);
+new MutationObserver(theme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+function resize() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(canvas); resize();
+(function loop() { ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+</script>

@@ -1,0 +1,102 @@
+<title>Pygmalion Robot Model Compare</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* layout: control column + full-height 3D stage, stacking on narrow screens */
+:root {
+  --bg: #eef1f3; --panel: #ffffff; --fg: #1d2429; --muted: #5d6a73; --line: #cfd6db; --stage: #e3e8eb; --accent: #d9771e;
+  --font-body: "IBM Plex Sans KR", "Noto Sans KR", system-ui, sans-serif; --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161b1f; --panel: #1e252a; --fg: #e3e8eb; --muted: #94a1aa; --line: #33404a; --stage: #11161a; --accent: #f08f3a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #161b1f; --panel: #1e252a; --fg: #e3e8eb; --muted: #94a1aa; --line: #33404a; --stage: #11161a; --accent: #f08f3a; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); }
+.app { display: grid; grid-template-columns: 290px 1fr; gap: 12px; height: 100%; box-sizing: border-box;
+  padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0; overflow-y: auto; }
+h1 { font-size: 1.1rem; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 0.82rem; line-height: 1.45; margin: 0; }
+.group { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.toggle { display: grid; grid-template-columns: 18px 14px 1fr; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; }
+.sw { width: 14px; height: 14px; border-radius: 3px; }
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+button { font: inherit; font-size: 0.82rem; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stats { font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.6; border-top: 1px solid var(--line); padding-top: 10px; font-variant-numeric: tabular-nums; }
+.stage { position: relative; min-width: 0; min-height: 320px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--stage); }
+#cv { width: 100%; height: 100%; display: block; }
+@media (max-width: 760px) { .app { grid-template-columns: 1fr; grid-template-rows: auto 70vh; height: auto; } .side { overflow: visible; } }
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="group">
+      <h1>Pygmalion 로봇 모델 비교</h1>
+      <p class="sub">학습 시작 자세(무릎 살짝 굽힘). 왼쪽 = 지금 학습 모델(발 상자 3개), 오른쪽 = 발바닥 변형. 바닥 = 지면(z = 0). 마우스로 회전, 휠로 확대.</p>
+    </div>
+    <div class="group" id="toggles"><span class="label">레이어</span></div>
+    <div class="group">
+      <span class="label">시점</span>
+      <div class="views">
+        <button id="v-iso">비스듬히</button>
+        <button id="v-front">정면</button>
+        <button id="v-side">옆</button>
+        <button id="v-feet">발 확대</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </aside>
+  <section class="stage"><canvas id="cv"></canvas></section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DATA = __DATA__;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function dec(b, T) { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new T(u.buffer); }
+function geo(p) { const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(dec(p.v, Float32Array), 3));
+  g.setIndex(new THREE.BufferAttribute(dec(p.f, Uint32Array), 1)); g.computeVertexNormals(); return g; }
+const canvas = document.getElementById("cv");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); const cam = new THREE.PerspectiveCamera(35, 1, 5, 20000); cam.up.set(0, 0, 1);
+const ctl = new THREE.OrbitControls(cam, canvas); ctl.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 0.85));
+const dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(1500, -2000, 2500); scene.add(dl);
+const grid = new THREE.GridHelper(3000, 30, 0x7f8b93, 0x7f8b93); grid.rotation.x = Math.PI / 2; grid.material.opacity = 0.3; grid.material.transparent = true; scene.add(grid);
+const STYLE = { visual: [0x9aa4ab, 0.55, "로봇 시각 메시"], collision: [0x2f8f5b, 0.30, "충돌 (발 제외)"], foot: [0xd9771e, 0.75, "충돌: 발"] };
+const groups = {};
+DATA.models.forEach((M, mi) => {
+  Object.entries(M.layers).forEach(([k, p]) => {
+    if (!p) return;
+    const [c, o] = STYLE[k];
+    const mat = new THREE.MeshStandardMaterial({ color: c, transparent: o < 1, opacity: o, roughness: 0.75, side: THREE.DoubleSide, depthWrite: k === "visual" });
+    const mesh = new THREE.Mesh(geo(p), mat); mesh.position.y = M.dy;
+    if (k !== "visual") { const e = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 25), new THREE.LineBasicMaterial({ color: c })); mesh.add(e); }
+    (groups[k] = groups[k] || []).push(mesh); scene.add(mesh);
+  });
+});
+const tg = document.getElementById("toggles");
+Object.entries(STYLE).forEach(([k, [c, o, lab]]) => {
+  const id = "l-" + k; const row = document.createElement("label"); row.className = "toggle";
+  row.innerHTML = `<input type="checkbox" id="${id}" ${k === "collision" ? "" : "checked"}><span class="sw" style="background:#${c.toString(16).padStart(6, "0")}"></span>${lab}`;
+  tg.appendChild(row);
+  const el = row.querySelector("input"); const f = () => (groups[k] || []).forEach(m => m.visible = el.checked); el.addEventListener("change", f); f();
+});
+document.getElementById("stats").innerHTML = DATA.models.map(M =>
+  `<b>${M.name}</b><br>전체 질량 ${M.mass.toFixed(2)} kg · 발 충돌 삼각형 ${M.layers.foot ? M.layers.foot.nf : 0}`).join("<br><br>");
+const T = new THREE.Vector3(0, 350, 450);
+function view(eye, t = T) { ctl.target.copy(t); cam.position.copy(t).add(new THREE.Vector3(...eye)); ctl.update(); }
+const V = { "v-iso": [2200, -2300, 1300], "v-front": [3200, 0, 300], "v-side": [0, -3400, 200], "v-feet": [700, -900, 250] };
+Object.entries(V).forEach(([id, e]) => document.getElementById(id).addEventListener("click", () => view(e, id === "v-feet" ? new THREE.Vector3(50, 350, 30) : T)));
+view(V["v-iso"]);
+function theme() { scene.background = new THREE.Color(css("--stage") || "#e3e8eb"); }
+theme(); matchMedia("(prefers-color-scheme: dark)").addEventListener("change", theme);
+new MutationObserver(theme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+function resize() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(canvas); resize();
+(function loop() { ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+</script>

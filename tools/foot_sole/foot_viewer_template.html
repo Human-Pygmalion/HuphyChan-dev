@@ -1,0 +1,198 @@
+<title>Pygmalion Sole Collision</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* layout: full-height tool — control column + 3D stage, stacking on narrow screens */
+:root {
+  --bg: #eef1f3; --panel: #ffffff; --fg: #1d2429; --muted: #5d6a73; --line: #cfd6db;
+  --stage: #e3e8eb; --accent: #d9771e; --collision: #2f8f5b; --steel: #8b979f; --base: #3c6fb3;
+  --font-body: "IBM Plex Sans KR", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161b1f; --panel: #1e252a; --fg: #e3e8eb; --muted: #94a1aa; --line: #33404a;
+  --stage: #11161a; --accent: #f08f3a; --collision: #4cc27f; --steel: #9aa6ae; --base: #6b9be0; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #161b1f; --panel: #1e252a; --fg: #e3e8eb; --muted: #94a1aa; --line: #33404a;
+  --stage: #11161a; --accent: #f08f3a; --collision: #4cc27f; --steel: #9aa6ae; --base: #6b9be0; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); }
+.app { display: grid; grid-template-columns: 300px 1fr; gap: 12px; height: 100%; box-sizing: border-box;
+  padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0; overflow-y: auto; }
+h1 { font-size: 1.15rem; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+.sub { color: var(--muted); font-size: 0.82rem; line-height: 1.45; margin: 0; }
+.group { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.toggle { display: grid; grid-template-columns: 18px 14px 1fr; align-items: center; gap: 8px; font-size: 0.86rem; cursor: pointer; }
+.toggle input { margin: 0; }
+.sw { width: 14px; height: 14px; border-radius: 3px; }
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+button { font: inherit; font-size: 0.82rem; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--fg); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stats { font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.6; font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--line); padding-top: 10px; color: var(--fg); }
+.stats b { font-weight: 500; color: var(--accent); }
+.range { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 0.82rem; }
+.range input { width: 100%; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.stage { position: relative; min-width: 0; min-height: 320px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--stage); }
+#cv { width: 100%; height: 100%; display: block; }
+.axes { position: absolute; left: 10px; bottom: 8px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); pointer-events: none; }
+#hover { position: absolute; right: 10px; top: 8px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 60vh; height: auto; }
+  .side { overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="group">
+      <h1 id="ttl">Pygmalion 발바닥 — 충돌 모델</h1>
+      <p class="sub">오른발, 발 좌표계(mm). 원점 = 발목 원점, x = 발끝, y = 내측(로봇 왼쪽), z = 위. 마우스로 회전, 휠로 확대, 오른쪽 드래그로 이동.</p>
+    </div>
+    <div class="group">
+      <span class="label">레이어</span>
+      <label class="toggle"><input type="checkbox" id="l-visual" checked><span class="sw" style="background:var(--steel)"></span>로봇 시각 메시 (판 + 발목 브래킷)</label>
+      <label class="toggle"><input type="checkbox" id="l-cad" checked><span class="sw" style="background:var(--accent)"></span>CAD 발바닥 (캐리어 + 테이프 + 시트)</label>
+      <label class="toggle"><input type="checkbox" id="l-strip" checked><span class="sw" style="background:var(--collision)"></span>충돌: 발바닥 띠</label>
+      <label class="toggle"><input type="checkbox" id="l-upper"><span class="sw" style="background:var(--collision);opacity:.45"></span>충돌: 판 + 판 위 상자</label>
+      <label class="toggle"><input type="checkbox" id="l-base"><span class="sw" style="background:var(--base)"></span>학습 모델 충돌 (상자 3개, 맨 판)</label>
+    </div>
+    <div class="group">
+      <span class="label">CAD 불투명도</span>
+      <div class="range"><input type="range" id="cad-op" min="0" max="100" value="35"><span class="mono" id="cad-op-v">35%</span></div>
+    </div>
+    <div class="group">
+      <span class="label">단면 자르기 (x 위치에서 앞쪽 숨김)</span>
+      <div class="range"><input type="range" id="clip" min="-85" max="185" value="185" step="1"><span class="mono" id="clip-v">끔</span></div>
+    </div>
+    <div class="group">
+      <span class="label">시점</span>
+      <div class="views">
+        <button id="v-iso">아래에서 비스듬히</button>
+        <button id="v-bottom">바닥</button>
+        <button id="v-medial">내측 옆</button>
+        <button id="v-front">정면 (발끝)</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </aside>
+  <section class="stage">
+    <canvas id="cv"></canvas>
+    <div id="hover" hidden></div>
+    <div class="axes">x 빨강 · y 초록 · z 파랑 (각 20 mm)</div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DATA = __DATA__;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function dec(b64, T) { const s = atob(b64), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return new T(u.buffer); }
+function geo(p) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(dec(p.v, Float32Array), 3));
+  g.setIndex(new THREE.BufferAttribute(dec(p.f, Uint32Array), 1));
+  g.computeVertexNormals(); return g;
+}
+const canvas = document.getElementById("cv");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.localClippingEnabled = true;
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(35, 1, 1, 5000);
+cam.up.set(0, 0, 1);
+const ctl = new THREE.OrbitControls(cam, canvas);
+ctl.enableDamping = true;
+const target = new THREE.Vector3(50, 0, -45);
+ctl.target.copy(target);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 0.85));
+const dl = new THREE.DirectionalLight(0xffffff, 0.6); dl.position.set(-200, -300, -250); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0xffffff, 0.35); dl2.position.set(200, 300, 300); scene.add(dl2);
+const clipPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 1e6);
+const clip = [clipPlane];
+const layers = { visual: new THREE.Group(), cad: new THREE.Group(), strip: new THREE.Group(), upper: new THREE.Group(), base: new THREE.Group() };
+Object.values(layers).forEach(g => scene.add(g));
+
+const mats = [];
+function mat(color, opacity, extra = {}) {
+  const m = new THREE.MeshStandardMaterial(Object.assign({ color, transparent: opacity < 1, opacity, roughness: 0.75, metalness: 0.05,
+    side: THREE.DoubleSide, clippingPlanes: clip, depthWrite: opacity >= 1 }, extra));
+  mats.push(m); return m;
+}
+function edges(g, color, angle = 20) {
+  return new THREE.LineSegments(new THREE.EdgesGeometry(g, angle), new THREE.LineBasicMaterial({ color, clippingPlanes: clip }));
+}
+DATA.visual.forEach(p => layers.visual.add(new THREE.Mesh(geo(p), mat(0x9aa4ab, 0.35))));
+const cadMat = mat(0xd9771e, 0.35);
+layers.cad.add(new THREE.Mesh(geo(DATA.cad), cadMat));
+const strips = DATA.collision.filter(c => c.kind === "strip");
+strips.forEach((c, i) => {
+  const g = geo(c), col = new THREE.Color().setHSL(0.30 + 0.32 * i / Math.max(1, strips.length - 1), 0.55, 0.52);
+  const m = new THREE.Mesh(g, mat(col, 0.82, { polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }));
+  m.userData = { info: `띠 ${i + 1}/${strips.length}  x ${c.x0.toFixed(1)} ~ ${c.x1.toFixed(1)} mm` };
+  layers.strip.add(m); layers.strip.add(edges(g, 0x0d3b22));
+});
+DATA.collision.filter(c => c.kind !== "strip").forEach(c => {
+  const g = geo(c);
+  layers.upper.add(new THREE.Mesh(g, mat(0x2f8f5b, 0.18))); layers.upper.add(edges(g, 0x2f8f5b));
+});
+DATA.base.forEach(p => { const g = geo(p); layers.base.add(new THREE.Mesh(g, mat(0x3c6fb3, 0.25))); layers.base.add(edges(g, 0x3c6fb3)); });
+
+// ground plane at the sole bottom (z = -57 mm) and small axes at the ankle origin
+const grid = new THREE.GridHelper(400, 40, 0x7f8b93, 0x7f8b93);
+grid.rotation.x = Math.PI / 2; grid.position.set(50, 0, -57.05); grid.material.opacity = 0.25; grid.material.transparent = true;
+scene.add(grid);
+const ax = new THREE.AxesHelper(20); scene.add(ax);
+
+const S = DATA.stats;
+document.getElementById("ttl").textContent = `Pygmalion 발바닥 ${S.variant} — 충돌 모델`;
+document.getElementById("stats").innerHTML =
+  `발바닥 충돌 조각 <b>${S.n_strips}</b>개<br>` +
+  `곡면 아래 채움 최대 <b>${S.fill_max.toFixed(3)}</b> mm<br>` +
+  `평지 접촉 면적 모델 <b>${S.contact_model.toFixed(1)}</b> / 설계 ${S.contact_true.toFixed(1)} cm²<br>` +
+  (Number.isFinite(S.probe_mean) ? `CAD 대비 높이 차 (광선 ${S.probe_n}점)<br>&nbsp; 평균 <b>${S.probe_mean.toFixed(3)}</b> mm, 최대 <b>${S.probe_max.toFixed(3)}</b> mm<br>` : "") +
+  `학습 모델 발 바닥: z = −43 mm, 폭 100 mm<br>v3 발 바닥: z = −57 mm, 폭 최대 114.4 mm`;
+
+const ids = { "l-visual": "visual", "l-cad": "cad", "l-strip": "strip", "l-upper": "upper", "l-base": "base" };
+Object.entries(ids).forEach(([id, k]) => { const el = document.getElementById(id); const f = () => layers[k].visible = el.checked; el.addEventListener("change", f); f(); });
+const op = document.getElementById("cad-op");
+op.addEventListener("input", () => { const v = op.value / 100; cadMat.opacity = v; cadMat.transparent = v < 1; cadMat.depthWrite = v >= 1;
+  document.getElementById("cad-op-v").textContent = op.value + "%"; });
+const cl = document.getElementById("clip");
+cl.addEventListener("input", () => { const x = +cl.value; const off = x >= 185;
+  clipPlane.constant = off ? 1e6 : x; document.getElementById("clip-v").textContent = off ? "끔" : `x ${x} mm`; });
+
+function setView(eye) { cam.position.copy(target).add(new THREE.Vector3(...eye)); ctl.target.copy(target); ctl.update(); }
+const V = { "v-iso": [-260, -330, -220], "v-bottom": [0, -1, -480], "v-medial": [0, 470, -20], "v-front": [470, 0, -40] };
+Object.entries(V).forEach(([id, e]) => document.getElementById(id).addEventListener("click", () => setView(e)));
+setView(V["v-iso"]);
+
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), hov = document.getElementById("hover");
+canvas.addEventListener("pointermove", e => {
+  const r = canvas.getBoundingClientRect();
+  mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(mouse, cam);
+  const hit = layers.strip.visible ? ray.intersectObjects(layers.strip.children.filter(o => o.isMesh)) : [];
+  if (hit.length) { const p = hit[0].point; hov.hidden = false;
+    hov.textContent = `${hit[0].object.userData.info} · 지점 (${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(2)})`; }
+  else hov.hidden = true;
+});
+
+function theme() { scene.background = new THREE.Color(css("--stage") || "#e3e8eb"); }
+theme();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", theme);
+new MutationObserver(theme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+function resize() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(canvas);
+resize();
+(function loop() { ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+</script>
