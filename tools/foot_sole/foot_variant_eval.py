@@ -137,9 +137,15 @@ def build_cfg():
   cfg.commands["twist"].resampling_time_range = (1e9, 1e9)
   # flat: every env starts at the centre facing +x (as the zero-shot runs); rough: spread the starts over the terrain and the
   # heading over the full circle so the envs sample different ground under the feet
-  spread = 0.0 if args.terrain == "flat" else 6.0
-  cfg.events["reset_base"].params["pose_range"] = {"x": (-spread, spread), "y": (-spread, spread), "z": (0.01, 0.05),
-                                                   "yaw": (0.0, 0.0) if args.terrain == "flat" else (-math.pi, math.pi)}
+  # (slope: spread only across the slope, along y, where the ground height does not change; rough: start 3-6 cm up so the feet
+  # cannot start inside a 2 cm ridge, stone or gravel cell)
+  if args.terrain == "flat":
+    pr_ = {"x": (0.0, 0.0), "y": (0.0, 0.0), "z": (0.01, 0.05), "yaw": (0.0, 0.0)}
+  elif args.terrain == "slope_rough":
+    pr_ = {"x": (0.0, 0.0), "y": (-6.0, 6.0), "z": (0.03, 0.06), "yaw": (-math.pi, math.pi)}
+  else:
+    pr_ = {"x": (-6.0, 6.0), "y": (-6.0, 6.0), "z": (0.03, 0.06), "yaw": (-math.pi, math.pi)}
+  cfg.events["reset_base"].params["pose_range"] = pr_
   cfg.events = {k: cfg.events[k] for k in ("reset_base", "reset_robot_joints")}
   cfg.observations["actor"].enable_corruption = False
   for nm in ("base_ang_vel", "projected_gravity", "motor_pos_history"):
