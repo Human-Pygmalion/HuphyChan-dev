@@ -20,10 +20,14 @@ ap.add_argument("jobs")
 ap.add_argument("out")
 ap.add_argument("--parallel", type=int, default=3)
 ap.add_argument("--num-envs", type=int, default=32)
+ap.add_argument("--device", default="cuda:0")
+ap.add_argument("--branch-dir", default="union_branch_49999", help="worktree name under mjcf_sim (local PC: union_branch)")
+ap.add_argument("--only-terrains", default="", help="comma list: run only jobs on these terrains (split the work between machines)")
+ap.add_argument("--fetch-host", default="", help="ssh host holding the training logs; checkpoints are copied to <out>/../ckpt_cache first")
 args = ap.parse_args()
 REPO = Path.home() / "MikuchanRemote/Human-Pygmalion"
 WS = REPO / "Feet_design/Feet_Design_Workspace/mjcf_sim"
-BR = WS / "union_branch_49999/mjlab_policy"
+BR = WS / f"{args.branch_dir}/mjlab_policy"
 LOGS = BR / "logs/rsl_rl/pygmalion_velocity"
 PY = REPO / "mujoco-sim/mjlab/.venv/bin/python3"
 OUT = Path(args.out)
@@ -34,6 +38,22 @@ running, fails = {}, {}
 def ckpt(run, it):
   if run == "ORIG":
     return BR / "checkpoints/terrain10_union_dr_49999/model_49999.pt"
+  if args.fetch_host:
+    rl = ("MikuchanRemote/Human-Pygmalion/Feet_design/Feet_Design_Workspace/mjcf_sim/union_branch_49999/mjlab_policy/"
+          "logs/rsl_rl/pygmalion_velocity")
+    cache = OUT.parent / "ckpt_cache" / f"{run}_{it}.pt"
+    if cache.exists():
+      return cache
+    r = subprocess.run(["ssh", "-o", "ConnectTimeout=20", args.fetch_host,
+                        f"f=$(ls {rl}/*_{run}/model_{it}.pt 2>/dev/null | tail -1); [ -n \"$f\" ] && [ $(( $(date +%s) - $(stat -c %Y $f) )) -gt 60 ] && echo $f"],
+                       capture_output=True, text=True)
+    f = r.stdout.strip()
+    if not f:
+      return None
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["rsync", "-a", f"{args.fetch_host}:{f}", str(cache) + ".part"], check=True)
+    os.replace(str(cache) + ".part", cache)
+    return cache
   hits = sorted(LOGS.glob(f"*_{run}/model_{it}.pt"))
   if not hits or time.time() - hits[-1].stat().st_mtime < 60:  # let the save finish
     return None
@@ -42,6 +62,8 @@ def ckpt(run, it):
 
 while True:
   jobs = [ln.split() for ln in Path(args.jobs).read_text().splitlines() if ln.strip() and not ln.startswith("#")]
+  if args.only_terrains:
+    jobs = [j for j in jobs if j[2] in args.only_terrains.split(",")]
   for tag, p in list(running.items()):
     if p.poll() is not None:
       print(time.strftime("%F %T"), "done", tag, "rc", p.returncode, flush=True)
@@ -60,9 +82,11 @@ while True:
       continue
     env = dict(os.environ, PYTHONPATH=str(WS / "stock_mjlab/src"))
     env.pop("PYG_FOOT_SOLREF", None)
+    if args.device == "cpu":
+      env["CUDA_VISIBLE_DEVICES"] = ""
     env.update(kv.split("=", 1) for kv in j[5:])
     cmd = [str(PY), str(REPO / "tools/foot_sole/foot_variant_eval.py"), "--branch-root", str(BR), "--mjlab-src", str(WS / "stock_mjlab/src"),
-           "--variant", variant, "--terrain", terrain, "--num-envs", str(args.num_envs), "--device", "cuda:0", "--checkpoint", str(c),
+           "--variant", variant, "--terrain", terrain, "--num-envs", str(args.num_envs), "--device", args.device, "--checkpoint", str(c),
            "--tag", tag, "--out", str(OUT)]
     log = open(OUT / f"{tag}.log", "w")
     running[tag] = subprocess.Popen(cmd, env=env, stdout=log, stderr=subprocess.STDOUT, cwd=str(REPO))
