@@ -24,6 +24,11 @@ Stability
   vx_err, wz_err    mean absolute command tracking error [m/s], [rad/s]
   slip_p95_mm_s     95th percentile horizontal speed of the foot material point under the CoP while the foot carries > 0.5 BW
   foot_tilt_p95_deg 95th percentile foot tilt (sole normal vs world z) while the foot carries > 0.3 BW
+  zone_heel/toe/arch/lat  mean share of the normal force (loaded stance) in the heel zone (foot x < 20 mm), forefoot rocker
+                    (x > 215 mm), medial arch zone (x 60-165 mm, inner side) and the outer 17 mm of the sole
+  split_frac        share of loaded stance with heel and toe carrying >= 25 % each and < 15 % in between (two-point contact)
+  tau_sat_frac, ankle_tau_sat_frac   share of moving time a motor (all 12 / the 4 crank motors) was clipped by the T-N curve
+  rom_sat_frac      share of moving time any crank or ankle output joint was within 3 % of its range limit
   cop_margin_p5_mm  5th percentile distance from the CoP to the sole outline edge (heel -80, toe +180 mm, side 50 box / 57 sole)
                     while the foot carries > 0.3 BW: how close the load comes to tipping over the foot edge
   onsets_per_s      stance onsets per second per foot (contact chatter; normal walking ~1.5-2)
@@ -113,7 +118,8 @@ def env_metrics(D, meta):
   S = D["sole"]
   fn = S[..., 0]
   out = {k: np.full(E, np.nan) for k in ("td_peak_bw", "td_peak_p95_bw", "td_rate_bw_s", "grf_p99_bw", "cot_pos", "cot_abs", "tau2_per_m",
-                                           "fell", "alive_frac", "survival_s", "dist_to_fall_m", "tilt_rms_deg", "angvel_rms", "vx_err", "wz_err", "slip_p95_mm_s",
+                                           "fell", "alive_frac", "survival_s", "dist_to_fall_m", "zone_heel", "zone_toe", "zone_arch", "zone_lat", "split_frac",
+                                           "tau_sat_frac", "ankle_tau_sat_frac", "rom_sat_frac", "tilt_rms_deg", "angvel_rms", "vx_err", "wz_err", "slip_p95_mm_s",
                                            "foot_tilt_p95_deg", "cop_margin_p5_mm", "onsets_per_s", "n_touchdowns", "distance_m")}
   Rf = quat_to_mat(D["foot_quat_w"])                               # T,E,2,3,3
   Rb = quat_to_mat(D["base_quat"])                                 # T,E,3,3
@@ -151,6 +157,22 @@ def env_metrics(D, meta):
       out["cot_pos"][e] = np.clip(pw, 0, None).sum() * DT / (bw * dist)
       out["cot_abs"][e] = np.abs(pw).sum() * DT / (bw * dist)
       out["tau2_per_m"][e] = (D["tau"][m, e] ** 2).sum() * DT / dist
+    # where the load sits on the foot, and how close the ankle chain runs to its torque / range limits
+    if "zone" in D:
+      ldz = (fn[:, e] > 0.3 * bw) & m[:, None]
+      for zi, zn in enumerate(("zone_heel", "zone_toe", "zone_arch", "zone_lat", "split_frac")):
+        zz = D["zone"][:, e, :, zi][ldz]
+        out[zn][e] = np.nanmean(zz) if np.isfinite(zz).any() else np.nan
+    if "tau_unc" in D:
+      sat = np.abs(D["tau_unc"][m, e]) > np.abs(D["tau"][m, e]) + 1e-3
+      out["tau_sat_frac"][e] = sat.mean()
+      out["ankle_tau_sat_frac"][e] = sat[:, [4, 5, 10, 11]].mean()
+    if "joint_range_16" in meta:
+      rg = np.asarray(meta["joint_range_16"])                      # 16 x 2
+      q = D["q16"][m, e]
+      span = rg[:, 1] - rg[:, 0]
+      near = (q - rg[:, 0] < 0.03 * span) | (rg[:, 1] - q < 0.03 * span)
+      out["rom_sat_frac"][e] = near[:, [4, 5, 10, 11, 12, 13, 14, 15]].mean()   # cranks and the two ankle output joints
     # stability
     tilt = np.degrees(np.arccos(np.clip(Rb[m, e, 2, 2], -1, 1)))
     out["tilt_rms_deg"][e] = np.sqrt(np.mean(tilt ** 2))
@@ -197,7 +219,7 @@ def rot(axis, a):
 def rollover_shape(D, meta, segments=("vx0.6", "vx1.0"), foot=0):
   """Roll-over shape (Hansen & Childress 2004): the CoP path during stance expressed in the shank frame (origin = ankle joint),
   sagittal plane, from the steady straight-walking segments of a flat-ground run. Returns the points (x forward, z up, metres,
-  shank frame) and the radius / centre of the least-squares circle through them. Right foot by default.
+  shank frame), the binned medians and the curvature radius of a quadratic fit through them (+ = concave up). Right foot by default.
   Shank orientation from the foot orientation and the ankle joints: R_shin = R_foot Rx(q_roll) Ry(q_pitch)
   (ankle pitch axis -y, roll axis -x in pygmalion_legonly_ab.xml)."""
   T, E = D["terminated"].shape
@@ -218,9 +240,24 @@ def rollover_shape(D, meta, segments=("vx0.6", "vx1.0"), foot=0):
   P = r_s[m][:, [0, 2]]
   if len(P) < 20:
     return dict(n=len(P), radius=np.nan, centre=[np.nan, np.nan], points=P)
-  # algebraic circle fit x^2 + z^2 + a x + b z + c = 0
-  A = np.c_[P[:, 0], P[:, 1], np.ones(len(P))]
-  sol, *_ = np.linalg.lstsq(A, -(P ** 2).sum(1), rcond=None)
-  cx, cz = -sol[0] / 2, -sol[1] / 2
-  R = float(np.sqrt(cx ** 2 + cz ** 2 - sol[2]))
-  return dict(n=len(P), radius=R, centre=[float(cx), float(cz)], points=P)
+  # median z in 10 mm x bins (robust to the double-support and impact samples), then z = a + b x + c x^2 over the bins that hold
+  # >= 1 % of the samples; curvature radius at the bin-weighted mean x. c > 0 = concave up (arc centre above, like the human ROS);
+  # |R| very large = the CoP path is a straight line in the shank frame (no effective rocker)
+  edges = np.arange(-0.10, 0.21, 0.01)
+  idx = np.digitize(P[:, 0], edges)
+  bx, bz, bw_ = [], [], []
+  for i in range(1, len(edges)):
+    k = idx == i
+    if k.sum() >= 0.01 * len(P):
+      bx.append(np.median(P[k, 0]))
+      bz.append(np.median(P[k, 1]))
+      bw_.append(k.sum())
+  bx, bz, bw_ = map(np.asarray, (bx, bz, bw_))
+  if len(bx) < 4:
+    return dict(n=len(P), radius=np.nan, curvature=np.nan, points=P, bins=(bx, bz, bw_))
+  c, b, a = np.polyfit(bx, bz, 2, w=np.sqrt(bw_))
+  x0 = float(np.average(bx, weights=bw_))
+  slope = b + 2 * c * x0
+  kappa = 2 * c / (1 + slope ** 2) ** 1.5
+  return dict(n=len(P), radius=float(1 / kappa) if kappa != 0 else np.inf, curvature=float(kappa), slope_deg=float(np.degrees(np.arctan(slope))),
+              points=P, bins=(bx, bz, bw_), fit=(float(a), float(b), float(c)))

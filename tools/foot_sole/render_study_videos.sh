@@ -31,11 +31,11 @@ ARCH=("v5_a0_51000:arch 0" "v5_a2_51000:arch 2" "$REF" "v5_a6_51000:arch 6" "v5_
 ARCHS=("$REF" "v5_ax130_51000:apex x130" "v5_span80_51000:span 80-145" "v5_span40_51000:span 40-185" "v5_ao40_51000:cone apex 40" "v5_ao160_51000:cone apex 160")
 OTHER=("base_51000:box foot" "$REF" "v5_w13_51000:rubber -13 mm" "v5_softarch_51000:soft arch" "v5_human_51000:human proportions")
 {
-  for ter in flat ridge slope_rough gravel_lo gravel stones_lo stones; do echo "stage0_side_$ter side $ter S0"; done
-  for ter in flat stones_lo gravel_lo; do echo "stage0_foot_$ter foot $ter S0"; done
+  for ter in flat ridge slope_rough pebbles stones_lo stones; do echo "stage0_side_$ter side $ter S0"; done
+  for ter in flat pebbles stones_lo; do echo "stage0_foot_$ter foot $ter S0"; done
   for g in HEEL TOE ARCH ARCHS OTHER; do
     for ter in flat stones_lo; do echo "sweep_${g,,}_foot_$ter foot $ter $g"; done
-    echo "sweep_${g,,}_side_gravel_lo side gravel_lo $g"
+    echo "sweep_${g,,}_side_pebbles side pebbles $g"
   done
 } | while read -r name view ter grp; do
   unset -n arr 2>/dev/null; declare -n arr="$grp"

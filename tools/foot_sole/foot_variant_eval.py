@@ -32,10 +32,11 @@ ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDe
 ap.add_argument("--branch-root", required=True)
 ap.add_argument("--mjlab-src", required=True)
 ap.add_argument("--variant", required=True, help="base, or <name> of pygmalion_legonly_ab_<name>.xml (v3full, v5full, v5fullm, v5_* ...)")
-ap.add_argument("--terrain", default="flat", choices=["flat", "ridge", "slope_rough", "gravel", "stones", "gravel_lo", "stones_lo"],
+ap.add_argument("--terrain", default="flat", choices=["flat", "ridge", "slope_rough", "stones", "stones_lo", "pebbles", "hf_flat"],
                 help="flat: 60 m strip (as the zero-shot runs); ridge: training level 7 (capsule ridges 1-2 cm every 10-20 cm); "
-                     "slope_rough: training level 10 (6 deg up + ridges); gravel: random height field 0-2 cm on a 10 cm grid (not in training); "
-                     "stones: scattered 2 cm blocks 10-20 cm wide (not in training); gravel_lo / stones_lo: the same at half height (0-1 cm, 1 cm); height fields at 10 cm cells (5 cm overflows the 50-contact hfield limit)")
+                     "slope_rough: training level 10 (6 deg up + ridges); stones / stones_lo: scattered 2 cm / 1 cm boxes 10-20 cm wide "
+                     "(not in training); pebbles: dense 3-8 mm boxes 1-3 cm wide in a 6 m corridor along +x (not in training); "
+                     "hf_flat: a FLAT HEIGHT FIELD, only to check the Warp height-field contact defect against flat (never for results)")
 ap.add_argument("--task", default="Pygmalion-Velocity-Generalized-Terrain10-UnionDR")
 ap.add_argument("--num-envs", type=int, default=8)
 ap.add_argument("--seed", type=int, default=0)
@@ -64,7 +65,8 @@ from mjlab.tasks.registry import load_env_cfg, load_rl_cfg, load_runner_cls  # n
 from mjlab.tasks.velocity.mdp import UniformVelocityCommand, UniformVelocityCommandCfg  # noqa: E402
 from mjlab.terrains import TerrainEntityCfg, TerrainGeneratorCfg  # noqa: E402
 from mjlab.utils.spec_config import CollisionCfg  # noqa: E402
-from mjlab.terrains.heightfield_terrains import HfDiscreteObstaclesTerrainCfg, HfRandomUniformTerrainCfg  # noqa: E402
+from mjlab.terrains.heightfield_terrains import HfRandomUniformTerrainCfg  # noqa: E402
+from sole_terrains import ScatterBoxTerrainCfg  # noqa: E402
 from pygmalion_mjlab.terrain10 import StripTerrainCfg  # noqa: E402
 
 DT = 0.02
@@ -115,16 +117,12 @@ def build_cfg():
     "flat": lambda: StripTerrainCfg(size=(side, side), slope_deg=0.0, ridge_height_range=(0.0, 0.0)),
     "ridge": lambda: StripTerrainCfg(size=(side, side), slope_deg=0.0, ridge_height_range=(0.010, 0.020)),
     "slope_rough": lambda: StripTerrainCfg(size=(side, side), slope_deg=6.0, ridge_height_range=(0.010, 0.020)),
-    "gravel": lambda: HfRandomUniformTerrainCfg(size=(side, side), noise_range=(0.0, 0.02), noise_step=0.005, downsampled_scale=0.1,
-                                                horizontal_scale=0.1, vertical_scale=0.005),
-    "gravel_lo": lambda: HfRandomUniformTerrainCfg(size=(side, side), noise_range=(0.0, 0.01), noise_step=0.005, downsampled_scale=0.1,
-                                                   horizontal_scale=0.1, vertical_scale=0.005),
-    "stones_lo": lambda: HfDiscreteObstaclesTerrainCfg(size=(side, side), obstacle_height_mode="fixed", obstacle_width_range=(0.1, 0.2),
-                                                       obstacle_height_range=(0.01, 0.01), num_obstacles=8000, platform_width=1.0,
-                                                       horizontal_scale=0.1, vertical_scale=0.005),
-    "stones": lambda: HfDiscreteObstaclesTerrainCfg(size=(side, side), obstacle_height_mode="fixed", obstacle_width_range=(0.1, 0.2),
-                                                    obstacle_height_range=(0.02, 0.02), num_obstacles=8000, platform_width=1.0,
-                                                    horizontal_scale=0.1, vertical_scale=0.005),
+    "stones": lambda: ScatterBoxTerrainCfg(size=(side, side), n_boxes=6000, width_range=(0.10, 0.20), height_range=(0.02, 0.02)),
+    "stones_lo": lambda: ScatterBoxTerrainCfg(size=(side, side), n_boxes=6000, width_range=(0.10, 0.20), height_range=(0.01, 0.01)),
+    "pebbles": lambda: ScatterBoxTerrainCfg(size=(side, side), n_boxes=9000, width_range=(0.01, 0.03), height_range=(0.003, 0.008),
+                                            corridor_half_width=3.0),
+    "hf_flat": lambda: HfRandomUniformTerrainCfg(size=(side, side), noise_range=(0.0, 0.0), noise_step=0.005, downsampled_scale=0.1,
+                                                 horizontal_scale=0.1, vertical_scale=0.005),
   }[args.terrain]()
   cfg.scene.terrain = TerrainEntityCfg(
     terrain_type="generator",
@@ -144,12 +142,15 @@ def build_cfg():
   # heading over the full circle so the envs sample different ground under the feet
   # (slope: spread only across the slope, along y, where the ground height does not change; rough: start 3-6 cm up so the feet
   # cannot start inside a 2 cm ridge, stone or gravel cell)
-  if args.terrain == "flat":
+  if args.terrain in ("flat", "hf_flat"):
     pr_ = {"x": (0.0, 0.0), "y": (0.0, 0.0), "z": (0.01, 0.05), "yaw": (0.0, 0.0)}
   elif args.terrain == "slope_rough":
     pr_ = {"x": (0.0, 0.0), "y": (-6.0, 6.0), "z": (0.03, 0.06), "yaw": (-math.pi, math.pi)}
-  else:
+  elif args.terrain == "ridge":
     pr_ = {"x": (-6.0, 6.0), "y": (-6.0, 6.0), "z": (0.03, 0.06), "yaw": (-math.pi, math.pi)}
+  else:
+    # scattered boxes: start at the -x end facing +x, so the 135 s program (about 50 m of forward walking) crosses the whole tile
+    pr_ = {"x": (-27.0, -25.0), "y": (-1.5, 1.5) if args.terrain == "pebbles" else (-20.0, 20.0), "z": (0.03, 0.06), "yaw": (0.0, 0.0)}
   cfg.events["reset_base"].params["pose_range"] = pr_
   cfg.events = {k: cfg.events[k] for k in ("reset_base", "reset_robot_joints")}
   cfg.observations["actor"].enable_corruption = False
@@ -221,6 +222,9 @@ def main():
   D = dict(sole=f(T, E, 2, 10), base_pos=f(T, E, 3), base_quat=f(T, E, 4), base_lin_vel_b=f(T, E, 3), base_ang_vel_b=f(T, E, 3),
            command=f(T, E, 3), q16=f(T, E, 16), qd16=f(T, E, 16), tau=f(T, E, 12), foot_pos_w=f(T, E, 2, 3), foot_quat_w=f(T, E, 2, 4),
            foot_lin_vel_w=f(T, E, 2, 3), terminated=np.zeros((T, E), bool), grf_sub=f(T, E, 2, cfg.decimation, 3))
+  D["zone"] = f(T, E, 2, 5)      # share of the foot's normal force in: heel zone, toe zone, medial arch zone, outer edge, heel+toe split
+  D["tau_unc"] = f(T, E, 12)     # motor torque before the T-N curve clipping (saturation = |unclipped| > |applied|)
+  side_sign = np.array([1.0, -1.0])  # R, L: medial = +y on the right foot, -y on the left foot (foot_link frame)
   NQ = min(E, 4)  # full qpos of the first envs for the comparison videos (render_eval_video.py)
   D["qpos"] = f(T, NQ, env.sim.mj_model.nq)
   snet = env.scene["sole_net"]
@@ -259,6 +263,17 @@ def main():
         cop = (loc[..., :2] * W[..., None]).sum(-2) / Ws[..., None]
       act = (found & (W > 1.0))
       big = np.where(act[..., None], loc[..., :2], np.nan)
+      with np.errstate(invalid="ignore", divide="ignore"):
+        px, py = loc[..., 0], loc[..., 1] * side_sign[None, :, None]   # contact points in the foot_link frame, medial +
+        wsum = np.where(Ws > 1.0, Ws, np.nan)
+        z_heel = (W * (px < -0.060)).sum(-1) / wsum                    # foot x < 20 mm from the heel tip (ankle is 80 mm in)
+        z_toe = (W * (px > 0.135)).sum(-1) / wsum                      # foot x > 215 mm: the forefoot rocker
+        z_arch = (W * ((px >= -0.020) & (px <= 0.085) & (py > 0.020))).sum(-1) / wsum   # foot x 60-165 mm, medial side
+        z_lat = (W * (py < -0.040)).sum(-1) / wsum                     # outer 17 mm of the sole
+        f_back, f_front = (W * (px < -0.030)).sum(-1) / wsum, (W * (px > 0.070)).sum(-1) / wsum
+        z_split = ((f_back >= 0.25) & (f_front >= 0.25) & (1.0 - f_back - f_front < 0.15)).astype(np.float32)
+      D["zone"][i, :, :, 0], D["zone"][i, :, :, 1], D["zone"][i, :, :, 2], D["zone"][i, :, :, 3] = z_heel, z_toe, z_arch, z_lat
+      D["zone"][i, :, :, 4] = np.where(Ws > 1.0, z_split, np.nan)
       D["sole"][i, :, :, 0] = Ws
       D["sole"][i, :, :, 1] = np.where(found, ft, 0.0).sum(-1)
       D["sole"][i, :, :, 2:4] = cop
@@ -274,6 +289,8 @@ def main():
       obs, _, dones, ext = wenv.step(act_)
       for a, cols in acts:
         D["tau"][i][:, cols] = a.applied_effort.cpu().numpy()
+        unc = getattr(a, "unclipped_effort", None)
+        D["tau_unc"][i][:, cols] = (unc if unc is not None else a.applied_effort).cpu().numpy()
       D["terminated"][i] = env.reset_terminated.cpu().numpy()
       # history index 0 = latest substep -> store oldest first; world frame, sign fixed in the analysis (stand: +body weight)
       D["grf_sub"][i] = snet.data.force_history.cpu().numpy()[:, order_net][:, :, ::-1]
@@ -285,7 +302,8 @@ def main():
   np.savez_compressed(out / f"{TAG}.npz", **D)
   m = env.sim.mj_model
   mujoco.mj_saveModel(m, str(out / f"{TAG}.mjb"))  # terrain + robot exactly as simulated, for rendering the recorded qpos
-  meta = dict(variant=args.variant, tag=TAG, terrain=args.terrain, foot_solref=os.environ.get("PYG_FOOT_SOLREF") or "default 0.02", xml=str(xml), program=PROGRAM, seconds_per_cmd=args.seconds_per_cmd, num_envs=E, steps=T,
+  lim = robot.data.joint_pos_limits[0].cpu().numpy()
+  meta = dict(variant=args.variant, tag=TAG, terrain=args.terrain, joint_range_16=lim[idx16.cpu().numpy()].tolist(), joints_16=JOINTS16, foot_solref=os.environ.get("PYG_FOOT_SOLREF") or "default 0.02", xml=str(xml), program=PROGRAM, seconds_per_cmd=args.seconds_per_cmd, num_envs=E, steps=T,
               seed=args.seed, checkpoint=str(ckpt), robot_mass_kg=float(sum(m.body_mass[b] for b in range(m.nbody) if (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, b) or "").startswith("robot/"))),
               falls=int(D["terminated"].any(0).sum()), wall_s=round(time.time() - t0, 1),
               foot_geoms=int(sum(1 for g in range(m.ngeom) if (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_GEOM, g) or "").startswith(("R_foot", "L_foot")) and (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_GEOM, g) or "").endswith("_collision"))))

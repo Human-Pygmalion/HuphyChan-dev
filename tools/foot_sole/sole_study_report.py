@@ -27,9 +27,9 @@ import sole_study_metrics as sm  # noqa: E402
 EVAL, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 OUT.mkdir(parents=True, exist_ok=True)
 (EVAL / "metrics").mkdir(exist_ok=True)
-TERRAINS = ["flat", "ridge", "slope_rough", "gravel_lo", "gravel", "stones_lo", "stones"]
-TLAB = {"flat": "flat", "ridge": "ridges 1-2 cm", "slope_rough": "6° up + ridges", "gravel": "gravel 0-2 cm (OOD)", "stones": "stones 2 cm (OOD)",
-        "gravel_lo": "gravel 0-1 cm (OOD)", "stones_lo": "stones 1 cm (OOD)"}
+TERRAINS = ["flat", "ridge", "slope_rough", "pebbles", "stones_lo", "stones"]
+TLAB = {"flat": "flat", "ridge": "ridges 1-2 cm", "slope_rough": "6° up + ridges", "stones": "stones 2 cm (OOD)",
+        "pebbles": "pebbles 3-8 mm (OOD)", "stones_lo": "stones 1 cm (OOD)"}
 METRICS = [  # key, label, unit, better (-1 lower is better, +1 higher is better)
   ("td_peak_bw", "touchdown peak force", "BW", -1),
   ("td_rate_bw_s", "loading rate", "BW/s", -1),
@@ -47,6 +47,13 @@ METRICS = [  # key, label, unit, better (-1 lower is better, +1 higher is better
   ("foot_tilt_p95_deg", "stance foot tilt P95", "deg", -1),
   ("cop_margin_p5_mm", "CoP margin P5", "mm", +1),
   ("onsets_per_s", "stance onsets per foot", "1/s", -1),
+  ("zone_arch", "load share in the arch zone", "-", 0),
+  ("zone_toe", "load share on the forefoot rocker", "-", 0),
+  ("zone_heel", "load share on the heel rocker", "-", 0),
+  ("zone_lat", "load share on the outer edge", "-", 0),
+  ("split_frac", "heel+toe two-point contact share", "-", -1),
+  ("ankle_tau_sat_frac", "crank-motor torque clipped share", "-", -1),
+  ("rom_sat_frac", "ankle/crank range-limit share", "-", -1),
 ]
 RNG = np.random.default_rng(0)
 
@@ -57,7 +64,9 @@ def metrics(tag):
   if not src.exists():
     return None
   if cache.exists() and cache.stat().st_mtime > src.stat().st_mtime:
-    return {k: np.array(v, float) for k, v in json.loads(cache.read_text()).items()}
+    c = json.loads(cache.read_text())
+    if all(k in c for k, *_ in METRICS):  # older cache without the newer metrics: recompute
+      return {k: np.array([np.nan if x is None else x for x in v], float) for k, v in c.items()}
   D, meta = sm.load(EVAL / tag)
   m = sm.env_metrics(D, meta)
   cache.write_text(json.dumps({k: [None if not np.isfinite(x) else float(x) for x in v] for k, v in m.items()}))
@@ -136,7 +145,8 @@ def compare(a, b, it):
       nf = NF.get(it, {}).get((ter, k), np.nan)
       sig = np.isfinite(lo) and (lo > 0 or hi < 0)
       big = not np.isfinite(nf) or abs(d) > nf
-      v = ("better" if d * better > 0 else "worse") if (sig and big) else ("within noise" if sig else "n.s.")
+      v = (("differs" if better == 0 else "better" if d * better > 0 else "worse") if (sig and big)
+           else ("within noise" if sig else "n.s."))
       rows.append(dict(terrain=ter, metric=k, a=float(np.nanmean(A[k])), b=float(np.nanmean(B[k])), diff=d, lo=lo, hi=hi, nf=nf, verdict=v))
   return rows
 
@@ -233,7 +243,7 @@ def fig_sweep():
 
 def fig_pareto(names, it, fname, title):
   fig, ax = plt.subplots(1, 3, figsize=(16, 5))
-  groups = [("flat", ["flat"]), ("trained rough", ["ridge", "slope_rough"]), ("untrained rough", ["gravel_lo", "gravel", "stones_lo", "stones"])]
+  groups = [("flat", ["flat"]), ("trained rough", ["ridge", "slope_rough"]), ("untrained rough", ["pebbles", "stones_lo", "stones"])]
   for a, (gl, ters) in zip(ax, groups):
     for n in names:
       vals = [get(f"{n}_{it}", t) for t in ters]
