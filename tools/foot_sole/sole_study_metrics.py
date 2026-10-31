@@ -185,3 +185,42 @@ if __name__ == "__main__":
   D, meta = load(Path(sys.argv[1]))
   o = env_metrics(D, meta)
   print(json.dumps({k: [round(float(np.nanmean(v)), 4), round(float(np.nanstd(v)), 4)] for k, v in o.items()}, indent=1))
+
+
+def rot(axis, a):
+  c, s = np.cos(a), np.sin(a)
+  if axis == "x":
+    return np.stack([np.stack([np.ones_like(a), 0 * a, 0 * a], -1), np.stack([0 * a, c, -s], -1), np.stack([0 * a, s, c], -1)], -2)
+  return np.stack([np.stack([c, 0 * a, s], -1), np.stack([0 * a, np.ones_like(a), 0 * a], -1), np.stack([-s, 0 * a, c], -1)], -2)
+
+
+def rollover_shape(D, meta, segments=("vx0.6", "vx1.0"), foot=0):
+  """Roll-over shape (Hansen & Childress 2004): the CoP path during stance expressed in the shank frame (origin = ankle joint),
+  sagittal plane, from the steady straight-walking segments of a flat-ground run. Returns the points (x forward, z up, metres,
+  shank frame) and the radius / centre of the least-squares circle through them. Right foot by default.
+  Shank orientation from the foot orientation and the ankle joints: R_shin = R_foot Rx(q_roll) Ry(q_pitch)
+  (ankle pitch axis -y, roll axis -x in pygmalion_legonly_ab.xml)."""
+  T, E = D["terminated"].shape
+  bw = meta["robot_mass_kg"] * 9.81
+  n = int(round(meta["seconds_per_cmd"] / DT))
+  names = [p[0] for p in meta["program"]]
+  sel = np.zeros(T, bool)
+  for s in segments:
+    k = names.index(s)
+    sel[k * n + int(SKIP / DT):(k + 1) * n] = True
+  m = sel[:, None] & D["alive"] & (D["sole"][:, :, foot, 0] > 0.1 * bw) & np.isfinite(D["sole"][:, :, foot, 2])
+  qp, qr = D["q16"][..., 12 + 2 * foot], D["q16"][..., 13 + 2 * foot]
+  Rf = quat_to_mat(D["foot_quat_w"][:, :, foot])
+  Rs = Rf @ rot("x", qr) @ rot("y", qp)
+  zb = sole_z(meta["variant"])
+  r_f = np.stack([D["sole"][:, :, foot, 2], D["sole"][:, :, foot, 3], np.full((T, E), zb)], -1)  # CoP in foot frame
+  r_s = np.einsum("teji,tej->tei", Rs, np.einsum("teij,tej->tei", Rf, r_f))                     # world offset -> shank frame
+  P = r_s[m][:, [0, 2]]
+  if len(P) < 20:
+    return dict(n=len(P), radius=np.nan, centre=[np.nan, np.nan], points=P)
+  # algebraic circle fit x^2 + z^2 + a x + b z + c = 0
+  A = np.c_[P[:, 0], P[:, 1], np.ones(len(P))]
+  sol, *_ = np.linalg.lstsq(A, -(P ** 2).sum(1), rcond=None)
+  cx, cz = -sol[0] / 2, -sol[1] / 2
+  R = float(np.sqrt(cx ** 2 + cz ** 2 - sol[2]))
+  return dict(n=len(P), radius=R, centre=[float(cx), float(cz)], points=P)
