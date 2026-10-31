@@ -50,6 +50,9 @@ ap.add_argument("--override", default="", help='v5 only: JSON of fp5.P overrides
 ap.add_argument("--soft-arch", type=float, default=0.0,
                 help="v5 only: solref time constant for the arch-wedge pieces (soft TPU carrier wedge, where the carrier is lifted "
                      "> 0.5 mm by the arch cone); the wedge is cut out of the strips as its own pieces. 0 = off")
+ap.add_argument("--rubber-inset", type=float, default=0.0,
+                help="v5 only: shrink the rubber plan outline by this many mm all round (narrower rubber; the carrier stays, so the "
+                     "exposed carrier rim grows)")
 ap.add_argument("--name", default="", help="v5 only: variant name written as <xml stem>_<name>.xml (default v5full)")
 args = ap.parse_args()
 DESIGN = args.design
@@ -73,6 +76,8 @@ if DESIGN == "v3":
   EXPOSED = []
 else:
   SOLE = Polygon(np.load(REPO / "Feet_design/Feet_Design_Workspace/foot_cad/v5/rubber_plan_outline.npy")).buffer(0)
+  if args.rubber_inset > 0:
+    SOLE = SOLE.buffer(-args.rubber_inset, join_style=1, quad_segs=32)
   _ex = fp.CARRIER.difference(SOLE)
   EXPOSED = [g for g in getattr(_ex, "geoms", [_ex]) if g.area >= 20.0]  # drop boundary slivers (< 0.2 cm2)
 PLATE_Z = -43.0  # sim plate bottom in foot_link [mm]
@@ -271,7 +276,7 @@ def foot_block(side, variant, meshes):
 
 src = Path(args.xml)
 txt = src.read_text()
-report = dict(override=json.loads(args.override or "{}"), tol_fill_mm=args.tol_fill, tol_bulge_mm=args.tol_bulge, n_pieces=len(pieces), fill_max_mm=max(fills),
+report = dict(override=json.loads(args.override or "{}"), rubber_inset_mm=args.rubber_inset, soft_arch=args.soft_arch, tol_fill_mm=args.tol_fill, tol_bulge_mm=args.tol_bulge, n_pieces=len(pieces), fill_max_mm=max(fills),
               bulge_max_mm=max(bulges), coverage=cov, sole_mass_kg=SOLE_MASS, variants={})
 for variant in (("v3full", "v3same", "v3sph", "v3lat") if DESIGN == "v3" else (args.name or "v5full",)):
   meshes, out = [], txt

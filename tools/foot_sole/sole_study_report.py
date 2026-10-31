@@ -27,8 +27,9 @@ import sole_study_metrics as sm  # noqa: E402
 EVAL, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 OUT.mkdir(parents=True, exist_ok=True)
 (EVAL / "metrics").mkdir(exist_ok=True)
-TERRAINS = ["flat", "ridge", "slope_rough", "gravel", "stones"]
-TLAB = {"flat": "flat", "ridge": "ridges 1-2 cm", "slope_rough": "6° up + ridges", "gravel": "gravel 0-2 cm (OOD)", "stones": "stones 2 cm (OOD)"}
+TERRAINS = ["flat", "ridge", "slope_rough", "gravel_lo", "gravel", "stones_lo", "stones"]
+TLAB = {"flat": "flat", "ridge": "ridges 1-2 cm", "slope_rough": "6° up + ridges", "gravel": "gravel 0-2 cm (OOD)", "stones": "stones 2 cm (OOD)",
+        "gravel_lo": "gravel 0-1 cm (OOD)", "stones_lo": "stones 1 cm (OOD)"}
 METRICS = [  # key, label, unit, better (-1 lower is better, +1 higher is better)
   ("td_peak_bw", "touchdown peak force", "BW", -1),
   ("td_rate_bw_s", "loading rate", "BW/s", -1),
@@ -36,6 +37,8 @@ METRICS = [  # key, label, unit, better (-1 lower is better, +1 higher is better
   ("cot_pos", "cost of transport (positive work)", "-", -1),
   ("tau2_per_m", "squared torque per metre", "N²m²s/m", -1),
   ("fell", "fall rate", "-", -1),
+  ("survival_s", "time to first fall", "s", +1),
+  ("dist_to_fall_m", "distance to first fall", "m", +1),
   ("tilt_rms_deg", "base tilt RMS", "deg", -1),
   ("angvel_rms", "base roll/pitch rate RMS", "rad/s", -1),
   ("vx_err", "forward speed error", "m/s", -1),
@@ -188,8 +191,11 @@ SWEEP = [("heel_flat", "heel flat end x [mm]", [("v5_hf10", 10), ("v5fullm", 20)
          ("toe_rise", "toe end height [mm]", [("v5_tr3", 3), ("v5fullm", 5), ("v5_tr8", 8)]),
          ("arch_lift", "arch depth [mm]", [("v5_a0", 0), ("v5_a2", 2), ("v5fullm", 4.5), ("v5_a6", 6), ("v5_a9", 9), ("v5_a12", 12)]),
          ("apex_x", "arch apex x [mm]", [("v5fullm", 108), ("v5_ax130", 130)]),
+         ("arch_span", "arch medial span length [mm]", [("v5_span80", 65), ("v5fullm", 105), ("v5_span40", 145)]),
+         ("apex_out", "arch cone apex distance outside the lateral edge [mm]", [("v5_ao40", 40), ("v5fullm", 80), ("v5_ao160", 160)]),
+         ("rubber_width", "rubber inset all round [mm]", [("v5fullm", 0), ("v5_w13", 6.5)]),
          ("soft", "arch wedge", [("v5fullm", 0), ("v5_softarch", 1)])]
-FIG_METRICS = ["td_peak_bw", "td_rate_bw_s", "cot_pos", "tilt_rms_deg", "slip_p95_mm_s", "foot_tilt_p95_deg", "cop_margin_p5_mm", "fell"]
+FIG_METRICS = ["td_peak_bw", "td_rate_bw_s", "cot_pos", "survival_s", "tilt_rms_deg", "slip_p95_mm_s", "foot_tilt_p95_deg", "cop_margin_p5_mm"]
 
 
 def fig_sweep():
@@ -227,7 +233,7 @@ def fig_sweep():
 
 def fig_pareto(names, it, fname, title):
   fig, ax = plt.subplots(1, 3, figsize=(16, 5))
-  groups = [("flat", ["flat"]), ("trained rough", ["ridge", "slope_rough"]), ("untrained rough", ["gravel", "stones"])]
+  groups = [("flat", ["flat"]), ("trained rough", ["ridge", "slope_rough"]), ("untrained rough", ["gravel_lo", "gravel", "stones_lo", "stones"])]
   for a, (gl, ters) in zip(ax, groups):
     for n in names:
       vals = [get(f"{n}_{it}", t) for t in ters]
@@ -276,11 +282,38 @@ if __name__ == "__main__":
   lines += table_compare("v5fullm_sr01_52498", "base_sr01_52498", 52498, "Stiffer foot contact (solref 0.01): v5 vs box foot")
   lines += table_compare("base_sr01_52498", "base_52498", 52498, "Contact stiffness only, box foot: solref 0.01 vs 0.02")
   lines += table_compare("v5fullm_sr01_52498", "v5fullm_52498", 52498, "Contact stiffness only, v5: solref 0.01 vs 0.02")
+  lines += table_compare("v5fullm_sr04_52498", "v5fullm_52498", 52498, "Whole-sole compliance, v5: solref 0.04 (softer) vs 0.02")
   (OUT / "results_tables.md").write_text("\n".join(lines))
   fig_sweep()
   fig_pareto(["base", "v3full", "v5full", "v5fullm"], 52498, "fig_pareto_stage0.png", "Stage 0 foot types after 2,500 iterations")
   fig_pareto(["base", "v5fullm"] + [p[0] for _, _, pts in SWEEP for p in pts if p[0] != "v5fullm"], 51000, "fig_pareto_sweep.png",
              "Stage 1 sweep after 1,002 iterations (base = box foot at the same iteration)")
+  import csv
+  with open(OUT / "all_metrics_per_env.csv", "w", newline="") as fh:
+    w = csv.writer(fh)
+    keys = [m[0] for m in METRICS] + ["td_peak_p95_bw", "grf_p99_bw", "cot_abs", "alive_frac", "n_touchdowns", "distance_m"]
+    keys = list(dict.fromkeys(keys))
+    w.writerow(["run", "iteration", "terrain", "env"] + keys)
+    for r, d in sorted(M.items()):
+      name, it = r.rsplit("_", 1)
+      for t, mm in d.items():
+        if mm is None:
+          continue
+        for e in range(len(mm["fell"])):
+          w.writerow([name, it, t, e] + [("" if not np.isfinite(mm[k][e]) else f"{mm[k][e]:.6g}") for k in keys])
+  with open(OUT / "all_metrics_mean.csv", "w", newline="") as fh:
+    w = csv.writer(fh)
+    w.writerow(["run", "iteration", "terrain"] + [f"{k}_{s_}" for k, *_ in METRICS for s_ in ("mean", "ci95")])
+    for r, d in sorted(M.items()):
+      name, it = r.rsplit("_", 1)
+      for t, mm in d.items():
+        if mm is None:
+          continue
+        row = []
+        for k, *_ in METRICS:
+          mu, ci = (float(np.nansum(mm[k])), 0.0) if k == "fell" else mean_ci(mm[k])
+          row += [f"{mu:.6g}", f"{ci:.3g}"]
+        w.writerow([name, it, t] + row)
   json.dump({r: {t: {k: [None if not np.isfinite(x) else float(x) for x in v] for k, v in mm.items()} for t, mm in d.items() if mm is not None}
              for r, d in M.items()}, open(OUT / "per_env_metrics.json", "w"))
   print("wrote", OUT / "results_tables.md", "runs:", sorted(RUNS))

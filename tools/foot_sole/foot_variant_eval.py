@@ -32,10 +32,10 @@ ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDe
 ap.add_argument("--branch-root", required=True)
 ap.add_argument("--mjlab-src", required=True)
 ap.add_argument("--variant", required=True, help="base, or <name> of pygmalion_legonly_ab_<name>.xml (v3full, v5full, v5fullm, v5_* ...)")
-ap.add_argument("--terrain", default="flat", choices=["flat", "ridge", "slope_rough", "gravel", "stones"],
+ap.add_argument("--terrain", default="flat", choices=["flat", "ridge", "slope_rough", "gravel", "stones", "gravel_lo", "stones_lo"],
                 help="flat: 60 m strip (as the zero-shot runs); ridge: training level 7 (capsule ridges 1-2 cm every 10-20 cm); "
                      "slope_rough: training level 10 (6 deg up + ridges); gravel: random height field 0-2 cm on a 10 cm grid (not in training); "
-                     "stones: scattered 2 cm blocks 10-20 cm wide (not in training); height fields at 10 cm cells (5 cm overflows the 50-contact hfield limit)")
+                     "stones: scattered 2 cm blocks 10-20 cm wide (not in training); gravel_lo / stones_lo: the same at half height (0-1 cm, 1 cm); height fields at 10 cm cells (5 cm overflows the 50-contact hfield limit)")
 ap.add_argument("--task", default="Pygmalion-Velocity-Generalized-Terrain10-UnionDR")
 ap.add_argument("--num-envs", type=int, default=8)
 ap.add_argument("--seed", type=int, default=0)
@@ -117,6 +117,11 @@ def build_cfg():
     "slope_rough": lambda: StripTerrainCfg(size=(side, side), slope_deg=6.0, ridge_height_range=(0.010, 0.020)),
     "gravel": lambda: HfRandomUniformTerrainCfg(size=(side, side), noise_range=(0.0, 0.02), noise_step=0.005, downsampled_scale=0.1,
                                                 horizontal_scale=0.1, vertical_scale=0.005),
+    "gravel_lo": lambda: HfRandomUniformTerrainCfg(size=(side, side), noise_range=(0.0, 0.01), noise_step=0.005, downsampled_scale=0.1,
+                                                   horizontal_scale=0.1, vertical_scale=0.005),
+    "stones_lo": lambda: HfDiscreteObstaclesTerrainCfg(size=(side, side), obstacle_height_mode="fixed", obstacle_width_range=(0.1, 0.2),
+                                                       obstacle_height_range=(0.01, 0.01), num_obstacles=8000, platform_width=1.0,
+                                                       horizontal_scale=0.1, vertical_scale=0.005),
     "stones": lambda: HfDiscreteObstaclesTerrainCfg(size=(side, side), obstacle_height_mode="fixed", obstacle_width_range=(0.1, 0.2),
                                                     obstacle_height_range=(0.02, 0.02), num_obstacles=8000, platform_width=1.0,
                                                     horizontal_scale=0.1, vertical_scale=0.005),

@@ -16,6 +16,8 @@ Energy (12 motor joints, 50 Hz)
   tau2_per_m        integral of the summed squared motor torque per metre walked [N^2 m^2 s / m] (copper-loss proxy)
 Stability
   fell              1 if the environment terminated
+  survival_s        time until the first fall (135 s = never fell); with many falls this separates feet better than the count
+  dist_to_fall_m    horizontal path length walked until the first fall
   alive_frac        fraction of the evaluated time the environment was alive
   tilt_rms_deg      RMS of the base tilt (angle between base z and world z)
   angvel_rms        RMS of the base roll/pitch rate [rad/s]
@@ -111,7 +113,7 @@ def env_metrics(D, meta):
   S = D["sole"]
   fn = S[..., 0]
   out = {k: np.full(E, np.nan) for k in ("td_peak_bw", "td_peak_p95_bw", "td_rate_bw_s", "grf_p99_bw", "cot_pos", "cot_abs", "tau2_per_m",
-                                           "fell", "alive_frac", "tilt_rms_deg", "angvel_rms", "vx_err", "wz_err", "slip_p95_mm_s",
+                                           "fell", "alive_frac", "survival_s", "dist_to_fall_m", "tilt_rms_deg", "angvel_rms", "vx_err", "wz_err", "slip_p95_mm_s",
                                            "foot_tilt_p95_deg", "cop_margin_p5_mm", "onsets_per_s", "n_touchdowns", "distance_m")}
   Rf = quat_to_mat(D["foot_quat_w"])                               # T,E,2,3,3
   Rb = quat_to_mat(D["base_quat"])                                 # T,E,3,3
@@ -120,6 +122,10 @@ def env_metrics(D, meta):
     m = mv[:, e]
     out["fell"][e] = float(D["terminated"][:, e].any())
     out["alive_frac"][e] = float(D["alive"][:, e][moving_mask(meta, T)].mean())
+    # time and horizontal distance walked until the first fall (censored at the end of the program)
+    k_end = int(np.argmax(D["terminated"][:, e])) if D["terminated"][:, e].any() else T
+    out["survival_s"][e] = k_end * DT
+    out["dist_to_fall_m"][e] = float(np.linalg.norm(np.diff(D["base_pos"][:k_end, e, :2], axis=0), axis=-1).sum()) if k_end > 1 else 0.0
     if m.sum() < 50:
       continue
     # impact
