@@ -11,6 +11,7 @@ OUT=$W/videos
 mkdir -p "$OUT"
 PAR="${1:-3}"
 PY=mujoco-sim/mjlab/.venv/bin/python3
+FFMPEG=$($PY -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())")
 job() {  # name view terrain tag:label ...
   local name=$1 view=$2 ter=$3; shift 3
   local tags=() labs=()
@@ -21,7 +22,9 @@ job() {  # name view terrain tag:label ...
   done
   [ -f "$OUT/$name.mp4" ] && return
   MUJOCO_GL=egl $PY tools/foot_sole/render_eval_video.py --eval-dir "$EV" --tags "${tags[@]}" --labels "${labs[@]}" --view "$view" \
-    --stride 2 --size 480x360 --out "$OUT/$name.mp4" > "$OUT/$name.log" 2>&1 && echo "made $name"
+    --stride 2 --size 480x360 --out "$OUT/$name.raw.mp4" > "$OUT/$name.log" 2>&1 \
+    && $FFMPEG -loglevel error -y -i "$OUT/$name.raw.mp4" -c:v libx264 -crf 27 -preset medium -pix_fmt yuv420p -movflags +faststart "$OUT/$name.mp4" \
+    && mkdir -p "$OUT/raw" && mv "$OUT/$name.raw.mp4" "$OUT/raw/$name.mp4" && echo "made $name"
 }
 S0=("orig_49999:box foot, no fine-tune" "base_52498:box foot +2500" "v3full_52498:v3 +2500" "v5full_52498:v5 +2500" "v5fullm_52498:v5 CAD mass +2500")
 REF="v5fullm_51000:v5 (reference)"
