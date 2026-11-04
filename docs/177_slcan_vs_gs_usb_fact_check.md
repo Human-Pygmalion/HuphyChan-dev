@@ -1,3 +1,7 @@
+---
+share_link: https://share.note.sx/l15f151p#brXxuMPwm0PJ5W0zAsvtoTGBMS3s1Ybe6Cqg3ZBDaL4
+share_updated: 2026-10-19T11:24:27+09:00
+---
 # 177. "gs_usb 는 slcan 보다 병렬화가 된다" — 사실 확인 (문헌 + RS04 실측, 2026-10-19)
 
 > 사용자 질문 (2026-10-19): 이전에 gs_usb 를 쓰면 slcan 보다 병렬화가 가능하다고 들었다. 사실인가? 문헌 조사부터 하라.

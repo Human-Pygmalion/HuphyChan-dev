@@ -1146,5 +1146,320 @@
     "state": "done",
     "added": 1792386170.484832,
     "why": ""
+  },
+  {
+    "id": 168,
+    "text": "[사용자 2026-10-22] 실기 보행 확인됨 — 한쪽 쏠림·Sim 과 다른 걸음·떨림의 Sim2Real 차이 분석: 신 HUPHY biped 로그 + handoff 브랜치 정책·문서 검토, Sim 데이터 취득·응답 비교(FFT·주파수 응답 등), 가설 세우고 단계별 감사, H/W·제어단·정책 제작자 전달사항 보고",
+    "state": "open",
+    "added": 1792650230.381704,
+    "why": ""
+  },
+  {
+    "id": 169,
+    "text": "LegOnly URDF 에 D455 추가 (사용자 2026-10-27): Fusion 'Pelvis_Camera' 컴포넌트 아래 D455 를 읽어 URDF 에 붙인 버전 생성. docs/External 문서 참고. Fusion 은 읽기 전용·최소 호출",
+    "state": "done",
+    "added": 1793108770.6436923,
+    "why": ""
+  },
+  {
+    "id": 170,
+    "text": "D455 URDF: RP 버전 폐기(AB 만), RViz 에서 카메라 프레임·메시 방향 확인 (사용자 2026-10-27, #169 후속)",
+    "state": "done",
+    "added": 1793109255.432929,
+    "why": ""
+  },
+  {
+    "id": 171,
+    "text": "D455 무결성 검증 + 문서 (사용자 2026-10-27, #169/#170 후속): ① RViz 확인 ② mjlab(MuJoCo) 에서 depth 영상이 맞게 나오는지(바닥 해석해와 대조) ③ 원점·좌우·위아래를 CAD↔데이터시트↔realsense-ros xacro 로 교차검증 ④ D455 URDF/MJCF 선례 조사 ⑤ 모든 그림 포함 문서 작성",
+    "state": "done",
+    "added": 1793109430.2646313,
+    "why": ""
+  },
+  {
+    "id": 172,
+    "text": "D455 URDF/MJCF 에 Pelvis_Camera_Mount(PLA 출력 브래킷) 추가 — 기존 출력물 밀도 규약 적용 (사용자 2026-10-28, #169 후속)",
+    "state": "done",
+    "added": 1793120316.4809139,
+    "why": ""
+  },
+  {
+    "id": 173,
+    "text": "D455 작업을 MJCF/URDF 수정이력 노트에 기록 + MJCF/URDF 간단 문서 작성 (사용자 2026-10-28, #172 후속)",
+    "state": "done",
+    "added": 1793121183.1588492,
+    "why": ""
+  },
+  {
+    "id": 174,
+    "text": "[사용자 2026-10-30] 개선 정책(terrain10_union_dr_49999) 실기: 떨림 해결, 다리가 오므라들어 발 간격 좁음 → 불안정. HUPHY main logs/policy 분석, 원인·해결책 + Sim2Real 차이·DR 미커버·잠재 위험 보고",
+    "state": "done",
+    "added": 1793337791.7430992,
+    "why": ""
+  },
+  {
+    "id": 175,
+    "text": "[사용자 2026-10-30] 49999 발 간격 분석영상 렌더 + 학습/배포 초기 자세값 불일치 점검",
+    "state": "done",
+    "added": 1793349106.9461956,
+    "why": ""
+  },
+  {
+    "id": 176,
+    "text": "[실기 필요] 49999 서기 폭 원인 가르기: 줄자 폭 vs 로그 FK, 서기 중 발 미끄러짐 관찰(영상), 외다리 발목 좌우 기울기 측정, 오른 크랭크 A 점검, hip_roll Kp x1.2 시험(떨림 감시). docs/178 §5-1",
+    "state": "open",
+    "added": 1793352585.167536,
+    "why": ""
+  },
+  {
+    "id": 177,
+    "text": "배터리 회신 7건(docs/182 §0) 확정해 업체 송부 + §3 업체회신 추적 + ★14S/60V 마진 검토(§4-1)",
+    "state": "open",
+    "added": 1793436508.4933178,
+    "why": ""
+  },
+  {
+    "id": 178,
+    "text": "Feet Design 세션 복구 (Feet_design/Feet_Design_Workspace, HANDOFF.md + zip restore)",
+    "state": "done",
+    "added": 1793437044.3068016,
+    "why": ""
+  },
+  {
+    "id": 179,
+    "text": "v3 발바닥을 MJCF 충돌 메시로 재현 → 기존 발 대비 sim 정량 비교 (접촉·CoP·GRF·안정성)",
+    "state": "done",
+    "added": 1793438726.180783,
+    "why": ""
+  },
+  {
+    "id": 180,
+    "text": "발바닥 재설계: toe/heel 접선 R 라운드, 고무 밑창 1쌍(좌우대칭) 최대 활용, 아치 굽힘 고려 전개, A4 1:1 절단 도면 PDF(원본 경계+절단 컨투어+10cm 자)",
+    "state": "done",
+    "added": 1793443086.363285,
+    "why": ""
+  },
+  {
+    "id": 181,
+    "text": "v5 재단 도면: 붙이면 뒤꿈치가 짧아진다는 지적 검증(전개 길이 독립 확인, v4.1 캐리어 대비)",
+    "state": "done",
+    "added": 1793444939.3202777,
+    "why": ""
+  },
+  {
+    "id": 182,
+    "text": "[서베이 세션] 험지에서 발바닥 아치가 지면 접촉에 하는 역할 — 아치 깊이·형상 설계 기준 도출",
+    "state": "done",
+    "added": 1793445232.5994127,
+    "why": ""
+  },
+  {
+    "id": 183,
+    "text": "v3 vs 기존 발 보행 스타일 비교: 걷는 발 확대 측면 영상(실시간) + 보행 주기 그래프",
+    "state": "done",
+    "added": 1793445380.5072687,
+    "why": ""
+  },
+  {
+    "id": 184,
+    "text": "[SIM 세션 위임] 발바닥 형상(heel/toe R·높이, 아치 깊이) 평지·험지 효과 정량 평가 — 0단계 v5 vs 상자발 vs v3 (3090), 결과 받으면 1단계 범위 조정",
+    "state": "doing",
+    "added": 1793445678.805099,
+    "why": "2026-11-02 복구: study/RECOVERY_STATUS_2026-11-02.md 기준 Stage-0 완료, local CPU eval 34/117(PID 1874436 active), remote GPU eval 87/117(PID 2503540 active). GPU metadata JSON은 hash manifest와 함께 동기화. Stage-1 final 16/23, 7개는 train log의 CUDA OOM. solref 3-arm batch는 기존 remote training queue가 소유. 중복 queue 금지."
+  },
+  {
+    "id": 185,
+    "text": "v5 캐리어 수정: X자(±45°) 살빼기, 판 나사구멍 24개 전부 사용, M3 탭 관통 구멍(최대 나사산 길이)",
+    "state": "done",
+    "added": 1793447245.0145373,
+    "why": ""
+  },
+  {
+    "id": 186,
+    "text": "URDF 발 갱신: Fusion 'Pygmalion_Foot_v5_RightFoot'(Rubber_Sole_4mm=고무, Feet_Up=PLA 80g) 반영 + sim v5 충돌 메시 동작 검토 (다른 URDF 부분 불변)",
+    "state": "done",
+    "added": 1793454749.548983,
+    "why": ""
+  },
+  {
+    "id": 187,
+    "text": "[사용자 2026-10-31] 타 로봇(Unitree G1/H1 등) 발 모델링(시각·충돌·질량) 시각화·구조 검토 → 우리 발등(Feet_Up)·발바닥 형상을 URDF/MJCF 에 반영할지 판정 후 #186 계속",
+    "state": "done",
+    "added": 1793455326.2092273,
+    "why": ""
+  },
+  {
+    "id": 188,
+    "text": "[사용자 2026-10-31] Fusion 에서 Feet_Up 메시 지금 가져오기 + 사용자 수정 캐리어(160.12 cm3, 정본)도 가져와 footv5 URDF 재생성",
+    "state": "done",
+    "added": 1793458774.9766665,
+    "why": ""
+  },
+  {
+    "id": 189,
+    "text": "[사용자 2026-11-01] 발바닥 전 조건 실험(0단계+1단계 heel/toe/arch 훑기·험지·범프·soft arch) 변인통제 수행 → 논문식 정량 비교(충격력·에너지 효율·험지 안정성)로 최적 발 유형 판정 + 정성 비교 영상",
+    "state": "doing",
+    "added": 1793463891.361973,
+    "why": "2026-11-02 canonical recovery artifact: Feet_design/Feet_Design_Workspace/mjcf_sim/study/RECOVERY_STATUS_2026-11-02.md; GPU JSON manifest: EVAL_GPU_JSON_MANIFEST_2026-11-02T0141KST.sha256. CPU/GPU eval, Stage-1 누락 7개와 solref가 끝나야 Pareto front 및 동일 조건 영상 판정을 완료할 수 있음. actor obs 44/과거 45 표기는 CONTRADICTED로 RL 세션 handoff."
+  },
+  {
+    "id": 190,
+    "text": "발바닥 설계 연구 복구: 다른 세션 작업 파악 + CAD 원본 발바닥/Feet Up 모델 위치, 사용자 전달 질량(feet_up·발바닥) 반영 URDF/MJCF 위치 파악 및 올바르게 작성됐는지 검토 (사용자 2026-11-04)",
+    "state": "done",
+    "added": 1793759878.7921603,
+    "why": ""
+  },
+  {
+    "id": 191,
+    "text": "발 충돌 형상(메시 조각 29개 vs 구·캡슐 단순형상) 문헌·실사례 비교 — MuJoCo/mujoco_warp 문서, PhysX/Bullet 가이드, 공개 휴머노이드 모델, RL 논문 (사용자 2026-11-04). 원문 발췌+링크 노트로 기록",
+    "state": "done",
+    "added": 1793760839.6042178,
+    "why": ""
+  },
+  {
+    "id": 192,
+    "text": "[사용자 2026-11-04] 발 충돌 형상 v5cap(캡슐 열 + 바닥판 상자) 새 파일로 제작 → 29조각 v5fullm 과 평지·돌·자갈·정적돌기 비교",
+    "state": "done",
+    "added": 1793772475.8815887,
+    "why": ""
+  },
+  {
+    "id": 193,
+    "text": "[사용자 2026-11-04] 발 v5 + 골반 D455 합본 URDF/MJCF(…_footv5_d455_loop) 제작·검증·동료 전달 묶음(상대 심볼릭 링크, README, docs/184·181 갱신) — stairs_slopes12_union_dr_99998 동료용",
+    "state": "done",
+    "added": 1793773103.0869176,
+    "why": ""
+  },
+  {
+    "id": 194,
+    "text": "[사용자 2026-11-04] 합본(footv5+D455) 검증 이미지 보고 + viser 에 stairs_slopes12_union_dr_99998 정책·Depth 영상 올리기(계단·경사·평지 지형)",
+    "state": "done",
+    "added": 1793773956.5368495,
+    "why": ""
+  },
+  {
+    "id": 195,
+    "text": "[사용자 2026-11-04] Fusion(192.168.20.161) 최신 설계 확인 후 URDF/MJCF 갱신: Hip-Reinforcement 160g(HipRoll2Yaw 에 볼팅), Knee-Reinforcement 158.2g(Knee2Ankle 에 볼팅), Pelvis_Camera 166g 반영. viser 서버(8081)는 유지",
+    "state": "done",
+    "added": 1793780057.8747919,
+    "why": ""
+  },
+  {
+    "id": 196,
+    "text": "[사용자 2026-11-04] 렌더·학습은 3090 서버 사용 (이 PC 는 GPU 없음)",
+    "state": "done",
+    "added": 1793780085.2457955,
+    "why": ""
+  },
+  {
+    "id": 197,
+    "text": "[사용자 2026-11-04] URDF/MJCF 버전 대장: 프로젝트를 몰라도 '무엇이 왜 바뀌었나' 알 수 있게. 소급 적용(과거 모델 전부)",
+    "state": "done",
+    "added": 1793782876.8287663,
+    "why": ""
+  },
+  {
+    "id": 198,
+    "text": "[사용자 2026-11-04] 새 버전: 발 메시+보강재 + crank A/B 4개를 알루미늄(Al6061 2.70 g/cm3, 체적x밀도, 커버 제외)으로 바꾸고 관성 수정. 버전 대장에도 기록",
+    "state": "done",
+    "added": 1793783040.3103068,
+    "why": ""
+  },
+  {
+    "id": 199,
+    "text": "[사용자 2026-11-04] 새 버전에 HipRoll2Yaw_Mount 도 알루미늄 반영(밀도 수정) + 양다리 모두 바뀌었는지 확인",
+    "state": "done",
+    "added": 1793783217.857935,
+    "why": ""
+  },
+  {
+    "id": 200,
+    "text": "[사용자 2026-11-04] 발바닥 마찰(고무) 학습조건·DR 검토: 카펫+신발고무 바닥이 커버리지에 드는지, 현재 MJCF(footv5+v5cap)가 DR 안인지. 증상: 걷기 때 다리 모임·턱턱 걸림",
+    "state": "done",
+    "added": 1793785706.3268044,
+    "why": ""
+  },
+  {
+    "id": 201,
+    "text": "[사용자 2026-11-04] (1) 버전 대장 본문을 모델 폴더(pygmalion_v2)로 이동 (2) viser 서버 종료 (3) 추가 파츠 알루미늄 전환 준비(후보표 + 표 기반 빌더, 파츠 지정은 사용자 대기)",
+    "state": "doing",
+    "added": 1793786427.6254156,
+    "why": ""
+  },
+  {
+    "id": 202,
+    "text": "[사용자 2026-11-04] 추가 알루미늄 전환(좌우): HipRoll2Yaw A/B/Mount, Yaw2KneePlateA, Knee2Ankle_IdleSide/RotorSide, Crank A/B, AnkleUniversalJointCore->revised(메시+질량). 알루미늄이 된 것=빨강, 아닌 것=반투명 시각화 + 질량 증가분 보고. 대장 기록",
+    "state": "done",
+    "added": 1793787016.5779417,
+    "why": ""
+  },
+  {
+    "id": 203,
+    "text": "[사용자 2026-11-04] Knee2Ankle 컴포넌트의 비알루미늄 파츠도 수정됨 -> Fusion 전체 재읽기, 원본 모델 값과 부품별 엄격 비교, 변경분 반영/보고",
+    "state": "done",
+    "added": 1793787500.677062,
+    "why": ""
+  },
+  {
+    "id": 204,
+    "text": "[사용자 2026-11-04] HUPHY ros/logs 11-04 실기 기록으로 발 간격 좁음 원인 검토 (docs/188)",
+    "state": "done",
+    "added": 1793790406.2563047,
+    "why": ""
+  },
+  {
+    "id": 205,
+    "text": "[사용자 2026-11-04] Yaw2KneePlateA 는 원본 메시·체적 사용(Fusion 수정본이 잘못), 색 가시화 재작성 — 완료",
+    "state": "done",
+    "added": 1793790518.1367238,
+    "why": ""
+  },
+  {
+    "id": 206,
+    "text": "[사용자 2026-11-04] 실기 로그 vs Sim 비교로 다리가 안쪽으로 모이는 원인 분석 (hip_roll 목표-측정 부족분: Sim에서도 나오는지, 관절별 추종·목표폭 비교)",
+    "state": "done",
+    "added": 1793794322.4923258,
+    "why": ""
+  },
+  {
+    "id": 207,
+    "text": "[사용자 2026-11-04 go] 발 충돌 v5rim: 가장자리 윤곽을 따르는 둘레 캡슐 + 안쪽 상자 후보 제작, v5cap·29조각과 3090에서 맞비교, 접촉 수(nconmax 150) 시험",
+    "state": "done",
+    "added": 1793797553.9418323,
+    "why": ""
+  },
+  {
+    "id": 208,
+    "text": "[사용자 2026-11-04] v5rim 박스가 지저분함 → 이름 붙은 구역 8개로 정리한 v5clean 제작·3090 비교 (재학습은 필요 시 허용)",
+    "state": "done",
+    "added": 1793800220.8564372,
+    "why": ""
+  },
+  {
+    "id": 209,
+    "text": "[사용자 2026-11-04] (1) 학습 모델(M10) 정책 49999 를 최신 모델(M19)에서 시뮬 검토 + 기존 실기 로그로 같은 문제가 실제로 있는지 분석 (2) 로봇 모델·환경이 DR 범위 안/밖인지 판정하는 법, 시뮬과 더 맞추려면 어떤 데이터·해석이 필요한지 답변",
+    "state": "done",
+    "added": 1793800554.4584744,
+    "why": ""
+  },
+  {
+    "id": 210,
+    "text": "[사용자 2026-11-04] 새 발·넘어짐 시작 마찰계수를 기점으로 새 마찰계수·DR 범위 도출 + 응답 기반 System Identification 방법론 조사/문서화",
+    "state": "done",
+    "added": 1793804184.1235664,
+    "why": ""
+  },
+  {
+    "id": 211,
+    "text": "[사용자 2026-11-05] 수정된 URDF(M19)로 정책 49999와 동일 학습 환경·조건에서 재학습 또는 fine-tuning (3090 사용). 결과는 docs/190 후속으로 M10 대비 비교",
+    "state": "doing",
+    "added": 1793816310.4415607,
+    "why": ""
+  },
+  {
+    "id": 212,
+    "text": "[사용자 2026-11-05] 취침 전 약 8시간 학습 예약·순차 실행·정리: 3090 에서 v5clean 캡슐 발 2,500회 재학습 + 빠진 Stage-1 7팔(hr8 hr2 tf230 a0 a9 softarch ao40) 재실행, 학습 슬롯 2개, 끝나면 평가·노트",
+    "state": "doing",
+    "added": 1793816400.2272916,
+    "why": ""
   }
 ]

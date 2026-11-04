@@ -1,0 +1,38 @@
+[
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_18-21-14_legonly_ab_v7_standonly_p2/model_9000.pt",
+    "sens_sigma0.05": 0.8139399290084839,
+    "sens_sigma0.05_p95": 1.5062229633331299,
+    "sens_sigma0.1": 0.7951944470405579,
+    "sens_sigma0.1_p95": 1.36973237991333,
+    "sens_sigma0.2": 0.8542383909225464,
+    "sens_sigma0.2_p95": 1.6957234144210815,
+    "action_jitter": 0.7244297862052917,
+    "action_rate": 0.4681006968021393,
+    "label": "v7_final"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-16_23-49-54_legonly_ab_v7b_robust_stand_p2/model_8998.pt",
+    "sens_sigma0.05": 3.339036703109741,
+    "sens_sigma0.05_p95": 5.601070880889893,
+    "sens_sigma0.1": 3.3751773834228516,
+    "sens_sigma0.1_p95": 5.747468948364258,
+    "sens_sigma0.2": 3.5907533168792725,
+    "sens_sigma0.2_p95": 6.642621040344238,
+    "action_jitter": 2.135763645172119,
+    "action_rate": 1.2924823760986328,
+    "label": "v7b_final"
+  },
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_19-17-25_legonly_ab_v9_caps_p2/model_8998.pt",
+    "sens_sigma0.05": 0.4641912281513214,
+    "sens_sigma0.05_p95": 0.9375138282775879,
+    "sens_sigma0.1": 0.4593604803085327,
+    "sens_sigma0.1_p95": 0.9261064529418945,
+    "sens_sigma0.2": 0.4644696116447449,
+    "sens_sigma0.2_p95": 0.8965542316436768,
+    "action_jitter": 0.43309158086776733,
+    "action_rate": 0.2703752815723419,
+    "label": "caps_final"
+  }
+]

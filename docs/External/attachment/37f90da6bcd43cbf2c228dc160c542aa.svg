@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 345" width="800" height="345" font-family="Arial, Helvetica, sans-serif" font-size="13">
+  <rect width="800" height="345" fill="#ffffff"/>
+  <text x="20" y="22" font-size="15" font-weight="bold" fill="#111">Intel RealSense D455 — 평면도 (위에서 내려다본 모습, 카메라 전방 = 위) / Top view, scale 5 px = 1 mm</text>
+
+  <defs>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c21f1f"/></marker>
+  </defs>
+
+  <!-- body: 124 wide, 26 deep. z=0 plane at y=150, front plate at z=+4.65 -> y=126.75, back at z=-21.35 -> y=256.75 -->
+  <rect x="90" y="126.75" width="620" height="130" rx="30" ry="30" fill="#f2f2f2" stroke="#222" stroke-width="2"/>
+  <line x1="70" y1="150" x2="730" y2="150" stroke="#c21f1f" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="725" y="146" text-anchor="end" fill="#c21f1f" font-size="12">z = 0 (depth origin plane)</text>
+  <line x1="400" y1="110" x2="400" y2="270" stroke="#999" stroke-width="1" stroke-dasharray="10 4 2 4"/>
+
+  <!-- sensors on z=0 plane -->
+  <rect x="152.5" y="141" width="20" height="18" fill="#ffd0d0" stroke="#c21f1f" stroke-width="2.5"/>
+  <rect x="340" y="141" width="20" height="18" fill="#ffe3c2" stroke="#d9760f" stroke-width="2"/>
+  <rect x="447.5" y="141" width="20" height="18" fill="#d6f2d6" stroke="#1d8a1d" stroke-width="2.5"/>
+  <rect x="627.5" y="141" width="20" height="18" fill="#cfe0ff" stroke="#1f4fbf" stroke-width="2.5"/>
+  <text x="162.5" y="178" text-anchor="middle" fill="#c21f1f" font-weight="bold">Left IR</text>
+  <text x="350" y="178" text-anchor="middle" fill="#d9760f" font-weight="bold">Projector</text>
+  <text x="457.5" y="178" text-anchor="middle" fill="#1d8a1d" font-weight="bold">RGB</text>
+  <text x="637.5" y="178" text-anchor="middle" fill="#1f4fbf" font-weight="bold">Right IR</text>
+
+  <!-- IMU z = -16.02 -> y = 230.1 ; x = 313.6 -->
+  <rect x="307" y="224.6" width="13" height="11" fill="#e8d6ff" stroke="#7a2fd1" stroke-width="2"/>
+  <text x="313.6" y="251" text-anchor="middle" fill="#7a2fd1" font-size="12">IMU</text>
+
+  <!-- tripod hole (bottom face), z = -11.15 -> y = 205.75 -->
+  <circle cx="400" cy="205.75" r="16" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="400" y="209" text-anchor="middle" fill="#555" font-size="10">1/4-20</text>
+
+  <!-- 2x M4 on back face (assumed symmetric about centerline), 4 mm max depth -->
+  <rect x="152.5" y="236.75" width="20" height="20" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <rect x="627.5" y="236.75" width="20" height="20" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <text x="162.5" y="272" text-anchor="middle" fill="#555" font-size="11">M4 (뒷면)</text>
+  <text x="637.5" y="272" text-anchor="middle" fill="#555" font-size="11">M4 (뒷면)</text>
+
+  <!-- axes at Left IR : +x right, +z forward (up), +y into page -->
+  <line x1="162.5" y1="150" x2="250" y2="150" stroke="#c21f1f" stroke-width="2.5" marker-end="url(#b)"/>
+  <text x="256" y="144" fill="#c21f1f" font-weight="bold">+x (right)</text>
+  <line x1="162.5" y1="150" x2="162.5" y2="68" stroke="#c21f1f" stroke-width="2.5" marker-end="url(#b)"/>
+  <text x="170" y="76" fill="#c21f1f" font-weight="bold">+z (forward)</text>
+  <circle cx="125" cy="200" r="9" fill="none" stroke="#c21f1f" stroke-width="2.5"/>
+  <line x1="119" y1="194" x2="131" y2="206" stroke="#c21f1f" stroke-width="2.5"/><line x1="131" y1="194" x2="119" y2="206" stroke="#c21f1f" stroke-width="2.5"/>
+  <text x="108" y="222" fill="#c21f1f" font-weight="bold" font-size="12">+y (down, 화면 안쪽)</text>
+
+  <!-- dimensions -->
+  <g stroke="#333" stroke-width="1" fill="none">
+    <line x1="712" y1="126.75" x2="750" y2="126.75"/><line x1="712" y1="256.75" x2="750" y2="256.75"/>
+    <line x1="744" y1="126.75" x2="744" y2="256.75"/>
+    <line x1="280" y1="150" x2="280" y2="230.1"/><line x1="270" y1="230.1" x2="307" y2="230.1" stroke-dasharray="3 3"/>
+    <line x1="540" y1="126.75" x2="600" y2="126.75" stroke-dasharray="3 3"/><line x1="540" y1="205.75" x2="600" y2="205.75" stroke-dasharray="3 3"/>
+    <line x1="590" y1="126.75" x2="590" y2="205.75"/>
+    <line x1="162.5" y1="284" x2="637.5" y2="284"/><line x1="162.5" y1="274" x2="162.5" y2="290"/><line x1="637.5" y1="274" x2="637.5" y2="290"/>
+    <line x1="90" y1="310" x2="710" y2="310"/><line x1="90" y1="258" x2="90" y2="316"/><line x1="710" y1="258" x2="710" y2="316"/>
+  </g>
+  <text x="748" y="196" fill="#333">26 (D)</text>
+  <text x="274" y="196" text-anchor="end" fill="#7a2fd1">16.02</text>
+  <text x="274" y="210" text-anchor="end" fill="#7a2fd1" font-size="11">(IMU, z=0 뒤)</text>
+  <text x="596" y="170" fill="#333">15.8</text>
+  <text x="596" y="184" fill="#333" font-size="11">front plate → tripod center</text>
+  <text x="400" y="299" text-anchor="middle" font-weight="bold">95 (baseline, Left IR ↔ Right IR)</text>
+  <text x="400" y="326" text-anchor="middle" font-weight="bold">124 (W)</text>
+
+  <!-- front glass annotation -->
+  <text x="300" y="100" fill="#333" font-size="12">front glass = z +4.55 mm (z=0보다 앞)</text>
+  <text x="300" y="114" fill="#333" font-size="12">front plate = z +4.65 mm (glass보다 0.1 mm 앞)</text>
+
+  <text x="20" y="338" font-size="11" fill="#555">출처: Datasheet Rev.017 Table 4-17(Z′ = −4.55 mm), Fig 10-12(IMU z −16.02), Table 3-53; Z 기준면·15.8 mm·M4 대칭은 realsense-ros _d455.urdf.xacro 및 도면 판독값.</text>
+</svg>

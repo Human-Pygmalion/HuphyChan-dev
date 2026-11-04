@@ -1,0 +1,231 @@
+Setting seed: 7
+Warp 1.14.0 initialized:
+   CUDA Toolkit 12.9, Driver 13.0
+   Devices:
+     "cpu"      : "x86_64"
+     "cuda:0"   : "NVIDIA GeForce RTX 3090" (24 GiB, sm_86, mempool enabled)
+   Kernel cache:
+     /home/syaro/.cache/warp/1.14.0
+Module mujoco_warp._src.smooth 6acfd0b load on device 'cuda:0' took 3.21 ms  (cached)
+Module _nxn_broadphase__locals__kernel_df6640ed df6640e load on device 'cuda:0' took 0.59 ms  (cached)
+Module ccd_kernel_builder__locals__ccd_kernel_9bfcccc0 9bfcccc load on device 'cuda:0' took 2.06 ms  (cached)
+Module _primitive_narrowphase__locals__primitive_narrowphase_55b57239 55b5723 load on device 'cuda:0' took 1.12 ms  (cached)
+Module mujoco_warp._src.constraint 880bd7f load on device 'cuda:0' took 0.56 ms  (cached)
+Module _equality_connect__locals__kernel_09b97c70 09b97c7 load on device 'cuda:0' took 0.74 ms  (cached)
+Module _friction_dof__locals__kernel_3c14efda 3c14efd load on device 'cuda:0' took 0.50 ms  (cached)
+Module _limit_slide_hinge__locals__kernel_4d6c55ab 4d6c55a load on device 'cuda:0' took 0.58 ms  (cached)
+Module _efc_contact_init__locals__kernel_07a590e0 07a590e load on device 'cuda:0' took 0.82 ms  (cached)
+Module _efc_contact_jac_dense__locals__kernel_2ef83d28 25bafd5 load on device 'cuda:0' took 0.53 ms  (cached)
+Module _efc_contact_update__locals__kernel_8aad7bfd 8aad7bf load on device 'cuda:0' took 0.52 ms  (cached)
+Module mujoco_warp._src.sensor 4bf7c4d load on device 'cuda:0' took 2.53 ms  (cached)
+Module mujoco_warp._src.forward a27d81a load on device 'cuda:0' took 1.42 ms  (cached)
+Module mujoco_warp._src.passive e551f58 load on device 'cuda:0' took 1.44 ms  (cached)
+Module mujoco_warp._src.forward bb9f957 load on device 'cuda:0' took 1.78 ms  (cached)
+Module _qfrc_smooth__locals__kernel_6eb3d958 6eb3d95 load on device 'cuda:0' took 0.52 ms  (cached)
+Module mujoco_warp._src.support b6765b2 load on device 'cuda:0' took 0.49 ms  (cached)
+Module _tile_cholesky_factorize_solve_block__locals__kernel_3968dbef f7d288d load on device 'cuda:0' took 34.78 ms  (cached)
+Module mujoco_warp._src.solver ee39d44 load on device 'cuda:0' took 3.39 ms  (cached)
+Module _solve_init_jaref_kernel__locals__kernel_584cc7a6 584cc7a load on device 'cuda:0' took 0.60 ms  (cached)
+Module mul_m_kernel__locals___mul_m_fd2186c4 fd2186c load on device 'cuda:0' took 0.53 ms  (cached)
+Module _update_constraint_efc__locals__kernel_d40ce3fb d40ce3f load on device 'cuda:0' took 0.62 ms  (cached)
+Module _update_gradient_JTDAJ_dense_tiled__locals__kernel_ee22e6de 5d19c5b load on device 'cuda:0' took 1.02 ms  (cached)
+Module _update_gradient_cholesky__locals__kernel_0d9b17ac 5e7911e load on device 'cuda:0' took 34.49 ms  (cached)
+Module _linesearch_iterative_kernel__locals__kernel_a460676a 2f6f31f load on device 'cuda:0' took 0.99 ms  (cached)
+Module _update_constraint_efc__locals__kernel_3930e3eb 3930e3e load on device 'cuda:0' took 0.85 ms  (cached)
+Module _contact_sort__locals__contact_sort_d535624f 7776180 load on device 'cuda:0' took 1.03 ms  (cached)
+Module mujoco_warp._src.derivative 1c65e56 load on device 'cuda:0' took 1.26 ms  (cached)
+Module reset_data__locals__reset_xfrc_applied_03030511 0303051 load on device 'cuda:0' took 0.87 ms  (cached)
+Module reset_data__locals__reset_M_631075dd 631075d load on device 'cuda:0' took 0.54 ms  (cached)
+Module reset_data__locals__reset_mocap_6513201c 6513201 load on device 'cuda:0' took 0.39 ms  (cached)
+Module reset_data__locals__reset_contact_5c08f689 5c08f68 load on device 'cuda:0' took 0.39 ms  (cached)
+Module reset_data__locals__reset_sleep_bd8c7e06 bd8c7e0 load on device 'cuda:0' took 0.36 ms  (cached)
+Module reset_data__locals__reset_nworld_092d1d28 092d1d2 load on device 'cuda:0' took 0.42 ms  (cached)
+Module mujoco_warp._src.render_util ff4fe80 load on device 'cuda:0' took 0.66 ms  (cached)
+Module mujoco_warp._src.bvh d9cfd91 load on device 'cuda:0' took 0.88 ms  (cached)
+Module mujoco_warp._src.ray d79c433 load on device 'cuda:0' took 1.13 ms  (cached)
+
++---------------------------------+
+|         Base Environment        |
++------------------------+--------+
+| Property               | Value  |
++------------------------+--------+
+| Number of environments | 100    |
+| Environment device     | cuda:0 |
+| Environment seed       | 7      |
+| Physics step-size      | 0.005  |
+| Environment step-size  | 0.005  |
++------------------------+--------+
+
+[INFO] <EventManager> contains 1 active terms.
++-------------------------------------+
+| Active Event Terms in Mode: 'reset' |
++--------+----------------------------+
+| Index  | Name                       |
++--------+----------------------------+
+|   0    | reset_base                 |
+|   1    | reset_robot_joints         |
+|   2    | randomize_terrain          |
++--------+----------------------------+
+
+[INFO] <CommandManager> contains 1 active terms.
++----------------------------------------+
+|          Active Command Terms          |
++-------+-------+------------------------+
+| Index | Name  |          Type          |
++-------+-------+------------------------+
+|   0   | twist | UniformVelocityCommand |
++-------+-------+------------------------+
+
+[INFO] <ActionManager> contains 1 active terms.
++---------------------------------+
+| Active Action Terms (shape: 12) |
++-------+-----------+-------------+
+| Index | Name      |   Dimension |
++-------+-----------+-------------+
+|   0   | joint_pos |          12 |
++-------+-----------+-------------+
+
+[INFO] <ObservationManager> contains 2 groups.
++-----------------------------------------------------------+
+| Active Observation Terms in Group: 'actor' (shape: (44,)) |
++--------+------------------------+-------------------------+
+| Index  | Name                   |          Shape          |
++--------+------------------------+-------------------------+
+|   0    | base_ang_vel           |           (3,)          |
+|   1    | projected_gravity      |           (3,)          |
+|   2    | motor_pos_history      |     (24,)  ← 2×(12,)    |
+|   3    | actions                |          (12,)          |
+|   4    | command                |           (2,)          |
++--------+------------------------+-------------------------+
++-------------------------------------------------------------+
+| Active Observation Terms in Group: 'critic' (shape: (268,)) |
++----------+-----------------------------------+--------------+
+|  Index   | Name                              |    Shape     |
++----------+-----------------------------------+--------------+
+|    0     | base_lin_vel                      |     (3,)     |
+|    1     | base_ang_vel                      |     (3,)     |
+|    2     | projected_gravity                 |     (3,)     |
+|    3     | joint_pos                         |    (16,)     |
+|    4     | joint_vel                         |    (16,)     |
+|    5     | actions                           |    (12,)     |
+|    6     | command                           |     (2,)     |
+|    7     | height_scan                       |    (187,)    |
+|    8     | foot_height                       |     (2,)     |
+|    9     | foot_air_time                     |     (2,)     |
+|    10    | foot_contact                      |     (2,)     |
+|    11    | foot_contact_forces               |     (6,)     |
+|    12    | dr_friction                       |     (1,)     |
+|    13    | dr_mass                           |     (1,)     |
+|    14    | dr_com                            |     (3,)     |
+|    15    | dr_push                           |     (8,)     |
+|    16    | dr_factor                         |     (1,)     |
++----------+-----------------------------------+--------------+
+
+[INFO] <TerminationManager> contains 5 active terms.
++-----------------------------------+
+|      Active Termination Terms     |
++-------+----------------+----------+
+| Index | Name           | Time Out |
++-------+----------------+----------+
+|   0   | time_out       |   True   |
+|   1   | fell_over      |  False   |
+|   2   | low_base       |  False   |
+|   3   | nan_detection  |  False   |
+|   4   | physics_blowup |  False   |
++-------+----------------+----------+
+
+[INFO] <RewardManager> contains 18 active terms.
++-----------------------------------------------+
+|              Active Reward Terms              |
++-------+----------------------------+----------+
+| Index | Name                       |   Weight |
++-------+----------------------------+----------+
+|   0   | track_linear_velocity      |      1.0 |
+|   1   | track_angular_velocity     |      1.0 |
+|   2   | body_orientation_l2        |     -1.0 |
+|   3   | pose                       |      1.0 |
+|   4   | body_ang_vel               |    -0.05 |
+|   5   | angular_momentum           |   -0.025 |
+|   6   | is_terminated              |   -200.0 |
+|   7   | joint_acc_l2               | -2.5e-07 |
+|   8   | joint_pos_limits           |    -10.0 |
+|   9   | action_rate_l2             |    -0.05 |
+|   10  | air_time                   |      0.5 |
+|   11  | foot_clearance             |     -1.0 |
+|   12  | foot_slip                  |    -0.25 |
+|   13  | soft_landing               |   -0.001 |
+|   14  | stand_still                |     -1.0 |
+|   15  | self_collisions            |     -1.0 |
+|   16  | actuator_clipping_fraction |     -0.1 |
+|   17  | negative_mechanical_power  |     -0.1 |
++-------+----------------------------+----------+
+
+[INFO] <NullCurriculumManager> (inactive)
+[INFO] <MetricsManager> contains 1 active terms.
++-------------------------+
+|   Active Metrics Terms  |
++-------+-----------------+
+| Index | Name            |
++-------+-----------------+
+|   0   | mean_action_acc |
++-------+-----------------+
+
+[INFO] <NullRecorderManager> (inactive)
+--------------------------------------------------------------------------------
+Resolved observation sets: 
+	 actor :  ('actor',)
+	 critic :  ('critic',)
+--------------------------------------------------------------------------------
+Actor Model: MLPModel(
+  (obs_normalizer): EmpiricalNormalization()
+  (distribution): GaussianDistribution()
+  (mlp): MLP(
+    (0): Linear(in_features=44, out_features=512, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=512, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=128, bias=True)
+    (5): ELU(alpha=1.0)
+    (6): Linear(in_features=128, out_features=12, bias=True)
+  )
+)
+Critic Model: MLPModel(
+  (obs_normalizer): EmpiricalNormalization()
+  (mlp): MLP(
+    (0): Linear(in_features=268, out_features=512, bias=True)
+    (1): ELU(alpha=1.0)
+    (2): Linear(in_features=512, out_features=256, bias=True)
+    (3): ELU(alpha=1.0)
+    (4): Linear(in_features=256, out_features=128, bias=True)
+    (5): ELU(alpha=1.0)
+    (6): Linear(in_features=128, out_features=1, bias=True)
+  )
+)
+joints: ['R_hip_pitch_joint', 'R_hip_roll_joint', 'R_hip_yaw_joint', 'R_knee_joint', 'R_crank_A_joint', 'R_crank_B_joint', 'L_hip_pitch_joint', 'L_hip_roll_joint', 'L_hip_yaw_joint', 'L_knee_joint', 'L_crank_A_joint', 'L_crank_B_joint'] | step 5.0 ms | envs 100
+Kp/Kd (env 0): {'R_crank_A_joint': (59.83, 2.686), 'R_crank_B_joint': (59.83, 2.686), 'L_crank_A_joint': (59.83, 2.686), 'L_crank_B_joint': (59.83, 2.686), 'R_hip_yaw_joint': (74.48, 3.98), 'L_hip_yaw_joint': (74.48, 3.98), 'R_hip_pitch_joint': (134.31, 5.983), 'R_hip_roll_joint': (134.31, 5.983), 'L_hip_pitch_joint': (134.31, 5.983), 'L_hip_roll_joint': (134.31, 5.983), 'R_knee_joint': (129.43, 5.983), 'L_knee_joint': (129.43, 5.983)}
+condition                                             fell  surv   jit°   ptp°    Hz actRMS   actΔ gyro°/s tilt° call Hz
+B2 real timing (measured)                             0/4  20.0   0.02   0.07   2.9   0.26  0.005     0.4   0.3    29.9
+Z1 real timing, zero error 0.5 deg                    0/4  20.0   0.02   0.08   3.4   0.26  0.005     0.4   0.5    29.8
+Z2 real timing, zero error 1 deg                      0/4  20.0   0.01   0.06   3.1   0.27  0.003     0.2   0.6    30.5
+Z3 real timing, zero error 2 deg                      0/4  20.0   0.01   0.07   5.2   0.26  0.005     0.4   0.7    31.2
+Z4 real timing, zero error 4 deg                      0/4  20.0   0.02   0.08   2.1   0.26  0.006     0.4   1.4    29.8
+D1 20 ms period, delay 10 ms                          0/4  20.0   0.01   0.05   6.6   0.26  0.002     0.2   0.5    50.0
+D2 20 ms period, delay 20 ms                          4/4  (all fell early)
+D3 20 ms period, delay 30 ms                          4/4  (all fell early)
+D4 real period, delay 20 ms                           0/4  20.0   0.01   0.05   6.4   0.26  0.004     0.2   0.3    30.9
+Y1 real timing, backlash 0.3 deg                      0/4  20.0   0.02   0.08   2.0   0.28  0.008     0.4   0.4    31.4
+Y2 real timing, backlash 1 deg                        0/4  20.0   0.02   0.08   3.8   0.27  0.004     0.4   0.4    29.4
+Y3 real timing, backlash 2 deg                        0/4  20.0   0.01   0.06   4.3   0.28  0.003     0.2   0.6    30.7
+N1 real timing, gyro noise x1                         0/4  20.0   0.07   0.39   1.3   0.26  0.053     1.9   0.7    30.6
+N2 real timing, gyro noise x3                         0/4  20.0   0.31   1.72   1.1   0.31  0.174     9.9   1.4    29.2
+N3 real timing, gyro noise x10                        0/4  20.0   4.07  16.23   1.7   0.82  0.583    56.6   6.6    30.4
+N4 real timing, gravity noise x3                      0/4  20.0   0.36   2.24   1.2   0.35  0.234     7.2   1.3    30.4
+N5 real timing, gravity noise x10                     4/4  (all fell early)
+N6 real timing, joint noise x1                        0/4  20.0   0.07   0.41   1.1   0.26  0.059     1.4   0.4    30.6
+N7 real timing, joint noise x3                        0/4  20.0   0.37   2.05   1.1   0.33  0.184     5.9   1.0    30.9
+N8 real timing, joint noise x10                       2/4  13.0   5.89  24.57   1.5   1.15  0.831    76.7   6.7    31.2
+N9 real timing, IMU age 20 ms                         0/4  20.0   0.02   0.09   3.7   0.25  0.005     0.5   0.3    30.7
+N10 real timing, IMU age 40 ms                        1/4  20.0   0.01   0.05   4.4   0.27  0.006     0.2   0.4    31.4
+I1 real timing, gyro bias 2 dps                       0/4  20.0   0.01   0.06   3.6   0.27  0.004     0.2   0.7    30.8
+I2 real timing, gravity tilt 0.05                     0/4  20.0   0.01   0.05   1.8   0.28  0.004     0.2   1.7    30.0
+I3 real timing, gravity tilt 0.1                      0/4  20.0   0.02   0.10   1.6   0.26  0.007     0.5   4.9    29.9

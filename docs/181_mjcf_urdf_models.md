@@ -82,6 +82,8 @@
 | **2026-11-04** | **알루미늄 부품판**(`_reinf_alparts_loop`, 다리만·AB): 보강재판에 발목 크랭크 4개(프린트 → Al 6061, 체적 × 2.70)와 엉덩이 마운트 2개(67.0 g → 164.59 g)를 알루미늄 질량으로, 관성도 같은 비율. 전체 +0.3913 kg(25.51 kg), 검증 53개 통과. 크랭크 커버는 프린트 그대로 | [[185_footv5_d455_combined_model]] §11, [[186_urdf_mjcf_version_ledger]] M18 |
 | **2026-11-04** | **알루미늄 부품 추가판**(`_reinf_alparts2_loop`, 다리만·AB): 사용자가 이름을 말한 8종(Yaw2KneePlateA(원본 모양·체적), HipRoll2Yaw A/B, Knee2Ankle_IdleSide_1·RotorSide_1, AnkleFeetPillow A/B, 새 AnkleUniversalJointCore-Revised)을 알루미늄 질량(체적 × 2.70)으로, 좌우 둘 다. 다리 한쪽 +703 g, 전체 +1.405 kg(26.91 kg), 검증 107개 통과. Knee2Ankle 의 `_2` 판·Connector·나사는 알루미늄이 아니라 바꾸지 않음. 알루미늄 빨강 / 나머지 반투명 시각화 | [[185_footv5_d455_combined_model]] §12, 모델 폴더 `MODEL_VERSION_LEDGER.md` M19 |
 | **2026-11-04** | **발 충돌 캡슐판**(`v5cap`, `v5cap3`, MJCF 만): v5fullm 에서 발 충돌만 볼록 조각 29개 → 캡슐 50개(또는 30개) + 받침 상자로 교체. 질량·관성·시각은 v5fullm 그대로. 같은 정책으로 6지형 비교해 침투·미끄러짐이 줄고 넘어짐은 같거나 적음(재학습 전) | [[185_foot_collision_capsule_vs_mesh]], `tools/foot_sole/build_v5cap.py` |
+| **2026-11-04** | **발 충돌 둘레 캡슐판**(`v5rim` 82개, `v5rimL` 57개, MJCF 만): 발바닥 윤곽을 따르는 둘레 캡슐 40개 + 기울인 상자 + 판 상자. 가장자리 띠 오차 RMS 1.2 mm, 안쪽 0.38 mm. 같은 정책 6지형 비교는 v5cap 과 같은 수준. [[186_foot_collision_rim_contour]] | 할 일 #207 |
+| **2026-11-04** | **발 충돌 구역판**(`v5clean`, MJCF 만): v5rim 의 안쪽 상자 41개를 이름 붙은 구역 8개(뒤꿈치 판·바깥쪽 단·아치 오르막/내리막·앞발 판·발끝 굴림 등)로 정리. 발당 도형 49개, 같은 정책 6지형 결과는 v5rim 과 같은 수준. [[187_foot_collision_clean_zones]] | 할 일 #208 |
 
 # 8. 알아 둘 것
 

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="900" height="480" font-family="Arial, Helvetica, sans-serif" font-size="13">
+  <rect width="900" height="480" fill="#ffffff"/>
+  <text x="20" y="22" font-size="15" font-weight="bold" fill="#111">Intel RealSense D455 — 수평 FOV 평면도 (위에서 본 모습) / Horizontal FOV, scale 0.35 px = 1 mm, z 0–1000 mm</text>
+
+  <!-- distance grid (z = 0 at y = 420) -->
+  <g stroke="#ddd" stroke-width="1">
+    <line x1="90" y1="350" x2="830" y2="350"/><line x1="90" y1="280" x2="830" y2="280"/>
+    <line x1="90" y1="210" x2="830" y2="210"/><line x1="90" y1="140" x2="830" y2="140"/><line x1="90" y1="70" x2="830" y2="70"/>
+  </g>
+  <g fill="#777" font-size="11" text-anchor="end">
+    <text x="84" y="424">0</text><text x="84" y="354">200 mm</text><text x="84" y="284">400 mm</text>
+    <text x="84" y="214">600 mm</text><text x="84" y="144">800 mm</text><text x="84" y="74">1000 mm</text>
+  </g>
+
+  <!-- Left IR wedge (H 87° → ±43.5°) -->
+  <polygon points="433.4,420 101.5,70 765.3,70" fill="#c21f1f" fill-opacity="0.10" stroke="#c21f1f" stroke-width="1.5"/>
+  <!-- Right IR wedge -->
+  <polygon points="466.6,420 134.7,70 798.5,70" fill="#1f4fbf" fill-opacity="0.10" stroke="#1f4fbf" stroke-width="1.5"/>
+  <!-- stereo overlap (apex at z = 47.5 / tan 43.5° ≈ 50 mm) -->
+  <polygon points="450,402.5 765.3,70 134.7,70" fill="#7a2fd1" fill-opacity="0.18" stroke="none"/>
+  <!-- RGB wedge (H 90° → ±45°) -->
+  <polygon points="454.05,420 104.05,70 804.05,70" fill="none" stroke="#1d8a1d" stroke-width="2" stroke-dasharray="8 5"/>
+
+  <!-- Min-Z lines -->
+  <line x1="150" y1="238" x2="750" y2="238" stroke="#222" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="756" y="242" fill="#222" font-size="12">Min-Z 520 mm (1280×720)</text>
+  <line x1="260" y1="297.5" x2="640" y2="297.5" stroke="#222" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="646" y="301" fill="#222" font-size="12">Min-Z 350 mm (848×480)</text>
+  <line x1="150" y1="210" x2="750" y2="210" stroke="#d9760f" stroke-width="1.5"/>
+  <text x="756" y="214" fill="#d9760f" font-size="12">권장 범위 0.6 m ~ 6 m (그림 밖)</text>
+
+  <!-- camera body: 124 mm x 26 mm -->
+  <rect x="418.6" y="418.4" width="62.8" height="9.1" fill="#bbb" stroke="#222" stroke-width="1.5"/>
+  <circle cx="433.4" cy="420" r="3" fill="#c21f1f"/><circle cx="466.6" cy="420" r="3" fill="#1f4fbf"/><circle cx="454.05" cy="420" r="3" fill="#1d8a1d"/>
+  <text x="426" y="446" text-anchor="end" fill="#c21f1f" font-weight="bold">Left IR (depth origin)</text>
+  <text x="474" y="446" fill="#1f4fbf" font-weight="bold">Right IR</text>
+  <text x="450" y="462" text-anchor="middle" fill="#1d8a1d" font-weight="bold">RGB (Left IR에서 우측 59 mm)</text>
+
+  <!-- legend -->
+  <rect x="640" y="36" width="14" height="10" fill="#c21f1f" fill-opacity="0.35" stroke="#c21f1f"/><text x="660" y="46" font-size="12">Left IR FOV  H 87° (±3°)</text>
+  <rect x="640" y="54" width="14" height="10" fill="#1f4fbf" fill-opacity="0.35" stroke="#1f4fbf"/><text x="660" y="64" font-size="12">Right IR FOV  H 87° (±3°)</text>
+  <rect x="215" y="36" width="14" height="10" fill="#7a2fd1" fill-opacity="0.45"/><text x="235" y="46" font-size="12">스테레오 겹침 영역 (기하학적으로 ≈ 50 mm 이후부터 시작)</text>
+  <line x1="215" y1="64" x2="229" y2="64" stroke="#1d8a1d" stroke-width="2" stroke-dasharray="5 3"/><text x="235" y="68" font-size="12">RGB FOV  H 90° (±3°)</text>
+
+  <text x="20" y="476" font-size="11" fill="#555">출처: Datasheet Rev.017 Table 3-49 (baseline 95 mm, Depth HD H87/V58/D95 @2 m, Color H90/V65/D98), Table 4-12 (Min-Z). 겹침 apex = 47.5 / tan(43.5°) 로 계산.</text>
+</svg>

@@ -1,3 +1,7 @@
+---
+share_link: https://share.note.sx/qipphifu#c8NTGXqCWIuWZyvXWNAxNe3NiCT7dyl38OlXSLJOEJ4
+share_updated: 2026-10-16T18:02:18+09:00
+---
 # 169. 관절 게인(Kp·Kd)의 적정값은 무엇으로 정하나 — "아슬아슬하게 서는 값"인가? (2026-10-14)
 
 > 사용자 질문(2026-10-14): "Kp / Kd 의 적절한 값 criteria 는 뭐지? 아슬아슬하게 서는 값인건가? 조사해줘." + "학술조사를 더 해줘".

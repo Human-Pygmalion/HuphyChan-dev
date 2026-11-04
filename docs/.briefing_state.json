@@ -1,8 +1,8 @@
 {
  "now": {
-  "title": "49999: 배포 처방 시험, 전류로 실효 강성·영점 흔적 검사, 분석영상 렌더 (세 작업 병행)",
-  "detail": "",
-  "since": "2026-10-30 17:34"
+  "title": "3090 큐: 05:18 v5_hr2 OOM 사고 처리 후 재가동 (v5clean + M19 이어 학습)",
+  "detail": "원인 = M19 시작 스크립트가 RUN_NAME 을 덮어써 큐가 못 셈. 칸 세기 수정, 05:23 재시작. v5clean 은 07:30 종료 예상, 그 칸에 hr2. docs/191 §3-1",
+  "since": "2026-11-05 05:22"
  },
  "items": {
   "shouldermesh": {
@@ -1451,16 +1451,6 @@
    "section": "correct",
    "changed": "2026-10-14 17:32"
   },
-  "gain-ab-heartbeat": {
-   "id": "gain-ab-heartbeat",
-   "created": "2026-10-15 23:33",
-   "title": "게인만 바꾼 두 팔 비교 학습 정기 점검 (07:02) — 원격 3090 학습 중",
-   "finding": "자동 점검(스크립트). 진행 중입니다. 팔 A = 크랭크 60/2.7 만, 팔 B = 등반 권장 묶음 (대기 중이면 반복 '-').",
-   "number": "팔 A 반복 11999 / 12,000 · 팔 B 반복 11280 / 12,000",
-   "section": "done",
-   "changed": "2026-10-17 07:02",
-   "collapsed": true
-  },
   "heading-drift-probe": {
    "id": "heading-drift-probe",
    "created": "2026-10-16 12:23",
@@ -1470,104 +1460,6 @@
    "number": "yaw rate deg/s: baseline -0.66 +/- 0.85, bundle trial +2.58 +/- 2.46, arm A +4.48 +/- 0.03",
    "section": "experiments",
    "changed": "2026-10-16 12:23"
-  },
-  "next-actions": {
-   "id": "next-actions",
-   "created": "2026-10-17 03:29",
-   "title": "다른 HUPHY 세션·biped 2fdc139 검토 → 다음 할 일 정리 (docs/173), 학습 2개 대기열 준비 중",
-   "finding": "새 실기 서기 기록 6개(게인 배율 0.31/0.41/0.51) 발견 → 밀기 발산 판정 분석 시작. 학습 대기열: C 게인 무작위화만, D 명령 지연만 (둘 다 크랭크 60 기준, B 종료 후 순서대로 자동 시작)",
-   "number": "B 07:40 → C 약 19:20 → D 약 07:00 (10-18) 예상",
-   "section": "done",
-   "changed": "2026-10-17 03:29",
-   "collapsed": true
-  },
-  "gain-ab-armB-8k": {
-   "id": "gain-ab-armB-8k",
-   "created": "2026-10-17 03:57",
-   "title": "게인 비교 B 8,000회 — 회전 추종 보상 0.864 (기준선 0.831, A 0.824), 넘어짐 종료 0.010 으로 세 런 중 가장 좋음",
-   "finding": "무작위화 최대 구간. 평균 보상 68.4 (A 69.9, 기준선 62.9). 엉덩이·무릎을 낮춘 등반 권장 게인이 학습 중 지표로는 나빠지지 않았다. 판정은 완주 뒤 측정",
-   "number": "B 8,063 / 12,000회, 끝 예상 07:50 → C 자동 시작",
-   "section": "done",
-   "changed": "2026-10-17 03:57",
-   "collapsed": true
-  },
-  "real-stand-logs-0310405": {
-   "id": "real-stand-logs-0310405",
-   "created": "2026-10-17 04:01",
-   "title": "Real standing logs (body gain 0.3/0.4/0.5, ankle 1.0) vs simulation",
-   "finding": "Real robot diverges 2 s after pushes of 0.15-0.3 m/s equivalent (gyro peak 0.085-0.24 rad/s); simulation at the same gains does not fall below 0.5 m/s. Observations before the push stay inside the training band. Best fit: a real-only difference, not the gain alone.",
-   "number": "0 of 48 simulated pushes (0.15-0.3 m/s) fell; real fell after 2 of 3 logs' events",
-   "needs": "A real log at body gain 0.8-1.0 with ankle 1.0, send mode seq, and the gain/send mode written in the log header",
-   "media": [
-    "docs/sim2real/img/2026-10-17_real_stand_timeseries.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-17 04:01",
-   "collapsed": true
-  },
-  "real-logs": {
-   "id": "real-logs",
-   "created": "2026-10-17 04:03",
-   "title": "실기 서기 기록(몸 0.3/0.4/0.5, 발목 1.0) 분석: 시뮬은 같은 게인·같은 크기 밀기에서 0/48 넘어짐, 실기는 2초 안에 발산 → 실기에만 있는 차이",
-   "finding": "조용히 설 때 관측은 학습 범위 안. 실기에만 있는 차이 후보: 송신 방식 burst 의 지연·유실(오른 발목 B 늦음+무응답 최대 22 %), IMU 값 멈춤(조용할 때 64~90 % 주기에서 직전과 동일, 최장 230 주기), 오른 발목 A 영점 −5.6°. 정책 주기 24~27 ms 는 시뮬에서 차이 없음. 결정적 자료(몸 게인 0.8~1.0 + seq 기록)가 없음",
-   "number": "docs/sim2real/2026-10-17_real_stand_logs_gain031_051.md",
-   "media": [
-    "docs/sim2real/img/2026-10-17_real_stand_timeseries.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-17 04:03",
-   "collapsed": true
-  },
-  "rough_gain_crank60_gaindr_v11a-heartbeat": {
-   "id": "rough_gain_crank60_gaindr_v11a-heartbeat",
-   "created": "2026-10-17 08:48",
-   "title": "rough_gain_crank60_gaindr_v11a 정기 점검 (18:42) — 원격 3090 학습 중",
-   "finding": "자동 점검(스크립트). 진행 중입니다.",
-   "number": "반복 11155 / 12,000",
-   "section": "done",
-   "changed": "2026-10-17 18:42",
-   "collapsed": true
-  },
-  "팔 B 완주 평가": {
-   "id": "팔 B 완주 평가",
-   "created": "2026-10-17 09:06",
-   "title": "팔 B (등반 권장 게인) 사전 등록 6개 중 합격 3 · 불합격 2 · 판정 없음 1",
-   "why": "게인 묶음이 크랭크 단독(팔 A)과 기준선보다 나은지 가르기 위해",
-   "finding": "직진 방향각 변화율 -2.05 도/초 (팔 A +4.48, 부호 반대), 오르막·계단 넘어짐 3.9 %·3.1 % (팔 A 9.8 %·9.8 %)",
-   "number": "무릎 토크 제곱평균제곱근 오르막 0.6 m/s 11.8 N·m (팔 A 14.8, 정격 40)",
-   "section": "done",
-   "changed": "2026-10-17 09:06",
-   "collapsed": true
-  },
-  "gain-ab-armB-final": {
-   "id": "gain-ab-armB-final",
-   "created": "2026-10-17 09:07",
-   "title": "게인 비교 B(등반 권장 전체) 판정: 아직 채택 안 함 — 등반 쪽 개선, 제자리 회전 퇴보",
-   "finding": "오르막 20° 넘어짐 3.9 % · 계단 15 cm 3.1 % (A 9.8 % · 9.8 %), 서기 흘러감 0.175 m, 무릎 토크 실효값 11~12 N·m (A 15). 그러나 제자리 회전 31.3 % (A 53.5 %), 오른쪽 느린 회전 4 %. 직진 치우침 −2.05 °/s (A +4.48) → 치우침 방향은 학습마다 우연. 학습 씨앗 하나라 회전 차이 원인 미확정",
-   "number": "사전 기준 6개 중 합격 3 · 불합격 2 · 판정 없음 1",
-   "section": "done",
-   "changed": "2026-10-17 09:07",
-   "collapsed": true
-  },
-  "gain-c-4k": {
-   "id": "gain-c-4k",
-   "created": "2026-10-17 11:50",
-   "title": "C(크랭크 60 + 게인 무작위화) 4,000회 — 회전 추종 보상 0.871, A 런(0.940)보다 7 % 낮음",
-   "finding": "무작위화 33 % 램프 시점. 넘어짐 종료 0.004, 평균 보상 72.9 (A 77.1). 게인 무작위화가 회전을 조금 낮추는 방향. 판단은 8,000회·완주 측정에서",
-   "number": "C 4,063 / 12,000회, 끝 예상 19:20",
-   "section": "done",
-   "changed": "2026-10-17 11:50",
-   "collapsed": true
-  },
-  "gain-c-8k": {
-   "id": "gain-c-8k",
-   "created": "2026-10-17 15:42",
-   "title": "C(크랭크 60 + 게인 무작위화) 8,000회 — 회전 추종 보상 0.752 (A 0.824, 묶음 시험 0.628)",
-   "finding": "게인 무작위화만으로 회전 보상 −9 %. 묶음 시험 런의 −24 % 중 약 3분의 1. 나머지는 지연·밀기·엔코더 쪽 (D 런이 지연 몫을 가름). 넘어짐 종료 0.006 으로 낮음",
-   "number": "C 8,042 / 12,000회, 끝 예상 19:20 → D 자동 시작",
-   "section": "done",
-   "changed": "2026-10-17 15:42",
-   "collapsed": true
   },
   "handoff-174": {
    "id": "handoff-174",
@@ -1581,226 +1473,6 @@
    "media": [
     "docs/174_findings_so_far_handoff.md"
    ]
-  },
-  "digest-174": {
-   "id": "digest-174",
-   "created": "2026-10-17 18:35",
-   "title": "알아낸 사실 정리 문서 작성: docs/174 (v11a 묶음 시험·역기전력 벤치·CAN 응답 번호)",
-   "finding": "다른 세션이 이어받을 수 있게 용어 정의·사실·숫자·원본 링크·열린 문제 6개·함정 6개. 게인 선정 과정은 docs/171 개요 문서로 연결. HUPHY 2fdc139 기준: 응답 번호 충돌 확인·seq 기본, 호스트 ID 분리는 아직 안 함",
-   "number": "docs/174",
-   "section": "done",
-   "changed": "2026-10-17 18:35",
-   "collapsed": true
-  },
-  "dr-requirements": {
-   "id": "dr-requirements",
-   "created": "2026-10-17 19:21",
-   "title": "실측·동료 피드백 기반 무작위화 항목 정리 (docs/175)",
-   "finding": "우선 1: 관절 관측 지연 0~1 주기, 명령 지연 0~1 주기, 응답 유실 0~10 %, 게인 Kp×0.8~1.2·Kd×0.7~1.3, 엔코더 ±3°. 우선 2: IMU 부착각 ±5°, IMU 값 멈춤(실기 원인 먼저), 밀기 완화. 우선 3: 모터 세기·마찰·관성·질량. 넣지 말 것: 중력 부호 반전, 0.5배 아래 게인, 정책 주기",
-   "number": "docs/175",
-   "section": "done",
-   "changed": "2026-10-17 19:21",
-   "collapsed": true
-  },
-  "rough_gain_crank60_actdelay_v11a-heartbeat": {
-   "id": "rough_gain_crank60_actdelay_v11a-heartbeat",
-   "created": "2026-10-17 20:43",
-   "title": "rough_gain_crank60_actdelay_v11a 정기 점검 (08:13) — 원격 3090 학습 중",
-   "finding": "자동 점검(스크립트). 진행 중입니다.",
-   "number": "반복 11838 / 12,000",
-   "section": "done",
-   "changed": "2026-10-18 08:13",
-   "collapsed": true
-  },
-  "gaindr_eval": {
-   "id": "gaindr_eval",
-   "created": "2026-10-17 21:38",
-   "title": "팔 C(게인 무작위화) 완주 뒤 사전 등록 측정",
-   "why": "묶음 시험의 게인 0.5 내성과 회전 손실 중 게인 무작위화의 몫을 가르려고",
-   "finding": "게인 0.5 에서 6/8 버텼다 (팔 A 1/8, 팔 B 2/8). 제자리 회전 중앙값은 48.0 % (팔 A 53.5 %)로 기준 안이지만 반대 방향이 7/64 로 기준 6/64 를 한 번 넘었다. 사전 등록 5개 중 합격 2, 불합격 2, 값 기록 1. 종합 판단은 메인 세션이 쓴다.",
-   "number": "게인 0.5 생존 6/8 · 회전 48.0 % · 반대 방향 7/64 · 낮은 몸통 종료 1.597 (A 1.470) · 방향각 변화율 +1.68 도/초 (A +4.48) · 서 있기 0.289 m",
-   "section": "done",
-   "changed": "2026-10-17 21:38",
-   "collapsed": true
-  },
-  "gain-c-final": {
-   "id": "gain-c-final",
-   "created": "2026-10-17 21:39",
-   "title": "C(크랭크 60 + 게인 무작위화) 판정: 지금까지 가장 좋은 실기 배포 후보 — 게인 0.5배 생존 6/8, 회전 48 %",
-   "finding": "가설 적중: 게인 0.5배 생존 A 1/8 → C 6/8. 제자리 회전 48.0 % (기준선 45.3, A 53.5), 반대 방향 7/64, 직진 치우침 +1.68 °/s (A +4.48). 묶음 시험 런의 회전 손실은 게인 무작위화만으로 설명 안 됨 → D(지연)가 가름",
-   "number": "사전 기준 5개: 합격 2, 불합격 2(근소), 기록 1",
-   "section": "done",
-   "changed": "2026-10-17 21:39",
-   "collapsed": true
-  },
-  "gain-d-4k": {
-   "id": "gain-d-4k",
-   "created": "2026-10-18 00:22",
-   "title": "D(크랭크 60 + 명령 지연 무작위화) 4,000회 — 회전 추종 보상 0.916 (A 0.940, C 0.871)",
-   "finding": "무작위화 33 % 램프 시점. 넘어짐 종료 0.003. 회전 감소는 C 보다 작음. 판단은 8,000회·완주 측정에서",
-   "number": "D 4,017 / 12,000회, 끝 예상 07:15",
-   "section": "done",
-   "changed": "2026-10-18 00:22",
-   "collapsed": true
-  },
-  "gain-d-8k": {
-   "id": "gain-d-8k",
-   "created": "2026-10-18 04:12",
-   "title": "D(크랭크 60 + 명령 지연) 8,000회 — 회전 추종 보상 0.667 (A 0.824, C 0.752, 묶음 0.628)",
-   "finding": "무작위화 최대 구간에서 명령 지연만으로 회전 보상 −19 %. 묶음 시험 런 회전 손실(−24 %)의 대부분은 명령 지연 몫, 게인 무작위화(−9 %)는 작은 몫. 낮은 몸통 종료 1.94 로 높음",
-   "number": "D 8,053 / 12,000회, 끝 예상 07:15",
-   "section": "done",
-   "changed": "2026-10-18 04:12",
-   "collapsed": true
-  },
-  "gain-d-finish": {
-   "id": "gain-d-finish",
-   "created": "2026-10-18 08:29",
-   "title": "D 런 학습 완주 (11,999 회, 10-18 08:24). 원격 3090 대기열 끝, 그래픽카드 비어 있음",
-   "finding": "마지막 기록: 낮은 몸통 종료 1.375, 시간 초과 종료 3.17. 완주 측정 시작 (게인 0.5 배 생존, 제자리 회전 지연 끔·켬, 서기, 방향 치우침, 오르막·계단)",
-   "section": "done",
-   "changed": "2026-10-18 08:29",
-   "collapsed": true
-  },
-  "armD_final_eval": {
-   "id": "armD_final_eval",
-   "created": "2026-10-18 10:44",
-   "title": "Arm D (command-delay randomization only) evaluated: 2 of 5 pre-registered checks pass, 2 fail, 1 recorded",
-   "why": "Arm D separates the command-delay share from the gain-randomization share of the bundle trial's turning loss (arm C already evaluated).",
-   "finding": "Gain 0.5x survival is 8/8 (arm A 1/8, arm C 6/8), but turn-in-place median is 37.7 % (arm A 53.5 %, bar 43.5 %) with 11/64 wrong-way turns (bar 6/64); command delay ON gives 27.4 %. Heading drift +0.47 deg/s (arm A +4.48, arm C +1.68). Final-200 low_base 1.739 vs arm A 1.470 (fail). Overall judgement left to the main session.",
-   "number": "turn reward 0.692 vs A 0.857, C 0.772, bundle 0.671; stand drift 0.328 m; uphill 20 deg at 0.6 m/s falls 18.0 % (A 9.8 %)",
-   "section": "done",
-   "changed": "2026-10-18 10:44",
-   "collapsed": true
-  },
-  "gain-d-verdict": {
-   "id": "gain-d-verdict",
-   "created": "2026-10-18 10:45",
-   "title": "D 런 판정 — 게인 0.5 배 생존 8/8 (C 6/8, A 1/8), 회전 37.7 % 로 기준 미달",
-   "finding": "사전 등록 5 개 중 합격 2, 불합격 2, 값 기록 1. 낮은 게인 내성의 주원인은 명령 지연 무작위화였다 (가설 기각). 대가: 제자리 회전 37.7 % (A 53.5), 오르막 20° 넘어짐 18 % (A 9.8). 방향 치우침 +0.47 °/s 로 최소. 실기 서기·밀기 첫 배포 후보 = D, 걷기 후보 = C",
-   "number": "게인 0.5: D 8/8 · C 6/8 · A 1/8",
-   "section": "done",
-   "changed": "2026-10-18 10:45",
-   "collapsed": true
-  },
-  "dr-doc-176": {
-   "id": "dr-doc-176",
-   "created": "2026-10-18 14:18",
-   "title": "동료 전달용 무작위화 정리 문서 docs/176 작성",
-   "finding": "무작위화 요소 14 개의 범위·근거·효과를 한 문서로 모음. 단독 효과를 잰 것은 게인 무작위화(C)와 명령 지연 무작위화(D) 둘뿐. 나머지 마찰·질량·관측 잡음·밀기 등은 켠 채로만 학습해 효과 숫자 없음. 주의 7 개(명령 지연 세 구현, 관측 지연 학습 이력 없음, D 런 직전 행동 입력 불일치 가능 등)",
-   "media": [
-    "docs/mujoco/assets/176_dr_effects_rough_ab.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-18 14:18",
-   "collapsed": true
-  },
-  "mit-cmd14-check": {
-   "id": "mit-cmd14-check",
-   "created": "2026-10-19 10:56",
-   "title": "MIT 모드에서 Command 14 (파라미터 읽기) 동작 확인 — docs/174 §2-2a",
-   "finding": "매뉴얼 6장 MIT 프로토콜 소속. 벤치 동작 중 VBUS 65,003 요청 중 65,000 응답(0.005 % 손실). 로봇 RS03 펌웨어는 미확인",
-   "number": "VBUS 응답 없음 0.005 % / 0.89 %",
-   "section": "done",
-   "changed": "2026-10-19 10:56",
-   "collapsed": true
-  },
-  "mit-cmd14-live": {
-   "id": "mit-cmd14-live",
-   "created": "2026-10-19 11:06",
-   "title": "MIT 모드 Command 14 실물 직접 시험 — Run 상태에서 VBUS·iqf·mechPos 응답 확인",
-   "finding": "옛 매뉴얼(251112)은 Command 11까지, 새 판(RS04 260713/RS03 261013)에 12~15 추가. 실측: 11비트 0x0FD 600/600, 확장 프레임 0, mechPos 가 상태 위치와 0.03° 이내 일치",
-   "number": "VBUS 48.685 V, 프레임 600/600",
-   "section": "done",
-   "changed": "2026-10-19 11:06",
-   "collapsed": true
-  },
-  "slcan-gsusb-factcheck": {
-   "id": "slcan-gsusb-factcheck",
-   "created": "2026-10-19 11:13",
-   "title": "gs_usb 병렬화 주장 사실 확인 — 부분적으로만 참 (docs/177)",
-   "finding": "gs_usb 송신 URB 10개(컴퓨터↔어댑터)뿐, 선 위 병렬 없음. 3090 slcan 실측 1 ms 묶음 없음, 4개 몰아 보내기 마지막 응답 1.28 ms, 손실 0. 기존 문서 2곳 정정(묶음 전송 거짓, 18 %→33~40 %)",
-   "number": "왕복 중앙값 0.48~0.58 ms, 99 % 3.7~3.9 ms",
-   "section": "done",
-   "changed": "2026-10-19 11:13",
-   "collapsed": true
-  },
-  "can-id-hostid": {
-   "id": "can-id-hostid",
-   "created": "2026-10-19 11:34",
-   "title": "CAN ID 동작 조사 — 응답 ID 0xFD 는 모터 6대 공용, 바꿀 것은 PC 가 아니라 모터마다의 Host CAN ID 설정 (docs/178)",
-   "finding": "Bosch CAN 2.0: ID 는 주소 아님·중재·같은 ID 동시 송신은 데이터 구간 BIT ERROR. 명령 방향은 모터 ID 로 유일, 응답 방향은 6대 모두 0x0FD. 새 Host ID 는 모터 ID 와 겹치면 위험",
-   "number": "몰아 보내기 버스 오류 ~1,300 vs 하나씩 4 (개발자 실측)",
-   "section": "done",
-   "changed": "2026-10-19 11:34",
-   "collapsed": true
-  },
-  "can-0xfd-adapter-review": {
-   "id": "can-0xfd-adapter-review",
-   "created": "2026-10-19 12:02",
-   "title": "0xFD 충돌은 USB-CAN 어댑터 병목이 아니라 CAN 선 위 충돌 — 다만 지금 주기 상한은 어댑터 왕복 × 6 (docs/178 §7)",
-   "finding": "근거: 어댑터 루프백 오류 0, 응답이 둘씩 짝으로 빠짐(696주기 중 71), 버스 오류 프레임 몰아 보내기 약 1,300 대 하나씩 4. 어댑터 쪽 병목(옛 gs_usb 드라이버)은 이미 6.1 판으로 고쳐짐. 하나씩 보내기에서 왕복 0.69 ms × 6 = 다리당 4.33 ms",
-   "number": "왕복 0.69 ms, 다리당 4.33 ms",
-   "section": "done",
-   "changed": "2026-10-19 12:02",
-   "collapsed": true
-  },
-  "can-threads-review": {
-   "id": "can-threads-review",
-   "created": "2026-10-19 12:06",
-   "title": "개발자 의견 '0xFD 병렬화엔 스레드 여러 개' 검토 — 스레드로는 0xFD 충돌을 못 푼다 (docs/178 §8)",
-   "finding": "지금도 한 스레드가 두 다리 버스를 엇갈려 동시에 쓴다(6 × 0.69 ms ≈ 4.3 ms). 한 버스에 모터별 스레드는 몰아 보내기와 같아 충돌 재발. 다리별 스레드는 꼬리 지연만 줄임. 한 버스 안 겹쳐 보내기는 Host ID 분리(추정 1.5~2.5 ms, 미실측) 또는 버스 추가",
-   "number": "하나씩 4.3 ms → Host ID 분리 추정 1.5~2.5 ms",
-   "section": "done",
-   "changed": "2026-10-19 12:06",
-   "collapsed": true
-  },
-  "can-adapter-fifo": {
-   "id": "can-adapter-fifo",
-   "created": "2026-10-19 12:52",
-   "title": "Host ID 분리의 이득 = 고정 대기(왕복당 약 0.4 ms)를 6번 → 1번으로 겹침. 어댑터 버퍼 3단은 병목 아님 (docs/178 §9)",
-   "finding": "candleLight 는 모든 ID 를 받음(거르기 없음). '3'은 모터 미응답 한도(몰아 보내기도 모터당 1개)와 bxCAN 수신 FIFO 3단(펌웨어가 64 대기열로 옮김) 두 가지. 루프백 6개 묶음 5,916/5,916, 로봇 몰아 보내기 622/696 주기 6개 전부 수신",
-   "number": "하나씩 4.3 ms → 추정 1.5~2.5 ms",
-   "section": "done",
-   "changed": "2026-10-19 12:52",
-   "collapsed": true
-  },
-  "emf-v-i-source": {
-   "id": "emf-v-i-source",
-   "created": "2026-10-19 14:00",
-   "title": "벤치 전압·전류 출처·신뢰도 정리, 소비/회생 분리 조건 (docs/174 §2-2b)",
-   "finding": "VBUS=모터 ADC(0x701C, 0.035 V 눈금), iqf=q축 상전류(버스 전류 아님). 토크 대 iqf 기울기 1.456 N·m/A, R² 0.9925 — 매뉴얼 Kt 1.485 와 2 % 차. 버스 전류 ibus(0x302B) 등 0x30xx 는 MIT 로 읽으면 0. 소비/회생은 τω 부호로 하한만, 정확히는 48 V 선 양방향 전류 센서 필요",
-   "number": "Kt 실측 1.456 vs 매뉴얼 1.485 N·m/A",
-   "section": "done",
-   "changed": "2026-10-19 14:00",
-   "collapsed": true
-  },
-  "battery-regen-spec": {
-   "id": "battery-regen-spec",
-   "created": "2026-10-19 14:06",
-   "title": "배터리 회생(충전) 전류 스펙 근거 — 연속 2 A, 1 s 3 A, 0.1 s 13 A, 순간 33 A 제안 (docs/179)",
-   "finding": "시뮬 8개 측정(각 1,815 s) 손실 0 상한, 48 V: 10 s 최대 1.18 A, 1 s 1.84 A, 0.1 s 8.27 A, 20 ms 21.7 A. 제안=×1.5(상체·넘어짐 미포함 가정). 핵심 확인: BMS 충전 과전류 문턱·지연, 완충 시 충전 차단 여부(차단 시 벤치처럼 60 V 과전압)",
-   "number": "20 ms 최대 21.7 A, 10 s 최대 1.18 A",
-   "media": [
-    "docs/mujoco/assets/battery_regen_current_sim.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-19 14:06",
-   "collapsed": true
-  },
-  "gw-jitter": {
-   "id": "gw-jitter",
-   "created": "2026-10-21 19:21",
-   "title": "generalized_walk 서기 떨림 원인 분석",
-   "why": "속도 명령 0 으로 실기를 돌리면 계속 떨림. 게인은 학습 100 %. 시뮬레이션으로 가설을 하나씩 시험",
-   "finding": "실기 루프는 100 Hz 목표인데 60.6 Hz, 정책은 평균 33 ms 간격 (학습 20 ms). 그러나 이것만으로는 시뮬레이션에서 떨지 않음. 게인 높음·마찰·질량·영점 오차·백래시·지연·IMU 편향도 변화 없음. 큰 떨림은 발에 하중이 없을 때(크레인이 몸무게 92 % 이상 받칠 때)만 나옴 (1.5~1.7 Hz, 3~16°). 받은 CSV 는 응답 시각뿐이라 실제 떨림 모양은 정책 기록 필요",
-   "number": "루프 60.6 Hz / 정책 호출 간격 33±10 ms / 서 있기 떨림 0.01° (실기 타이밍) vs 16° (발 하중 0) / 게인 ×1.25·Kd ×2 변화 없음",
-   "media": [
-    "docs/sim2real/img/2026-10-21_gw_hanging_jitter.png"
-   ],
-   "section": "done",
-   "changed": "2026-10-21 19:21",
-   "collapsed": true
   },
   "walkaudit": {
    "id": "walkaudit",
@@ -1972,7 +1644,8 @@
    "finding": "쏠림 원인 = 정책 자체 치우침(실기·시뮬레이터 모두 오른쪽). 걸음새 원인 = 정책 간격 52 ms (주기 수로 부르는 held()). 5 Hz = 자이로·직전 행동 경로의 정책 되먹임 순환, 게인 1.0·잡는 손이 기여, 5.1 Hz 진동수는 시뮬레이터 재현 안 됨(실기 응답 차이 유력). 하드웨어 7 항목·제어단 6 항목·정책 제작자 5 항목·다음 실기 시험 5 단계. 2 차 감사 진행 중",
    "number": "단계 6: 잡는 손만 진동 지속 (2.7~3.2 Hz)",
    "section": "done",
-   "changed": "2026-10-22 22:57"
+   "changed": "2026-10-22 22:57",
+   "collapsed": true
   },
   "urdf_origin_cad": {
    "id": "urdf_origin_cad",
@@ -1985,7 +1658,8 @@
     "docs/img/base_link_origin_cad.png"
    ],
    "section": "done",
-   "changed": "2026-10-27 22:16"
+   "changed": "2026-10-27 22:16",
+   "collapsed": true
   },
   "d455_camera": {
    "id": "d455_camera",
@@ -2000,7 +1674,8 @@
     "docs/img/d455/cad_crosscheck.png"
    ],
    "section": "done",
-   "changed": "2026-10-27 23:21"
+   "changed": "2026-10-27 23:21",
+   "collapsed": true
   },
   "d455_mount": {
    "id": "d455_mount",
@@ -2013,7 +1688,8 @@
     "docs/img/d455/rviz_close_side.png"
    ],
    "section": "done",
-   "changed": "2026-10-28 02:05"
+   "changed": "2026-10-28 02:05",
+   "collapsed": true
   },
   "model_files_doc": {
    "id": "model_files_doc",
@@ -2022,7 +1698,8 @@
    "why": "모델 파일이 6종에 겉껍데기판·카메라판까지 늘어나 어떤 파일이 무엇인지, 무엇이 언제 바뀌었는지 한곳에서 볼 수 있어야 합니다.",
    "finding": "docs/181 에 파일 이름 읽는 법, MJCF 와 URDF 의 차이(모터 모양은 MJCF 에만 있음), 만드는 방법, 2026-08-22 부터 2026-10-28 까지의 수정 이력 표를 정리했습니다. D455 카메라판 작업도 같은 표에 기록했고, 모델 계획 문서(117)와 모델링 안내서(156)에 링크를 걸었습니다.",
    "section": "done",
-   "changed": "2026-10-28 02:17"
+   "changed": "2026-10-28 02:17",
+   "collapsed": true
   },
   "model_urls": {
    "id": "model_urls",
@@ -2032,7 +1709,8 @@
    "finding": "다리만 있는 학습용 원본(URDF·MJCF·메시)은 이미 GitHub main 에 있습니다. 카메라판은 로컬 커밋 3개(34커밋 중)라 아직 푸시 전이며, 푸시 여부는 사용자 확인을 기다립니다. mjlab 안의 MJCF 는 공개 mujocolab 저장소라 우리 GitHub 에 없어서, 같은 MJCF 를 URDF 옆에도 저장했습니다. 두 복사본은 같은 모델(23.8081 kg, 카메라 1개)로 컴파일됩니다. 한계: 메시 링크가 이 컴퓨터 절대 경로라 다른 컴퓨터에서는 링크를 다시 만들어야 합니다.",
    "number": "GitHub 보다 앞선 커밋 34개 / 카메라판 MJCF 두 복사본 모두 23.8081 kg",
    "section": "done",
-   "changed": "2026-10-28 02:39"
+   "changed": "2026-10-28 02:39",
+   "collapsed": true
   },
   "u49-first": {
    "id": "u49-first",
@@ -2041,7 +1719,8 @@
    "finding": "HUPHY main 10-28 원격 조작 기록 2 개(118 초·65 초). --hz 50 으로 정책 간격 20.0 ms(해결), 응답 유실 0. 엉덩이 좌우 목표 오른 +5.1/왼 −4.1°, 실제 −1.4/+0.2°. 차이 한쪽 4~6.5° 는 37400 기록·시뮬레이터에도 있었음 → 실기만의 차이인지 시뮬레이터 비교 중",
    "number": "목표 벌림 +9.2° / 실제 −1.6°",
    "section": "done",
-   "changed": "2026-10-30 14:26"
+   "changed": "2026-10-30 14:26",
+   "collapsed": true
   },
   "u49-audit": {
    "id": "u49-audit",
@@ -2050,7 +1729,8 @@
    "finding": "3~8 Hz 0.62→0.04~0.07 deg². 발목 사이 걷기 중앙 22 cm, 최소 14.2 cm. 원인 후보(학습): 발 간격 항 없음, 엉덩이 좌우 시작 외란 U(-0.10,0.06) 을 스쿼트(기본 +0.05)에서 복사 → 걷기에선 안쪽 치우침(3 % 는 다리 닿은 채 시작). 미커버: 영점 1~5° vs ±0.86°, IMU 멈춤, 명령 범위. 오른 크랭크 A 추종 1.2° vs 목표 6.7°. 직진 쏠림 −4.6 °/s",
    "number": "발 간격 22 cm / 기본 24.7 cm",
    "section": "done",
-   "changed": "2026-10-30 15:16"
+   "changed": "2026-10-30 15:16",
+   "collapsed": true
   },
   "u49999-stance-verdict": {
    "id": "u49999-stance-verdict",
@@ -2099,6 +1779,172 @@
    "finding": "시뮬 발은 서기 중 3 mm/s 미끄러지지만 접촉을 단단히 해도 서기 폭 28.8~29.5 cm, 토크 ±3~5 N·m 그대로. 서기 차이 대부분은 미설명 - 실기 측정(줄자·발 미끄러짐 관찰·외다리 발목 기울기) 필요",
    "section": "docs/178 §4-5, §4-6",
    "changed": "2026-10-30 18:29"
+  },
+  "footv5_urdf": {
+   "id": "footv5_urdf",
+   "created": "2026-10-31 23:21",
+   "title": "발 v5 를 URDF 에 반영 + SIM 충돌 모델 검토 + 타 로봇 발 모델 조사",
+   "why": "실물 발은 판 아래 14 mm 밑창이 붙는다. 모델이 실물과 같아야 하중·보행 비교가 맞다",
+   "finding": "SIM v5 충돌 모델은 형상이 정확하다(바닥 높이 오차 P99 0.10 mm, 굴림 발목 높이 오차 0.07 mm). 대신 시뮬레이터 접촉이 물러서 0.6 m/s 착지에 4.4 mm 가라앉는다 — 아치 4.5 mm 와 같은 크기. 공개 휴머노이드 12종 중 발등 덮개를 충돌에 넣은 모델은 없다",
+   "number": "발 하나 0.845 → 1.174 kg, 땅 높이 −43 → −57 mm",
+   "now_": "새 URDF …_footv5_loop.urdf (발 링크 밖 글자 동일). Feet_Up 시각 메시는 STEP 받으면 추가",
+   "media": [
+    "Feet_design/Feet_Design_Workspace/foot_cad/v5/review/fig_foot_model_survey.png",
+    "Feet_design/Feet_Design_Workspace/foot_cad/v5/review/fig_v5_collision_review.png"
+   ],
+   "section": "done",
+   "changed": "2026-10-31 23:21",
+   "collapsed": true
+  },
+  "footv5_cad": {
+   "id": "footv5_cad",
+   "created": "2026-11-01 00:07",
+   "title": "footv5 URDF 를 CAD 원본으로 갱신 (사용자 수정 캐리어 + Feet_Up 실제 형상)",
+   "why": "사용자가 캐리어를 고쳤고 Feet_Up 형상이 필요했다",
+   "finding": "Fusion 출력 채널은 애드인 버퍼가 차서 막혀 있었다 → Fusion 스크립트가 STEP 을 내보내 이 PC 받기 서버로 HTTP PUT. 고친 캐리어 테두리는 40° 넘게 기울어야 땅에 닿아 충돌 모델 변경 불필요",
+   "number": "발 1.186 kg (+0.341), 캐리어 160.1 cm³ 119 g, Feet_Up 80 g 무게중심 (102.2, 0, −16.1) mm",
+   "media": [
+    "Feet_design/Feet_Design_Workspace/foot_cad/v5/review/fig_foot_model_survey.png"
+   ],
+   "section": "done",
+   "changed": "2026-11-01 00:07",
+   "collapsed": true
+  },
+  "189": {
+   "id": "189",
+   "created": "2026-11-01 02:00",
+   "title": "발바닥 연구 중간 결과 2: 시드 두 개 확보 — 경사+굴곡 넘어짐 29 → 5(두 시드 모두), 평지 이동 비용 이득은 불확실",
+   "finding": "상자 발은 시드 43·44 모두 경사+굴곡에서 29/32 넘어짐, v5(CAD 질량)는 두 시드 모두 5/32(피셔 p=1e-9). 평지 발 미끄럼 172·150 → 76·84 mm/s, 발당 착지 5.0·4.2 → 2.0·2.2회/s도 두 시드 모두 확실. 평지 이동 비용 감소는 시드 잡음(0.066)과 비슷해 불확실(시드별 −0.089, −0.018). 착지 최대 힘(충격)은 평지에서 낮아지지 않음(3.29·3.13 대 3.55·3.28 BW)",
+   "number": "평가 3090 50건 + 이 PC 약 12건, 학습 묶음 3 진행 중",
+   "needs": "돌·자갈 지형(CPU 평가), 1단계 훑기(약 1.2일)",
+   "media": [
+    "Feet_design/Feet_Design_Workspace/mjcf_sim/study/INTERIM_stage0_seeds.md"
+   ],
+   "section": "done",
+   "changed": "2026-11-01 10:28",
+   "was": "자갈·돌 험지를 높이장으로 만들어 평가 (상자 발 49999가 32개 모두 넘어짐)",
+   "now_": "시뮬레이터(MuJoCo-Warp)의 높이장 접촉이 걷는 발에서 잘못 작동함(평평한 높이장에서도 디딤발 3~4배 미끄러짐, 넘어짐 77~100 %, 같은 높이 상자 바닥 0 %; 서베이 세션이 근거 문서로 지적). 그 평가는 무효(eval_invalid_hfield/ 보관), 돌 2 cm·1 cm와 3~8 mm 자갈 복도를 상자로 새로 만듦. 사람 발 문헌 노트 완성 → 사람 비율 변형 v5_human(뒤꿈치 23/5, 발끝 190/8, 아치 6·정점 130·범위 65-170)과 발끝 190·뒤꿈치 높이 8 시험 변형 추가",
+   "collapsed": true
+  },
+  "190": {
+   "id": "190",
+   "created": "2026-11-04 11:47",
+   "title": "발 v5 URDF/MJCF 위치·정확성 검토",
+   "why": "다른 세션이 만든 발바닥 모델(질량 반영)이 CAD 와 맞는지 확인이 필요했다",
+   "finding": "질량·무게중심·관성이 CAD STEP 재계산과 일치, URDF 와 MJCF v5fullm 발 관성 동일. 캐리어 밀도 0.744 는 추정, 파일은 git 미추적",
+   "number": "발 1.18617 kg(+0.341), 질량 오차 4 mg, 무게중심 오차 0.01 mm",
+   "media": [
+    "docs/img/footv5_parts_side.png"
+   ],
+   "section": "done",
+   "changed": "2026-11-04 11:47",
+   "collapsed": true
+  },
+  "191": {
+   "id": "191",
+   "created": "2026-11-04 11:55",
+   "title": "발 충돌 형상 문헌·실사례 비교",
+   "why": "메시 조각 29개가 경계에서 불안정할 수 있다는 우려에 문헌 근거가 필요했다",
+   "finding": "MuJoCo 문서상 비해석적 쌍(메시)은 단일 접촉 CCD, 구·캡슐·상자는 해석적. 거친 지형의 구·캡슐 발은 이 저장소에서 아직 한 번도 평가되지 않음(평지 v3 구 12개만 있음)",
+   "number": "v3 구 12개 평지: 침투 P99 5.9 mm, 넘어짐 0/8, 바깥 CoP -18 mm",
+   "section": "done",
+   "changed": "2026-11-04 11:55",
+   "collapsed": true
+  },
+  "192": {
+   "id": "192",
+   "created": "2026-11-04 15:18",
+   "title": "발 충돌 v5cap 제작·비교",
+   "why": "구·캡슐 발이 거친 지형에서 되는지 검증된 적이 없어, 29조각 메시와 같은 정책·지형으로 맞비교",
+   "now_": "v5cap(캡슐 50개+상자 2개/발)·v5cap3(30개) 제작, 정적 돌기 시험 끝, 정책 평가 12건 CPU 진행(건당 약 35분)",
+   "section": "done",
+   "changed": "2026-11-04 18:08",
+   "finding": "캡슐 발이 6지형 모두에서 침투 최대 15~18→8~10 mm, 미끄러짐 P95 72~84→42~57 mm/s. 넘어짐은 경사 23→3(저장본 운 섞임)·나머지 동일. 재학습 전 zero-shot 비교, 3090 GPU. docs/185",
+   "collapsed": true
+  },
+  "194": {
+   "id": "194",
+   "created": "2026-11-04 16:11",
+   "title": "합본 모델(발 v5 + D455) 검증 그림과 viser 재생 준비 완료: 검사 30개 전부 통과(발 1.18617 kg, 카메라 116 g, 브래킷 61.97 g, 전체 +0.85995 kg, 깊이 오차 0.023 mm). 동료 정책 99998 을 합본 모델로 평지·15도 경사·12 cm 계단 코스에서 구동, 화면 없이 3번 중 2번 완주·1번은 계단 내린 직후 넘어짐. viser 주소 http://192.168.20.177:8081 (깊이 영상 패널 포함). 동료 robot.py 의 발 접촉 이름 규칙이 foot1~7 뿐이라 foot1~32 로 고쳐야 함(docs/185 주의 10).",
+   "media": [
+    "docs/img/footv5_d455/viser_screenshot.png"
+   ],
+   "section": "done",
+   "changed": "2026-11-04 16:11",
+   "collapsed": true
+  },
+  "195": {
+   "id": "195",
+   "created": "2026-11-04 17:28",
+   "title": "보강재 반영본 _footv5_d455_reinf_loop 완성: Fusion(192.168.20.161)에서 엉덩이 보강재·무릎 보강재·카메라 브래킷을 읽어 합본에 합침. 사용자 질량 160 g / 158.2 g / Pelvis_Camera 166 g(카메라 116 + 브래킷 50 가정). 전체 +0.6244 kg(25.119 kg), 무게중심 3.3 mm 상승, 검증 60개 전부 통과, 3090 서버에서 렌더. 보강재 충돌 모양 없음. docs/185 §10.",
+   "media": [
+    "docs/img/reinforce/reinforce_views.png"
+   ],
+   "section": "done",
+   "changed": "2026-11-04 17:28"
+  },
+  "197": {
+   "id": "197",
+   "created": "2026-11-04 18:11",
+   "title": "URDF/MJCF 버전 대장 docs/186 작성(소급: 옛 계통 M01부터 최신 M18까지 18개 항목, 파일 39개 전부 표에 있음, 확인 못 한 것은 §8에 명시). 점검 스크립트 tools/robot_model/check_model_ledger.py 가 빠진 파일 이름을 잡음. 새 판 _reinf_alparts_loop(알루미늄 크랭크 4개 + 엉덩이 마운트 2개, 25.51 kg, 검증 53/53) 커밋 6902284. CAD에는 다리가 한쪽뿐이라 반대쪽 다리 재질은 확인 불가(실물 확인 요청).",
+   "section": "done",
+   "changed": "2026-11-04 18:11"
+  },
+  "202": {
+   "id": "202",
+   "created": "2026-11-04 19:22",
+   "title": "알루미늄 부품 추가판 _reinf_alparts2_loop 완성(커밋 44d6222): 구조 부품 12종 추가 알루미늄(체적 x 2.70), 좌우 둘 다. 다리 한쪽 +936 g, 전체 +1.872 kg -> 27.38 kg, 검증 107/107(부품별 CAD 값으로 독립 재계산). Knee2Ankle 76개 몸체 엄격 재확인: 모양·나사 동일, 바뀐 것은 재질뿐(Connector A/B 프린트->알루미늄). 주의: Yaw2KneePlateA 체적이 원본 119.24 와 달리 115.76 cm3(-2.9 %). 알루미늄 빨강/나머지 반투명 그림은 3090 서버에서 렌더. 버전 대장 M19 추가.",
+   "media": [
+    "docs/img/al_parts/al_parts_views.png"
+   ],
+   "section": "done",
+   "changed": "2026-11-04 19:22"
+  },
+  "200": {
+   "id": "200",
+   "created": "2026-11-04 19:56",
+   "title": "발 마찰(고무) 학습조건·DR 검토",
+   "why": "고무 밑창 이후 다리 모임·턱턱 걸림이 마찰 탓인지, 카펫+돌기 고무가 학습 범위(0.3~1.2) 안인지",
+   "section": "done",
+   "changed": "2026-11-04 19:56",
+   "finding": "학습 범위 0.3~1.2(기본 0.6), MJCF 값 0.6/1.0 은 범위 안. 카펫+고무 실측 μ 는 문헌에 없음→경사판 시험 제안. 시뮬: 마찰이 다리 모임을 만들지 않음(양발 간격 21~24cm 불변), 상자발은 μ1.75~2.0 에서 벽(26/32 낙상), v5 발은 3.0까지 0/32, 14mm 낮춤 효과 작음(미끄러짐 +4~9%). docs/187"
+  },
+  "205": {
+   "id": "205",
+   "created": "2026-11-04 20:06",
+   "title": "실기 로그 11-04 발 간격 좁음 검토",
+   "finding": "docs/188 작성",
+   "section": "done",
+   "changed": "2026-11-04 20:06"
+  },
+  "207": {
+   "id": "207",
+   "created": "2026-11-04 21:27",
+   "title": "발 충돌 v5rim: 둘레 캡슐 + 안쪽 기울인 상자",
+   "finding": "v5rim(발당 82개)·v5rimL(57개) 제작. 가장자리 띠 오차 RMS 2.4→1.2 mm, 안쪽 2.75→0.38 mm, 평지 접촉 점 38→14(v5rim)·8(v5rimL). 3090에서 6개 지형 평가 진행 중(22:10 시작)",
+   "media": [
+    "docs/img/huphy_1104_real_vs_sim_width.png"
+   ],
+   "section": "done",
+   "changed": "2026-11-04 22:46",
+   "why": "사용자 제안: 엣지 윤곽을 최대한 정확히 따라가기",
+   "number": "v5rim: 가장자리 오차 RMS 2.4→1.2 mm, 안쪽 2.75→0.38 mm, 평지 접촉 38→14점. 같은 정책 6지형 결과는 v5cap 과 같은 수준(넘어짐·침투·미끄러짐). docs/186"
+  },
+  "208": {
+   "id": "208",
+   "created": "2026-11-04 23:15",
+   "title": "발 충돌 v5clean: 이름 붙은 구역 8개",
+   "finding": "v5rim 의 안쪽 상자 41개를 구역 8개로 정리(발당 49개). 같은 정책 6지형 결과는 v5rim 과 같은 수준, 평지 접촉 P99 13점. docs/187",
+   "section": "done",
+   "changed": "2026-11-04 23:15"
+  },
+  "211": {
+   "id": "211",
+   "created": "2026-11-04 23:58",
+   "title": "마찰 DR 범위 도출과 응답 기반 시스템 식별 방법 (문서)",
+   "finding": "잠정 DR 0.3~1.6, 걷기 기록은 마찰 비식별, 3단계 식별(직접측정/미끄러짐 시작 시험/시뮬 기반 추론). docs/190",
+   "section": "done",
+   "changed": "2026-11-04 23:58"
   }
  },
  "order": [
@@ -2233,39 +2079,8 @@
   "trail-flat",
   "battery-bms",
   "gain-reco-1014",
-  "gain-ab-heartbeat",
   "heading-drift-probe",
-  "next-actions",
-  "gain-ab-armB-8k",
-  "real-stand-logs-0310405",
-  "real-logs",
-  "rough_gain_crank60_gaindr_v11a-heartbeat",
-  "팔 B 완주 평가",
-  "gain-ab-armB-final",
-  "gain-c-4k",
-  "gain-c-8k",
   "handoff-174",
-  "digest-174",
-  "dr-requirements",
-  "rough_gain_crank60_actdelay_v11a-heartbeat",
-  "gaindr_eval",
-  "gain-c-final",
-  "gain-d-4k",
-  "gain-d-8k",
-  "gain-d-finish",
-  "armD_final_eval",
-  "gain-d-verdict",
-  "dr-doc-176",
-  "mit-cmd14-check",
-  "mit-cmd14-live",
-  "slcan-gsusb-factcheck",
-  "can-id-hostid",
-  "can-0xfd-adapter-review",
-  "can-threads-review",
-  "can-adapter-fifo",
-  "emf-v-i-source",
-  "battery-regen-spec",
-  "gw-jitter",
   "walkaudit",
   "s2r-walk-first",
   "policy-replay",
@@ -2293,7 +2108,22 @@
   "u49999-default-pose",
   "u49999-deploy-fix",
   "u49999-videos",
-  "u49999-creep"
+  "u49999-creep",
+  "footv5_urdf",
+  "footv5_cad",
+  "189",
+  "190",
+  "191",
+  "192",
+  "194",
+  "195",
+  "197",
+  "202",
+  "200",
+  "205",
+  "207",
+  "208",
+  "211"
  ],
- "updated": "2026-10-30 18:29"
+ "updated": "2026-11-05 05:22"
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "checkpoint": "logs/rsl_rl/pygmalion_velocity/2026-09-20_17-39-23_v9s1_none/model_499.pt",
+    "sens_sigma0.05": 1.1915338039398193,
+    "sens_sigma0.05_p95": 2.0772247314453125,
+    "sens_sigma0.1": 1.2230682373046875,
+    "sens_sigma0.1_p95": 2.28873348236084,
+    "sens_sigma0.2": 1.154647946357727,
+    "sens_sigma0.2_p95": 2.0100417137145996,
+    "action_jitter": 0.5502859950065613,
+    "action_rate": 0.345289021730423,
+    "label": "none_500"
+  }
+]
