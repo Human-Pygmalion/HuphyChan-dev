@@ -1,0 +1,152 @@
+{
+ "base": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop.urdf",
+ "output": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_loop.urdf",
+ "feet": {
+  "R": {
+   "base_mass_kg": 0.84518,
+   "new_mass_kg": 1.186174,
+   "added_kg": 0.340994,
+   "com_mm": [
+    41.397,
+    -0.012,
+    -34.599
+   ],
+   "base_com_mm": [
+    32.664,
+    0.0,
+    -31.204
+   ],
+   "parts": {
+    "carrier": {
+     "watertight": false,
+     "volume_cm3": 160.074,
+     "density_g_cm3": 0.7443,
+     "mass_kg": 0.11914,
+     "com_mm": [
+      47.67,
+      -0.93,
+      -48.14
+     ]
+    },
+    "tape": {
+     "watertight": true,
+     "volume_cm3": 26.662,
+     "density_g_cm3": 0.72,
+     "mass_kg": 0.0192,
+     "com_mm": [
+      53.87,
+      0.68,
+      -51.72
+     ]
+    },
+    "sheet": {
+     "watertight": true,
+     "volume_cm3": 106.66,
+     "density_g_cm3": 1.15,
+     "mass_kg": 0.12266,
+     "com_mm": [
+      53.87,
+      0.68,
+      -54.23
+     ]
+    },
+    "feet_up": {
+     "watertight": true,
+     "volume_cm3": 488.254,
+     "density_g_cm3": 0.1638,
+     "mass_kg": 0.08,
+     "com_mm": [
+      102.2,
+      -0.0,
+      -16.1
+     ]
+    }
+   },
+   "collision_pieces": 30
+  },
+  "L": {
+   "base_mass_kg": 0.84518,
+   "new_mass_kg": 1.186174,
+   "added_kg": 0.340994,
+   "com_mm": [
+    41.397,
+    0.012,
+    -34.599
+   ],
+   "base_com_mm": [
+    32.664,
+    -0.0,
+    -31.204
+   ],
+   "parts": {
+    "carrier": {
+     "watertight": false,
+     "volume_cm3": 160.074,
+     "density_g_cm3": 0.7443,
+     "mass_kg": 0.11914,
+     "com_mm": [
+      47.67,
+      0.93,
+      -48.14
+     ]
+    },
+    "tape": {
+     "watertight": true,
+     "volume_cm3": 26.662,
+     "density_g_cm3": 0.72,
+     "mass_kg": 0.0192,
+     "com_mm": [
+      53.87,
+      -0.68,
+      -51.72
+     ]
+    },
+    "sheet": {
+     "watertight": true,
+     "volume_cm3": 106.66,
+     "density_g_cm3": 1.15,
+     "mass_kg": 0.12266,
+     "com_mm": [
+      53.87,
+      -0.68,
+      -54.23
+     ]
+    },
+    "feet_up": {
+     "watertight": true,
+     "volume_cm3": 488.254,
+     "density_g_cm3": 0.1638,
+     "mass_kg": 0.08,
+     "com_mm": [
+      102.2,
+      0.0,
+      -16.1
+     ]
+    }
+   },
+   "collision_pieces": 30
+  }
+ },
+ "readback": {
+  "body_position_max_diff_m": 0.0,
+  "mass_changed_bodies": {
+   "R_foot_link": 0.34099,
+   "L_foot_link": 0.34099
+  },
+  "total_mass_kg": {
+   "base": 18.27574,
+   "footv5": 18.95772
+  },
+  "feet": {
+   "R": {
+    "n_geoms": 35,
+    "lowest_collision_z_mm": -57.0
+   },
+   "L": {
+    "n_geoms": 35,
+    "lowest_collision_z_mm": -57.0
+   }
+  },
+  "outside_foot_links_identical": true
+ }
+}

@@ -30,8 +30,9 @@ from scipy.spatial.transform import Rotation as Rot
 
 REPO = os.environ.get('PYG_REPO', '/home/syaro/MikuchanRemote/Human-Pygmalion')
 XMLS = f'{REPO}/mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls'
-URDF = f'{REPO}/pygmalion_locomotion/assets/pygmalion_v2/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_d455_loop.urdf'
-MJCF = f'{XMLS}/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_d455_loop.xml'
+MODEL = os.environ.get('PYG_DEPTH_MODEL', 'LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_d455_loop')   # e.g. ..._footv5_d455_loop
+URDF = f'{REPO}/pygmalion_locomotion/assets/pygmalion_v2/{MODEL}.urdf'
+MJCF = f'{XMLS}/{MODEL}.xml'
 BASE_Z, WALL_X, SIDE_Y = 0.903, 0.45, 0.35     # the wall is close enough to fill the top of the image, so the floor/wall edge is in view
 W, H, HFOV = 848, 480, 87.0
 

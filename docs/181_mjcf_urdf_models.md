@@ -73,6 +73,9 @@
 | 2026-09-15 | **실측 모터 값을 URDF 에도** 넣음(보조 json) | 커밋 `987e2ab`, `2a18235`, [[144_urdf_motor_params_portability]] |
 | 2026-10-06~07 | **겉껍데기판**(`_shell`): 머리·몸통·팔 껍데기, 라이다, D435, 팔꿈치. 원본 메시는 지우지 않고 추가만, URDF 에 모터 원통 추가 | [[157_shell_lidar_upper_body_overlay]] |
 | **2026-10-27~28** | **D455 판**(`_d455_loop`, 다리만·AB): D455 카메라(0.116 kg, 아래로 60° 숙임) + **PLA 마운트 브래킷**(61.97 g, `base_link` 에 고정). 원본 URDF·MJCF 는 그대로, 전체 +0.178 kg. mjlab 깊이 영상이 수식 정답과 0.023 mm 이내로 일치 | [[180_d455_camera_on_legonly]], `tools/robot_model/camera_overlay/` |
+| **2026-10-31** | **발 v5 판**(`_footv5_loop`, 다리만·AB): 발 링크 두 개만 바꿈 — v5 밑창(캐리어·테이프·고무 4 mm) 시각 메시, 볼록 조각 29개 충돌, 질량 0.845 → 1.186 kg/발(사용자 수정 캐리어 + 발등 덮개 Feet_Up PLA 80 g, 둘 다 CAD 형상, Feet_Up 은 충돌 없음). 원본 URDF·MJCF 는 그대로, 발 링크 밖 글자 동일(assert) | `tools/robot_model/foot_overlay/build_footv5.py`, `Feet_design/Feet_Design_Workspace/notes/발 v5 URDF 반영과 충돌 모델 검토.md` |
+| **2026-11-04** | **발 v5 판 검토**(읽기 전용): CAD STEP 에서 질량·무게중심·관성을 다시 계산해 URDF 와 일치 확인(질량 4 mg, 무게중심 0.01 mm), MJCF `v5fullm` 과 URDF 의 발 관성 동일. 캐리어 밀도 0.744 는 추정, 파일은 미추적 | [[184_foot_v5_model_review]] |
+| **2026-11-04** | **발 v5 + D455 합본**(`_footv5_d455_loop`, 다리만·AB): 발 v5 판과 D455 판을 이어 붙인 새 URDF·MJCF(원본 불변). 발 1.18617 kg·카메라 116 g·브래킷 61.97 g, 전체 +0.85995 kg, 검증 30개 통과, 깊이 영상 오차 0.023 mm. `meshes_v30_*` 심볼릭 링크를 상대 경로로 변경, 발 v5 파일을 git 에 추가 | [[185_footv5_d455_combined_model]], `tools/robot_model/foot_overlay/build_footv5_d455.py` |
 
 # 8. 알아 둘 것
 

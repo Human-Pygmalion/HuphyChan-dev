@@ -1,0 +1,161 @@
+{
+ "models": {
+  "base": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_loop",
+  "foot": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_loop",
+  "cam": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_d455_loop",
+  "comb": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_loop"
+ },
+ "checks": [
+  {
+   "check": "URDF R_foot_link: combined = footv5 (mass, COM, inertia)",
+   "ok": true,
+   "detail": "mass 1.18617 kg, COM [41.397, -0.012, -34.599] mm, max inertia diff 0.0e+00"
+  },
+  {
+   "check": "URDF R_foot_link: mass 1.18617 kg",
+   "ok": true,
+   "detail": "1.186170"
+  },
+  {
+   "check": "MJCF R_foot_link: combined = v5fullm",
+   "ok": true,
+   "detail": "mass 1.18617"
+  },
+  {
+   "check": "R_foot_link: URDF = MJCF (mass, COM, inertia)",
+   "ok": true,
+   "detail": "mass 0.0e+00 kg, COM 0.0000 mm, inertia 0.0e+00 kg m2 (MJCF values are rounded to 7 digits)"
+  },
+  {
+   "check": "URDF L_foot_link: combined = footv5 (mass, COM, inertia)",
+   "ok": true,
+   "detail": "mass 1.18617 kg, COM [41.397, 0.012, -34.599] mm, max inertia diff 0.0e+00"
+  },
+  {
+   "check": "URDF L_foot_link: mass 1.18617 kg",
+   "ok": true,
+   "detail": "1.186170"
+  },
+  {
+   "check": "MJCF L_foot_link: combined = v5fullm",
+   "ok": true,
+   "detail": "mass 1.18617"
+  },
+  {
+   "check": "L_foot_link: URDF = MJCF (mass, COM, inertia)",
+   "ok": true,
+   "detail": "mass 0.0e+00 kg, COM 0.0000 mm, inertia 0.0e+00 kg m2 (MJCF values are rounded to 7 digits)"
+  },
+  {
+   "check": "URDF d455_link: combined = d455 build",
+   "ok": true,
+   "detail": "mass 116.00 g at [119.17, 47.5, 24.01] mm in base_link"
+  },
+  {
+   "check": "URDF d455_link: mass 116.00 g",
+   "ok": true,
+   "detail": "116.000 g"
+  },
+  {
+   "check": "MJCF d455_link: combined = d455 build",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "d455_link: URDF = MJCF (pose in base_link, mass, inertia)",
+   "ok": true,
+   "detail": "pos 0.0001 mm, rot 2.6e-06, mass 0.0000 g"
+  },
+  {
+   "check": "URDF pelvis_camera_mount: combined = d455 build",
+   "ok": true,
+   "detail": "mass 61.97 g at [0.0, 0.0, 0.0] mm in base_link"
+  },
+  {
+   "check": "URDF pelvis_camera_mount: mass 61.97 g",
+   "ok": true,
+   "detail": "61.966 g"
+  },
+  {
+   "check": "MJCF pelvis_camera_mount: combined = d455 build",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "pelvis_camera_mount: URDF = MJCF (pose in base_link, mass, inertia)",
+   "ok": true,
+   "detail": "pos 0.0000 mm, rot 0.0e+00, mass 0.0000 g"
+  },
+  {
+   "check": "camera: MJCF camera = URDF d455_link (position, looks along +x of the link, right = -y)",
+   "ok": true,
+   "detail": "pos diff 0.0001 mm; camera at [119.18, 47.5, 24.01] mm in base_link"
+  },
+  {
+   "check": "URDF total mass: base + 2 x 0.34099 + 0.116 + 0.06197",
+   "ok": true,
+   "detail": "23.63414 -> 24.49409 kg (+0.85995; expected +0.85995)"
+  },
+  {
+   "check": "MJCF total mass: base + 2 x 0.34099 + 0.116 + 0.06197",
+   "ok": true,
+   "detail": "23.63014 -> 24.49009 kg (+0.85995; expected +0.85995)"
+  },
+  {
+   "check": "MJCF repo copy total mass: base + 2 x 0.34099 + 0.116 + 0.06197",
+   "ok": true,
+   "detail": "23.63014 -> 24.49009 kg (+0.85995; expected +0.85995)"
+  },
+  {
+   "check": "URDF: every other body of the base unchanged (mass, inertia, position)",
+   "ok": true,
+   "detail": "26 bodies compared"
+  },
+  {
+   "check": "URDF: bodies added = d455 chain/bracket only",
+   "ok": true,
+   "detail": "['d455_color_frame', 'd455_color_optical_frame', 'd455_depth_optical_frame', 'd455_imu_frame', 'd455_infra2_frame', 'd455_infra2_optical_frame', 'd455_link', 'd455_mount', 'pelvis_camera_mount']"
+  },
+  {
+   "check": "MJCF: every other body of the base unchanged (mass, inertia, position)",
+   "ok": true,
+   "detail": "22 bodies compared"
+  },
+  {
+   "check": "MJCF: bodies added = d455 chain/bracket only",
+   "ok": true,
+   "detail": "['d455_link', 'pelvis_camera_mount']"
+  },
+  {
+   "check": "MJCF: joints, actuators-free structure, equality constraints (ankle loop) kept",
+   "ok": true,
+   "detail": "joints 25, equality 4, actuators 0"
+  },
+  {
+   "check": "MJCF feet: all collision geoms (3 boxes + 29 pieces per foot) = v5fullm",
+   "ok": true,
+   "detail": "64 geoms compared, worst difference 0.0e+00"
+  },
+  {
+   "check": "MJCF: lowest collision point of each foot = -57 mm below the ankle",
+   "ok": true,
+   "detail": "[np.float64(-57.0), np.float64(-57.0)]"
+  },
+  {
+   "check": "MJCF repo copy: lowest collision point of each foot = -57 mm below the ankle",
+   "ok": true,
+   "detail": "[np.float64(-57.0), np.float64(-57.0)]"
+  },
+  {
+   "check": "URDF: lowest collision point of each foot = -57 mm below the ankle",
+   "ok": true,
+   "detail": "[np.float64(-57.0), np.float64(-57.0)]"
+  },
+  {
+   "check": "MJCF: 1 s of free-fall simulation without NaN",
+   "ok": true,
+   "detail": "24 bodies"
+  }
+ ],
+ "all_pass": true
+}
