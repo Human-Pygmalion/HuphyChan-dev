@@ -33,17 +33,17 @@
   {
    "check": "urdf: R_shin_link mass change = sum over its parts (new V x 2.70 - old)",
    "ok": true,
-   "detail": "+364.261 g (want +364.261 g)"
+   "detail": "+191.755 g (want +191.755 g)"
   },
   {
    "check": "urdf: R_shin_link first moment change matches the parts' CAD COMs",
    "ok": true,
-   "detail": "max diff 2.01e-09 kg m"
+   "detail": "max diff 1.25e-09 kg m"
   },
   {
    "check": "urdf: R_shin_link inertia (about link origin) change matches the parts' CAD tensors",
    "ok": true,
-   "detail": "max diff 2.36e-08 kg m2 of 3.10e-03"
+   "detail": "max diff 2.36e-08 kg m2 of 6.25e-04"
   },
   {
    "check": "urdf: R_ankle_pitch_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -108,17 +108,17 @@
   {
    "check": "urdf: L_shin_link mass change = sum over its parts (new V x 2.70 - old)",
    "ok": true,
-   "detail": "+364.261 g (want +364.261 g)"
+   "detail": "+191.755 g (want +191.755 g)"
   },
   {
    "check": "urdf: L_shin_link first moment change matches the parts' CAD COMs",
    "ok": true,
-   "detail": "max diff 2.01e-09 kg m"
+   "detail": "max diff 1.25e-09 kg m"
   },
   {
    "check": "urdf: L_shin_link inertia (about link origin) change matches the parts' CAD tensors",
    "ok": true,
-   "detail": "max diff 2.36e-08 kg m2 of 3.10e-03"
+   "detail": "max diff 2.36e-08 kg m2 of 6.25e-04"
   },
   {
    "check": "urdf: L_ankle_pitch_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -153,7 +153,7 @@
   {
    "check": "urdf: total mass change",
    "ok": true,
-   "detail": "+1750.232 g; 25.5098 -> 27.2601 kg"
+   "detail": "+1405.221 g; 25.5098 -> 26.9151 kg"
   },
   {
    "check": "urdf: other 25 bodies unchanged (cranks, plates, camera, feet ...)",
@@ -173,7 +173,7 @@
   {
    "check": "urdf: 200 steps, no NaN, ankle loops closed",
    "ok": true,
-   "detail": "closure 0.0000 mm, max|qacc| 3.83"
+   "detail": "closure 0.0000 mm, max|qacc| 3.88"
   },
   {
    "check": "mjcf_repo: R_hip_roll_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -208,17 +208,17 @@
   {
    "check": "mjcf_repo: R_shin_link mass change = sum over its parts (new V x 2.70 - old)",
    "ok": true,
-   "detail": "+364.261 g (want +364.261 g)"
+   "detail": "+191.755 g (want +191.755 g)"
   },
   {
    "check": "mjcf_repo: R_shin_link first moment change matches the parts' CAD COMs",
    "ok": true,
-   "detail": "max diff 2.01e-09 kg m"
+   "detail": "max diff 1.25e-09 kg m"
   },
   {
    "check": "mjcf_repo: R_shin_link inertia (about link origin) change matches the parts' CAD tensors",
    "ok": true,
-   "detail": "max diff 2.40e-08 kg m2 of 3.10e-03"
+   "detail": "max diff 2.40e-08 kg m2 of 6.25e-04"
   },
   {
    "check": "mjcf_repo: R_ankle_pitch_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -283,17 +283,17 @@
   {
    "check": "mjcf_repo: L_shin_link mass change = sum over its parts (new V x 2.70 - old)",
    "ok": true,
-   "detail": "+364.261 g (want +364.261 g)"
+   "detail": "+191.755 g (want +191.755 g)"
   },
   {
    "check": "mjcf_repo: L_shin_link first moment change matches the parts' CAD COMs",
    "ok": true,
-   "detail": "max diff 2.01e-09 kg m"
+   "detail": "max diff 1.25e-09 kg m"
   },
   {
    "check": "mjcf_repo: L_shin_link inertia (about link origin) change matches the parts' CAD tensors",
    "ok": true,
-   "detail": "max diff 2.40e-08 kg m2 of 3.10e-03"
+   "detail": "max diff 2.40e-08 kg m2 of 6.25e-04"
   },
   {
    "check": "mjcf_repo: L_ankle_pitch_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -328,7 +328,7 @@
   {
    "check": "mjcf_repo: total mass change",
    "ok": true,
-   "detail": "+1750.232 g; 25.5058 -> 27.2561 kg"
+   "detail": "+1405.221 g; 25.5058 -> 26.9111 kg"
   },
   {
    "check": "mjcf_repo: other 14 bodies unchanged (cranks, plates, camera, feet ...)",
@@ -383,17 +383,17 @@
   {
    "check": "mjcf_mjlab: R_shin_link mass change = sum over its parts (new V x 2.70 - old)",
    "ok": true,
-   "detail": "+364.261 g (want +364.261 g)"
+   "detail": "+191.755 g (want +191.755 g)"
   },
   {
    "check": "mjcf_mjlab: R_shin_link first moment change matches the parts' CAD COMs",
    "ok": true,
-   "detail": "max diff 2.01e-09 kg m"
+   "detail": "max diff 1.25e-09 kg m"
   },
   {
    "check": "mjcf_mjlab: R_shin_link inertia (about link origin) change matches the parts' CAD tensors",
    "ok": true,
-   "detail": "max diff 2.40e-08 kg m2 of 3.10e-03"
+   "detail": "max diff 2.40e-08 kg m2 of 6.25e-04"
   },
   {
    "check": "mjcf_mjlab: R_ankle_pitch_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -458,17 +458,17 @@
   {
    "check": "mjcf_mjlab: L_shin_link mass change = sum over its parts (new V x 2.70 - old)",
    "ok": true,
-   "detail": "+364.261 g (want +364.261 g)"
+   "detail": "+191.755 g (want +191.755 g)"
   },
   {
    "check": "mjcf_mjlab: L_shin_link first moment change matches the parts' CAD COMs",
    "ok": true,
-   "detail": "max diff 2.01e-09 kg m"
+   "detail": "max diff 1.25e-09 kg m"
   },
   {
    "check": "mjcf_mjlab: L_shin_link inertia (about link origin) change matches the parts' CAD tensors",
    "ok": true,
-   "detail": "max diff 2.40e-08 kg m2 of 3.10e-03"
+   "detail": "max diff 2.40e-08 kg m2 of 6.25e-04"
   },
   {
    "check": "mjcf_mjlab: L_ankle_pitch_link mass change = sum over its parts (new V x 2.70 - old)",
@@ -503,7 +503,7 @@
   {
    "check": "mjcf_mjlab: total mass change",
    "ok": true,
-   "detail": "+1750.232 g; 25.5058 -> 27.2561 kg"
+   "detail": "+1405.221 g; 25.5058 -> 26.9111 kg"
   },
   {
    "check": "mjcf_mjlab: other 14 bodies unchanged (cranks, plates, camera, feet ...)",

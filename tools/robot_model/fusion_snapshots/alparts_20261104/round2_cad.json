@@ -128,37 +128,6 @@
     -264.25
    ]
   },
-  "Knee2Ankle_IdleSide_2": {
-   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
-   "idx": 0,
-   "name": "Knee2Ankle_IdleSide_2",
-   "live": 1,
-   "m": 0.123633,
-   "v": 45.7902,
-   "c": [
-    -10.0205,
-    13.16654,
-    -42.30929
-   ],
-   "I": [
-    245.40285,
-    235.11832,
-    35.12429,
-    16.31191,
-    69.297,
-    -52.41594
-   ],
-   "mat": "Aluminum 6061",
-   "app": "Aluminum - Satin",
-   "bb": [
-    -103.95,
-    77.31,
-    -486.69,
-    -96.45,
-    195.27,
-    -364.46
-   ]
-  },
   "Knee2Ankle_RotorSide_1": {
    "q": "/Joints_UnderBody:1/Knee2Ankle:1/Knee2Ankle_RotorSide_1:1",
    "idx": 0,
@@ -188,37 +157,6 @@
     -150.45,
     155.29,
     -264.5
-   ]
-  },
-  "Knee2Ankle_RotorSide_2": {
-   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
-   "idx": 1,
-   "name": "Knee2Ankle_RotorSide_2",
-   "live": 1,
-   "m": 0.128762,
-   "v": 47.6897,
-   "c": [
-    -14.745,
-    13.08779,
-    -42.20542
-   ],
-   "I": [
-    254.16076,
-    258.78441,
-    51.3798,
-    24.84848,
-    71.53362,
-    -80.13123
-   ],
-   "mat": "Aluminum 6061",
-   "app": "Aluminum - Satin",
-   "bb": [
-    -151.45,
-    77.31,
-    -486.69,
-    -143.45,
-    195.27,
-    -364.46
    ]
   },
   "AnkleFeetPillowA": {

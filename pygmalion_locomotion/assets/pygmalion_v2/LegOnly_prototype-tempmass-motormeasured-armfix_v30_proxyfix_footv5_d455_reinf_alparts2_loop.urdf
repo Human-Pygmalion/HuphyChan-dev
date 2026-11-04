@@ -69,9 +69,9 @@
   </link>
   <link name="R_shin_link">
     <inertial>
-      <origin xyz="-0.021095917 -0.000345963948 -0.202541144" rpy="0 0 0"/>
-      <mass value="3.2242611"/>
-      <inertia ixx="0.0378374463" ixy="3.26769695e-05" ixz="-0.00491982147" iyy="0.0398440967" iyz="0.000271847842" izz="0.00560263983"/>
+      <origin xyz="-0.0213694564 -0.000307942471 -0.207627821" rpy="0 0 0"/>
+      <mass value="3.05175548"/>
+      <inertia ixx="0.0360727567" ixy="3.05091212e-05" ixz="-0.00478347506" iyy="0.0379948981" iyz="0.00025874799" izz="0.00532396824"/>
     </inertial>
     <visual>
       <geometry><mesh filename="meshes_v30_armfix/shin.stl"/></geometry>
@@ -257,9 +257,9 @@
   </link>
   <link name="L_shin_link">
     <inertial>
-      <origin xyz="-0.021095917 0.000345963948 -0.202541144" rpy="0 0 0"/>
-      <mass value="3.2242611"/>
-      <inertia ixx="0.0378374463" ixy="-3.26769695e-05" ixz="-0.00491982147" iyy="0.0398440967" iyz="-0.000271847842" izz="0.00560263983"/>
+      <origin xyz="-0.0213694564 0.000307942471 -0.207627821" rpy="0 0 0"/>
+      <mass value="3.05175548"/>
+      <inertia ixx="0.0360727567" ixy="-3.05091212e-05" ixz="-0.00478347506" iyy="0.0379948981" iyz="-0.00025874799" izz="0.00532396824"/>
     </inertial>
     <visual>
       <geometry><mesh filename="meshes_v30_armfix/R_shin.stl"/></geometry>

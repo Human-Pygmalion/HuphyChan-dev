@@ -12,8 +12,8 @@ import verify_reinforce as V  # noqa: E402
 import build_al_round2 as R2  # noqa: E402
 B = R2.B
 check, rows = V.check, V.rows
-LINK_OF = {"HipRoll2YawA": "hip_roll_link", "HipRoll2YawB": "hip_roll_link", "Yaw2KneePlateA": "thigh", "Knee2Ankle_IdleSide_1": "shin", "Knee2Ankle_IdleSide_2": "shin",
-           "Knee2Ankle_RotorSide_1": "shin", "Knee2Ankle_RotorSide_2": "shin", "AnkleUniversalJointCore": "ankle_pitch_link",
+LINK_OF = {"HipRoll2YawA": "hip_roll_link", "HipRoll2YawB": "hip_roll_link", "Yaw2KneePlateA": "thigh", "Knee2Ankle_IdleSide_1": "shin",
+           "Knee2Ankle_RotorSide_1": "shin", "AnkleUniversalJointCore": "ankle_pitch_link",
            "AnkleFeetPillowA": "foot", "AnkleFeetPillowB": "foot"}
 
 

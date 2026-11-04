@@ -61,14 +61,6 @@
    "cad_volume_cm3": 48.3579,
    "increase_g_per_leg": 87.666
   },
-  "Knee2Ankle_IdleSide_2": {
-   "round": 2,
-   "old_mass_g": 40.634,
-   "old_density_g_cm3": 0.8874,
-   "new_mass_g": 123.633,
-   "cad_volume_cm3": 45.7902,
-   "increase_g_per_leg": 82.999
-  },
   "Knee2Ankle_RotorSide_1": {
    "round": 2,
    "old_mass_g": 55.246,
@@ -76,14 +68,6 @@
    "new_mass_g": 159.335,
    "cad_volume_cm3": 59.0128,
    "increase_g_per_leg": 104.089
-  },
-  "Knee2Ankle_RotorSide_2": {
-   "round": 2,
-   "old_mass_g": 39.256,
-   "old_density_g_cm3": 0.8231,
-   "new_mass_g": 128.762,
-   "cad_volume_cm3": 47.6897,
-   "increase_g_per_leg": 89.506
   },
   "AnkleUniversalJointCore": {
    "round": 2,
@@ -123,8 +107,8 @@
   },
   "shin": {
    "mass_A_g": 2701.759,
-   "mass_B_g": 3066.02,
-   "delta_g": 364.261
+   "mass_B_g": 2893.514,
+   "delta_g": 191.755
   },
   "ankle_pitch_link": {
    "mass_A_g": 40.016,
@@ -137,6 +121,6 @@
    "delta_g": 54.914
   }
  },
- "round2_increase_g": 1750.232,
+ "round2_increase_g": 1405.22,
  "note": "old_mass_g = the part as the original (pre-aluminium) model carried it; round 1 = cranks A/B and HipRoll2Yaw_Mount"
 }

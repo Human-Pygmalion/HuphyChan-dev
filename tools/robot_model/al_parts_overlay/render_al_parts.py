@@ -40,8 +40,8 @@ views = [("front (from +x)", shot(base + [0, 0, -0.42], 1.6, 180, -4)),
 fig, ax = plt.subplots(2, 3, figsize=(15, 11.6))
 for a, (t, im) in zip(ax.ravel(), views):
     a.imshow(im); a.set_title(t, fontsize=12, pad=6); a.axis("off")
-fig.legend(handles=[Patch(color="#f21414", label="aluminium, converted now (13 parts per leg)"), Patch(color="#8c0808", label="aluminium already before (AnkleA2B braces x6, Arm A/B rods)"),
-                    Patch(facecolor="#b8c2d1", alpha=0.35, label="not aluminium (printed parts, motors, bearings, screws, foot, camera): translucent")],
+fig.legend(handles=[Patch(color="#f21414", label="aluminium (converted now: 11 parts per leg; already aluminium: AnkleA2B braces, Arm A/B rods)"),
+                    Patch(facecolor="#b8c2d1", alpha=0.35, label="not aluminium (printed parts, Knee2Ankle _2 plates and Connector A/B, motors, bearings, screws, foot, camera): translucent")],
            loc="lower center", ncol=1, fontsize=11, frameon=False)
 fig.suptitle("Aluminium parts in LegOnly ..._reinf_alparts2_loop (both legs)", fontsize=13)
 fig.subplots_adjust(left=0.01, right=0.99, top=0.93, bottom=0.1, hspace=0.12, wspace=0.03)

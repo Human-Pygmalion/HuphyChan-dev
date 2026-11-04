@@ -39,28 +39,12 @@
   "tris": 3022,
   "live": 1
  },
- "Knee2Ankle_IdleSide_2": {
-  "link": "shin",
-  "group": "new",
-  "mass_g": 123.633,
-  "volume_cm3": 45.7902,
-  "tris": 1686,
-  "live": 1
- },
  "Knee2Ankle_RotorSide_1": {
   "link": "shin",
   "group": "new",
   "mass_g": 159.335,
   "volume_cm3": 59.0128,
   "tris": 4076,
-  "live": 1
- },
- "Knee2Ankle_RotorSide_2": {
-  "link": "shin",
-  "group": "new",
-  "mass_g": 128.762,
-  "volume_cm3": 47.6897,
-  "tris": 1528,
   "live": 1
  },
  "ankle_core_revised": {
