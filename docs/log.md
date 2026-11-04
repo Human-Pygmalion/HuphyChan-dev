@@ -80,3 +80,15 @@
 - ★ Our robot has NO windlass (linear torsional spring k60, no fascia/arch/intrinsic muscle) → premise is moot; toe bends ONLY from external GRF moment θ=Fz·d_cop/k → CoP-progression is the only physically available lever (premise being weak STRENGTHENS the prescription).
 - IMPLICATION is SOUND but ALREADY ADOPTED: cop_progression weight +1.2 (forefoot_cop static was +0.0251=0.06%, useless). ζ=2.89 verified (armature 0.008 = dominant inertia); M=610N·0.07-0.10m=43-61 N·m verified, but sister-note geometry ceiling (toe 6.5cm, measured Fz 340N → θ_max~21°) overrides claim's 41-58°.
 - Sister note: docs/reward_research/2026-06-29_verify_biomech_toe_pushoff_mtp_angle.md (angle-target variant, also FALSE). Full: docs/reward_research/2026-06-29_verify_biomech_windlass_stiffness_cop.md
+
+## [2026-10-31] survey | 험지 발바닥 아치 역할과 깊이 기준
+- 노트: `Feet_design/Feet_Design_Workspace/reports/험지 발바닥 아치 역할과 깊이 기준.md` (Obsidian `ARILab 관련/Project Pygmalion/Research-AI_Assist/` 같은 제목). 원문 발췌 `Feet_design/Feet_Design_Workspace/research_notes/험지 발바닥 아치 역할과 깊이 기준/excerpts.md`, 계산 `arch_terrain_calc.py`.
+- 결론: 중족부 돌이 지렛목이 되는 문제는 실재하지만 수 mm 아치로는 못 막는다. v5(중앙 3.1 mm)는 5 mm 이상 돌을 어디서도 넘기지 못하고, 최대 6 mm도 아치 구간 5 mm 돌 3 %(고무 눌림 포함 17 %). 20 mm 돌 시소 각도 평평 23.4° / v5 19.9° / 6 mm 18.7°. 사람 발 험지 이득은 변형(연조직 7–8 mm, 아치 하강 5–13 mm)이고 틈새 효과 측정은 없음. QDD 로봇은 평면 또는 G1 1.6 mm 요홈. → v5 깊이 유지, 험지 대응은 발보다 작은 돌 학습 지형 + 밑창 실측.
+
+## [2026-11-01] survey | 트레일 런닝화 밑창 + 시뮬레이션 지면 모델
+- 노트: `Feet_design/Feet_Design_Workspace/reports/트레일 런닝화 밑창과 시뮬레이션 지면 모델 서베이.md` (Obsidian Research-AI_Assist 동일 제목). 결론: 트레일화 중족부 컷아웃은 무게·유연성 때문(돌 끼임 근거 없음, 리뷰어는 오히려 진흙 쌓임). 모래 RL 학습은 있음(GM-Loco: 강체 0 % → RFT 100 %), 돌·자갈 강체 다수 학습은 없음. 가장 싼 보완 = 발 solref 0.02–0.4 무작위화(Singh 2025).
+
+## [2026-11-04] analysis | 학습 모델(M10) 정책 49999 를 최신 모델(M19)에서 시험 + DR 안/밖 판정법
+- 노트: [[190_m19_policy_transfer_and_dr_judgement]]. 도구 `tools/robot_model/m19_transfer/`, 숫자 `docs/sim2real/data/2026-11-04_*.json`, 그림 `docs/img/m19_transfer/`.
+- 결론: 무작위화 끈 시뮬 넘어짐 0/32(M10~M19). 켠 시뮬 첫 넘어짐 9/64 대 14/64(p 0.36). M19 는 총질량은 DR 안, 다리 질량·관성은 밖(마할라노비스 9.0 대 99 백분위 3.6). 모터 토크로 잰 실기 지지 질량 23~25 kg(±1.5)로 로그 시점 실물은 M19 보다 가벼움.
+- 출처: DROPO(arXiv 2201.08434), Chebotar 2019(1810.05687), ASAP(2502.01143), Muratore 2022 리뷰, Hwangbo 2019(1901.08652) — 검색으로 존재·요지 확인.

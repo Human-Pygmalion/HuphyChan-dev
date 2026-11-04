@@ -1,0 +1,2156 @@
+{
+ "models": {
+  "A": {
+   "leg_mass_R_kg": 9.135869999999997,
+   "leg_mass_L_kg": 9.135869999999997,
+   "total_kg": 23.63014
+  },
+  "B": {
+   "leg_mass_R_kg": 10.693332116400002,
+   "leg_mass_L_kg": 10.693332116400002,
+   "total_kg": 26.911064232799998
+  }
+ },
+ "logs": {
+  "walk1104": {
+   "path": "Expr_Data/huphy_main_e4f9694/walk_baseline_policy.json",
+   "kp_scale": 1.0,
+   "n_windows": 13,
+   "windows": [
+    {
+     "t0": 2.799917,
+     "t1": 8.419991,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.03,
+      0.0225,
+      -0.9993
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.95,
+      "right_leg/hip_roll": 4.71,
+      "right_leg/hip_yaw": 1.16,
+      "right_leg/knee": 0.35,
+      "right_leg/ankle_a": -5.74,
+      "right_leg/ankle_b": 4.55,
+      "left_leg/hip_pitch": 1.26,
+      "left_leg/hip_roll": -5.09,
+      "left_leg/hip_yaw": -0.7,
+      "left_leg/knee": -0.05,
+      "left_leg/ankle_a": 6.25,
+      "left_leg/ankle_b": -7.68
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 106.9,
+        "F_tangent_N": [
+         1.8,
+         8.3,
+         0.2
+        ],
+        "mu_needed": 0.079,
+        "M_Nm": [
+         -0.9,
+         -8.7,
+         0.1
+        ],
+        "loop_residual": 4.0921266375448795e-11
+       },
+       "left": {
+        "F_normal_N": 110.9,
+        "F_tangent_N": [
+         -3.9,
+         -4.9,
+         -0.2
+        ],
+        "mu_needed": 0.057,
+        "M_Nm": [
+         -1.3,
+         -11.7,
+         -0.9
+        ],
+        "loop_residual": 4.036315726096973e-11
+       }
+      },
+      "supported_mass_kg": 22.2,
+      "share_right": 0.491
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 111.7,
+        "F_tangent_N": [
+         2.0,
+         8.2,
+         0.2
+        ],
+        "mu_needed": 0.076,
+        "M_Nm": [
+         -0.9,
+         -8.9,
+         0.1
+        ],
+        "loop_residual": 4.0921266375448795e-11
+       },
+       "left": {
+        "F_normal_N": 116.1,
+        "F_tangent_N": [
+         -3.7,
+         -4.9,
+         -0.2
+        ],
+        "mu_needed": 0.053,
+        "M_Nm": [
+         -1.3,
+         -11.9,
+         -0.9
+        ],
+        "loop_residual": 4.036315726096973e-11
+       }
+      },
+      "supported_mass_kg": 23.22,
+      "share_right": 0.49
+     }
+    },
+    {
+     "t0": 9.439936,
+     "t1": 12.240278,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0286,
+      0.0225,
+      -0.9993
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.96,
+      "right_leg/hip_roll": 4.77,
+      "right_leg/hip_yaw": 1.29,
+      "right_leg/knee": 0.36,
+      "right_leg/ankle_a": -5.74,
+      "right_leg/ankle_b": 4.42,
+      "left_leg/hip_pitch": 1.3,
+      "left_leg/hip_roll": -4.88,
+      "left_leg/hip_yaw": -0.68,
+      "left_leg/knee": 0.07,
+      "left_leg/ankle_a": 6.11,
+      "left_leg/ankle_b": -7.44
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 106.1,
+        "F_tangent_N": [
+         1.8,
+         8.4,
+         0.2
+        ],
+        "mu_needed": 0.081,
+        "M_Nm": [
+         -1.0,
+         -8.6,
+         0.0
+        ],
+        "loop_residual": 4.092903793662117e-11
+       },
+       "left": {
+        "F_normal_N": 110.5,
+        "F_tangent_N": [
+         -3.7,
+         -4.8,
+         -0.2
+        ],
+        "mu_needed": 0.055,
+        "M_Nm": [
+         -1.2,
+         -11.4,
+         -0.9
+        ],
+        "loop_residual": 4.037059575523472e-11
+       }
+      },
+      "supported_mass_kg": 22.08,
+      "share_right": 0.49
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 111.0,
+        "F_tangent_N": [
+         2.0,
+         8.4,
+         0.2
+        ],
+        "mu_needed": 0.078,
+        "M_Nm": [
+         -1.0,
+         -8.8,
+         0.0
+        ],
+        "loop_residual": 4.092903793662117e-11
+       },
+       "left": {
+        "F_normal_N": 115.6,
+        "F_tangent_N": [
+         -3.5,
+         -4.8,
+         -0.2
+        ],
+        "mu_needed": 0.051,
+        "M_Nm": [
+         -1.2,
+         -11.6,
+         -0.9
+        ],
+        "loop_residual": 4.037059575523472e-11
+       }
+      },
+      "supported_mass_kg": 23.1,
+      "share_right": 0.49
+     }
+    },
+    {
+     "t0": 12.260266,
+     "t1": 21.579941,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0303,
+      0.0226,
+      -0.9993
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.96,
+      "right_leg/hip_roll": 4.75,
+      "right_leg/hip_yaw": 1.28,
+      "right_leg/knee": 0.45,
+      "right_leg/ankle_a": -5.85,
+      "right_leg/ankle_b": 4.6,
+      "left_leg/hip_pitch": 1.33,
+      "left_leg/hip_roll": -4.88,
+      "left_leg/hip_yaw": -0.64,
+      "left_leg/knee": -0.09,
+      "left_leg/ankle_a": 6.23,
+      "left_leg/ankle_b": -7.63
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 106.1,
+        "F_tangent_N": [
+         1.6,
+         8.4,
+         0.2
+        ],
+        "mu_needed": 0.08,
+        "M_Nm": [
+         -0.9,
+         -8.8,
+         0.0
+        ],
+        "loop_residual": 4.092204353156603e-11
+       },
+       "left": {
+        "F_normal_N": 109.1,
+        "F_tangent_N": [
+         -4.1,
+         -4.8,
+         -0.2
+        ],
+        "mu_needed": 0.058,
+        "M_Nm": [
+         -1.3,
+         -11.7,
+         -0.9
+        ],
+        "loop_residual": 4.036726508616084e-11
+       }
+      },
+      "supported_mass_kg": 21.94,
+      "share_right": 0.493
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 111.0,
+        "F_tangent_N": [
+         1.8,
+         8.3,
+         0.2
+        ],
+        "mu_needed": 0.077,
+        "M_Nm": [
+         -0.9,
+         -9.0,
+         -0.0
+        ],
+        "loop_residual": 4.092204353156603e-11
+       },
+       "left": {
+        "F_normal_N": 114.2,
+        "F_tangent_N": [
+         -3.9,
+         -4.7,
+         -0.2
+        ],
+        "mu_needed": 0.054,
+        "M_Nm": [
+         -1.3,
+         -11.9,
+         -0.9
+        ],
+        "loop_residual": 4.036726508616084e-11
+       }
+      },
+      "supported_mass_kg": 22.96,
+      "share_right": 0.493
+     }
+    },
+    {
+     "t0": 21.599965,
+     "t1": 25.62011,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0296,
+      0.0224,
+      -0.9993
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.98,
+      "right_leg/hip_roll": 4.79,
+      "right_leg/hip_yaw": 1.31,
+      "right_leg/knee": 0.43,
+      "right_leg/ankle_a": -5.85,
+      "right_leg/ankle_b": 4.55,
+      "left_leg/hip_pitch": 1.34,
+      "left_leg/hip_roll": -4.8,
+      "left_leg/hip_yaw": -0.63,
+      "left_leg/knee": -0.02,
+      "left_leg/ankle_a": 6.16,
+      "left_leg/ankle_b": -7.52
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 106.5,
+        "F_tangent_N": [
+         1.7,
+         8.4,
+         0.2
+        ],
+        "mu_needed": 0.081,
+        "M_Nm": [
+         -1.0,
+         -8.8,
+         0.0
+        ],
+        "loop_residual": 4.092337579919558e-11
+       },
+       "left": {
+        "F_normal_N": 109.2,
+        "F_tangent_N": [
+         -4.0,
+         -4.7,
+         -0.2
+        ],
+        "mu_needed": 0.057,
+        "M_Nm": [
+         -1.2,
+         -11.5,
+         -0.9
+        ],
+        "loop_residual": 4.037037371062979e-11
+       }
+      },
+      "supported_mass_kg": 21.99,
+      "share_right": 0.494
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 111.3,
+        "F_tangent_N": [
+         1.9,
+         8.4,
+         0.2
+        ],
+        "mu_needed": 0.077,
+        "M_Nm": [
+         -1.0,
+         -9.0,
+         -0.0
+        ],
+        "loop_residual": 4.092337579919558e-11
+       },
+       "left": {
+        "F_normal_N": 114.3,
+        "F_tangent_N": [
+         -3.7,
+         -4.7,
+         -0.2
+        ],
+        "mu_needed": 0.053,
+        "M_Nm": [
+         -1.2,
+         -11.7,
+         -0.9
+        ],
+        "loop_residual": 4.037026268832733e-11
+       }
+      },
+      "supported_mass_kg": 23.0,
+      "share_right": 0.493
+     }
+    },
+    {
+     "t0": 31.640166,
+     "t1": 33.920272,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0005,
+      0.022,
+      -0.9998
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 1.94,
+      "right_leg/hip_roll": 11.93,
+      "right_leg/hip_yaw": 2.29,
+      "right_leg/knee": -0.16,
+      "right_leg/ankle_a": -4.37,
+      "right_leg/ankle_b": 0.48,
+      "left_leg/hip_pitch": 2.33,
+      "left_leg/hip_roll": -11.87,
+      "left_leg/hip_yaw": -2.38,
+      "left_leg/knee": 3.25,
+      "left_leg/ankle_a": 5.93,
+      "left_leg/ankle_b": -2.78
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 97.2,
+        "F_tangent_N": [
+         4.9,
+         17.3,
+         0.4
+        ],
+        "mu_needed": 0.185,
+        "M_Nm": [
+         -2.7,
+         -4.2,
+         0.9
+        ],
+        "loop_residual": 4.115097151924374e-11
+       },
+       "left": {
+        "F_normal_N": 132.9,
+        "F_tangent_N": [
+         1.4,
+         -13.9,
+         -0.3
+        ],
+        "mu_needed": 0.105,
+        "M_Nm": [
+         2.1,
+         -7.5,
+         -1.1
+        ],
+        "loop_residual": 4.0269010348481515e-11
+       }
+      },
+      "supported_mass_kg": 23.46,
+      "share_right": 0.422
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 102.9,
+        "F_tangent_N": [
+         5.2,
+         17.3,
+         0.4
+        ],
+        "mu_needed": 0.176,
+        "M_Nm": [
+         -2.7,
+         -4.4,
+         0.9
+        ],
+        "loop_residual": 4.115097151924374e-11
+       },
+       "left": {
+        "F_normal_N": 138.2,
+        "F_tangent_N": [
+         1.6,
+         -14.0,
+         -0.3
+        ],
+        "mu_needed": 0.102,
+        "M_Nm": [
+         2.1,
+         -7.7,
+         -1.1
+        ],
+        "loop_residual": 4.0269010348481515e-11
+       }
+      },
+      "supported_mass_kg": 24.58,
+      "share_right": 0.427
+     }
+    },
+    {
+     "t0": 37.340727,
+     "t1": 40.539877,
+     "cmd_vx": 0.0,
+     "grav": [
+      -0.0215,
+      0.015,
+      -0.9997
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 2.28,
+      "right_leg/hip_roll": 12.45,
+      "right_leg/hip_yaw": 2.6,
+      "right_leg/knee": -0.91,
+      "right_leg/ankle_a": -3.33,
+      "right_leg/ankle_b": -0.65,
+      "left_leg/hip_pitch": 2.75,
+      "left_leg/hip_roll": -10.66,
+      "left_leg/hip_yaw": -2.31,
+      "left_leg/knee": 4.81,
+      "left_leg/ankle_a": 3.06,
+      "left_leg/ankle_b": -0.44
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 103.7,
+        "F_tangent_N": [
+         6.6,
+         17.5,
+         0.1
+        ],
+        "mu_needed": 0.181,
+        "M_Nm": [
+         -2.8,
+         -2.4,
+         0.8
+        ],
+        "loop_residual": 4.118527741070466e-11
+       },
+       "left": {
+        "F_normal_N": 125.0,
+        "F_tangent_N": [
+         3.4,
+         -13.0,
+         -0.3
+        ],
+        "mu_needed": 0.108,
+        "M_Nm": [
+         1.8,
+         -3.1,
+         -0.8
+        ],
+        "loop_residual": 4.035127787460624e-11
+       }
+      },
+      "supported_mass_kg": 23.31,
+      "share_right": 0.453
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 109.9,
+        "F_tangent_N": [
+         7.0,
+         17.6,
+         0.1
+        ],
+        "mu_needed": 0.172,
+        "M_Nm": [
+         -2.8,
+         -2.6,
+         0.8
+        ],
+        "loop_residual": 4.118527741070466e-11
+       },
+       "left": {
+        "F_normal_N": 130.7,
+        "F_tangent_N": [
+         3.7,
+         -13.1,
+         -0.3
+        ],
+        "mu_needed": 0.104,
+        "M_Nm": [
+         1.8,
+         -3.3,
+         -0.8
+        ],
+        "loop_residual": 4.035127787460624e-11
+       }
+      },
+      "supported_mass_kg": 24.53,
+      "share_right": 0.457
+     }
+    },
+    {
+     "t0": 40.559983,
+     "t1": 43.459966,
+     "cmd_vx": 0.0,
+     "grav": [
+      -0.0215,
+      0.0148,
+      -0.9997
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 2.28,
+      "right_leg/hip_roll": 12.48,
+      "right_leg/hip_yaw": 2.6,
+      "right_leg/knee": -0.89,
+      "right_leg/ankle_a": -3.35,
+      "right_leg/ankle_b": -0.64,
+      "left_leg/hip_pitch": 2.77,
+      "left_leg/hip_roll": -10.61,
+      "left_leg/hip_yaw": -2.3,
+      "left_leg/knee": 4.79,
+      "left_leg/ankle_a": 3.05,
+      "left_leg/ankle_b": -0.46
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 103.7,
+        "F_tangent_N": [
+         6.5,
+         17.6,
+         0.1
+        ],
+        "mu_needed": 0.181,
+        "M_Nm": [
+         -2.8,
+         -2.4,
+         0.8
+        ],
+        "loop_residual": 4.118505536609973e-11
+       },
+       "left": {
+        "F_normal_N": 124.5,
+        "F_tangent_N": [
+         3.3,
+         -13.0,
+         -0.3
+        ],
+        "mu_needed": 0.108,
+        "M_Nm": [
+         1.8,
+         -3.1,
+         -0.8
+        ],
+        "loop_residual": 4.0351944008421015e-11
+       }
+      },
+      "supported_mass_kg": 23.26,
+      "share_right": 0.454
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 109.8,
+        "F_tangent_N": [
+         6.9,
+         17.6,
+         0.1
+        ],
+        "mu_needed": 0.172,
+        "M_Nm": [
+         -2.8,
+         -2.6,
+         0.8
+        ],
+        "loop_residual": 4.118505536609973e-11
+       },
+       "left": {
+        "F_normal_N": 130.2,
+        "F_tangent_N": [
+         3.7,
+         -13.0,
+         -0.3
+        ],
+        "mu_needed": 0.104,
+        "M_Nm": [
+         1.8,
+         -3.3,
+         -0.8
+        ],
+        "loop_residual": 4.0351944008421015e-11
+       }
+      },
+      "supported_mass_kg": 24.46,
+      "share_right": 0.457
+     }
+    },
+    {
+     "t0": 43.479955,
+     "t1": 46.520369,
+     "cmd_vx": 0.0,
+     "grav": [
+      -0.0178,
+      0.0155,
+      -0.9997
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 2.27,
+      "right_leg/hip_roll": 12.44,
+      "right_leg/hip_yaw": 2.59,
+      "right_leg/knee": -0.71,
+      "right_leg/ankle_a": -3.65,
+      "right_leg/ankle_b": -0.42,
+      "left_leg/hip_pitch": 2.76,
+      "left_leg/hip_roll": -10.75,
+      "left_leg/hip_yaw": -2.29,
+      "left_leg/knee": 4.54,
+      "left_leg/ankle_a": 3.5,
+      "left_leg/ankle_b": -0.93
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 103.0,
+        "F_tangent_N": [
+         6.2,
+         17.6,
+         0.2
+        ],
+        "mu_needed": 0.182,
+        "M_Nm": [
+         -2.9,
+         -2.9,
+         0.8
+        ],
+        "loop_residual": 4.117217677901408e-11
+       },
+       "left": {
+        "F_normal_N": 125.8,
+        "F_tangent_N": [
+         2.8,
+         -13.1,
+         -0.3
+        ],
+        "mu_needed": 0.106,
+        "M_Nm": [
+         1.8,
+         -3.9,
+         -0.8
+        ],
+        "loop_residual": 4.032751910187926e-11
+       }
+      },
+      "supported_mass_kg": 23.32,
+      "share_right": 0.45
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 109.1,
+        "F_tangent_N": [
+         6.6,
+         17.7,
+         0.2
+        ],
+        "mu_needed": 0.173,
+        "M_Nm": [
+         -2.9,
+         -3.1,
+         0.8
+        ],
+        "loop_residual": 4.117217677901408e-11
+       },
+       "left": {
+        "F_normal_N": 131.5,
+        "F_tangent_N": [
+         3.2,
+         -13.1,
+         -0.3
+        ],
+        "mu_needed": 0.103,
+        "M_Nm": [
+         1.8,
+         -4.1,
+         -0.8
+        ],
+        "loop_residual": 4.032751910187926e-11
+       }
+      },
+      "supported_mass_kg": 24.53,
+      "share_right": 0.453
+     }
+    },
+    {
+     "t0": 78.340364,
+     "t1": 81.220128,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0057,
+      0.0054,
+      -1.0
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.98,
+      "right_leg/hip_roll": 11.22,
+      "right_leg/hip_yaw": 1.27,
+      "right_leg/knee": -0.69,
+      "right_leg/ankle_a": -7.92,
+      "right_leg/ankle_b": 3.59,
+      "left_leg/hip_pitch": -0.51,
+      "left_leg/hip_roll": -10.74,
+      "left_leg/hip_yaw": -1.96,
+      "left_leg/knee": 2.27,
+      "left_leg/ankle_a": 3.58,
+      "left_leg/ankle_b": -2.15
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 117.8,
+        "F_tangent_N": [
+         -0.7,
+         16.3,
+         0.1
+        ],
+        "mu_needed": 0.139,
+        "M_Nm": [
+         -2.9,
+         -9.8,
+         1.9
+        ],
+        "loop_residual": 4.0884184926426315e-11
+       },
+       "left": {
+        "F_normal_N": 127.3,
+        "F_tangent_N": [
+         5.3,
+         -11.7,
+         -0.0
+        ],
+        "mu_needed": 0.101,
+        "M_Nm": [
+         0.9,
+         -5.0,
+         -0.9
+        ],
+        "loop_residual": 4.036848633148793e-11
+       }
+      },
+      "supported_mass_kg": 24.98,
+      "share_right": 0.481
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 122.7,
+        "F_tangent_N": [
+         -0.5,
+         16.3,
+         0.1
+        ],
+        "mu_needed": 0.133,
+        "M_Nm": [
+         -2.9,
+         -10.0,
+         1.9
+        ],
+        "loop_residual": 4.0884184926426315e-11
+       },
+       "left": {
+        "F_normal_N": 133.0,
+        "F_tangent_N": [
+         5.6,
+         -11.8,
+         -0.0
+        ],
+        "mu_needed": 0.098,
+        "M_Nm": [
+         0.9,
+         -5.2,
+         -0.9
+        ],
+        "loop_residual": 4.036848633148793e-11
+       }
+      },
+      "supported_mass_kg": 26.07,
+      "share_right": 0.48
+     }
+    },
+    {
+     "t0": 81.239937,
+     "t1": 85.720126,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0053,
+      0.0056,
+      -1.0
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.99,
+      "right_leg/hip_roll": 11.21,
+      "right_leg/hip_yaw": 1.27,
+      "right_leg/knee": -0.71,
+      "right_leg/ankle_a": -7.86,
+      "right_leg/ankle_b": 3.53,
+      "left_leg/hip_pitch": -0.52,
+      "left_leg/hip_roll": -10.78,
+      "left_leg/hip_yaw": -1.98,
+      "left_leg/knee": 2.28,
+      "left_leg/ankle_a": 3.54,
+      "left_leg/ankle_b": -2.14
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 117.2,
+        "F_tangent_N": [
+         -0.7,
+         16.3,
+         0.1
+        ],
+        "mu_needed": 0.139,
+        "M_Nm": [
+         -2.9,
+         -9.7,
+         1.9
+        ],
+        "loop_residual": 4.08880707070125e-11
+       },
+       "left": {
+        "F_normal_N": 127.2,
+        "F_tangent_N": [
+         5.3,
+         -11.7,
+         -0.0
+        ],
+        "mu_needed": 0.101,
+        "M_Nm": [
+         0.9,
+         -4.9,
+         -0.9
+        ],
+        "loop_residual": 4.037148393365442e-11
+       }
+      },
+      "supported_mass_kg": 24.91,
+      "share_right": 0.48
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 122.2,
+        "F_tangent_N": [
+         -0.5,
+         16.3,
+         0.1
+        ],
+        "mu_needed": 0.134,
+        "M_Nm": [
+         -2.9,
+         -9.9,
+         1.9
+        ],
+        "loop_residual": 4.08880707070125e-11
+       },
+       "left": {
+        "F_normal_N": 133.0,
+        "F_tangent_N": [
+         5.6,
+         -11.8,
+         -0.0
+        ],
+        "mu_needed": 0.098,
+        "M_Nm": [
+         0.9,
+         -5.1,
+         -0.9
+        ],
+        "loop_residual": 4.037148393365442e-11
+       }
+      },
+      "supported_mass_kg": 26.01,
+      "share_right": 0.479
+     }
+    },
+    {
+     "t0": 85.740037,
+     "t1": 87.960063,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0104,
+      0.0056,
+      -0.9999
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.93,
+      "right_leg/hip_roll": 11.25,
+      "right_leg/hip_yaw": 1.27,
+      "right_leg/knee": -0.45,
+      "right_leg/ankle_a": -8.22,
+      "right_leg/ankle_b": 4.04,
+      "left_leg/hip_pitch": -0.42,
+      "left_leg/hip_roll": -10.79,
+      "left_leg/hip_yaw": -1.84,
+      "left_leg/knee": 1.89,
+      "left_leg/ankle_a": 3.96,
+      "left_leg/ankle_b": -2.68
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 118.4,
+        "F_tangent_N": [
+         -1.0,
+         16.2,
+         0.1
+        ],
+        "mu_needed": 0.137,
+        "M_Nm": [
+         -2.8,
+         -10.4,
+         1.9
+        ],
+        "loop_residual": 4.086575522421754e-11
+       },
+       "left": {
+        "F_normal_N": 124.8,
+        "F_tangent_N": [
+         4.4,
+         -11.6,
+         -0.0
+        ],
+        "mu_needed": 0.1,
+        "M_Nm": [
+         0.7,
+         -5.7,
+         -1.0
+        ],
+        "loop_residual": 4.0346281870995426e-11
+       }
+      },
+      "supported_mass_kg": 24.79,
+      "share_right": 0.487
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 123.3,
+        "F_tangent_N": [
+         -0.8,
+         16.2,
+         0.1
+        ],
+        "mu_needed": 0.132,
+        "M_Nm": [
+         -2.8,
+         -10.6,
+         1.9
+        ],
+        "loop_residual": 4.086575522421754e-11
+       },
+       "left": {
+        "F_normal_N": 130.4,
+        "F_tangent_N": [
+         4.7,
+         -11.7,
+         -0.0
+        ],
+        "mu_needed": 0.097,
+        "M_Nm": [
+         0.7,
+         -5.9,
+         -1.0
+        ],
+        "loop_residual": 4.0346281870995426e-11
+       }
+      },
+      "supported_mass_kg": 25.86,
+      "share_right": 0.486
+     }
+    },
+    {
+     "t0": 89.980057,
+     "t1": 93.780408,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0071,
+      0.0058,
+      -1.0
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.99,
+      "right_leg/hip_roll": 11.22,
+      "right_leg/hip_yaw": 1.27,
+      "right_leg/knee": -0.62,
+      "right_leg/ankle_a": -7.94,
+      "right_leg/ankle_b": 3.71,
+      "left_leg/hip_pitch": -0.49,
+      "left_leg/hip_roll": -10.84,
+      "left_leg/hip_yaw": -1.95,
+      "left_leg/knee": 2.12,
+      "left_leg/ankle_a": 3.7,
+      "left_leg/ankle_b": -2.36
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 117.2,
+        "F_tangent_N": [
+         -0.8,
+         16.2,
+         0.1
+        ],
+        "mu_needed": 0.139,
+        "M_Nm": [
+         -2.8,
+         -9.9,
+         1.9
+        ],
+        "loop_residual": 4.0878522789000726e-11
+       },
+       "left": {
+        "F_normal_N": 126.5,
+        "F_tangent_N": [
+         4.9,
+         -11.7,
+         -0.0
+        ],
+        "mu_needed": 0.101,
+        "M_Nm": [
+         0.8,
+         -5.3,
+         -1.0
+        ],
+        "loop_residual": 4.0362158060247566e-11
+       }
+      },
+      "supported_mass_kg": 24.84,
+      "share_right": 0.481
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 122.1,
+        "F_tangent_N": [
+         -0.6,
+         16.2,
+         0.1
+        ],
+        "mu_needed": 0.133,
+        "M_Nm": [
+         -2.8,
+         -10.1,
+         1.9
+        ],
+        "loop_residual": 4.087863381130319e-11
+       },
+       "left": {
+        "F_normal_N": 132.2,
+        "F_tangent_N": [
+         5.3,
+         -11.8,
+         -0.0
+        ],
+        "mu_needed": 0.098,
+        "M_Nm": [
+         0.8,
+         -5.5,
+         -1.0
+        ],
+        "loop_residual": 4.0362158060247566e-11
+       }
+      },
+      "supported_mass_kg": 25.92,
+      "share_right": 0.48
+     }
+    },
+    {
+     "t0": 96.000539,
+     "t1": 102.760715,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.006,
+      0.0057,
+      -1.0
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -1.0,
+      "right_leg/hip_roll": 11.23,
+      "right_leg/hip_yaw": 1.29,
+      "right_leg/knee": -0.67,
+      "right_leg/ankle_a": -7.87,
+      "right_leg/ankle_b": 3.63,
+      "left_leg/hip_pitch": -0.49,
+      "left_leg/hip_roll": -10.76,
+      "left_leg/hip_yaw": -1.97,
+      "left_leg/knee": 2.17,
+      "left_leg/ankle_a": 3.57,
+      "left_leg/ankle_b": -2.24
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 117.0,
+        "F_tangent_N": [
+         -0.8,
+         16.3,
+         0.1
+        ],
+        "mu_needed": 0.139,
+        "M_Nm": [
+         -2.9,
+         -9.8,
+         1.9
+        ],
+        "loop_residual": 4.08818534580746e-11
+       },
+       "left": {
+        "F_normal_N": 125.8,
+        "F_tangent_N": [
+         5.0,
+         -11.7,
+         -0.0
+        ],
+        "mu_needed": 0.101,
+        "M_Nm": [
+         0.8,
+         -5.1,
+         -0.9
+        ],
+        "loop_residual": 4.0366932019253454e-11
+       }
+      },
+      "supported_mass_kg": 24.75,
+      "share_right": 0.482
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 122.0,
+        "F_tangent_N": [
+         -0.6,
+         16.3,
+         0.1
+        ],
+        "mu_needed": 0.133,
+        "M_Nm": [
+         -2.9,
+         -10.0,
+         1.9
+        ],
+        "loop_residual": 4.08818534580746e-11
+       },
+       "left": {
+        "F_normal_N": 131.5,
+        "F_tangent_N": [
+         5.4,
+         -11.7,
+         -0.0
+        ],
+        "mu_needed": 0.098,
+        "M_Nm": [
+         0.8,
+         -5.2,
+         -0.9
+        ],
+        "loop_residual": 4.0366932019253454e-11
+       }
+      },
+      "supported_mass_kg": 25.84,
+      "share_right": 0.481
+     }
+    }
+   ]
+  },
+  "squat1104": {
+   "path": "Expr_Data/huphy_main_e4f9694/squat_baseline_policy.json",
+   "kp_scale": 1.0,
+   "n_windows": 3,
+   "windows": [
+    {
+     "t0": 1.199321,
+     "t1": 5.899581,
+     "cmd_vx": null,
+     "grav": [
+      0.0287,
+      0.0184,
+      -0.9994
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.1,
+      "right_leg/hip_roll": 13.33,
+      "right_leg/hip_yaw": 2.74,
+      "right_leg/knee": -3.89,
+      "right_leg/ankle_a": -1.84,
+      "right_leg/ankle_b": 4.01,
+      "left_leg/hip_pitch": 0.51,
+      "left_leg/hip_roll": -8.65,
+      "left_leg/hip_yaw": -1.8,
+      "left_leg/knee": 1.23,
+      "left_leg/ankle_a": 5.29,
+      "left_leg/ankle_b": -4.4
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 119.1,
+        "F_tangent_N": [
+         1.0,
+         19.9,
+         0.4
+        ],
+        "mu_needed": 0.168,
+        "M_Nm": [
+         1.7,
+         -5.0,
+         1.9
+        ],
+        "loop_residual": 4.0692671454678475e-11
+       },
+       "left": {
+        "F_normal_N": 94.7,
+        "F_tangent_N": [
+         -2.9,
+         -14.4,
+         -0.3
+        ],
+        "mu_needed": 0.155,
+        "M_Nm": [
+         0.8,
+         -8.1,
+         -1.7
+        ],
+        "loop_residual": 4.045053181300773e-11
+       }
+      },
+      "supported_mass_kg": 21.79,
+      "share_right": 0.557
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 126.3,
+        "F_tangent_N": [
+         1.7,
+         20.0,
+         0.4
+        ],
+        "mu_needed": 0.159,
+        "M_Nm": [
+         1.7,
+         -5.2,
+         1.8
+        ],
+        "loop_residual": 4.0692671454678475e-11
+       },
+       "left": {
+        "F_normal_N": 101.6,
+        "F_tangent_N": [
+         -2.2,
+         -14.3,
+         -0.3
+        ],
+        "mu_needed": 0.143,
+        "M_Nm": [
+         0.8,
+         -8.3,
+         -1.6
+        ],
+        "loop_residual": 4.045064283531019e-11
+       }
+      },
+      "supported_mass_kg": 23.23,
+      "share_right": 0.554
+     }
+    },
+    {
+     "t0": 5.919748,
+     "t1": 31.559688,
+     "cmd_vx": null,
+     "grav": [
+      0.027,
+      0.0177,
+      -0.9995
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.06,
+      "right_leg/hip_roll": 13.24,
+      "right_leg/hip_yaw": 2.76,
+      "right_leg/knee": -4.19,
+      "right_leg/ankle_a": -1.7,
+      "right_leg/ankle_b": 3.88,
+      "left_leg/hip_pitch": 0.58,
+      "left_leg/hip_roll": -8.5,
+      "left_leg/hip_yaw": -1.79,
+      "left_leg/knee": 1.37,
+      "left_leg/ankle_a": 5.19,
+      "left_leg/ankle_b": -4.27
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 121.8,
+        "F_tangent_N": [
+         1.3,
+         20.0,
+         0.4
+        ],
+        "mu_needed": 0.164,
+        "M_Nm": [
+         1.7,
+         -4.7,
+         1.8
+        ],
+        "loop_residual": 4.069344861079571e-11
+       },
+       "left": {
+        "F_normal_N": 95.0,
+        "F_tangent_N": [
+         -2.9,
+         -14.3,
+         -0.3
+        ],
+        "mu_needed": 0.153,
+        "M_Nm": [
+         0.8,
+         -7.9,
+         -1.6
+        ],
+        "loop_residual": 4.046207813246383e-11
+       }
+      },
+      "supported_mass_kg": 22.1,
+      "share_right": 0.562
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 129.1,
+        "F_tangent_N": [
+         1.9,
+         20.0,
+         0.4
+        ],
+        "mu_needed": 0.156,
+        "M_Nm": [
+         1.7,
+         -4.9,
+         1.8
+        ],
+        "loop_residual": 4.069344861079571e-11
+       },
+       "left": {
+        "F_normal_N": 102.0,
+        "F_tangent_N": [
+         -2.2,
+         -14.3,
+         -0.3
+        ],
+        "mu_needed": 0.142,
+        "M_Nm": [
+         0.8,
+         -8.1,
+         -1.6
+        ],
+        "loop_residual": 4.046207813246383e-11
+       }
+      },
+      "supported_mass_kg": 23.56,
+      "share_right": 0.559
+     }
+    },
+    {
+     "t0": 86.179307,
+     "t1": 91.139242,
+     "cmd_vx": null,
+     "grav": [
+      0.0212,
+      0.0152,
+      -0.9997
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.37,
+      "right_leg/hip_roll": 11.5,
+      "right_leg/hip_yaw": 1.91,
+      "right_leg/knee": -5.97,
+      "right_leg/ankle_a": -0.69,
+      "right_leg/ankle_b": 2.86,
+      "left_leg/hip_pitch": -0.13,
+      "left_leg/hip_roll": -6.68,
+      "left_leg/hip_yaw": 0.4,
+      "left_leg/knee": 1.79,
+      "left_leg/ankle_a": 4.54,
+      "left_leg/ankle_b": -4.32
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 140.5,
+        "F_tangent_N": [
+         3.0,
+         18.6,
+         0.3
+        ],
+        "mu_needed": 0.134,
+        "M_Nm": [
+         1.6,
+         -3.0,
+         2.0
+        ],
+        "loop_residual": 4.064026892791617e-11
+       },
+       "left": {
+        "F_normal_N": 107.0,
+        "F_tangent_N": [
+         -1.8,
+         -11.8,
+         -0.2
+        ],
+        "mu_needed": 0.111,
+        "M_Nm": [
+         0.2,
+         -7.3,
+         -3.0
+        ],
+        "loop_residual": 4.0552783353575705e-11
+       }
+      },
+      "supported_mass_kg": 25.23,
+      "share_right": 0.568
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 147.9,
+        "F_tangent_N": [
+         3.7,
+         18.6,
+         0.4
+        ],
+        "mu_needed": 0.128,
+        "M_Nm": [
+         1.6,
+         -3.2,
+         1.9
+        ],
+        "loop_residual": 4.064026892791617e-11
+       },
+       "left": {
+        "F_normal_N": 114.2,
+        "F_tangent_N": [
+         -1.1,
+         -11.8,
+         -0.2
+        ],
+        "mu_needed": 0.103,
+        "M_Nm": [
+         0.2,
+         -7.5,
+         -2.9
+        ],
+        "loop_residual": 4.0552783353575705e-11
+       }
+      },
+      "supported_mass_kg": 26.72,
+      "share_right": 0.564
+     }
+    }
+   ]
+  },
+  "teleop1028": {
+   "path": "Expr_Data/huphy_main_90bbd1f/1028_policy_generalized_walk_teleop.json",
+   "kp_scale": 1.0,
+   "n_windows": 2,
+   "windows": [
+    {
+     "t0": 2.599716,
+     "t1": 5.100398,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0211,
+      0.0203,
+      -0.9996
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.31,
+      "right_leg/hip_roll": 4.67,
+      "right_leg/hip_yaw": 0.7,
+      "right_leg/knee": -0.35,
+      "right_leg/ankle_a": -5.07,
+      "right_leg/ankle_b": 4.86,
+      "left_leg/hip_pitch": 1.07,
+      "left_leg/hip_roll": -6.92,
+      "left_leg/hip_yaw": -1.0,
+      "left_leg/knee": 0.04,
+      "left_leg/ankle_a": 6.18,
+      "left_leg/ankle_b": -8.14
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 111.3,
+        "F_tangent_N": [
+         1.8,
+         7.4,
+         0.2
+        ],
+        "mu_needed": 0.069,
+        "M_Nm": [
+         -0.1,
+         -8.4,
+         0.5
+        ],
+        "loop_residual": 4.088385185951893e-11
+       },
+       "left": {
+        "F_normal_N": 118.0,
+        "F_tangent_N": [
+         -3.5,
+         -6.3,
+         -0.2
+        ],
+        "mu_needed": 0.061,
+        "M_Nm": [
+         -1.7,
+         -12.1,
+         -1.0
+        ],
+        "loop_residual": 4.036315726096973e-11
+       }
+      },
+      "supported_mass_kg": 23.37,
+      "share_right": 0.485
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 116.3,
+        "F_tangent_N": [
+         2.0,
+         7.4,
+         0.2
+        ],
+        "mu_needed": 0.066,
+        "M_Nm": [
+         -0.1,
+         -8.6,
+         0.5
+        ],
+        "loop_residual": 4.088385185951893e-11
+       },
+       "left": {
+        "F_normal_N": 123.2,
+        "F_tangent_N": [
+         -3.2,
+         -6.3,
+         -0.2
+        ],
+        "mu_needed": 0.057,
+        "M_Nm": [
+         -1.7,
+         -12.3,
+         -1.0
+        ],
+        "loop_residual": 4.036315726096973e-11
+       }
+      },
+      "supported_mass_kg": 24.41,
+      "share_right": 0.486
+     }
+    },
+    {
+     "t0": 50.129669,
+     "t1": 53.03029,
+     "cmd_vx": 6.930821917808219e-05,
+     "grav": [
+      0.0236,
+      0.0184,
+      -0.9996
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.54,
+      "right_leg/hip_roll": 15.1,
+      "right_leg/hip_yaw": 2.54,
+      "right_leg/knee": 0.17,
+      "right_leg/ankle_a": -8.76,
+      "right_leg/ankle_b": 4.21,
+      "left_leg/hip_pitch": 0.81,
+      "left_leg/hip_roll": -9.96,
+      "left_leg/hip_yaw": -2.18,
+      "left_leg/knee": 1.36,
+      "left_leg/ankle_a": 5.69,
+      "left_leg/ankle_b": -3.75
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 129.9,
+        "F_tangent_N": [
+         1.5,
+         20.4,
+         0.4
+        ],
+        "mu_needed": 0.158,
+        "M_Nm": [
+         -3.1,
+         -11.1,
+         1.4
+        ],
+        "loop_residual": 4.0880299145840127e-11
+       },
+       "left": {
+        "F_normal_N": 117.1,
+        "F_tangent_N": [
+         0.9,
+         -11.5,
+         -0.2
+        ],
+        "mu_needed": 0.098,
+        "M_Nm": [
+         1.3,
+         -8.1,
+         -0.6
+        ],
+        "loop_residual": 4.014033549992746e-11
+       }
+      },
+      "supported_mass_kg": 25.18,
+      "share_right": 0.526
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 134.7,
+        "F_tangent_N": [
+         1.6,
+         20.5,
+         0.4
+        ],
+        "mu_needed": 0.152,
+        "M_Nm": [
+         -3.1,
+         -11.2,
+         1.4
+        ],
+        "loop_residual": 4.0880299145840127e-11
+       },
+       "left": {
+        "F_normal_N": 122.4,
+        "F_tangent_N": [
+         1.2,
+         -11.5,
+         -0.2
+        ],
+        "mu_needed": 0.095,
+        "M_Nm": [
+         1.3,
+         -8.3,
+         -0.6
+        ],
+        "loop_residual": 4.014033549992746e-11
+       }
+      },
+      "supported_mass_kg": 26.21,
+      "share_right": 0.524
+     }
+    }
+   ]
+  },
+  "extra2_1028": {
+   "path": "Expr_Data/huphy_main_90bbd1f/1028_policy_generalized_walk_teleop_extra2.json",
+   "kp_scale": 1.0,
+   "n_windows": 4,
+   "windows": [
+    {
+     "t0": 4.801042,
+     "t1": 6.861519,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0284,
+      0.0211,
+      -0.9994
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.42,
+      "right_leg/hip_roll": 4.83,
+      "right_leg/hip_yaw": 0.94,
+      "right_leg/knee": 0.03,
+      "right_leg/ankle_a": -5.56,
+      "right_leg/ankle_b": 5.3,
+      "left_leg/hip_pitch": 0.75,
+      "left_leg/hip_roll": -5.62,
+      "left_leg/hip_yaw": -0.89,
+      "left_leg/knee": -0.24,
+      "left_leg/ankle_a": 6.41,
+      "left_leg/ankle_b": -8.15
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 111.5,
+        "F_tangent_N": [
+         1.3,
+         7.6,
+         0.2
+        ],
+        "mu_needed": 0.069,
+        "M_Nm": [
+         -0.2,
+         -9.2,
+         0.3
+        ],
+        "loop_residual": 4.085476401627375e-11
+       },
+       "left": {
+        "F_normal_N": 117.1,
+        "F_tangent_N": [
+         -3.4,
+         -5.4,
+         -0.2
+        ],
+        "mu_needed": 0.054,
+        "M_Nm": [
+         -1.5,
+         -12.3,
+         -0.8
+        ],
+        "loop_residual": 4.0328962391811274e-11
+       }
+      },
+      "supported_mass_kg": 23.3,
+      "share_right": 0.488
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 116.3,
+        "F_tangent_N": [
+         1.5,
+         7.6,
+         0.2
+        ],
+        "mu_needed": 0.066,
+        "M_Nm": [
+         -0.2,
+         -9.4,
+         0.3
+        ],
+        "loop_residual": 4.085476401627375e-11
+       },
+       "left": {
+        "F_normal_N": 122.3,
+        "F_tangent_N": [
+         -3.1,
+         -5.4,
+         -0.2
+        ],
+        "mu_needed": 0.051,
+        "M_Nm": [
+         -1.5,
+         -12.5,
+         -0.8
+        ],
+        "loop_residual": 4.0328962391811274e-11
+       }
+      },
+      "supported_mass_kg": 24.32,
+      "share_right": 0.487
+     }
+    },
+    {
+     "t0": 21.483958,
+     "t1": 23.72411,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0146,
+      0.0301,
+      -0.9994
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 0.8,
+      "right_leg/hip_roll": 13.43,
+      "right_leg/hip_yaw": 2.74,
+      "right_leg/knee": -0.29,
+      "right_leg/ankle_a": -5.52,
+      "right_leg/ankle_b": 2.84,
+      "left_leg/hip_pitch": 1.65,
+      "left_leg/hip_roll": -12.85,
+      "left_leg/hip_yaw": -2.56,
+      "left_leg/knee": 1.31,
+      "left_leg/ankle_a": 6.79,
+      "left_leg/ankle_b": -4.67
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 109.1,
+        "F_tangent_N": [
+         2.8,
+         18.1,
+         0.6
+        ],
+        "mu_needed": 0.168,
+        "M_Nm": [
+         -1.9,
+         -7.1,
+         0.7
+        ],
+        "loop_residual": 4.0939807099960035e-11
+       },
+       "left": {
+        "F_normal_N": 122.0,
+        "F_tangent_N": [
+         -0.9,
+         -13.8,
+         -0.4
+        ],
+        "mu_needed": 0.114,
+        "M_Nm": [
+         1.3,
+         -9.8,
+         -1.0
+        ],
+        "loop_residual": 4.02320399217615e-11
+       }
+      },
+      "supported_mass_kg": 23.56,
+      "share_right": 0.472
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 114.2,
+        "F_tangent_N": [
+         3.0,
+         18.1,
+         0.6
+        ],
+        "mu_needed": 0.161,
+        "M_Nm": [
+         -1.9,
+         -7.3,
+         0.7
+        ],
+        "loop_residual": 4.0939807099960035e-11
+       },
+       "left": {
+        "F_normal_N": 127.0,
+        "F_tangent_N": [
+         -0.7,
+         -13.9,
+         -0.4
+        ],
+        "mu_needed": 0.11,
+        "M_Nm": [
+         1.3,
+         -9.9,
+         -1.0
+        ],
+        "loop_residual": 4.02320399217615e-11
+       }
+      },
+      "supported_mass_kg": 24.59,
+      "share_right": 0.473
+     }
+    },
+    {
+     "t0": 48.349865,
+     "t1": 50.429912,
+     "cmd_vx": 0.0004334857142857143,
+     "grav": [
+      0.03,
+      0.0064,
+      -0.9995
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": -0.53,
+      "right_leg/hip_roll": 15.79,
+      "right_leg/hip_yaw": 1.95,
+      "right_leg/knee": 0.64,
+      "right_leg/ankle_a": -10.86,
+      "right_leg/ankle_b": 6.11,
+      "left_leg/hip_pitch": 0.23,
+      "left_leg/hip_roll": -8.86,
+      "left_leg/hip_yaw": -1.27,
+      "left_leg/knee": 0.78,
+      "left_leg/ankle_a": 4.5,
+      "left_leg/ankle_b": -3.7
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 135.4,
+        "F_tangent_N": [
+         -1.4,
+         20.3,
+         0.1
+        ],
+        "mu_needed": 0.151,
+        "M_Nm": [
+         -2.9,
+         -14.4,
+         2.2
+        ],
+        "loop_residual": 4.0931369404972884e-11
+       },
+       "left": {
+        "F_normal_N": 104.7,
+        "F_tangent_N": [
+         1.3,
+         -9.8,
+         -0.0
+        ],
+        "mu_needed": 0.095,
+        "M_Nm": [
+         0.4,
+         -7.0,
+         -1.1
+        ],
+        "loop_residual": 4.020839217133698e-11
+       }
+      },
+      "supported_mass_kg": 24.48,
+      "share_right": 0.564
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 139.8,
+        "F_tangent_N": [
+         -1.3,
+         20.4,
+         0.1
+        ],
+        "mu_needed": 0.146,
+        "M_Nm": [
+         -2.9,
+         -14.6,
+         2.2
+        ],
+        "loop_residual": 4.0931369404972884e-11
+       },
+       "left": {
+        "F_normal_N": 109.9,
+        "F_tangent_N": [
+         1.6,
+         -9.8,
+         -0.0
+        ],
+        "mu_needed": 0.091,
+        "M_Nm": [
+         0.4,
+         -7.2,
+         -1.1
+        ],
+        "loop_residual": 4.020839217133698e-11
+       }
+      },
+      "supported_mass_kg": 25.45,
+      "share_right": 0.56
+     }
+    },
+    {
+     "t0": 57.05109,
+     "t1": 59.031264,
+     "cmd_vx": 0.0,
+     "grav": [
+      0.0108,
+      0.04,
+      -0.9991
+     ],
+     "tau_Nm": {
+      "right_leg/hip_pitch": 2.72,
+      "right_leg/hip_roll": 11.21,
+      "right_leg/hip_yaw": 3.46,
+      "right_leg/knee": -0.07,
+      "right_leg/ankle_a": -4.08,
+      "right_leg/ankle_b": 1.27,
+      "left_leg/hip_pitch": 3.77,
+      "left_leg/hip_roll": -11.4,
+      "left_leg/hip_yaw": -1.54,
+      "left_leg/knee": 1.9,
+      "left_leg/ankle_a": 7.51,
+      "left_leg/ankle_b": -5.7
+     },
+     "A": {
+      "feet": {
+       "right": {
+        "F_normal_N": 103.2,
+        "F_tangent_N": [
+         6.4,
+         16.5,
+         0.7
+        ],
+        "mu_needed": 0.171,
+        "M_Nm": [
+         -2.1,
+         -4.6,
+         -0.5
+        ],
+        "loop_residual": 4.115774387969395e-11
+       },
+       "left": {
+        "F_normal_N": 120.0,
+        "F_tangent_N": [
+         -4.2,
+         -12.2,
+         -0.5
+        ],
+        "mu_needed": 0.108,
+        "M_Nm": [
+         0.9,
+         -11.2,
+         -1.8
+        ],
+        "loop_residual": 4.0289327429832156e-11
+       }
+      },
+      "supported_mass_kg": 22.75,
+      "share_right": 0.462
+     },
+     "B": {
+      "feet": {
+       "right": {
+        "F_normal_N": 108.8,
+        "F_tangent_N": [
+         6.7,
+         16.4,
+         0.7
+        ],
+        "mu_needed": 0.164,
+        "M_Nm": [
+         -2.1,
+         -4.7,
+         -0.5
+        ],
+        "loop_residual": 4.115774387969395e-11
+       },
+       "left": {
+        "F_normal_N": 124.8,
+        "F_tangent_N": [
+         -4.0,
+         -12.3,
+         -0.5
+        ],
+        "mu_needed": 0.104,
+        "M_Nm": [
+         0.9,
+         -11.4,
+         -1.8
+        ],
+        "loop_residual": 4.0289327429832156e-11
+       }
+      },
+      "supported_mass_kg": 23.81,
+      "share_right": 0.466
+     }
+    }
+   ]
+  }
+ }
+}
