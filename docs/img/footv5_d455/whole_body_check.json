@@ -1,0 +1,13 @@
+{
+ "n_bodies": 23,
+ "n_joints": 24,
+ "poses": 4,
+ "max_mass_diff_g": 3.999999975690116e-07,
+ "max_com_diff_mm": 0.00014401734853633497,
+ "max_axis_diff_deg": 3.306651113363206e-06,
+ "max_range_diff_rad": 4.897606804554755e-06,
+ "total_kg": {
+  "mjcf": 24.4900858996,
+  "urdf": 24.494085899999998
+ }
+}
