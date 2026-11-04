@@ -1,0 +1,206 @@
+{
+ "cad_document": "260923_Huphy_1.0_wShell_restored_v40",
+ "cad_version": 10,
+ "cad_unsaved_edits": true,
+ "base": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts_loop",
+ "out": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_loop",
+ "parts": {
+  "Crank_A": {
+   "round": 1,
+   "old_mass_g": 24.283,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 73.889,
+   "cad_volume_cm3": 27.3664,
+   "increase_g_per_leg": 49.606
+  },
+  "Crank_B": {
+   "round": 1,
+   "old_mass_g": 23.72,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 72.177,
+   "cad_volume_cm3": 26.7322,
+   "increase_g_per_leg": 48.457
+  },
+  "HipRoll2Yaw_Mount": {
+   "round": 1,
+   "old_mass_g": 67.0,
+   "old_density_g_cm3": 1.0989,
+   "new_mass_g": 164.594,
+   "cad_volume_cm3": 60.9608,
+   "increase_g_per_leg": 97.594
+  },
+  "HipRoll2YawA": {
+   "round": 2,
+   "old_mass_g": 48.578,
+   "old_density_g_cm3": 0.7927,
+   "new_mass_g": 165.476,
+   "cad_volume_cm3": 61.2875,
+   "increase_g_per_leg": 116.898
+  },
+  "HipRoll2YawB": {
+   "round": 2,
+   "old_mass_g": 44.534,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 135.534,
+   "cad_volume_cm3": 50.1979,
+   "increase_g_per_leg": 91.0
+  },
+  "Yaw2KneePlateA": {
+   "round": 2,
+   "old_mass_g": 98.1,
+   "old_density_g_cm3": 0.8227,
+   "new_mass_g": 312.545,
+   "cad_volume_cm3": 115.7574,
+   "increase_g_per_leg": 214.445
+  },
+  "Knee2Ankle_IdleSide_1": {
+   "round": 2,
+   "old_mass_g": 42.9,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 130.566,
+   "cad_volume_cm3": 48.3579,
+   "increase_g_per_leg": 87.666
+  },
+  "Knee2Ankle_IdleSide_2": {
+   "round": 2,
+   "old_mass_g": 40.634,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 123.633,
+   "cad_volume_cm3": 45.7902,
+   "increase_g_per_leg": 82.999
+  },
+  "Knee2Ankle_RotorSide_1": {
+   "round": 2,
+   "old_mass_g": 55.246,
+   "old_density_g_cm3": 0.9362,
+   "new_mass_g": 159.335,
+   "cad_volume_cm3": 59.0128,
+   "increase_g_per_leg": 104.089
+  },
+  "Knee2Ankle_RotorSide_2": {
+   "round": 2,
+   "old_mass_g": 39.256,
+   "old_density_g_cm3": 0.8231,
+   "new_mass_g": 128.762,
+   "cad_volume_cm3": 47.6897,
+   "increase_g_per_leg": 89.506
+  },
+  "AnkleUniversalJointCore": {
+   "round": 2,
+   "old_mass_g": 22.016,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 46.209,
+   "cad_volume_cm3": 17.1143,
+   "increase_g_per_leg": 24.193
+  },
+  "Knee2Ankle_Connector_A": {
+   "round": 2,
+   "old_mass_g": 14.665,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 44.62,
+   "cad_volume_cm3": 16.526,
+   "increase_g_per_leg": 29.955
+  },
+  "Knee2Ankle_Connector_B": {
+   "round": 2,
+   "old_mass_g": 14.665,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 44.62,
+   "cad_volume_cm3": 16.526,
+   "increase_g_per_leg": 29.955
+  },
+  "AnkleFeetPillowA": {
+   "round": 2,
+   "old_mass_g": 13.434,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 40.891,
+   "cad_volume_cm3": 15.1449,
+   "increase_g_per_leg": 27.457
+  },
+  "AnkleFeetPillowB": {
+   "round": 2,
+   "old_mass_g": 13.434,
+   "old_density_g_cm3": 0.8874,
+   "new_mass_g": 40.891,
+   "cad_volume_cm3": 15.1449,
+   "increase_g_per_leg": 27.457
+  },
+  "AnkleA2B_A_L": {
+   "round": 2,
+   "old_mass_g": 32.03,
+   "old_density_g_cm3": 2.4552,
+   "new_mass_g": 35.223,
+   "cad_volume_cm3": 13.0456,
+   "increase_g_per_leg": 3.193
+  },
+  "AnkleA2B_A_L (1)": {
+   "round": 2,
+   "old_mass_g": 32.27,
+   "old_density_g_cm3": 2.7068,
+   "new_mass_g": 32.189,
+   "cad_volume_cm3": 11.922,
+   "increase_g_per_leg": -0.081
+  },
+  "AnkleA2B_A_R": {
+   "round": 2,
+   "old_mass_g": 31.84,
+   "old_density_g_cm3": 2.1835,
+   "new_mass_g": 39.372,
+   "cad_volume_cm3": 14.5821,
+   "increase_g_per_leg": 7.532
+  },
+  "AnkleA2B_A_R (1)": {
+   "round": 2,
+   "old_mass_g": 32.27,
+   "old_density_g_cm3": 2.7068,
+   "new_mass_g": 32.189,
+   "cad_volume_cm3": 11.922,
+   "increase_g_per_leg": -0.081
+  },
+  "AnkleA2B_A_Support": {
+   "round": 2,
+   "old_mass_g": 40.82,
+   "old_density_g_cm3": 2.6998,
+   "new_mass_g": 40.823,
+   "cad_volume_cm3": 15.1197,
+   "increase_g_per_leg": 0.003
+  },
+  "AnkleA2B_A_Support (1)": {
+   "round": 2,
+   "old_mass_g": 40.82,
+   "old_density_g_cm3": 2.6998,
+   "new_mass_g": 40.823,
+   "cad_volume_cm3": 15.1197,
+   "increase_g_per_leg": 0.003
+  }
+ },
+ "links": {
+  "hip_roll_link": {
+   "mass_A_g": 1470.634,
+   "mass_B_g": 1678.532,
+   "delta_g": 207.898
+  },
+  "thigh": {
+   "mass_A_g": 2117.623,
+   "mass_B_g": 2332.068,
+   "delta_g": 214.445
+  },
+  "shin": {
+   "mass_A_g": 2701.759,
+   "mass_B_g": 3136.499,
+   "delta_g": 434.74
+  },
+  "ankle_pitch_link": {
+   "mass_A_g": 40.016,
+   "mass_B_g": 64.209,
+   "delta_g": 24.193
+  },
+  "foot": {
+   "mass_A_g": 845.183,
+   "mass_B_g": 900.097,
+   "delta_g": 54.914
+  }
+ },
+ "round2_increase_g": 1872.38,
+ "note": "old_mass_g = the part as the original (pre-aluminium) model carried it; round 1 = cranks A/B and HipRoll2Yaw_Mount"
+}

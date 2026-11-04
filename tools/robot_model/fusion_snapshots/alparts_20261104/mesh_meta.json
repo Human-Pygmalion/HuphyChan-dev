@@ -1,0 +1,186 @@
+{
+ "HipRoll2YawA": {
+  "link": "hip_roll_link",
+  "group": "new",
+  "mass_g": 165.476,
+  "volume_cm3": 61.2875,
+  "tris": 2536,
+  "live": 1
+ },
+ "HipRoll2YawB": {
+  "link": "hip_roll_link",
+  "group": "new",
+  "mass_g": 135.534,
+  "volume_cm3": 50.1979,
+  "tris": 2406,
+  "live": 1
+ },
+ "HipRoll2Yaw_Mount": {
+  "link": "hip_roll_link",
+  "group": "new",
+  "mass_g": 164.594,
+  "volume_cm3": 60.9608,
+  "tris": 1656,
+  "live": 1
+ },
+ "Yaw2KneePlateA": {
+  "link": "thigh",
+  "group": "new",
+  "mass_g": 312.545,
+  "volume_cm3": 115.7574,
+  "tris": 3116,
+  "live": 1
+ },
+ "Knee2Ankle_IdleSide_1": {
+  "link": "shin",
+  "group": "new",
+  "mass_g": 130.566,
+  "volume_cm3": 48.3579,
+  "tris": 3022,
+  "live": 1
+ },
+ "Knee2Ankle_IdleSide_2": {
+  "link": "shin",
+  "group": "new",
+  "mass_g": 123.633,
+  "volume_cm3": 45.7902,
+  "tris": 1686,
+  "live": 1
+ },
+ "Knee2Ankle_RotorSide_1": {
+  "link": "shin",
+  "group": "new",
+  "mass_g": 159.335,
+  "volume_cm3": 59.0128,
+  "tris": 4076,
+  "live": 1
+ },
+ "Knee2Ankle_RotorSide_2": {
+  "link": "shin",
+  "group": "new",
+  "mass_g": 128.762,
+  "volume_cm3": 47.6897,
+  "tris": 1528,
+  "live": 1
+ },
+ "ankle_core_revised": {
+  "link": "ankle_pitch_link",
+  "group": "new",
+  "mass_g": 46.209,
+  "volume_cm3": 17.1143,
+  "tris": 924,
+  "live": 1
+ },
+ "Crank_A": {
+  "link": "crank_A",
+  "group": "new",
+  "mass_g": 73.889,
+  "volume_cm3": 27.3664,
+  "tris": 1374,
+  "live": 1
+ },
+ "Crank_B": {
+  "link": "crank_B",
+  "group": "new",
+  "mass_g": 72.177,
+  "volume_cm3": 26.7322,
+  "tris": 1404,
+  "live": 1
+ },
+ "Arm_A": {
+  "link": "rod_A",
+  "group": "old",
+  "mass_g": 54.759,
+  "volume_cm3": 20.2813,
+  "tris": 708,
+  "live": 1
+ },
+ "Arm_B": {
+  "link": "rod_B",
+  "group": "old",
+  "mass_g": 38.775,
+  "volume_cm3": 14.3611,
+  "tris": 724,
+  "live": 1
+ },
+ "AnkleA2B_A_L": {
+  "link": "shin",
+  "group": "old",
+  "mass_g": 35.223,
+  "volume_cm3": 13.0456,
+  "tris": 960,
+  "live": 1
+ },
+ "AnkleA2B_A_L_1": {
+  "link": "shin",
+  "group": "old",
+  "mass_g": 32.189,
+  "volume_cm3": 11.922,
+  "tris": 720,
+  "live": 1
+ },
+ "AnkleA2B_A_R": {
+  "link": "shin",
+  "group": "old",
+  "mass_g": 39.372,
+  "volume_cm3": 14.5821,
+  "tris": 1042,
+  "live": 1
+ },
+ "AnkleA2B_A_R_1": {
+  "link": "shin",
+  "group": "old",
+  "mass_g": 32.189,
+  "volume_cm3": 11.922,
+  "tris": 720,
+  "live": 1
+ },
+ "AnkleA2B_A_Support": {
+  "link": "shin",
+  "group": "old",
+  "mass_g": 40.823,
+  "volume_cm3": 15.1197,
+  "tris": 488,
+  "live": 1
+ },
+ "AnkleA2B_A_Support_1": {
+  "link": "shin",
+  "group": "old",
+  "mass_g": 40.823,
+  "volume_cm3": 15.1197,
+  "tris": 488,
+  "live": 1
+ },
+ "Knee2Ankle_Connector_A": {
+  "link": "shin",
+  "group": "new",
+  "mass_g": 44.62,
+  "volume_cm3": 16.526,
+  "tris": 1340,
+  "live": 1
+ },
+ "Knee2Ankle_Connector_B": {
+  "link": "shin",
+  "group": "new",
+  "mass_g": 44.62,
+  "volume_cm3": 16.526,
+  "tris": 1340,
+  "live": 1
+ },
+ "AnkleFeetPillowA": {
+  "link": "foot",
+  "group": "new",
+  "mass_g": 40.891,
+  "volume_cm3": 15.1449,
+  "tris": 1112,
+  "live": 1
+ },
+ "AnkleFeetPillowB": {
+  "link": "foot",
+  "group": "new",
+  "mass_g": 40.891,
+  "volume_cm3": 15.1449,
+  "tris": 1112,
+  "live": 1
+ }
+}

@@ -92,7 +92,7 @@ def plate_mesh(stl, origin_mm, mirror):
 
 # ---------------------------------------------------------------- URDF
 def read_urdf_inertial(txt, name):
-    blk = re.search(r'<link name="%s">\s*<inertial>(.*?)</inertial>' % name, txt, re.S).group(1)
+    blk = re.search(r'<link name="%s">(?:\s*<!--.*?-->)*\s*<inertial>(.*?)</inertial>' % name, txt, re.S).group(1)   # the foot link has a comment before <inertial>
     o = re.search(r'<origin xyz="([^"]+)" rpy="([^"]+)"', blk)
     assert np.allclose([float(x) for x in o.group(2).split()], 0), f"{name}: rotated inertial frame"
     c = np.array([float(x) for x in o.group(1).split()])
@@ -109,7 +109,7 @@ def urdf_inertial_xml(p):
 
 
 def set_urdf_inertial(txt, name, p):
-    pat = re.compile(r'(<link name="%s">\s*<inertial>).*?(</inertial>)' % name, re.S)
+    pat = re.compile(r'(<link name="%s">(?:\s*<!--.*?-->)*\s*<inertial>).*?(</inertial>)' % name, re.S)
     assert len(pat.findall(txt)) == 1
     return pat.sub(lambda m: m.group(1) + urdf_inertial_xml(p) + m.group(2), txt)
 

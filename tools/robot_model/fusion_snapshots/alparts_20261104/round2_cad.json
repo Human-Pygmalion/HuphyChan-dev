@@ -1,0 +1,566 @@
+{
+ "doc": "260923_Huphy_1.0_wShell_restored_v40",
+ "version": 10,
+ "modified_unsaved": true,
+ "units": "kg, cm3, com cm, inertia kg*cm2 about the CAD root origin [xx,yy,zz,xy,yz,xz], bb mm",
+ "parts": {
+  "HipRoll2YawA": {
+   "q": "/Joints_UnderBody:1/HipRoll2Yaw:1/HipRoll2YawA:1",
+   "idx": 0,
+   "name": "HipRoll2YawA",
+   "live": 1,
+   "m": 0.165476,
+   "v": 61.2875,
+   "c": [
+    -12.66245,
+    3.34105,
+    4.00867
+   ],
+   "I": [
+    6.78491,
+    32.25278,
+    29.20857,
+    6.98951,
+    -2.28252,
+    8.15974
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -172.7,
+    28.75,
+    -34.0,
+    -83.7,
+    43.25,
+    104.69
+   ]
+  },
+  "HipRoll2YawB": {
+   "q": "/Joints_UnderBody:1/HipRoll2Yaw:1/HipRoll2YawB:1",
+   "idx": 0,
+   "name": "HipRoll2YawB",
+   "live": 1,
+   "m": 0.135534,
+   "v": 50.1979,
+   "c": [
+    -12.72006,
+    10.73461,
+    3.55797
+   ],
+   "I": [
+    19.35211,
+    26.42056,
+    38.33148,
+    18.51389,
+    -5.13505,
+    5.93994
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -172.7,
+    96.75,
+    -34.0,
+    -83.7,
+    111.25,
+    104.69
+   ]
+  },
+  "Yaw2KneePlateA": {
+   "q": "/Joints_UnderBody:1/HipYaw2Knee:1",
+   "idx": 2,
+   "name": "Yaw2KneePlateA",
+   "live": 1,
+   "m": 0.312545,
+   "v": 115.7574,
+   "c": [
+    -9.36607,
+    9.18545,
+    -23.32876
+   ],
+   "I": [
+    220.33778,
+    216.26662,
+    58.94042,
+    26.90396,
+    70.95906,
+    -68.34119
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -97.45,
+    10.0,
+    -370.0,
+    -89.45,
+    175.0,
+    -110.65
+   ]
+  },
+  "Knee2Ankle_IdleSide_1": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1/Knee2Ankle_IdleSide_1:1",
+   "idx": 0,
+   "name": "Knee2Ankle_IdleSide_1",
+   "live": 1,
+   "m": 0.130566,
+   "v": 48.3579,
+   "c": [
+    -8.70585,
+    11.50083,
+    -33.68034
+   ],
+   "I": [
+    167.80659,
+    159.84049,
+    27.7921,
+    13.07469,
+    50.5995,
+    -38.30061
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -96.45,
+    74.86,
+    -396.0,
+    -82.45,
+    155.29,
+    -264.25
+   ]
+  },
+  "Knee2Ankle_IdleSide_2": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 0,
+   "name": "Knee2Ankle_IdleSide_2",
+   "live": 1,
+   "m": 0.123633,
+   "v": 45.7902,
+   "c": [
+    -10.0205,
+    13.16654,
+    -42.30929
+   ],
+   "I": [
+    245.40285,
+    235.11832,
+    35.12429,
+    16.31191,
+    69.297,
+    -52.41594
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -103.95,
+    77.31,
+    -486.69,
+    -96.45,
+    195.27,
+    -364.46
+   ]
+  },
+  "Knee2Ankle_RotorSide_1": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1/Knee2Ankle_RotorSide_1:1",
+   "idx": 0,
+   "name": "Knee2Ankle_RotorSide_1",
+   "live": 1,
+   "m": 0.159335,
+   "v": 59.0128,
+   "c": [
+    -15.98926,
+    11.51683,
+    -33.24564
+   ],
+   "I": [
+    199.85026,
+    218.86117,
+    62.51656,
+    29.33934,
+    61.03696,
+    -84.71609
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -165.45,
+    74.86,
+    -396.0,
+    -150.45,
+    155.29,
+    -264.5
+   ]
+  },
+  "Knee2Ankle_RotorSide_2": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 1,
+   "name": "Knee2Ankle_RotorSide_2",
+   "live": 1,
+   "m": 0.128762,
+   "v": 47.6897,
+   "c": [
+    -14.745,
+    13.08779,
+    -42.20542
+   ],
+   "I": [
+    254.16076,
+    258.78441,
+    51.3798,
+    24.84848,
+    71.53362,
+    -80.13123
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -151.45,
+    77.31,
+    -486.69,
+    -143.45,
+    195.27,
+    -364.46
+   ]
+  },
+  "Knee2Ankle_Connector_A": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 2,
+   "name": "Knee2Ankle_Connector_A",
+   "live": 1,
+   "m": 0.04462,
+   "v": 16.526,
+   "c": [
+    -12.365,
+    9.01301,
+    -41.40381
+   ],
+   "I": [
+    80.46782,
+    83.72455,
+    10.52811,
+    4.97275,
+    16.70448,
+    -22.84374
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -143.4,
+    79.0,
+    -460.1,
+    -103.9,
+    101.26,
+    -367.98
+   ]
+  },
+  "Knee2Ankle_Connector_B": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 3,
+   "name": "Knee2Ankle_Connector_B",
+   "live": 1,
+   "m": 0.04462,
+   "v": 16.526,
+   "c": [
+    -12.365,
+    16.21228,
+    -41.10185
+   ],
+   "I": [
+    87.45939,
+    82.58898,
+    18.65526,
+    8.94481,
+    29.83379,
+    -22.67714
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -143.4,
+    144.26,
+    -456.04,
+    -103.9,
+    179.99,
+    -366.0
+   ]
+  },
+  "AnkleA2B_A_L": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 6,
+   "name": "AnkleA2B_A_L",
+   "live": 1,
+   "m": 0.035223,
+   "v": 13.0456,
+   "c": [
+    -14.74253,
+    18.00727,
+    -55.14405
+   ],
+   "I": [
+    118.6563,
+    114.85659,
+    19.11442,
+    9.35078,
+    34.96887,
+    -28.63506
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -151.45,
+    157.58,
+    -586.69,
+    -143.45,
+    195.0,
+    -513.31
+   ]
+  },
+  "AnkleA2B_A_L (1)": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 9,
+   "name": "AnkleA2B_A_L (1)",
+   "live": 1,
+   "m": 0.032189,
+   "v": 11.922,
+   "c": [
+    -14.745,
+    10.84756,
+    -55.0
+   ],
+   "I": [
+    101.27078,
+    104.45509,
+    10.81599,
+    5.14859,
+    19.20463,
+    -26.10469
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -151.45,
+    95.0,
+    -586.69,
+    -143.45,
+    131.69,
+    -513.31
+   ]
+  },
+  "AnkleA2B_A_R": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 4,
+   "name": "AnkleA2B_A_R",
+   "live": 1,
+   "m": 0.039372,
+   "v": 14.5821,
+   "c": [
+    -9.99887,
+    17.57782,
+    -54.907
+   ],
+   "I": [
+    131.03022,
+    122.72049,
+    16.18643,
+    6.92001,
+    38.00786,
+    -21.61539
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -103.95,
+    143.27,
+    -586.69,
+    -95.95,
+    195.0,
+    -513.31
+   ]
+  },
+  "AnkleA2B_A_R (1)": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 7,
+   "name": "AnkleA2B_A_R (1)",
+   "live": 1,
+   "m": 0.032189,
+   "v": 11.922,
+   "c": [
+    -9.995,
+    10.84756,
+    -55.0
+   ],
+   "I": [
+    101.27078,
+    100.67237,
+    7.03327,
+    3.49,
+    19.20463,
+    -17.69525
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -103.95,
+    95.0,
+    -586.69,
+    -95.95,
+    131.69,
+    -513.31
+   ]
+  },
+  "AnkleA2B_A_Support": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 5,
+   "name": "AnkleA2B_A_Support",
+   "live": 1,
+   "m": 0.040823,
+   "v": 15.1197,
+   "c": [
+    -12.375,
+    19.02701,
+    -55.0
+   ],
+   "I": [
+    138.36238,
+    129.88555,
+    21.08596,
+    9.61219,
+    42.72085,
+    -27.78527
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -143.5,
+    186.27,
+    -576.0,
+    -104.0,
+    194.27,
+    -524.0
+   ]
+  },
+  "AnkleA2B_A_Support (1)": {
+   "q": "/Joints_UnderBody:1/Knee2Ankle:1",
+   "idx": 8,
+   "name": "AnkleA2B_A_Support (1)",
+   "live": 1,
+   "m": 0.040823,
+   "v": 15.1197,
+   "c": [
+    -12.375,
+    9.97299,
+    -55.0
+   ],
+   "I": [
+    127.64359,
+    129.88555,
+    10.36716,
+    5.03822,
+    22.3921,
+    -27.78527
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -143.5,
+    95.73,
+    -576.0,
+    -104.0,
+    103.73,
+    -524.0
+   ]
+  },
+  "AnkleFeetPillowA": {
+   "q": "/Joints_UnderBody:1/Ankle2Feet:1",
+   "idx": 3,
+   "name": "AnkleFeetPillowA",
+   "live": 1,
+   "m": 0.040891,
+   "v": 15.1449,
+   "c": [
+    -12.37,
+    16.61659,
+    -81.63215
+   ],
+   "I": [
+    283.86162,
+    278.87544,
+    17.60487,
+    8.40507,
+    55.46546,
+    -41.29149
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -146.7,
+    160.0,
+    -835.0,
+    -100.7,
+    172.0,
+    -785.0
+   ]
+  },
+  "AnkleFeetPillowB": {
+   "q": "/Joints_UnderBody:1/Ankle2Feet:1/AnkleFeetPillowB:1",
+   "idx": 0,
+   "name": "AnkleFeetPillowB",
+   "live": 1,
+   "m": 0.040891,
+   "v": 15.1449,
+   "c": [
+    -12.37,
+    12.38341,
+    -81.63215
+   ],
+   "I": [
+    278.84173,
+    278.87544,
+    12.58498,
+    6.26383,
+    41.33755,
+    -41.29149
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -146.7,
+    118.0,
+    -835.0,
+    -100.7,
+    130.0,
+    -785.0
+   ]
+  },
+  "AnkleUniversalJointCore": {
+   "q": "/Joints_UnderBody:1/Ankle2Feet:1/AnkleUniversalJointCore:1/AnkleUniversalJointCore-Revised:1",
+   "idx": 0,
+   "name": "AnkleUniversalJointCore",
+   "live": 1,
+   "m": 0.046209,
+   "v": 17.1143,
+   "c": [
+    -12.37,
+    14.5,
+    -80.0
+   ],
+   "I": [
+    305.49099,
+    302.88358,
+    16.8776,
+    8.28822,
+    53.60204,
+    -45.72808
+   ],
+   "mat": "Aluminum 6061",
+   "app": "Aluminum - Satin",
+   "bb": [
+    -149.7,
+    131.0,
+    -809.0,
+    -97.7,
+    159.0,
+    -791.0
+   ]
+  }
+ }
+}
