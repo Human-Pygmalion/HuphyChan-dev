@@ -49,9 +49,9 @@
    "round": 2,
    "old_mass_g": 98.1,
    "old_density_g_cm3": 0.8227,
-   "new_mass_g": 312.545,
-   "cad_volume_cm3": 115.7574,
-   "increase_g_per_leg": 214.445
+   "new_mass_g": 321.95,
+   "cad_volume_cm3": 119.2408,
+   "increase_g_per_leg": 223.85
   },
   "Knee2Ankle_IdleSide_1": {
    "round": 2,
@@ -118,8 +118,8 @@
   },
   "thigh": {
    "mass_A_g": 2117.623,
-   "mass_B_g": 2332.068,
-   "delta_g": 214.445
+   "mass_B_g": 2341.473,
+   "delta_g": 223.85
   },
   "shin": {
    "mass_A_g": 2701.759,
@@ -137,6 +137,6 @@
    "delta_g": 54.914
   }
  },
- "round2_increase_g": 1731.422,
+ "round2_increase_g": 1750.232,
  "note": "old_mass_g = the part as the original (pre-aluminium) model carried it; round 1 = cranks A/B and HipRoll2Yaw_Mount"
 }

@@ -56,9 +56,9 @@
   </link>
   <link name="R_thigh_link">
     <inertial>
-      <origin xyz="-0.0353231338 0.00142060386 -0.335081783" rpy="0 0 0"/>
-      <mass value="2.33204495"/>
-      <inertia ixx="0.0133499063" ixy="-0.000102557222" ixz="-0.00252181089" iyy="0.0156264661" iyz="-0.000366974078" izz="0.00441896376"/>
+      <origin xyz="-0.0353620106 0.00154147224 -0.335222014" rpy="0 0 0"/>
+      <mass value="2.34145011"/>
+      <inertia ixx="0.0133819641" ixy="-9.9831333e-05" ixz="-0.00251872458" iyy="0.0156550074" iyz="-0.00035713681" izz="0.00443245885"/>
     </inertial>
     <visual>
       <geometry><mesh filename="meshes_v30_armfix/thigh.stl"/></geometry>
@@ -244,9 +244,9 @@
   </link>
   <link name="L_thigh_link">
     <inertial>
-      <origin xyz="-0.0353231338 -0.00142060386 -0.335081783" rpy="0 0 0"/>
-      <mass value="2.33204495"/>
-      <inertia ixx="0.0133499063" ixy="0.000102557222" ixz="-0.00252181089" iyy="0.0156264661" iyz="0.000366974078" izz="0.00441896376"/>
+      <origin xyz="-0.0353620106 -0.00154147224 -0.335222014" rpy="0 0 0"/>
+      <mass value="2.34145011"/>
+      <inertia ixx="0.0133819641" ixy="9.9831333e-05" ixz="-0.00251872458" iyy="0.0156550074" iyz="0.00035713681" izz="0.00443245885"/>
     </inertial>
     <visual>
       <geometry><mesh filename="meshes_v30_armfix/R_thigh.stl"/></geometry>

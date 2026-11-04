@@ -31,7 +31,7 @@ def part_about_origin(e, O):
 
 def main():
     OUT, BASE = R2.OUT, R2.BASE
-    d0 = json.load(open(R2.DUMP)); r2 = json.load(open(R2.SNAP / "round2_cad.json"))["parts"]
+    d0 = json.load(open(R2.DUMP)); r2 = R2.load_round2()["parts"]
     exp = {}
     for name, lk in LINK_OF.items():
         zc = r2[name]["c"][2] * 10.0                      # CAD COM z in mm: the model's own rule for the ankle region (massprops_fusion ANKLE_SPLIT)
@@ -87,7 +87,7 @@ def main():
         t = trimesh.load(B.ASSETS / B.MESHDIR / f"{s}_ankle_core_revised.stl", process=False)
         b = mn.body(f"{s}_ankle_pitch_link").id; base = mn.body("base_link").id
         Vv = (dn.xmat[b].reshape(3, 3) @ np.asarray(t.vertices).T).T + dn.xpos[b] - dn.xpos[base]
-        bb = np.array(json.load(open(R2.SNAP / "round2_cad.json"))["parts"]["AnkleUniversalJointCore"]["bb"])
+        bb = np.array(R2.load_round2()["parts"]["AnkleUniversalJointCore"]["bb"])
         lo, hi = bb[:3], bb[3:]
         cs = (B.R_SIM @ (np.array([[x, y, z] for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]) - B.BASE_CAD).T).T / 1000
         if s == "L":

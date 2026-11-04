@@ -40,6 +40,15 @@ ANKLE_ORIGIN = LINKS["ankle_pitch_link"][1]
 CORE_RGBA = "0.75 0.75 0.78 1"                # plain aluminium grey; the red/translucent colouring is only in the visualization (render_al_parts.py)
 
 
+def load_round2():
+    """round-2 part properties from the Fusion snapshot, with the parts the user said to take from the ORIGINAL geometry replaced (use_original_plate.py)"""
+    r = json.load(open(SNAP / "round2_cad.json"))
+    ov = SNAP / "original_geometry.json"
+    if ov.exists():
+        r["parts"].update(json.load(open(ov)))
+    return r
+
+
 def find(dump, tail):
     ks = [k for k in dump if k.endswith("::" + tail) or k.endswith(tail)]
     ks = [k for k in ks if k.split("::")[-1] == tail.split("::")[-1]]
@@ -79,7 +88,7 @@ def from_origin(m, f, Io):
 def main():
     ap = argparse.ArgumentParser(); a = ap.parse_args()
     d0 = json.load(open(DUMP))
-    cr = json.load(open(SNAP / "cranks_cad.json"))["parts"]; mt = json.load(open(SNAP / "mount_cad.json"))["part"]; r2 = json.load(open(SNAP / "round2_cad.json"))
+    cr = json.load(open(SNAP / "cranks_cad.json"))["parts"]; mt = json.load(open(SNAP / "mount_cad.json"))["part"]; r2 = load_round2()
     parts2 = r2["parts"]
     dA = json.loads(json.dumps(d0))
     for tail, name in ROUND1.items():

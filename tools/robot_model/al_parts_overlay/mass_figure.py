@@ -22,7 +22,7 @@ steps = [("M16\nfootv5+D455", mass(base_name + "_loop")), ("M17\n+plates, cam", 
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(15, 6.6), gridspec_kw={"width_ratios": [1.7, 1]})
 y = range(len(order))
 a1.barh(list(y), [parts[k]["new_mass_g"] for k in order], color="#f21414", label="after (aluminium 6061, CAD volume x 2.70 g/cm3)")
-a1.barh(list(y), [parts[k]["old_mass_g"] for k in order], color="#9aa3b0", label="before (as carried by the model: printed, or workbook Al mass for AnkleA2B)")
+a1.barh(list(y), [parts[k]["old_mass_g"] for k in order], color="#9aa3b0", label="before (printed part, as carried by the model)")
 for i, k in enumerate(order):
     p = parts[k]
     a1.text(p["new_mass_g"] + 3, i, f"+{p['increase_g_per_leg']:.1f} g", va="center", fontsize=10)

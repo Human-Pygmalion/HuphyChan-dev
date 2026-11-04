@@ -155,7 +155,7 @@
           <geom name="R_hip_yaw_motor" class="visual" size="0.0495 0.0283" pos="6e-05 3e-05 -0.13303" type="cylinder" material="black"/>
           <geom name="R_hip_roll_link_collision" class="collision" size="0.0514137 0.0496" pos="0.0039 -0.0121 -0.0614" quat="0 1 0 0"/>
           <body name="R_thigh_link">
-            <inertial pos="-0.0353231338 0.00142060386 -0.335081783" mass="2.33204495" fullinertia="0.0133499063 0.0156264661 0.00441896376 -0.000102557222 -0.00252181089 -0.000366974078"/>
+            <inertial pos="-0.0353620106 0.00154147224 -0.335222014" mass="2.34145011" fullinertia="0.0133819641 0.0156550074 0.00443245885 -9.9831333e-05 -0.00251872458 -0.00035713681"/>
             <joint name="R_hip_yaw_joint" pos="0 0 0" axis="0 0 1" range="-0.785398 0.785398" armature="0.0638" damping="0.0252" frictionloss="0.251"/>
             <geom class="visual" mesh="R_thigh"/>
             <geom name="R_thigh_link_hull" class="hull" mesh="R_thigh_hull"/>
@@ -257,7 +257,7 @@
           <geom name="L_hip_yaw_motor" class="visual" size="0.0495 0.0283" pos="6e-05 -3e-05 -0.13303" type="cylinder" material="black"/>
           <geom name="L_hip_roll_link_collision" class="collision" size="0.0508203 0.0496" pos="0.0039 0.0121 -0.0614" quat="0 1 0 0"/>
           <body name="L_thigh_link">
-            <inertial pos="-0.0353231338 -0.00142060386 -0.335081783" mass="2.33204495" fullinertia="0.0133499063 0.0156264661 0.00441896376 0.000102557222 -0.00252181089 0.000366974078"/>
+            <inertial pos="-0.0353620106 -0.00154147224 -0.335222014" mass="2.34145011" fullinertia="0.0133819641 0.0156550074 0.00443245885 9.9831333e-05 -0.00251872458 0.00035713681"/>
             <joint name="L_hip_yaw_joint" pos="0 0 0" axis="0 0 1" range="-0.785398 0.785398" armature="0.0638" damping="0.0252" frictionloss="0.251"/>
             <geom class="visual" mesh="L_thigh"/>
             <geom name="L_thigh_link_hull" class="hull" mesh="L_thigh_hull"/>
