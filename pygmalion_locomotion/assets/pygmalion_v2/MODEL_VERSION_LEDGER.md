@@ -11,8 +11,8 @@
 
 # 1. 30초 요약
 
-- **지금 쓸 최신 모델**: `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_loop` (항목 M19, 2026-11-04). 다리만 있는 로봇이고, 질량 27.38 kg입니다.
-- **이 모델이 앞 모델과 다른 점 3가지**: ① 발바닥을 새 설계(v5)로, ② 엉덩이·무릎 보강재와 골반 카메라(D455)를 더함, ③ **다리 구조 부품 15종(좌우 30개)을 프린트 질량에서 알루미늄 질량(CAD 체적 × 2.70 g/cm³)으로** 바꿈(M18, M19). 보강재 이후 질량이 2.26 kg 늘었습니다.
+- **지금 쓸 최신 모델**: `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_loop` (항목 M19, 2026-11-04). 다리만 있는 로봇이고, 질량 27.24 kg입니다.
+- **이 모델이 앞 모델과 다른 점 3가지**: ① 발바닥을 새 설계(v5)로, ② 엉덩이·무릎 보강재와 골반 카메라(D455)를 더함, ③ **다리 구조 부품 13종(좌우 26개)을 프린트 질량에서 알루미늄 질량(CAD 체적 × 2.70 g/cm³)으로** 바꿈(M18, M19). 보강재 이후 질량이 2.12 kg 늘었습니다.
 - **원본은 지우지 않습니다.** 바꿀 때마다 새 이름의 새 파일을 만듭니다. 그래서 파일이 많습니다(§5에 전부 있습니다).
 - **모든 파일은 손으로 고치지 않고 만드는 코드로 생성합니다.** 코드 위치는 각 항목에 적었습니다.
 
@@ -55,7 +55,7 @@
                                                       └ _footv5_d455 (합본) ... M16
                                                           └ _reinf (보강재+카메라 질량) ... M17
                                                               └ _alparts (알루미늄 크랭크·마운트) ... M18
-                                                              └ _alparts2 (알루미늄 부품 추가 12종) ... M19  ← 최신
+                                                              └ _alparts2 (알루미늄 부품 추가 10종) ... M19  ← 최신
 ```
 
 (번호는 §4 항목 번호입니다.)
@@ -233,7 +233,7 @@
 - **날짜**: 2026-11-04 · [[185_footv5_d455_combined_model]] §12 · `tools/robot_model/al_parts_overlay/` (`build_al_round2.py`, `verify_al_round2.py`, `make_al_vis.py`).
 - **파일**: `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_loop.{urdf,xml,motor_params.json}`, `…_alparts2_loop_report.json`, `…_alparts2_loop_verify.json`, 메시 `meshes_reinforce/{R,L}_ankle_core_revised.stl`.
 - **바탕**: M18.
-- **바뀐 것**: 아래 부품이 알루미늄 6061로(질량 = Fusion CAD 체적 × 2.70 g/cm³, 관성 = 그 부품의 CAD 관성). 모두 좌우 둘 다(CAD는 한쪽만 있어 반대쪽은 y축 대칭). 표는 다리 한쪽 기준, "전"은 M16~M18 모델이 가진 값입니다.
+- **바뀐 것**: **사용자가 이름을 말한 부품만** 알루미늄 6061로(질량 = Fusion CAD 체적 × 2.70 g/cm³, 관성 = 그 부품의 CAD 관성). 좌우 둘 다(CAD는 한쪽만 있어 반대쪽은 y축 대칭). 표는 다리 한쪽, "전"은 M16~M18 모델이 가진 값입니다.
 
 | 부품 | 붙는 링크 | 전 | 후 | 증가 |
 |---|---|---|---|---|
@@ -242,19 +242,19 @@
 | HipRoll2YawB | `hip_roll_link` | 44.53 g | 135.53 g | +91.00 g |
 | Knee2Ankle_RotorSide_1 / _2 | `shin_link` | 55.25 / 39.26 g | 159.34 / 128.76 g | +104.09 / +89.51 g |
 | Knee2Ankle_IdleSide_1 / _2 | `shin_link` | 42.90 / 40.63 g | 130.57 / 123.63 g | +87.67 / +83.00 g |
-| Knee2Ankle_Connector_A / B | `shin_link` | 14.66 g 각각 | 44.62 g 각각 | +29.95 g 각각 |
 | AnkleFeetPillowA / B | `foot_link` | 13.43 g 각각 | 40.89 g 각각 | +27.46 g 각각 |
 | AnkleUniversalJointCore (**Revised**, 새 모양: 24.8 → 17.1 cm³) | `ankle_pitch_link` | 22.02 g | 46.21 g | +24.19 g |
-| AnkleA2B_A_L, _L(1), _R, _R(1), _Support ×2 (이미 알루미늄, 값만 CAD로) | `shin_link` | 31.84~40.82 g | 32.19~40.82 g | +3.19, −0.08, +7.53, −0.08, 0, 0 g |
 
-- **링크별 증가(다리 한쪽)**: 엉덩이 회전 +207.9 g, 허벅지 +214.4 g, 정강이 +434.7 g, 발목 피치 +24.2 g, 발 +54.9 g. 합 **+936.2 g**.
-- **왜**: 실물 부품이 알루미늄 가공품으로 바뀜(사용자 2026-11-04). Knee2Ankle 컴포넌트는 Fusion에서 **비알루미늄 부품(Connector A/B)까지 알루미늄으로 수정됨**. AnkleFeetPillow A/B는 사용자가 알루미늄이라고 확인. AnkleUniversalJointCore는 새 모양(`-Revised`)으로 교체됨.
-- **엄격 재확인(Knee2Ankle 76개 몸체를 원본 값과 부품별 비교)**: 모양은 그대로(체적 차이 ≤ 0.03 %, 무게중심 이동 ≤ 0.008 mm). 나사 64개는 질량·체적·위치가 전부 같음(합 185.318 g). **바뀐 것은 재질뿐**이었음. Yaw2KneePlateA만 체적이 원본 119.24 → 115.76 cm³(−2.9 %)로 **원본과 다름**(사용자가 수정했다고 한 뒤에도 같지 않음, 질량으로 −9.4 g/다리).
+- **바꾸지 않은 것**: Knee2Ankle 아래의 나머지 몸체(`Knee2Ankle_Connector_A/B`, `AnkleA2B_*` 6개, 나사 64개)는 이름이 없어서 **손대지 않았습니다**. 이전 커밋 `44d6222` 의 모델은 Connector A/B와 AnkleA2B 값까지 바꾸는 **실수**를 했고, 이 항목에서 되돌렸습니다(같은 파일 이름, 이후 커밋이 정본).
+- **링크별 증가(다리 한쪽)**: 엉덩이 회전 +207.9 g, 허벅지 +214.4 g, 정강이 +364.3 g, 발목 피치 +24.2 g, 발 +54.9 g. 합 **+865.7 g**.
+- **왜**: 실물 부품이 알루미늄 가공품으로 바뀜(사용자 2026-11-04). AnkleFeetPillow A/B는 사용자가 알루미늄이라고 확인. AnkleUniversalJointCore는 새 모양(`-Revised`)으로 교체됨.
+- **Knee2Ankle 엄격 재확인(몸체 76개를 원본 값과 비교)**: 모양은 그대로(체적 차이 ≤ 0.03 %, 무게중심 이동 ≤ 0.008 mm). 나사 64개는 질량·체적·위치가 전부 같음. Fusion의 재질 표시만 바뀌었고(Connector A/B: 프린트 → 알루미늄, AnkleA2B: 임시 알루미늄 → 알루미늄 6061) 이는 모델에 반영하지 않음.
+- **Yaw2KneePlateA 수정 위치**: 원본(체적 119.24 cm³, Fusion v5 보관본)과 지금(115.76 cm³)을 겹쳐 비교하니, **무릎 베어링 구멍 둘레의 호 모양 포켓 2곳**(CAD y≈83~110·z≈−335~−355 mm, y≈120~150·z≈−265~−285 mm)이 +x 면에서 약 5.5 mm 깊이로 파여 있음(두께 8 mm 중 바닥 2.5 mm 남김). 나머지는 같고 바운딩 박스도 같음. 그림: `docs/img/al_parts/yaw2knee_plate_diff.png`. 질량은 지금 Fusion 값(115.76 cm³)으로 계산함.
 - **방법**: 프로젝트의 질량 합산 도구(`massprops_fusion.py`)로 "라운드 1 상태 A"와 "라운드 2 상태 B"를 각각 계산해 링크마다 차이만 모델에 더함(상태 A가 이전 모델을 0.04 g 안에서 재현하는지 먼저 확인). 그와 별개로, 부품 각각의 CAD 값으로 질량·무게중심·관성 변화를 다시 계산해 일치를 확인(독립 검증).
-- **질량**: 라운드 2 +1.8724 kg → **27.382 kg(URDF) / 27.378 kg(MJCF)**. M17(보강재) 이후 누적 +2.264 kg.
-- **검증**: 107/107 통과(라운드 2), 라운드 1·보강재 검증도 그대로 통과(53/53, 60/60).
+- **질량**: 라운드 2 +1.7314 kg → **27.241 kg(URDF) / 27.237 kg(MJCF)**. M17(보강재) 이후 누적 +2.123 kg.
+- **검증**: 107/107 통과(라운드 2), 라운드 1·보강재 검증도 그대로 통과.
 - **시각화**: [[185_footv5_d455_combined_model]] §12의 그림. 알루미늄은 빨강, 아닌 것은 반투명(3090 서버에서 렌더).
-- **한계**: ① 반대쪽 다리 부품이 실제로 알루미늄인지는 CAD로 확인할 수 없음(CAD에 다리가 한쪽뿐). ② AnkleA2B 6개는 원래 "임시 알루미늄 질량"이었고, CAD 값과 A_R +7.5 g, A_L +3.2 g 차이가 났는데 CAD 값으로 통일함. ③ 새 부품 모양은 눈에 보이는 메시만 있고 충돌 모양은 없음(발 충돌은 M15 그대로). ④ 발 링크(v5 발)에 AnkleFeetPillow 증가분을 더한 것은 v5 발이 "옛 발 + 새 부품"으로 만들어졌기 때문(발 링크 관성에 베개 부품이 들어 있다고 판단, `build_footv5.py` 머리말).
+- **한계**: ① 반대쪽 다리 부품이 실제로 알루미늄인지는 CAD로 확인할 수 없음(CAD에 다리가 한쪽뿐). ② `Knee2Ankle_IdleSide`, `_RotorSide`는 번호가 붙은 몸체가 둘씩(`_1`, `_2`) 있어 **둘 다** 바꿈(이름의 앞부분이 같아서). ③ 새 부품 모양은 눈에 보이는 메시만 있고 충돌 모양은 없음. ④ 발 링크(v5 발)에 AnkleFeetPillow 증가분을 더한 것은 v5 발이 "옛 발 + 새 부품"으로 만들어졌기 때문(`build_footv5.py` 머리말).
 - **상태**: **현재 최신**.
 
 # 5. 파일 전체 목록과 상태
@@ -284,7 +284,7 @@
 | `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_loop` | 24.490 | M16 | 보관 |
 | `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_loop` | 25.115 | M17 | 보관 |
 | `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts_loop` | 25.506 | M18 | 보관 |
-| `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_loop` | 27.378 | M19 | **최신** |
+| `LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_loop` | 27.237 | M19 | **최신** |
 
 # 6. 새 판을 만들 때 쓰는 칸
 

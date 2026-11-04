@@ -151,22 +151,6 @@
   "tris": 488,
   "live": 1
  },
- "Knee2Ankle_Connector_A": {
-  "link": "shin",
-  "group": "new",
-  "mass_g": 44.62,
-  "volume_cm3": 16.526,
-  "tris": 1340,
-  "live": 1
- },
- "Knee2Ankle_Connector_B": {
-  "link": "shin",
-  "group": "new",
-  "mass_g": 44.62,
-  "volume_cm3": 16.526,
-  "tris": 1340,
-  "live": 1
- },
  "AnkleFeetPillowA": {
   "link": "foot",
   "group": "new",

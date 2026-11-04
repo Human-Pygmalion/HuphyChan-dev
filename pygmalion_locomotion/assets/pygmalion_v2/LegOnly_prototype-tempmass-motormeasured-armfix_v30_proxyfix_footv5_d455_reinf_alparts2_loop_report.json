@@ -93,22 +93,6 @@
    "cad_volume_cm3": 17.1143,
    "increase_g_per_leg": 24.193
   },
-  "Knee2Ankle_Connector_A": {
-   "round": 2,
-   "old_mass_g": 14.665,
-   "old_density_g_cm3": 0.8874,
-   "new_mass_g": 44.62,
-   "cad_volume_cm3": 16.526,
-   "increase_g_per_leg": 29.955
-  },
-  "Knee2Ankle_Connector_B": {
-   "round": 2,
-   "old_mass_g": 14.665,
-   "old_density_g_cm3": 0.8874,
-   "new_mass_g": 44.62,
-   "cad_volume_cm3": 16.526,
-   "increase_g_per_leg": 29.955
-  },
   "AnkleFeetPillowA": {
    "round": 2,
    "old_mass_g": 13.434,
@@ -124,54 +108,6 @@
    "new_mass_g": 40.891,
    "cad_volume_cm3": 15.1449,
    "increase_g_per_leg": 27.457
-  },
-  "AnkleA2B_A_L": {
-   "round": 2,
-   "old_mass_g": 32.03,
-   "old_density_g_cm3": 2.4552,
-   "new_mass_g": 35.223,
-   "cad_volume_cm3": 13.0456,
-   "increase_g_per_leg": 3.193
-  },
-  "AnkleA2B_A_L (1)": {
-   "round": 2,
-   "old_mass_g": 32.27,
-   "old_density_g_cm3": 2.7068,
-   "new_mass_g": 32.189,
-   "cad_volume_cm3": 11.922,
-   "increase_g_per_leg": -0.081
-  },
-  "AnkleA2B_A_R": {
-   "round": 2,
-   "old_mass_g": 31.84,
-   "old_density_g_cm3": 2.1835,
-   "new_mass_g": 39.372,
-   "cad_volume_cm3": 14.5821,
-   "increase_g_per_leg": 7.532
-  },
-  "AnkleA2B_A_R (1)": {
-   "round": 2,
-   "old_mass_g": 32.27,
-   "old_density_g_cm3": 2.7068,
-   "new_mass_g": 32.189,
-   "cad_volume_cm3": 11.922,
-   "increase_g_per_leg": -0.081
-  },
-  "AnkleA2B_A_Support": {
-   "round": 2,
-   "old_mass_g": 40.82,
-   "old_density_g_cm3": 2.6998,
-   "new_mass_g": 40.823,
-   "cad_volume_cm3": 15.1197,
-   "increase_g_per_leg": 0.003
-  },
-  "AnkleA2B_A_Support (1)": {
-   "round": 2,
-   "old_mass_g": 40.82,
-   "old_density_g_cm3": 2.6998,
-   "new_mass_g": 40.823,
-   "cad_volume_cm3": 15.1197,
-   "increase_g_per_leg": 0.003
   }
  },
  "links": {
@@ -187,8 +123,8 @@
   },
   "shin": {
    "mass_A_g": 2701.759,
-   "mass_B_g": 3136.499,
-   "delta_g": 434.74
+   "mass_B_g": 3066.02,
+   "delta_g": 364.261
   },
   "ankle_pitch_link": {
    "mass_A_g": 40.016,
@@ -201,6 +137,6 @@
    "delta_g": 54.914
   }
  },
- "round2_increase_g": 1872.38,
+ "round2_increase_g": 1731.422,
  "note": "old_mass_g = the part as the original (pre-aluminium) model carried it; round 1 = cranks A/B and HipRoll2Yaw_Mount"
 }

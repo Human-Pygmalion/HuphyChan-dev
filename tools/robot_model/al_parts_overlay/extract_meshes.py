@@ -18,8 +18,6 @@ PARTS = [  # (file id, occurrence path, body name, link, group)   group: new = c
     ('Knee2Ankle_RotorSide_1', f'{J}/Knee2Ankle:1/Knee2Ankle_RotorSide_1:1', 'Knee2Ankle_RotorSide_1', 'shin', 'new'),
     ('Knee2Ankle_RotorSide_2', f'{J}/Knee2Ankle:1', 'Knee2Ankle_RotorSide_2', 'shin', 'new'),
     ('ankle_core_revised', f'{J}/Ankle2Feet:1/AnkleUniversalJointCore:1/AnkleUniversalJointCore-Revised:1', 'AnkleUniversalJointCore', 'ankle_pitch_link', 'new'),
-    ('Knee2Ankle_Connector_A', f'{J}/Knee2Ankle:1', 'Knee2Ankle_Connector_A', 'shin', 'new'),
-    ('Knee2Ankle_Connector_B', f'{J}/Knee2Ankle:1', 'Knee2Ankle_Connector_B', 'shin', 'new'),
     ('AnkleFeetPillowA', f'{J}/Ankle2Feet:1', 'AnkleFeetPillowA', 'foot', 'new'),
     ('AnkleFeetPillowB', f'{J}/Ankle2Feet:1/AnkleFeetPillowB:1', 'AnkleFeetPillowB', 'foot', 'new'),
     ('Crank_A', f'{J}/Ankle2Feet:1/Crank_A:1', 'Crank_A', 'crank_A', 'new'),

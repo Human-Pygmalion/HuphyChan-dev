@@ -14,8 +14,7 @@ B = R2.B
 check, rows = V.check, V.rows
 LINK_OF = {"HipRoll2YawA": "hip_roll_link", "HipRoll2YawB": "hip_roll_link", "Yaw2KneePlateA": "thigh", "Knee2Ankle_IdleSide_1": "shin", "Knee2Ankle_IdleSide_2": "shin",
            "Knee2Ankle_RotorSide_1": "shin", "Knee2Ankle_RotorSide_2": "shin", "AnkleUniversalJointCore": "ankle_pitch_link",
-           "Knee2Ankle_Connector_A": "shin", "Knee2Ankle_Connector_B": "shin", "AnkleFeetPillowA": "foot", "AnkleFeetPillowB": "foot",
-           **{n: "shin" for n in ("AnkleA2B_A_L", "AnkleA2B_A_L (1)", "AnkleA2B_A_R", "AnkleA2B_A_R (1)", "AnkleA2B_A_Support", "AnkleA2B_A_Support (1)")}}
+           "AnkleFeetPillowA": "foot", "AnkleFeetPillowB": "foot"}
 
 
 def part_about_origin(e, O):

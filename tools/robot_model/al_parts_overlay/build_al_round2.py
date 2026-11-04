@@ -32,9 +32,7 @@ PY = REPO / "mujoco-sim/mjlab/.venv/bin/python3"
 SCRATCH = Path(os.environ.get("PYG_SCRATCH", "/tmp/pyg_alparts2")); SCRATCH.mkdir(parents=True, exist_ok=True)
 ROUND1 = {"Ankle2Feet:1::Crank_A": "Crank_A", "Ankle2Feet:1::Crank_B": "Crank_B", "HipRoll2Yaw:1::HipRoll2Yaw_Mount": "HipRoll2Yaw_Mount"}
 ROUND2 = ["HipRoll2YawA", "HipRoll2YawB", "Yaw2KneePlateA", "Knee2Ankle_IdleSide_1", "Knee2Ankle_IdleSide_2", "Knee2Ankle_RotorSide_1", "Knee2Ankle_RotorSide_2", "AnkleUniversalJointCore",
-          "Knee2Ankle_Connector_A", "Knee2Ankle_Connector_B", "AnkleFeetPillowA", "AnkleFeetPillowB",
-          # the six AnkleA2B braces were already aluminium in the model but at the workbook masses of the 'prototype-tempmass' rule; the CAD now says Al 6061 for all of Knee2Ankle -> CAD value (volume x 2.70)
-          "AnkleA2B_A_L", "AnkleA2B_A_L (1)", "AnkleA2B_A_R", "AnkleA2B_A_R (1)", "AnkleA2B_A_Support", "AnkleA2B_A_Support (1)"]
+          "AnkleFeetPillowA", "AnkleFeetPillowB"]   # exactly the parts the user named (Knee2Ankle_IdleSide / _RotorSide: both numbered bodies); nothing else in Knee2Ankle is touched
 LINKS = {"hip_roll_link": ("hip_roll_link", np.array([-123.7, 70.0, 60.0])), "thigh": ("thigh_link", np.array([-123.7, 70.0, 60.0])),
          "shin": ("shin_link", np.array([-123.7, 115.0, -310.0])), "ankle_pitch_link": ("ankle_pitch_link", np.array([-123.7, 145.0, -800.0])),
          "foot": ("foot_link", np.array([-123.7, 145.0, -800.0]))}   # foot: the v5 foot link = the old foot (pillows included) + new parts, so a delta can be added
