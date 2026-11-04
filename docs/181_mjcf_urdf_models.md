@@ -61,7 +61,7 @@
 
 # 7. 수정 이력
 
-> **정본은 [[186_urdf_mjcf_version_ledger]](버전 대장)** 입니다. 처음 모델부터 "무엇이 왜 바뀌었나"를 항목별로 적었고, 파일 이름이 빠지면 `tools/robot_model/check_model_ledger.py` 가 알려 줍니다. 아래 표는 최근 덧붙임 요약입니다.
+> **정본은 모델 폴더의 `pygmalion_locomotion/assets/pygmalion_v2/MODEL_VERSION_LEDGER.md`(버전 대장)** 입니다([[186_urdf_mjcf_version_ledger]] 는 안내만 남음). 처음 모델부터 "무엇이 왜 바뀌었나"를 항목별로 적었고, 파일 이름이 빠지면 `tools/robot_model/check_model_ledger.py` 가 알려 줍니다. 아래 표는 최근 덧붙임 요약입니다.
 
 | 날짜 | 무엇이 바뀌었나 | 근거 |
 |---|---|---|
