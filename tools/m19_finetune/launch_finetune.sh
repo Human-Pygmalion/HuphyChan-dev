@@ -11,7 +11,7 @@
 # Task, rewards, commands, DR, terrain curriculum, PPO settings, seed, environment count are those of the parent.
 # Logger: tensorboard (the 3090 has no wandb login; logging backend does not change learning).
 set -euo pipefail
-RUN_NAME="${1:?run name}"; NUM_ENVS="${2:?num envs}"; MORE="${3:?more iterations}"; shift 3
+RUN="${1:?run name}"; NUM_ENVS="${2:?num envs}"; MORE="${3:?more iterations}"; shift 3
 HERE="${PYG_TRAIN_DIR:-$HOME/pyg_m19_train/mjlab_policy}"
 R="$HOME/MikuchanRemote/Human-Pygmalion"
 export PYTHONPATH="$R/Feet_design/Feet_Design_Workspace/mjcf_sim/stock_mjlab/src${PYTHONPATH:+:$PYTHONPATH}"
@@ -28,13 +28,13 @@ cd "$HERE"
 START=$("$PY" -c "import sys,torch; c=torch.load(sys.argv[1],map_location='cpu',weights_only=False); print(c['iter'])" "$CKPT")
 SRC="resume_src_union_model_${START}"
 mkdir -p "$LOGS/$SRC"; cp -f "$CKPT" "$LOGS/$SRC/model_$START.pt"
-echo "[m19-finetune] run=$RUN_NAME envs=$NUM_ENVS start_iter=$START more=$MORE target=$((START + MORE)) xml=$PYG_FOOT_XML dz=$PYG_INIT_DZ"
+echo "[m19-finetune] run=$RUN envs=$NUM_ENVS start_iter=$START more=$MORE target=$((START + MORE)) xml=$PYG_FOOT_XML dz=$PYG_INIT_DZ"
 exec "$PY" scripts/train.py "$TASK" \
   --agent.seed 43 \
   --env.scene.num-envs "$NUM_ENVS" \
   --agent.max-iterations "$MORE" \
   --agent.resume True --agent.load-run "$SRC" --agent.load-checkpoint "model_$START.pt" \
-  --agent.run-name "$RUN_NAME" \
+  --agent.run-name "$RUN" \
   --agent.logger tensorboard \
   --video True --video-length 300 --video-interval 12000 \
   "$@"
