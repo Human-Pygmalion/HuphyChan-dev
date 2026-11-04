@@ -1,0 +1,118 @@
+{
+ "doc": "260923_Huphy_1.0_wShell_restored_v40",
+ "version": 10,
+ "modified_unsaved": true,
+ "units": "m kg (CAD material), v cm3, c cm, I kg*cm2 about the CAD root origin [xx,yy,zz,xy,yz,xz], bb mm",
+ "parts": {
+  "hip_reinforcement": {
+   "q": "/Reinforcement:1/Hip-Reinforcement:1",
+   "idx": 0,
+   "name": "Hip-Reinforcement",
+   "live": 1,
+   "m": 1.143151,
+   "v": 145.6243,
+   "c": [
+    -15.8153,
+    7.02384,
+    10.77927
+   ],
+   "I": [
+    212.6381,
+    428.67104,
+    366.55064,
+    126.91485,
+    -86.45112,
+    193.62577
+   ],
+   "mat": "Steel",
+   "app": "Steel - Satin",
+   "bb": [
+    -199.91,
+    9.75,
+    42.05,
+    -97.0,
+    130.25,
+    146.08
+   ],
+   "tris": 3820
+  },
+  "knee_reinforcement": {
+   "q": "/Reinforcement:1/Knee-Reinforcement:1",
+   "idx": 0,
+   "name": "Knee-Reinforcement",
+   "live": 1,
+   "m": 1.241967,
+   "v": 158.2124,
+   "c": [
+    -12.39563,
+    5.59211,
+    -32.2185
+   ],
+   "I": [
+    1340.67883,
+    1507.30123,
+    256.15697,
+    86.09059,
+    223.43803,
+    -496.00391
+   ],
+   "mat": "Steel",
+   "app": "Steel - Satin",
+   "bb": [
+    -185.01,
+    21.75,
+    -366.38,
+    -62.89,
+    123.74,
+    -273.0
+   ],
+   "tris": 2382
+  },
+  "camera_mount": {
+   "q": "/Pelvis_Camera:1/Pelvis_Camera_Mount:1",
+   "idx": 0,
+   "name": "Pelvis_Camera_Mount",
+   "live": 1,
+   "m": 0.498992,
+   "v": 63.5658,
+   "c": [
+    0.06309,
+    -1.88816,
+    10.24712
+   ],
+   "I": [
+    55.79292,
+    58.20189,
+    7.39845,
+    0.05,
+    10.00202,
+    -0.28167
+   ],
+   "mat": "Steel",
+   "app": "Steel - Satin",
+   "bb": [
+    -53.5,
+    -47.66,
+    64.14,
+    53.5,
+    1.5,
+    127.79
+   ],
+   "tris": 7622
+  }
+ },
+ "pelvis_camera_totals": {
+  "d455_live": [
+   25,
+   0.430531
+  ],
+  "fov_off_or_big": [
+   4,
+   24606.076188
+  ],
+  "mount_live": [
+   1,
+   0.498992
+  ]
+ }
+}

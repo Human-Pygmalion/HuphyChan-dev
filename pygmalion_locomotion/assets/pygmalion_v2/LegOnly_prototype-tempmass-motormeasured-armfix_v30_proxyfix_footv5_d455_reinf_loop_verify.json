@@ -1,0 +1,354 @@
+{
+ "rows": [
+  {
+   "check": "urdf: R_hip_roll_link mass +160.0 g",
+   "ok": true,
+   "detail": "160.0000 g"
+  },
+  {
+   "check": "urdf: R_shin_link mass +158.2 g",
+   "ok": true,
+   "detail": "158.2000 g"
+  },
+  {
+   "check": "urdf: L_hip_roll_link mass +160.0 g",
+   "ok": true,
+   "detail": "160.0000 g"
+  },
+  {
+   "check": "urdf: L_shin_link mass +158.2 g",
+   "ok": true,
+   "detail": "158.2000 g"
+  },
+  {
+   "check": "urdf: Pelvis_Camera = 166 g (D455 + bracket)",
+   "ok": true,
+   "detail": "116.000 + 50.000 = 166.000 g"
+  },
+  {
+   "check": "urdf: total mass change",
+   "ok": true,
+   "detail": "0.624434 kg (want 0.624434); 24.4941 -> 25.1185 kg"
+  },
+  {
+   "check": "urdf: other 30 bodies unchanged (mass, COM, inertia, pose)",
+   "ok": true,
+   "detail": "worst 0.00e+00"
+  },
+  {
+   "check": "urdf: body count and joints",
+   "ok": true,
+   "detail": "nbody 35 njnt 24 nu 0"
+  },
+  {
+   "check": "urdf: R_hip plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  -0.24 -158.15   47.79] vs [  -0.24 -158.15   47.79] mm"
+  },
+  {
+   "check": "urdf: R_knee plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  14.08 -123.96 -382.18] vs [  14.08 -123.96 -382.18] mm"
+  },
+  {
+   "check": "urdf: L_hip plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[ -0.24 158.15  47.79] vs [ -0.24 158.15  47.79] mm"
+  },
+  {
+   "check": "urdf: L_knee plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  14.08  123.96 -382.18] vs [  14.08  123.96 -382.18] mm"
+  },
+  {
+   "check": "urdf: R_hip_roll_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 6.96e-11 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "urdf: R_shin_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 2.36e-08 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "urdf: L_hip_roll_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 6.96e-11 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "urdf: L_shin_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 2.36e-08 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "urdf: changed inertias are physical",
+   "ok": true,
+   "detail": "positive, triangle inequality"
+  },
+  {
+   "check": "urdf: 200 steps without NaN",
+   "ok": true,
+   "detail": "max|qacc| 3.98"
+  },
+  {
+   "check": "mjcf_repo: R_hip_roll_link mass +160.0 g",
+   "ok": true,
+   "detail": "160.0000 g"
+  },
+  {
+   "check": "mjcf_repo: R_shin_link mass +158.2 g",
+   "ok": true,
+   "detail": "158.2000 g"
+  },
+  {
+   "check": "mjcf_repo: L_hip_roll_link mass +160.0 g",
+   "ok": true,
+   "detail": "160.0000 g"
+  },
+  {
+   "check": "mjcf_repo: L_shin_link mass +158.2 g",
+   "ok": true,
+   "detail": "158.2000 g"
+  },
+  {
+   "check": "mjcf_repo: Pelvis_Camera = 166 g (D455 + bracket)",
+   "ok": true,
+   "detail": "116.000 + 50.000 = 166.000 g"
+  },
+  {
+   "check": "mjcf_repo: total mass change",
+   "ok": true,
+   "detail": "0.624434 kg (want 0.624434); 24.4901 -> 25.1145 kg"
+  },
+  {
+   "check": "mjcf_repo: other 19 bodies unchanged (mass, COM, inertia, pose)",
+   "ok": true,
+   "detail": "worst 0.00e+00"
+  },
+  {
+   "check": "mjcf_repo: body count and joints",
+   "ok": true,
+   "detail": "nbody 24 njnt 25 nu 0"
+  },
+  {
+   "check": "mjcf_repo: R_hip plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  -0.24 -158.15   47.79] vs [  -0.24 -158.15   47.79] mm"
+  },
+  {
+   "check": "mjcf_repo: R_knee plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  14.08 -123.96 -382.18] vs [  14.08 -123.96 -382.18] mm"
+  },
+  {
+   "check": "mjcf_repo: L_hip plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[ -0.24 158.15  47.79] vs [ -0.24 158.15  47.79] mm"
+  },
+  {
+   "check": "mjcf_repo: L_knee plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  14.08  123.96 -382.18] vs [  14.08  123.96 -382.18] mm"
+  },
+  {
+   "check": "mjcf_repo: R_hip_roll_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 3.34e-11 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_repo: R_shin_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 2.36e-08 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_repo: L_hip_roll_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 3.34e-11 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_repo: L_shin_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 2.36e-08 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_repo: changed inertias are physical",
+   "ok": true,
+   "detail": "positive, triangle inequality"
+  },
+  {
+   "check": "mjcf_repo: 200 steps without NaN",
+   "ok": true,
+   "detail": "max|qacc| 9.81"
+  },
+  {
+   "check": "mjcf_mjlab: R_hip_roll_link mass +160.0 g",
+   "ok": true,
+   "detail": "160.0000 g"
+  },
+  {
+   "check": "mjcf_mjlab: R_shin_link mass +158.2 g",
+   "ok": true,
+   "detail": "158.2000 g"
+  },
+  {
+   "check": "mjcf_mjlab: L_hip_roll_link mass +160.0 g",
+   "ok": true,
+   "detail": "160.0000 g"
+  },
+  {
+   "check": "mjcf_mjlab: L_shin_link mass +158.2 g",
+   "ok": true,
+   "detail": "158.2000 g"
+  },
+  {
+   "check": "mjcf_mjlab: Pelvis_Camera = 166 g (D455 + bracket)",
+   "ok": true,
+   "detail": "116.000 + 50.000 = 166.000 g"
+  },
+  {
+   "check": "mjcf_mjlab: total mass change",
+   "ok": true,
+   "detail": "0.624434 kg (want 0.624434); 24.4901 -> 25.1145 kg"
+  },
+  {
+   "check": "mjcf_mjlab: other 19 bodies unchanged (mass, COM, inertia, pose)",
+   "ok": true,
+   "detail": "worst 0.00e+00"
+  },
+  {
+   "check": "mjcf_mjlab: body count and joints",
+   "ok": true,
+   "detail": "nbody 24 njnt 25 nu 0"
+  },
+  {
+   "check": "mjcf_mjlab: R_hip plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  -0.24 -158.15   47.79] vs [  -0.24 -158.15   47.79] mm"
+  },
+  {
+   "check": "mjcf_mjlab: R_knee plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  14.08 -123.96 -382.18] vs [  14.08 -123.96 -382.18] mm"
+  },
+  {
+   "check": "mjcf_mjlab: L_hip plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[ -0.24 158.15  47.79] vs [ -0.24 158.15  47.79] mm"
+  },
+  {
+   "check": "mjcf_mjlab: L_knee plate COM matches CAD (base_link frame)",
+   "ok": true,
+   "detail": "[  14.08  123.96 -382.18] vs [  14.08  123.96 -382.18] mm"
+  },
+  {
+   "check": "mjcf_mjlab: R_hip_roll_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 3.34e-11 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_mjlab: R_shin_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 2.36e-08 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_mjlab: L_hip_roll_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 3.34e-11 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_mjlab: L_shin_link inertia = base + plate",
+   "ok": true,
+   "detail": "max |dI| 2.36e-08 kg m2 (MuJoCo's own eigen-decomposition of the stored tensor is good to ~1e-6 relative)"
+  },
+  {
+   "check": "mjcf_mjlab: changed inertias are physical",
+   "ok": true,
+   "detail": "positive, triangle inequality"
+  },
+  {
+   "check": "mjcf_mjlab: 200 steps without NaN",
+   "ok": true,
+   "detail": "max|qacc| 9.81"
+  },
+  {
+   "check": "urdf vs mjcf_repo: overlay delta of the 5 changed bodies (mass, first moment, inertia)",
+   "ok": true,
+   "detail": "worst 6.09e-10"
+  },
+  {
+   "check": "urdf vs mjcf_mjlab: overlay delta of the 5 changed bodies (mass, first moment, inertia)",
+   "ok": true,
+   "detail": "worst 6.09e-10"
+  },
+  {
+   "check": "R_hip plate mesh bbox matches CAD bbox (base_link frame)",
+   "ok": true,
+   "detail": "0.06 mm (CAD bbox rounding 0.01 mm; tessellation < 1 mm)"
+  },
+  {
+   "check": "R_knee plate mesh bbox matches CAD bbox (base_link frame)",
+   "ok": true,
+   "detail": "0.00 mm (CAD bbox rounding 0.01 mm; tessellation < 1 mm)"
+  },
+  {
+   "check": "L_hip plate mesh bbox matches CAD bbox (base_link frame)",
+   "ok": true,
+   "detail": "0.06 mm (CAD bbox rounding 0.01 mm; tessellation < 1 mm)"
+  },
+  {
+   "check": "L_knee plate mesh bbox matches CAD bbox (base_link frame)",
+   "ok": true,
+   "detail": "0.00 mm (CAD bbox rounding 0.01 mm; tessellation < 1 mm)"
+  }
+ ],
+ "extra": {
+  "com_shift_mm": {
+   "urdf": {
+    "before": [
+     -26.74,
+     -0.24,
+     -301.2
+    ],
+    "after": [
+     -25.94,
+     -0.24,
+     -297.94
+    ]
+   },
+   "mjcf_repo": {
+    "before": [
+     -26.72,
+     -0.24,
+     -301.15
+    ],
+    "after": [
+     -25.92,
+     -0.24,
+     -297.89
+    ]
+   },
+   "mjcf_mjlab": {
+    "before": [
+     -26.72,
+     -0.24,
+     -301.15
+    ],
+    "after": [
+     -25.92,
+     -0.24,
+     -297.89
+    ]
+   }
+  },
+  "plate_vs_hull": {
+   "R_hip": {
+    "inside_pct": 20.6,
+    "max_outside_mm": 50.65
+   },
+   "R_knee": {
+    "inside_pct": 15.3,
+    "max_outside_mm": 57.42
+   }
+  }
+ }
+}

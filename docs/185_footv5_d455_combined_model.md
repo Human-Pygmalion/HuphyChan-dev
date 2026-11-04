@@ -129,3 +129,74 @@ PYTHONPATH=Feet_design/Feet_Design_Workspace/mjcf_sim/stock_mjlab/src CUDA_VISIB
 - 위 그림은 넘어지지 않은 실행입니다. 깊이 영상에서 7~8초에 내려가는 계단이, 10초에 올라가는 계단이 보입니다.
 - 새 발(처음 보는 발, 질량 +0.34 kg)로 99998 정책이 대체로 걷는다는 정도만 확인한 것이고, 성능 평가가 아닙니다. 발 형상 효과를 따지려면 같은 조건에서 상자 발과 비교해야 합니다(`--model` 로 가능).
 - 이 PC 는 GPU 가 없어 CPU 로 돌립니다. 다른 세션 작업이 겹치면 viser 실시간 배율이 0.05~0.1배까지 떨어집니다(1배가 실시간). 카메라를 끄거나(`--no-camera`) 해상도를 줄이면 빨라집니다.
+
+# 10. 보강재 반영본 `_footv5_d455_reinf_loop` (2026-11-04, 할 일 195)
+
+합본 모델에 **엉덩이 보강재, 무릎 보강재, 새 카메라 질량**을 더한 최신 판입니다. 이전 판 `_footv5_d455_loop` 는 그대로 있습니다. 동료가 학습에 쓰는 모델은 이 판으로 바꾸면 됩니다.
+
+![보강재 반영 모델 렌더](img/reinforce/reinforce_views.png)
+
+(주황색이 보강재입니다. 렌더는 3090 서버에서 EGL 로 했습니다.)
+
+## 10.1 무엇이 바뀌었나
+
+| 부품 | 질량 | 붙는 링크 | 한 다리당 |
+|---|---|---|---|
+| Hip-Reinforcement | 160.0 g | `hip_roll_link` (CAD 의 HipRoll2Yaw 에 볼트로 고정, 같이 움직임) | 1개 |
+| Knee-Reinforcement | 158.2 g | `shin_link` (CAD 의 Knee2Ankle 에 볼트로 고정, 같이 움직임) | 1개 |
+| Pelvis_Camera (카메라 + 브래킷) | 166 g 합계 | `base_link` | 카메라 116 g + 브래킷 50 g |
+
+- 질량은 사용자가 준 값입니다. Fusion 의 재질은 강철 자리표시자라서 CAD 질량(1143 g, 1242 g, 499 g)은 쓰지 않았습니다.
+- 모양, 무게중심, 관성은 CAD 에서 읽었습니다. 관성은 "CAD 질량 대비 사용자 질량" 비율로 줄였습니다(밀도가 균일하다고 보는 것이며, 모터 자리표시자에 쓰던 규칙과 같습니다).
+- 보강재는 새 링크를 만들지 않고 `hip_roll_link`, `shin_link` 의 질량·무게중심·관성에 합쳤습니다. 몸체 수와 관절 수는 그대로입니다. 모양(visual)만 주황색 메시로 더했습니다.
+- CAD 에는 다리가 한쪽(`R_`, 몸 안쪽 기준 −y)만 있습니다. 반대쪽은 y 를 뒤집어 만들었습니다(`build_robot.py` 의 `mirror` 와 같은 규칙).
+- 카메라 브래킷은 CAD 가 바뀌었습니다(체적 69.83 → 63.57 cm³). 카메라 위치와 방향은 이전과 같음을 Fusion 에서 다시 확인했습니다.
+
+## 10.2 파일 위치
+
+| 파일 | 위치 |
+|---|---|
+| URDF | `pygmalion_locomotion/assets/pygmalion_v2/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_loop.urdf` |
+| MJCF (저장소 사본, 일반 MuJoCo) | 같은 폴더의 `…_footv5_d455_reinf_loop.xml` |
+| MJCF (mjlab 용) | `mujoco-sim/mjlab/src/mjlab/asset_zoo/robots/pygmalion/xmls/…_footv5_d455_reinf_loop.xml` (git 에 없음, 메시는 상대 링크 `assets_v30_reinforce`) |
+| 메시 | `pygmalion_locomotion/assets/pygmalion_v2/meshes_reinforce/` (보강재 4개, 브래킷 + 충돌용 볼록 껍질) |
+| 보고서, 검증 결과 | 같은 폴더의 `…_reinf_loop_report.json`, `…_reinf_loop_verify.json` |
+| Fusion 읽은 값 | `tools/robot_model/fusion_snapshots/reinforce_20261104/` |
+| 만드는 코드 | `tools/robot_model/reinforce_overlay/` (`extract_reinforce.py`, `build_reinforce.py`, `verify_reinforce.py`, `render_reinforce.py`) |
+
+## 10.3 검증 (60개 중 60개 통과)
+
+| 확인한 것 | 결과 |
+|---|---|
+| 링크 질량이 +160.0 g(엉덩이), +158.2 g(정강이) | 통과 (URDF, MJCF 2벌) |
+| D455 + 브래킷 = 166 g | 통과 (116.000 + 50.000 g) |
+| 전체 질량 변화 | +0.624434 kg. URDF 24.494 → 25.119 kg, MJCF 24.490 → 25.115 kg |
+| 바꾼 5개 링크 외 나머지 몸체(URDF 30개, MJCF 19개) | 질량·무게중심·관성·위치가 한 글자도 안 바뀜 |
+| 보강재 무게중심이 CAD 값과 같은 위치 (`base_link` 기준, 4개) | 통과. 오른쪽 엉덩이 (−0.24, −158.15, 47.79) mm 등 |
+| 보강재 메시 크기·위치가 CAD 와 같음 | 통과 (차이 0.06 mm 이하) |
+| 링크 관성 = 이전 링크 + 보강재 (평행축 정리, 코드와 별개로 다시 계산) | 통과 |
+| URDF 와 MJCF 가 같은 만큼 바꿨는가 | 통과 |
+| 관성이 물리적으로 가능한가, 200 스텝 뒤 NaN 이 없는가 | 통과 |
+
+- 로봇 전체 무게중심(영점 자세, `base_link` 기준, URDF)은 (−26.7, −0.2, −301.2) mm 에서 (−25.9, −0.2, −297.9) mm 로 옮겨졌습니다. **3.3 mm 올라가고 0.8 mm 앞으로 갔습니다.** 보강재가 엉덩이 높이와 무릎 높이에 있어 몸이 약간 높은 곳에 무거워진 것입니다.
+
+## 10.4 동료가 알아야 할 주의사항
+
+1. **보강재에는 충돌 모양이 없습니다.** 보강재가 기존 링크 껍질 밖으로 엉덩이 51 mm, 무릎 57 mm 까지 튀어나옵니다(보강재 꼭짓점의 21 %, 15 % 만 기존 껍질 안). 지금은 발만 땅과 닿는 설정이라 학습에는 영향이 없지만, 다리끼리 또는 보강재가 몸에 닿는 것은 시뮬레이션되지 않습니다.
+2. **166 g 의 나눔은 가정입니다.** 사용자가 "Pelvis_Camera 166 g" 이라고만 했습니다. 카메라 116 g(데이터시트, 변경 없음) + 브래킷 50 g 으로 나누었습니다. 166 g 이 카메라만의 값이면 알려 주세요. 코드 `MASS_G` 한 줄만 고치면 됩니다.
+3. **이 모델은 동료의 학습 환경에서 아직 돌려 보지 않았습니다.** 이전 판과 같은 구조(몸체·관절 수 동일)이고 질량만 바뀌었으니 같은 방식으로 불러질 것입니다. 단, §4 의 10번 주의(`robot.py` 의 `COLLISION` 정규식을 `\d+` 로)는 여전히 필요합니다.
+4. **질량이 약 0.62 kg 늘었습니다.** 정책(99998)은 이 질량으로 학습하지 않았습니다. 학습 때의 질량 무작위화 범위 안인지 확인하세요.
+5. **Fusion 문서에 저장되지 않은 수정이 있습니다.** 읽은 문서는 `260923_Huphy_1.0_wShell_restored_v40` (버전 10)이고 저장 안 된 변경이 있는 상태였습니다. 저장된 값과 다를 수 있습니다.
+6. 검증할 때 MuJoCo 가 저장된 관성 텐서를 주축으로 분해하는 과정에서 상대 오차 1e-6 정도가 생깁니다(정강이처럼 두 값이 가깝고 곱 항이 큰 경우). 그래서 관성 비교의 허용 오차를 1e-7 kg·m² 로 잡았습니다. 파일에 적은 값 자체는 9자리까지 정확합니다.
+
+## 10.5 다시 만드는 법
+
+```bash
+export FUSION_MCP=http://192.168.20.161:27182/mcp FUSION_MCP_HOST=127.0.0.1:27182
+PY=mujoco-sim/mjlab/.venv/bin/python3
+$PY tools/robot_model/reinforce_overlay/extract_reinforce.py --out tools/robot_model/fusion_snapshots/reinforce_20261104   # Fusion 읽기 전용
+$PY tools/robot_model/reinforce_overlay/build_reinforce.py --snapshot tools/robot_model/fusion_snapshots/reinforce_20261104
+$PY tools/robot_model/reinforce_overlay/verify_reinforce.py
+```
+
+렌더와 학습은 3090 서버(`syaro@10.8.0.14`)에서 합니다(사용자 지시 2026-11-04). 렌더 스크립트는 `MUJOCO_GL=egl` 로 그 서버에서 돌렸습니다.

@@ -1,0 +1,186 @@
+{
+ "cad_document": "260923_Huphy_1.0_wShell_restored_v40",
+ "cad_version": 10,
+ "cad_unsaved_edits": true,
+ "base": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_loop",
+ "out": "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_loop",
+ "mass_g": {
+  "hip": 160.0,
+  "knee": 158.2,
+  "camera_total": 166.0,
+  "d455": 116.0
+ },
+ "mass_source": "user 2026-11-04 (CAD material is a steel placeholder: hip 1143.15 g, knee 1241.97 g, bracket 498.99 g)",
+ "cad_leg": "R_ (-y); L_ = y-mirror",
+ "plates": {
+  "R_hip": {
+   "mass_kg": 0.16,
+   "com_link_m": [
+    -0.0002384,
+    -0.034453,
+    0.0477927
+   ],
+   "inertia_com_kg_m2": [
+    [
+     0.0001387898,
+     9.95e-07,
+     -1.3853e-06
+    ],
+    [
+     9.95e-07,
+     0.0003277363,
+     -1.75743e-05
+    ],
+    [
+     -1.3853e-06,
+     -1.75743e-05,
+     0.0003390611
+    ]
+   ],
+   "link": "hip_roll_link"
+  },
+  "R_knee": {
+   "mass_kg": 0.15819999999999998,
+   "com_link_m": [
+    0.0590789,
+    -0.0002563,
+    -0.012185
+   ],
+   "inertia_com_kg_m2": [
+    [
+     0.0003473587,
+     -3.3e-09,
+     4.1578e-06
+    ],
+    [
+     -3.3e-09,
+     0.000160997,
+     -1.63e-08
+    ],
+    [
+     4.1578e-06,
+     -1.63e-08,
+     0.0003374041
+    ]
+   ],
+   "link": "shin_link"
+  },
+  "L_hip": {
+   "mass_kg": 0.16,
+   "com_link_m": [
+    -0.0002384,
+    0.034453,
+    0.0477927
+   ],
+   "inertia_com_kg_m2": [
+    [
+     0.0001387898,
+     -9.95e-07,
+     -1.3853e-06
+    ],
+    [
+     -9.95e-07,
+     0.0003277363,
+     1.75743e-05
+    ],
+    [
+     -1.3853e-06,
+     1.75743e-05,
+     0.0003390611
+    ]
+   ],
+   "link": "hip_roll_link"
+  },
+  "L_knee": {
+   "mass_kg": 0.15819999999999998,
+   "com_link_m": [
+    0.0590789,
+    0.0002563,
+    -0.012185
+   ],
+   "inertia_com_kg_m2": [
+    [
+     0.0003473587,
+     3.3e-09,
+     4.1578e-06
+    ],
+    [
+     3.3e-09,
+     0.000160997,
+     1.63e-08
+    ],
+    [
+     4.1578e-06,
+     1.63e-08,
+     0.0003374041
+    ]
+   ],
+   "link": "shin_link"
+  }
+ },
+ "bracket": {
+  "mass_kg": 0.05,
+  "com_base_link_m": [
+   0.0888816,
+   0.0006309,
+   0.0424712
+  ],
+  "inertia_com_kg_m2": [
+   [
+    5.81574e-05,
+    9.46e-08,
+    -3.4812e-06
+   ],
+   [
+    9.46e-08,
+    1.62132e-05,
+    4.101e-07
+   ],
+   [
+    -3.4812e-06,
+    4.101e-07,
+    5.62883e-05
+   ]
+  ],
+  "cad_volume_cm3": 63.5658,
+  "old_mass_kg": 0.0619659
+ },
+ "link_inertial_before": {
+  "R_hip_roll_link": {
+   "mass": 1.373,
+   "com": [
+    0.000912268,
+    -0.00135613,
+    -0.121662
+   ]
+  },
+  "R_shin_link": {
+   "mass": 2.7018,
+   "com": [
+    -0.0275899,
+    -0.000127367,
+    -0.232073
+   ]
+  },
+  "L_hip_roll_link": {
+   "mass": 1.373,
+   "com": [
+    0.000912268,
+    0.00135613,
+    -0.121662
+   ]
+  },
+  "L_shin_link": {
+   "mass": 2.7018,
+   "com": [
+    -0.0275899,
+    0.000127367,
+    -0.232073
+   ]
+  }
+ },
+ "assumptions": [
+  "Pelvis_Camera 166 g = D455 116 g (datasheet, unchanged) + bracket 50 g",
+  "plates add no collision geometry (they stick out of the link hulls by up to 57 mm)"
+ ]
+}

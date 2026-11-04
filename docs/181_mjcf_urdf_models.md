@@ -76,6 +76,7 @@
 | **2026-10-31** | **발 v5 판**(`_footv5_loop`, 다리만·AB): 발 링크 두 개만 바꿈 — v5 밑창(캐리어·테이프·고무 4 mm) 시각 메시, 볼록 조각 29개 충돌, 질량 0.845 → 1.186 kg/발(사용자 수정 캐리어 + 발등 덮개 Feet_Up PLA 80 g, 둘 다 CAD 형상, Feet_Up 은 충돌 없음). 원본 URDF·MJCF 는 그대로, 발 링크 밖 글자 동일(assert) | `tools/robot_model/foot_overlay/build_footv5.py`, `Feet_design/Feet_Design_Workspace/notes/발 v5 URDF 반영과 충돌 모델 검토.md` |
 | **2026-11-04** | **발 v5 판 검토**(읽기 전용): CAD STEP 에서 질량·무게중심·관성을 다시 계산해 URDF 와 일치 확인(질량 4 mg, 무게중심 0.01 mm), MJCF `v5fullm` 과 URDF 의 발 관성 동일. 캐리어 밀도 0.744 는 추정, 파일은 미추적 | [[184_foot_v5_model_review]] |
 | **2026-11-04** | **발 v5 + D455 합본**(`_footv5_d455_loop`, 다리만·AB): 발 v5 판과 D455 판을 이어 붙인 새 URDF·MJCF(원본 불변). 발 1.18617 kg·카메라 116 g·브래킷 61.97 g, 전체 +0.85995 kg, 검증 30개 통과, 깊이 영상 오차 0.023 mm. `meshes_v30_*` 심볼릭 링크를 상대 경로로 변경, 발 v5 파일을 git 에 추가 | [[185_footv5_d455_combined_model]], `tools/robot_model/foot_overlay/build_footv5_d455.py` |
+| **2026-11-04** | **보강재 반영본**(`_footv5_d455_reinf_loop`, 다리만·AB): 합본에 엉덩이 보강재 160 g(`hip_roll_link`), 무릎 보강재 158.2 g(`shin_link`) 을 양다리에 합치고, Pelvis_Camera 를 166 g(카메라 116 + 브래킷 50)으로 갱신. 전체 +0.6244 kg(25.119 kg), 무게중심 3.3 mm 상승, 검증 60개 통과. 보강재 충돌 모양 없음(시각만). 이전 판은 그대로 | [[185_footv5_d455_combined_model]] §10, `tools/robot_model/reinforce_overlay/build_reinforce.py` |
 
 # 8. 알아 둘 것
 
