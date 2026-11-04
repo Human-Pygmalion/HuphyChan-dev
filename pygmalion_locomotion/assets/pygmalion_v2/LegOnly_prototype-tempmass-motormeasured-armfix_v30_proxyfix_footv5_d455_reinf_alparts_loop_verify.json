@@ -1,0 +1,269 @@
+{
+ "rows": [
+  {
+   "check": "urdf: R_crank_A mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "84.285 g (want 84.285 g)"
+  },
+  {
+   "check": "urdf: L_crank_A mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "84.285 g (want 84.285 g)"
+  },
+  {
+   "check": "urdf: R_crank_B mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "82.341 g (want 82.341 g)"
+  },
+  {
+   "check": "urdf: L_crank_B mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "82.341 g (want 82.341 g)"
+  },
+  {
+   "check": "urdf: R_hip_roll_link gains (V_mount x 2.70 - 67.0 g)",
+   "ok": true,
+   "detail": "+97.597 g (want +97.597 g)"
+  },
+  {
+   "check": "urdf: L_hip_roll_link gains (V_mount x 2.70 - 67.0 g)",
+   "ok": true,
+   "detail": "+97.597 g (want +97.597 g)"
+  },
+  {
+   "check": "urdf: total mass change",
+   "ok": true,
+   "detail": "391.323 g; 25.1185 -> 25.5098 kg"
+  },
+  {
+   "check": "urdf: other 29 bodies unchanged",
+   "ok": true,
+   "detail": "worst 0.00e+00"
+  },
+  {
+   "check": "urdf: joints, equality constraints, actuators unchanged",
+   "ok": true,
+   "detail": "njnt 24 neq 0"
+  },
+  {
+   "check": "urdf: R_crank_A COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.73  -92.07 -565.7 ] vs [ -92.73  -92.07 -565.7 ] mm"
+  },
+  {
+   "check": "urdf: L_crank_A COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.73   92.07 -565.7 ] vs [ -92.73   92.07 -565.7 ] mm"
+  },
+  {
+   "check": "urdf: R_crank_B COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.22 -155.3  -664.43] vs [ -92.22 -155.3  -664.43] mm"
+  },
+  {
+   "check": "urdf: L_crank_B COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.22  155.3  -664.43] vs [ -92.22  155.3  -664.43] mm"
+  },
+  {
+   "check": "urdf: R_hip_roll_link COM = old COM + mount extra mass at its CAD COM",
+   "ok": true,
+   "detail": "[   0.745   -4.673 -103.378] mm (moved [-0.047  0.137  0.598] mm)"
+  },
+  {
+   "check": "urdf: L_hip_roll_link COM = old COM + mount extra mass at its CAD COM",
+   "ok": true,
+   "detail": "[   0.745    4.673 -103.378] mm (moved [-0.047 -0.137  0.598] mm)"
+  },
+  {
+   "check": "urdf: crank inertias are physical",
+   "ok": true,
+   "detail": "positive, triangle inequality"
+  },
+  {
+   "check": "urdf: 200 steps, no NaN, loop closure still closed",
+   "ok": true,
+   "detail": "closure 0.0000 mm (base at rest 0.0000 mm), max|qacc| 3.89"
+  },
+  {
+   "check": "mjcf_repo: R_crank_A mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "84.285 g (want 84.285 g)"
+  },
+  {
+   "check": "mjcf_repo: L_crank_A mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "84.285 g (want 84.285 g)"
+  },
+  {
+   "check": "mjcf_repo: R_crank_B mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "82.341 g (want 82.341 g)"
+  },
+  {
+   "check": "mjcf_repo: L_crank_B mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "82.341 g (want 82.341 g)"
+  },
+  {
+   "check": "mjcf_repo: R_hip_roll_link gains (V_mount x 2.70 - 67.0 g)",
+   "ok": true,
+   "detail": "+97.597 g (want +97.597 g)"
+  },
+  {
+   "check": "mjcf_repo: L_hip_roll_link gains (V_mount x 2.70 - 67.0 g)",
+   "ok": true,
+   "detail": "+97.597 g (want +97.597 g)"
+  },
+  {
+   "check": "mjcf_repo: total mass change",
+   "ok": true,
+   "detail": "391.323 g; 25.1145 -> 25.5058 kg"
+  },
+  {
+   "check": "mjcf_repo: other 18 bodies unchanged",
+   "ok": true,
+   "detail": "worst 0.00e+00"
+  },
+  {
+   "check": "mjcf_repo: joints, equality constraints, actuators unchanged",
+   "ok": true,
+   "detail": "njnt 25 neq 4"
+  },
+  {
+   "check": "mjcf_repo: R_crank_A COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.73  -92.07 -565.7 ] vs [ -92.73  -92.07 -565.7 ] mm"
+  },
+  {
+   "check": "mjcf_repo: L_crank_A COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.73   92.07 -565.7 ] vs [ -92.73   92.07 -565.7 ] mm"
+  },
+  {
+   "check": "mjcf_repo: R_crank_B COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.22 -155.3  -664.43] vs [ -92.22 -155.3  -664.43] mm"
+  },
+  {
+   "check": "mjcf_repo: L_crank_B COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.22  155.3  -664.43] vs [ -92.22  155.3  -664.43] mm"
+  },
+  {
+   "check": "mjcf_repo: R_hip_roll_link COM = old COM + mount extra mass at its CAD COM",
+   "ok": true,
+   "detail": "[   0.745   -4.673 -103.378] mm (moved [-0.047  0.137  0.598] mm)"
+  },
+  {
+   "check": "mjcf_repo: L_hip_roll_link COM = old COM + mount extra mass at its CAD COM",
+   "ok": true,
+   "detail": "[   0.745    4.673 -103.378] mm (moved [-0.047 -0.137  0.598] mm)"
+  },
+  {
+   "check": "mjcf_repo: crank inertias are physical",
+   "ok": true,
+   "detail": "positive, triangle inequality"
+  },
+  {
+   "check": "mjcf_repo: 200 steps, no NaN, loop closure still closed",
+   "ok": true,
+   "detail": "closure 0.0000 mm (base at rest 0.0000 mm), max|qacc| 9.81"
+  },
+  {
+   "check": "mjcf_mjlab: R_crank_A mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "84.285 g (want 84.285 g)"
+  },
+  {
+   "check": "mjcf_mjlab: L_crank_A mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "84.285 g (want 84.285 g)"
+  },
+  {
+   "check": "mjcf_mjlab: R_crank_B mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "82.341 g (want 82.341 g)"
+  },
+  {
+   "check": "mjcf_mjlab: L_crank_B mass = V_crank x 2.70 + V_cover x 0.8874",
+   "ok": true,
+   "detail": "82.341 g (want 82.341 g)"
+  },
+  {
+   "check": "mjcf_mjlab: R_hip_roll_link gains (V_mount x 2.70 - 67.0 g)",
+   "ok": true,
+   "detail": "+97.597 g (want +97.597 g)"
+  },
+  {
+   "check": "mjcf_mjlab: L_hip_roll_link gains (V_mount x 2.70 - 67.0 g)",
+   "ok": true,
+   "detail": "+97.597 g (want +97.597 g)"
+  },
+  {
+   "check": "mjcf_mjlab: total mass change",
+   "ok": true,
+   "detail": "391.323 g; 25.1145 -> 25.5058 kg"
+  },
+  {
+   "check": "mjcf_mjlab: other 18 bodies unchanged",
+   "ok": true,
+   "detail": "worst 0.00e+00"
+  },
+  {
+   "check": "mjcf_mjlab: joints, equality constraints, actuators unchanged",
+   "ok": true,
+   "detail": "njnt 25 neq 4"
+  },
+  {
+   "check": "mjcf_mjlab: R_crank_A COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.73  -92.07 -565.7 ] vs [ -92.73  -92.07 -565.7 ] mm"
+  },
+  {
+   "check": "mjcf_mjlab: L_crank_A COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.73   92.07 -565.7 ] vs [ -92.73   92.07 -565.7 ] mm"
+  },
+  {
+   "check": "mjcf_mjlab: R_crank_B COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.22 -155.3  -664.43] vs [ -92.22 -155.3  -664.43] mm"
+  },
+  {
+   "check": "mjcf_mjlab: L_crank_B COM matches CAD (base_link frame, zero pose)",
+   "ok": true,
+   "detail": "[ -92.22  155.3  -664.43] vs [ -92.22  155.3  -664.43] mm"
+  },
+  {
+   "check": "mjcf_mjlab: R_hip_roll_link COM = old COM + mount extra mass at its CAD COM",
+   "ok": true,
+   "detail": "[   0.745   -4.673 -103.378] mm (moved [-0.047  0.137  0.598] mm)"
+  },
+  {
+   "check": "mjcf_mjlab: L_hip_roll_link COM = old COM + mount extra mass at its CAD COM",
+   "ok": true,
+   "detail": "[   0.745    4.673 -103.378] mm (moved [-0.047 -0.137  0.598] mm)"
+  },
+  {
+   "check": "mjcf_mjlab: crank inertias are physical",
+   "ok": true,
+   "detail": "positive, triangle inequality"
+  },
+  {
+   "check": "mjcf_mjlab: 200 steps, no NaN, loop closure still closed",
+   "ok": true,
+   "detail": "closure 0.0000 mm (base at rest 0.0000 mm), max|qacc| 9.81"
+  },
+  {
+   "check": "urdf vs mjcf_repo: overlay delta of the 6 changed links (mass, first moment, inertia)",
+   "ok": true,
+   "detail": "worst 7.70e-10"
+  },
+  {
+   "check": "urdf vs mjcf_mjlab: overlay delta of the 6 changed links (mass, first moment, inertia)",
+   "ok": true,
+   "detail": "worst 7.70e-10"
+  }
+ ]
+}

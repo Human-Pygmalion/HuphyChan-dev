@@ -61,6 +61,8 @@
 
 # 7. 수정 이력
 
+> **정본은 [[186_urdf_mjcf_version_ledger]](버전 대장)** 입니다. 처음 모델부터 "무엇이 왜 바뀌었나"를 항목별로 적었고, 파일 이름이 빠지면 `tools/robot_model/check_model_ledger.py` 가 알려 줍니다. 아래 표는 최근 덧붙임 요약입니다.
+
 | 날짜 | 무엇이 바뀌었나 | 근거 |
 |---|---|---|
 | 2026-08-22 | 모델 v2: 질량·관성을 CAD 에서 읽음, 폐루프 이전 구조 | [[87_robot_model_v2]] |
@@ -77,6 +79,8 @@
 | **2026-11-04** | **발 v5 판 검토**(읽기 전용): CAD STEP 에서 질량·무게중심·관성을 다시 계산해 URDF 와 일치 확인(질량 4 mg, 무게중심 0.01 mm), MJCF `v5fullm` 과 URDF 의 발 관성 동일. 캐리어 밀도 0.744 는 추정, 파일은 미추적 | [[184_foot_v5_model_review]] |
 | **2026-11-04** | **발 v5 + D455 합본**(`_footv5_d455_loop`, 다리만·AB): 발 v5 판과 D455 판을 이어 붙인 새 URDF·MJCF(원본 불변). 발 1.18617 kg·카메라 116 g·브래킷 61.97 g, 전체 +0.85995 kg, 검증 30개 통과, 깊이 영상 오차 0.023 mm. `meshes_v30_*` 심볼릭 링크를 상대 경로로 변경, 발 v5 파일을 git 에 추가 | [[185_footv5_d455_combined_model]], `tools/robot_model/foot_overlay/build_footv5_d455.py` |
 | **2026-11-04** | **보강재 반영본**(`_footv5_d455_reinf_loop`, 다리만·AB): 합본에 엉덩이 보강재 160 g(`hip_roll_link`), 무릎 보강재 158.2 g(`shin_link`) 을 양다리에 합치고, Pelvis_Camera 를 166 g(카메라 116 + 브래킷 50)으로 갱신. 전체 +0.6244 kg(25.119 kg), 무게중심 3.3 mm 상승, 검증 60개 통과. 보강재 충돌 모양 없음(시각만). 이전 판은 그대로 | [[185_footv5_d455_combined_model]] §10, `tools/robot_model/reinforce_overlay/build_reinforce.py` |
+| **2026-11-04** | **알루미늄 부품판**(`_reinf_alparts_loop`, 다리만·AB): 보강재판에 발목 크랭크 4개(프린트 → Al 6061, 체적 × 2.70)와 엉덩이 마운트 2개(67.0 g → 164.59 g)를 알루미늄 질량으로, 관성도 같은 비율. 전체 +0.3913 kg(25.51 kg), 검증 53개 통과. 크랭크 커버는 프린트 그대로 | [[185_footv5_d455_combined_model]] §11, [[186_urdf_mjcf_version_ledger]] M18 |
+| **2026-11-04** | **발 충돌 캡슐판**(`v5cap`, `v5cap3`, MJCF 만): v5fullm 에서 발 충돌만 볼록 조각 29개 → 캡슐 50개(또는 30개) + 받침 상자로 교체. 질량·관성·시각은 v5fullm 그대로. 같은 정책으로 6지형 비교해 침투·미끄러짐이 줄고 넘어짐은 같거나 적음(재학습 전) | [[185_foot_collision_capsule_vs_mesh]], `tools/foot_sole/build_v5cap.py` |
 
 # 8. 알아 둘 것
 

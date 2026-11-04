@@ -1,0 +1,36 @@
+{
+ "doc": "260923_Huphy_1.0_wShell_restored_v40",
+ "version": 10,
+ "modified_unsaved": true,
+ "part": {
+  "q": "/Joints_UnderBody:1/HipRoll2Yaw:1/HipRoll2Yaw_Mount:1",
+  "idx": 0,
+  "name": "HipRoll2Yaw_Mount",
+  "live": 1,
+  "m": 0.164594,
+  "v": 60.9608,
+  "c": [
+   -12.62156,
+   7.0,
+   -3.39896
+  ],
+  "I": [
+   11.22157,
+   29.45547,
+   36.82033,
+   14.54204,
+   3.91614,
+   -7.04256
+  ],
+  "mat": "Aluminum 6061",
+  "app": "Aluminum - Satin",
+  "bb": [
+   -172.97,
+   20.73,
+   -40.0,
+   -74.43,
+   119.27,
+   -26.0
+  ]
+ }
+}
