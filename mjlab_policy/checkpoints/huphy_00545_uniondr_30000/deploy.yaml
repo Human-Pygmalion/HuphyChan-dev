@@ -1,0 +1,266 @@
+schema_version: 1
+
+policy:
+  name: huphy_00545_uniondr_model_30000
+  source_run: 2026-11-09_09-31-46_huphy_00545_uniondr_footfric03to17_fromscratch_4096_gpu1
+  task: HUPHY-Tracking-ProjectedGravity-UnionDR
+  checkpoint: model_30000.pt
+  onnx: policy.onnx
+  motion_onnx: motion_policy.onnx
+  iteration: 30000
+  common_step_counter: 720024
+  control_rate_hz: 50
+  physics_timestep_s: 0.005
+  decimation: 4
+  actor_input_dim: 114
+  actor_output_dim: 12
+  critic_input_dim: 204
+  onnx_batch_size: 1
+  onnx_normalizer_embedded: true
+
+training:
+  from_scratch: true
+  parent_checkpoint: null
+  seed: 42
+  num_envs: 4096
+  num_steps_per_env: 24
+  max_iterations: 30001
+  completed_iteration: 30000
+  save_interval: 500
+  episode_length_s: 10.0
+  actor_hidden_dims: [512, 256, 128]
+  critic_hidden_dims: [512, 256, 128]
+  activation: elu
+  reproduce_script: scripts/train_from_scratch.sh
+
+motion:
+  training_file: motions/00545_interactionmesh_50hz.npz
+  frames: 659
+  fps: 50
+  duration_s: 13.16
+  scalar_joints: 24
+  tracked_bodies: &tracked_bodies
+    - base_link
+    - L_hip_pitch_link
+    - R_hip_pitch_link
+    - L_shin_link
+    - R_shin_link
+    - L_ankle_pitch_link
+    - R_ankle_pitch_link
+    - L_foot_link
+    - R_foot_link
+  source_smplx: motions/00545.npz
+  source_frames: 396
+  source_fps: 30
+  retarget_method: interactionmesh_lower9
+  max_closed_loop_residual_m: 4.187760638e-09
+
+observations:
+  actor:
+    order: [command, projected_gravity, base_ang_vel, joint_pos, joint_vel, previous_action]
+    terms:
+      - name: command
+        slice: [0, 48]
+        description: current reference frame, joint_pos[24] followed by joint_vel[24]
+        joint_order: &full_joint_order
+          - R_hip_pitch_joint
+          - R_hip_roll_joint
+          - R_hip_yaw_joint
+          - R_knee_joint
+          - R_crank_A_joint
+          - R_rod_A_u1
+          - R_rod_A_u2
+          - R_crank_B_joint
+          - R_rod_B_u1
+          - R_rod_B_u2
+          - R_ankle_pitch_joint
+          - R_ankle_roll_joint
+          - L_hip_pitch_joint
+          - L_hip_roll_joint
+          - L_hip_yaw_joint
+          - L_knee_joint
+          - L_crank_A_joint
+          - L_rod_A_u1
+          - L_rod_A_u2
+          - L_crank_B_joint
+          - L_rod_B_u1
+          - L_rod_B_u2
+          - L_ankle_pitch_joint
+          - L_ankle_roll_joint
+      - name: projected_gravity
+        slice: [48, 51]
+        frame: body
+        training_noise_uniform: [-0.05, 0.05]
+        training_delay_policy_steps: [0, 2]
+      - name: base_ang_vel
+        slice: [51, 54]
+        unit: rad/s
+        frame: body
+        source: imu_ang_vel
+        training_noise_uniform: [-0.2, 0.2]
+        training_delay_policy_steps: [0, 2]
+      - name: joint_pos
+        slice: [54, 78]
+        unit: rad
+        order: *full_joint_order
+        relative_to_default: true
+        includes_episode_encoder_bias: true
+        training_noise_uniform: [-0.01, 0.01]
+      - name: joint_vel
+        slice: [78, 102]
+        unit: rad/s
+        order: *full_joint_order
+        relative_to_default: true
+        training_noise_uniform: [-0.5, 0.5]
+      - name: previous_action
+        slice: [102, 114]
+        description: previous raw network output before scale and default offset
+    corruption_enabled_during_training: true
+    corruption_disabled_in_play_cfg: true
+  critic:
+    order:
+      - command_48
+      - motion_anchor_pos_b_3
+      - motion_anchor_ori_b_6d_6
+      - relative_body_pos_9x3
+      - relative_body_ori_9x6d
+      - base_lin_vel_3
+      - base_ang_vel_3
+      - joint_pos_24
+      - joint_vel_24
+      - previous_action_12
+    slices:
+      command: [0, 48]
+      motion_anchor_pos_b: [48, 51]
+      motion_anchor_ori_b: [51, 57]
+      body_pos: [57, 84]
+      body_ori: [84, 138]
+      base_lin_vel: [138, 141]
+      base_ang_vel: [141, 144]
+      joint_pos: [144, 168]
+      joint_vel: [168, 192]
+      previous_action: [192, 204]
+    tracked_bodies: *tracked_bodies
+    corruption_enabled: false
+
+actions:
+  type: joint_position_target
+  joint_order: &motor_joint_order
+    - R_hip_pitch_joint
+    - R_hip_roll_joint
+    - R_hip_yaw_joint
+    - R_knee_joint
+    - R_crank_A_joint
+    - R_crank_B_joint
+    - L_hip_pitch_joint
+    - L_hip_roll_joint
+    - L_hip_yaw_joint
+    - L_knee_joint
+    - L_crank_A_joint
+    - L_crank_B_joint
+  scale_rad_per_unit: 0.25
+  default_position_rad:
+    [-0.175, 0.0, 0.0, 0.35, 0.1439548737, -0.1470630753,
+      0.175, 0.0, 0.0, -0.35, -0.1438849966, 0.1468702056]
+  actuator_delay_physics_steps: [0, 4]
+  network_output_clipped_by_training_wrapper: false
+
+pd_gains:
+  joint_order: *motor_joint_order
+  stiffness_nm_per_rad:
+    [150.0, 150.0, 150.0, 220.0, 22.265625, 22.265625,
+      150.0, 150.0, 150.0, 220.0, 22.265625, 22.265625]
+  damping_nm_s_per_rad:
+    [6.0, 6.0, 6.0, 6.0, 1.4140625, 1.4140625,
+      6.0, 6.0, 6.0, 6.0, 1.4140625, 1.4140625]
+  effort_limit_nm:
+    [120.0, 120.0, 60.0, 120.0, 60.0, 60.0,
+      120.0, 120.0, 60.0, 120.0, 60.0, 60.0]
+
+union_domain_randomization:
+  enabled: true
+  link_pseudo_inertia: source/unitree_rl_mjlab/src/tasks/tracking/config/huphy/env_cfgs.py
+  base_payload_added_kg: [-1.0, 8.0]
+  pd_gain_scale: [0.8, 1.2]
+  motor_strength_scale: [0.8, 1.2]
+  motor_armature_scale: [0.8, 1.2]
+  motor_friction_scale: [0.8, 1.2]
+  motor_damping_scale: [0.8, 1.2]
+  passive_joint_friction_abs: [0.0, 0.5]
+  passive_joint_damping_abs: [0.0, 0.05]
+  foot_friction_abs_shared: [0.3, 1.7]
+  encoder_bias_rad: [-0.015, 0.015]
+  imu_mount_rpy_deg: [-2.0, 2.0]
+  hip_roll_reset_spread_rad: [-0.10, 0.06]
+  hip_roll_reset_spread_probability: 0.5
+  horizontal_torso_push_n: [0.0, 100.0]
+  horizontal_torso_push_duration_s: [0.1, 0.2]
+  horizontal_torso_push_cooldown_s: [2.0, 10.0]
+
+terminations:
+  timeout_s: 10.0
+  root_reference_z_error_m: 0.4
+  foot_reference_z_error_m: 0.4
+  foot_bodies: [L_foot_link, R_foot_link]
+  orientation_termination: false
+
+robot:
+  mjcf: pygmalion_locomotion/assets/pygmalion_v2/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_capsule7plus5_loop.xml
+  foot_collision: capsule7plus5
+  collision_capsules_per_foot: 12
+  nominal_foot_friction: 0.6
+  foot_contact_priority: 1
+  mjcf_sha256: a34631c333d6bdcfa80e5e9276bff47bd0b166d7e5e92844125a7bf401e3c5ff
+
+artifacts:
+  model_30000.pt:
+    sha256: 7749f5b35b01e26dbfdc53c40df1edf0c245c21ed6bba566cea41fca254c421f
+    purpose: full_actor_critic_optimizer_resume_checkpoint
+  policy.onnx:
+    sha256: 11f52e042e255d59495d1eacee1a661b06e0f50c48b7823b78be2fdabcf043f9
+    purpose: deterministic_actor_with_embedded_normalizer
+  motion_policy.onnx:
+    sha256: 71ccf1b4194967a9a2b5cb6f44fee91469109d7030773eaa60cfe08069b6e04c
+    purpose: deterministic_actor_plus_00545_reference_outputs
+  env.yaml:
+    sha256: 108e95862e92c843b1e8aa45f5856d7dd23f548d264507f3636cdf5cb2e31731
+    purpose: exact_serialized_training_environment
+  agent.yaml:
+    sha256: 7b1dfd25a6eb13fd86acffa3a63c8c572a0a3de0a20a9533b5e8d744e7dcc577
+    purpose: exact_serialized_ppo_configuration
+  motions/00545_interactionmesh_50hz.npz:
+    sha256: 31806ef539a4fa3d158ed15ffd2a82f28d129b96cdb7f659a7f15f52df8e3ef2
+    purpose: exact_training_motion
+  motions/00545_interactionmesh_lower9_30hz.npz:
+    sha256: 6a66a59de60bc14bb371eaed7b80ef850c5785feb03215472c5cf84217480b17
+    purpose: retarget_output_before_50hz_conversion
+  motions/00545.npz:
+    sha256: d9bf2bc614ff88e3ba005217489a54af6233c264a40210fa7f414fcd4120ff3b
+    purpose: original_smplx_source
+  motions/retarget_validation.json:
+    sha256: a78f2f2c18d31aa40adbc80085975b2080c0bb7ff1e5651cd668b27d00d0c097
+    purpose: retarget_metrics_and_true_source_provenance
+  motions/smplx_to_huphy_lower9_gmr.json:
+    sha256: 8f6c3e9f651faabbd514cce396a67145848e978e4ab96a649c5bab656f59defc
+    purpose: lower_body_retarget_mapping
+
+onnx_verification:
+  checkpoint: model_30000.pt
+  samples: 32
+  seed: 20261110
+  max_abs_error: 0.0000019073486328125
+  mean_abs_error: 0.00000005360925570130348
+  allclose_rtol: 0.00001
+  allclose_atol: 0.000001
+  policy_passed: true
+  motion_policy_passed: true
+
+source_versions:
+  huphychan_parent_git: a742fc6b049eb5fe04cd016582e9ba1658b4b6e7
+  unitree_rl_mjlab_worktree_git: 05c7538e95a300edf7dfdd5fca5907f0bf00cd43
+  note: The training worktree contained uncommitted code; all HUPHY-relevant executable snapshots are under source/unitree_rl_mjlab.
+
+safety:
+  simulation_validated: true
+  real_robot_validated: false
+  note: Verify sensor axes, 24-joint observation order, 12-joint action order, gains, limits, latency, emergency stop, and fall protection before motor enable.

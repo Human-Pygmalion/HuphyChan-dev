@@ -1,0 +1,40 @@
+{
+  "interactionmesh": {
+    "frames": 396,
+    "finite": true,
+    "max_loop_residual_m": 3.010309757023322e-08,
+    "mean_loop_residual_m": 3.128517353879368e-10,
+    "joint_limit_violations": 0,
+    "lower_body_mpjpe_m": 0.04440820744953353
+  },
+  "gmr": {
+    "frames": 396,
+    "finite": true,
+    "max_loop_residual_m": 8.967683868280063e-06,
+    "mean_loop_residual_m": 6.838011046651455e-07,
+    "joint_limit_violations": 0,
+    "lower_body_mpjpe_m": 0.1386530390207929
+  },
+  "source": {
+    "path": "/home/jooyoungbae/mocap_dataset/data/smplx/00545.npz",
+    "fps": 30.0,
+    "frames": 396,
+    "source_to_robot_scale": 1.0952868083283593,
+    "keypoints": [
+      "Pelvis",
+      "L_Hip",
+      "R_Hip",
+      "L_Knee",
+      "R_Knee",
+      "L_Ankle",
+      "R_Ankle",
+      "L_Foot",
+      "R_Foot"
+    ],
+    "robot_nq": 31,
+    "robot_nv": 30,
+    "scalar_joints": 24,
+    "motor_joints": 12,
+    "connect_equalities": 4
+  }
+}
