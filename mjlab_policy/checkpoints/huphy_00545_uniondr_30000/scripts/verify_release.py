@@ -74,6 +74,23 @@ def main() -> None:
   assert float(motion["fps"][0]) == 50.0
   assert float(motion["max_loop_residual_m"]) < 1e-8
 
+  rollout_manifest = yaml.safe_load(
+    (ROOT / "observation_rollouts/manifest.json").read_text()
+  )
+  assert len(rollout_manifest["rollouts"]) == 4
+  for info in rollout_manifest["rollouts"]:
+    rollout_path = ROOT / "observation_rollouts" / info["file"]
+    assert sha256(rollout_path) == info["sha256"]
+    rollout = np.load(rollout_path)
+    obs = rollout["actor_observation"]
+    action = rollout["raw_action"]
+    assert obs.shape == (659, 114)
+    assert action.shape == (659, 12)
+    np.testing.assert_array_equal(rollout["reference_frame"], np.arange(659))
+    np.testing.assert_array_equal(obs[0, 102:114], np.zeros(12, dtype=np.float32))
+    np.testing.assert_array_equal(obs[1:, 102:114], action[:-1])
+    assert np.isfinite(obs).all() and np.isfinite(action).all()
+
   robot_xml = REPO / manifest["robot"]["mjcf"]
   model = mujoco.MjModel.from_xml_path(str(robot_xml))
   assert model.njnt == 25 and model.nq == 31 and model.nv == 30

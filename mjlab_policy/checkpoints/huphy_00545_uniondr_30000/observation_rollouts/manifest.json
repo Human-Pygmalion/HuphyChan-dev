@@ -1,0 +1,133 @@
+{
+  "checkpoint": "../model_30000.pt",
+  "checkpoint_sha256": "7749f5b35b01e26dbfdc53c40df1edf0c245c21ed6bba566cea41fca254c421f",
+  "dr_off": "All events, observation noise/delay, actuator delay, and motion reset perturbations off.",
+  "dr_on": "Training Union DR reset/step events, observation corruption/delay, and actuator delay on.",
+  "motion": "../motions/00545_interactionmesh_50hz.npz",
+  "motion_sha256": "31806ef539a4fa3d158ed15ffd2a82f28d129b96cdb7f659a7f15f52df8e3ef2",
+  "observation_slices": {
+    "base_ang_vel": [
+      51,
+      54
+    ],
+    "joint_pos_rel": [
+      54,
+      78
+    ],
+    "joint_vel_rel": [
+      78,
+      102
+    ],
+    "previous_action": [
+      102,
+      114
+    ],
+    "projected_gravity": [
+      48,
+      51
+    ],
+    "reference_joint_pos": [
+      0,
+      24
+    ],
+    "reference_joint_vel": [
+      24,
+      48
+    ]
+  },
+  "policy": "huphy_00545_uniondr_model_30000",
+  "rollouts": [
+    {
+      "done_count": 0,
+      "duration_s": 13.16,
+      "file": "dr_on_rollout1_seed20261111.npz",
+      "first_previous_action_exact_zero": true,
+      "fps": 50.0,
+      "frames": 659,
+      "mode": "dr_on",
+      "observation_abs_max": 8.473224639892578,
+      "observation_shape": [
+        659,
+        114
+      ],
+      "raw_action_abs_max": 8.07509708404541,
+      "raw_action_shape": [
+        659,
+        12
+      ],
+      "reward_mean": 0.05082838609814644,
+      "seed": 20261111,
+      "sha256": "dbf54f812afa6207bd2dffd74e0b7a6ff3b953049ed4ef5067b69907d9531840"
+    },
+    {
+      "done_count": 0,
+      "duration_s": 13.16,
+      "file": "dr_on_rollout2_seed20261112.npz",
+      "first_previous_action_exact_zero": true,
+      "fps": 50.0,
+      "frames": 659,
+      "mode": "dr_on",
+      "observation_abs_max": 17.535560607910156,
+      "observation_shape": [
+        659,
+        114
+      ],
+      "raw_action_abs_max": 9.826746940612793,
+      "raw_action_shape": [
+        659,
+        12
+      ],
+      "reward_mean": -0.04377318546175957,
+      "seed": 20261112,
+      "sha256": "42b16c8d17642b2c773d9fa9d85bb23a7d4613fb425b4495ae31baf9cf1dc2ea"
+    },
+    {
+      "done_count": 0,
+      "duration_s": 13.16,
+      "file": "dr_off_rollout1_seed20261111.npz",
+      "first_previous_action_exact_zero": true,
+      "fps": 50.0,
+      "frames": 659,
+      "mode": "dr_off",
+      "observation_abs_max": 8.759954452514648,
+      "observation_shape": [
+        659,
+        114
+      ],
+      "raw_action_abs_max": 7.269343376159668,
+      "raw_action_shape": [
+        659,
+        12
+      ],
+      "reward_mean": 0.05416703224182129,
+      "seed": 20261111,
+      "sha256": "c3782ccff05e880c6430df003d720dd237d075371a82adab6663756eeea4c290"
+    },
+    {
+      "done_count": 0,
+      "duration_s": 13.16,
+      "file": "dr_off_rollout2_seed20261112.npz",
+      "first_previous_action_exact_zero": true,
+      "fps": 50.0,
+      "frames": 659,
+      "mode": "dr_off",
+      "observation_abs_max": 8.759954452514648,
+      "observation_shape": [
+        659,
+        114
+      ],
+      "raw_action_abs_max": 7.269343376159668,
+      "raw_action_shape": [
+        659,
+        12
+      ],
+      "reward_mean": 0.05416703224182129,
+      "seed": 20261112,
+      "sha256": "e12f2bc6ee09799c9ae6865d21d72910d5d15fad9cd1b5864eba48424dba129d"
+    }
+  ],
+  "schema_version": 1,
+  "task": "HUPHY-Tracking-ProjectedGravity-UnionDR",
+  "terminations_disabled_reason": "The training timeout is 10 s but the reference is 13.16 s; disabled equally in all four runs to log one complete uninterrupted reference cycle.",
+  "unitree_rl_mjlab_git": "05c7538e95a300edf7dfdd5fca5907f0bf00cd43"
+}

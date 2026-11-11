@@ -204,6 +204,20 @@ terminations:
   foot_bodies: [L_foot_link, R_foot_link]
   orientation_termination: false
 
+observation_rollouts:
+  directory: observation_rollouts
+  policy: model_30000.pt
+  motion_frames: 659
+  fps: 50
+  reference_frames: [0, 658]
+  seeds: [20261111, 20261112]
+  dr_on_rollouts: 2
+  dr_off_rollouts: 2
+  terminations_disabled_for_full_cycle: true
+  first_previous_action_exact_zero: true
+  previous_action_contract: previous_action[t] == raw_action[t-1]
+  reproduction_script: scripts/log_observation_rollouts.py
+
 robot:
   mjcf: pygmalion_locomotion/assets/pygmalion_v2/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_capsule7plus5_loop.xml
   foot_collision: capsule7plus5
@@ -243,6 +257,24 @@ artifacts:
   motions/smplx_to_huphy_lower9_gmr.json:
     sha256: 8f6c3e9f651faabbd514cce396a67145848e978e4ab96a649c5bab656f59defc
     purpose: lower_body_retarget_mapping
+  scripts/log_observation_rollouts.py:
+    sha256: 6ce97408183956b9f4422cfee871615ac12529b66d006a41394c7adb83660372
+    purpose: reproduce_dr_on_and_dr_off_actor_observation_logs
+  observation_rollouts/manifest.json:
+    sha256: 747c3ebc47ba82198329b4c7ae36883ad17249da0ac905810b3d8c6e82449c2d
+    purpose: rollout_seeds_slices_hashes_and_summary
+  observation_rollouts/dr_on_rollout1_seed20261111.npz:
+    sha256: dbf54f812afa6207bd2dffd74e0b7a6ff3b953049ed4ef5067b69907d9531840
+    purpose: union_dr_enabled_actor_observation_rollout
+  observation_rollouts/dr_on_rollout2_seed20261112.npz:
+    sha256: 42b16c8d17642b2c773d9fa9d85bb23a7d4613fb425b4495ae31baf9cf1dc2ea
+    purpose: union_dr_enabled_actor_observation_rollout
+  observation_rollouts/dr_off_rollout1_seed20261111.npz:
+    sha256: c3782ccff05e880c6430df003d720dd237d075371a82adab6663756eeea4c290
+    purpose: all_dr_disabled_actor_observation_rollout
+  observation_rollouts/dr_off_rollout2_seed20261112.npz:
+    sha256: e12f2bc6ee09799c9ae6865d21d72910d5d15fad9cd1b5864eba48424dba129d
+    purpose: all_dr_disabled_actor_observation_rollout
 
 onnx_verification:
   checkpoint: model_30000.pt

@@ -77,6 +77,39 @@ action clipping은 꺼져 있었습니다(`clip_actions: null`). 실제 로봇�
 reference **frame index**입니다. 출력은 action 외에 해당 frame의 reference
 joint/body state를 제공합니다. 순수 policy 배포에는 `policy.onnx`를 쓰면 됩니다.
 
+## Observation rollout logs
+
+`observation_rollouts/`에는 `model_30000`의 00545 전체 reference cycle을 기록한
+rollout 네 개가 있습니다. Union DR을 학습 설정 그대로 켠 두 회와, 모든 DR event,
+observation noise/delay, actuator delay 및 motion reset perturbation을 끈 두 회입니다.
+두 조건 모두 reference frame 0에서 시작하며 659 frames/50 Hz를 기록했습니다.
+
+각 NPZ에는 `actor_observation[659,114]`, `raw_action[659,12]`, reward/done,
+reference frame index와 아래 term별 slice가 함께 있습니다.
+
+```text
+reference_joint_pos [0:24]       reference_joint_vel [24:48]
+projected_gravity   [48:51]      base_ang_vel        [51:54]
+joint_pos_rel       [54:78]      joint_vel_rel        [78:102]
+previous_action     [102:114]
+```
+
+검증 결과 네 rollout 모두 첫 frame의 `previous_action`은 정확히 0이며, 이후 모든
+frame에서 `previous_action[t] == raw_action[t-1]`입니다. DR-off 두 회는 서로 완전히
+동일하며, DR-on 두 회는 독립 seed로 서로 다른 DR sample을 사용합니다. 학습 timeout은
+10초지만 reference는 13.16초이므로, 온전한 한 cycle을 기록하기 위해 termination만
+네 회 모두 동일하게 껐습니다. 정확한 seed, hash와 통계는
+`observation_rollouts/manifest.json`에 있습니다.
+
+재생성:
+
+```bash
+cd "$UNITREE_RL_MJLAB"
+CUDA_VISIBLE_DEVICES=0 PYTHONPATH=. "$MJLAB_PYTHON" \
+  /path/to/huphy_00545_uniondr_30000/scripts/log_observation_rollouts.py \
+  --device cuda:0
+```
+
 ## Union DR
 
 이 런은 Union DR이 맞으며 발 마찰은 episode별 shared uniform
