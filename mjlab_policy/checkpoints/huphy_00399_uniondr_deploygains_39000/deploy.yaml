@@ -1,0 +1,129 @@
+schema_version: 1
+
+policy:
+  name: huphy_00399_uniondr_deploygains_model_39000
+  source_run: 2026-11-18_17-48-51_huphy_00399_uniondr_deploygains_resume20000_plus30k_2048_gpu2
+  task: HUPHY-Tracking-ProjectedGravity-UnionDR-DeployGains
+  parent_checkpoint: model_20000.pt
+  checkpoint: model_39000.pt
+  onnx: policy.onnx
+  motion_onnx: motion_policy.onnx
+  parent_iteration: 20000
+  iteration: 39000
+  common_step_counter: 936072
+  control_rate_hz: 50
+  physics_timestep_s: 0.005
+  decimation: 4
+  actor_input_dim: 114
+  actor_output_dim: 12
+  critic_input_dim: 204
+  onnx_batch_size: 1
+  onnx_normalizer_embedded: true
+
+training:
+  seed: 42
+  num_envs: 2048
+  num_steps_per_env: 24
+  save_interval: 500
+  actor_hidden_dims: [512, 256, 128]
+  critic_hidden_dims: [512, 256, 128]
+  activation: elu
+  parent_release: ../huphy_00399_uniondr_20000
+  additional_iterations: 19000
+  exact_env: env.yaml
+  exact_agent: agent.yaml
+  reproduce_script: scripts/reproduce_finetune.sh
+  resume_script: scripts/resume_latest.sh
+
+motion:
+  training_file: motions/00399_interactionmesh_50hz.npz
+  frames: 1511
+  fps: 50
+  duration_s: 30.22
+  scalar_joints: 24
+  tracked_body_count: 9
+
+observations:
+  actor:
+    order: [command, projected_gravity, base_ang_vel, joint_pos, joint_vel, previous_action]
+    terms:
+      command: {slice: [0, 48], fields: [reference_joint_pos_24, reference_joint_vel_24]}
+      projected_gravity: {slice: [48, 51], frame: body}
+      base_ang_vel: {slice: [51, 54], frame: body, unit: rad/s}
+      joint_pos: {slice: [54, 78], relative_to_default: true, unit: rad}
+      joint_vel: {slice: [78, 102], unit: rad/s}
+      previous_action: {slice: [102, 114], first_frame: zeros}
+    full_joint_order: &full_joint_order
+      [R_hip_pitch_joint, R_hip_roll_joint, R_hip_yaw_joint, R_knee_joint,
+       R_crank_A_joint, R_rod_A_u1, R_rod_A_u2, R_crank_B_joint,
+       R_rod_B_u1, R_rod_B_u2, R_ankle_pitch_joint, R_ankle_roll_joint,
+       L_hip_pitch_joint, L_hip_roll_joint, L_hip_yaw_joint, L_knee_joint,
+       L_crank_A_joint, L_rod_A_u1, L_rod_A_u2, L_crank_B_joint,
+       L_rod_B_u1, L_rod_B_u2, L_ankle_pitch_joint, L_ankle_roll_joint]
+    training_corruption:
+      projected_gravity_noise: [-0.05, 0.05]
+      base_ang_vel_noise: [-0.2, 0.2]
+      joint_pos_noise: [-0.01, 0.01]
+      joint_vel_noise: [-0.5, 0.5]
+      imu_delay_policy_steps: [0, 2]
+  critic:
+    order: [command_48, anchor_pos_3, anchor_ori_6, body_pos_27, body_ori_54,
+            base_lin_vel_3, base_ang_vel_3, joint_pos_24, joint_vel_24, previous_action_12]
+
+actions:
+  type: joint_position_target
+  joint_order: &motor_joint_order
+    [R_hip_pitch_joint, R_hip_roll_joint, R_hip_yaw_joint, R_knee_joint,
+     R_crank_A_joint, R_crank_B_joint, L_hip_pitch_joint, L_hip_roll_joint,
+     L_hip_yaw_joint, L_knee_joint, L_crank_A_joint, L_crank_B_joint]
+  scale_rad_per_unit: 0.25
+  default_position_rad:
+    [-0.175, 0.0, 0.0, 0.35, 0.1439548737, -0.1470630753,
+      0.175, 0.0, 0.0, -0.35, -0.1438849966, 0.1468702056]
+  actuator_delay_physics_steps: [0, 4]
+
+pd_gains:
+  joint_order: *motor_joint_order
+  stiffness_nm_per_rad:
+    [135.0, 135.0, 75.0, 130.0, 60.0, 60.0,
+      135.0, 135.0, 75.0, 130.0, 60.0, 60.0]
+  damping_nm_s_per_rad:
+    [6.0, 6.0, 4.0, 6.0, 2.7, 2.7,
+      6.0, 6.0, 4.0, 6.0, 2.7, 2.7]
+  effort_limit_nm:
+    [120.0, 120.0, 60.0, 120.0, 60.0, 60.0,
+      120.0, 120.0, 60.0, 120.0, 60.0, 60.0]
+
+union_domain_randomization:
+  foot_friction: [0.3, 1.7]
+  base_payload_added_kg: [-1.0, 8.0]
+  pd_gain_scale: [0.8, 1.2]
+  motor_strength_scale: [0.8, 1.2]
+  encoder_bias_rad: [-0.015, 0.015]
+  imu_mount_rpy_deg: [-2.0, 2.0]
+  torso_push_force_n: [0.0, 100.0]
+  torso_push_duration_s: [0.1, 0.2]
+  torso_push_cooldown_s: [2.0, 10.0]
+
+robot:
+  mjcf: pygmalion_locomotion/assets/pygmalion_v2/LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_footv5_d455_reinf_alparts2_capsule7plus5_loop.xml
+  foot_collision: capsule7plus5
+  ankle_motor_coordinates: crank_A_and_crank_B
+
+artifacts:
+  model_20000.pt: {sha256: 787dd2c24bc63b935ee0eb6d8df969ca0457cf874157f44fbf9324de7fce6a60, purpose: parent_full_checkpoint}
+  model_39000.pt: {sha256: 9b60dde4a3cbf239fbf3d177517a7c2ae4a66830baa7c8c73cdc79245fdb8be8, purpose: latest_full_checkpoint}
+  policy.onnx: {sha256: 392e14d42c7273c595ebb3a25ce3877c102993804361f525f4523076ce8dbbcf, purpose: deterministic_actor}
+  motion_policy.onnx: {sha256: 06cefd152bfa194cc88a9f5a1197ffe2b36ddf2a3e7c8e9fc629d0ecdf5adbfa, purpose: actor_with_embedded_reference_motion}
+  env.yaml: {sha256: bf09be5b47b8e733f9dca106d867974f885fb0ed6d4b152ee7dc1d3fc22dfe4f, purpose: exact_environment_snapshot}
+  agent.yaml: {sha256: 6ea857268ef1f87fb5ff7eb548c10f9d7e2a9c6230a13873e8b1385b361cbbdd, purpose: exact_ppo_snapshot}
+  motions/00399_interactionmesh_50hz.npz: {sha256: 21ce05f643028c3245ed3f93af0c9756e863803f888a3ebeddbd85a944c56461, purpose: exact_training_reference}
+
+source_versions:
+  unitree_rl_mjlab_head: 05c7538e95a300edf7dfdd5fca5907f0bf00cd43
+  note: Base source is in ../huphy_00399_uniondr_20000/source; DeployGains changes are under source_overlay/unitree_rl_mjlab.
+
+safety:
+  simulation_validated: true
+  real_robot_validated: false
+  note: Verify observation order/signs, A/B motor mapping, gains, limits, first-frame action, emergency stop, and fall protection before motor enable.
