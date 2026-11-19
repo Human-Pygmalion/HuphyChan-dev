@@ -22,11 +22,23 @@ def course_heading_error(
   env: ManagerBasedRlEnv,
   max_error: float = math.pi / 4.0,
   target_heading: float = 0.0,
+  bidirectional: bool = False,
   asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
 ) -> torch.Tensor:
   """Terminate when the base yaw leaves the fixed world-frame course heading."""
   asset: Entity = env.scene[asset_cfg.name]
-  error = torch.abs(wrap_to_pi(asset.data.heading_w - target_heading))
+  if bidirectional:
+    direction = getattr(env, "pyg_course_direction", None)
+    if direction is None:
+      direction = torch.ones(env.num_envs, device=env.device)
+    target = torch.where(
+      direction > 0.0,
+      torch.zeros_like(direction),
+      torch.full_like(direction, math.pi),
+    )
+  else:
+    target = target_heading
+  error = torch.abs(wrap_to_pi(asset.data.heading_w - target))
   # Keep an angle represented as float32 at exactly the configured boundary
   # from being classified as an exceedance due only to rounding.
   return error > (max_error + 1.0e-6)
@@ -40,6 +52,7 @@ def course_stagnation(
   min_cmd_speed: float = 0.2,
   min_progress_m: float = 0.10,
   target_heading: float = 0.0,
+  bidirectional: bool = False,
   asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
 ) -> torch.Tensor:
   """Terminate sustained failure to advance along a fixed world-frame course.
@@ -68,14 +81,20 @@ def course_stagnation(
   buf[fresh] = 0.0
   bad_count[fresh] = 0
 
-  direction = torch.tensor(
-    [math.cos(target_heading), math.sin(target_heading)],
-    device=env.device,
-    dtype=asset.data.root_link_lin_vel_w.dtype,
-  )
-  projected_speed = torch.sum(
-    asset.data.root_link_lin_vel_w[:, :2] * direction, dim=1
-  )
+  if bidirectional:
+    direction = getattr(env, "pyg_course_direction", None)
+    if direction is None:
+      direction = torch.ones(env.num_envs, device=env.device)
+    projected_speed = asset.data.root_link_lin_vel_w[:, 0] * direction
+  else:
+    direction_xy = torch.tensor(
+      [math.cos(target_heading), math.sin(target_heading)],
+      device=env.device,
+      dtype=asset.data.root_link_lin_vel_w.dtype,
+    )
+    projected_speed = torch.sum(
+      asset.data.root_link_lin_vel_w[:, :2] * direction_xy, dim=1
+    )
   command_speed = command[:, 0].abs()
   slot = env.episode_length_buf % window_steps
   rows = torch.arange(env.num_envs, device=env.device)
@@ -92,6 +111,37 @@ def course_stagnation(
   )
   bad_count[:] = torch.where(bad_window, bad_count + 1, torch.zeros_like(bad_count))
   return bad_count >= hold_steps
+
+
+def bidirectional_course_completed(
+  env: ManagerBasedRlEnv,
+  forward_target_x: float,
+  reverse_target_x: float,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Successful timeout after reaching the opposite end of the course."""
+  asset: Entity = env.scene[asset_cfg.name]
+  direction = getattr(env, "pyg_course_direction", None)
+  if direction is None:
+    direction = torch.ones(env.num_envs, device=env.device)
+  relative_x = asset.data.root_link_pos_w[:, 0] - env.scene.env_origins[:, 0]
+  reached = torch.where(
+    direction > 0.0,
+    relative_x >= forward_target_x,
+    relative_x <= reverse_target_x,
+  )
+  return reached & (env.episode_length_buf > 2)
+
+
+def course_lateral_out_of_bounds(
+  env: ManagerBasedRlEnv,
+  max_offset: float = 0.45,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Failure when the base leaves the side of the narrow course."""
+  asset: Entity = env.scene[asset_cfg.name]
+  relative_y = asset.data.root_link_pos_w[:, 1] - env.scene.env_origins[:, 1]
+  return torch.abs(relative_y) > max_offset
 
 
 def stagnation(

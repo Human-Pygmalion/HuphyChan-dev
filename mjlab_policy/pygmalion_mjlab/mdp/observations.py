@@ -9,10 +9,33 @@ if TYPE_CHECKING:
 from typing import TYPE_CHECKING
 
 import torch
+from mjlab.entity import Entity
 from mjlab.envs.mdp.dr._core import _get_entity_indices
 from mjlab.managers.scene_entity_config import SceneEntityCfg
+from mjlab.utils.lab_api.math import wrap_to_pi
 
 _DR_DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
+
+
+def course_velocity_command(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  asset_cfg: SceneEntityCfg = _DR_DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Return [forward speed, signed course-heading error] without changing obs size."""
+  command = env.command_manager.get_command(command_name)
+  assert command is not None, f"Command '{command_name}' not found."
+  asset: Entity = env.scene[asset_cfg.name]
+  direction = getattr(env, "pyg_course_direction", None)
+  if direction is None:
+    direction = torch.ones(env.num_envs, device=env.device)
+  target_heading = torch.where(
+    direction > 0.0,
+    torch.zeros_like(direction),
+    torch.full_like(direction, torch.pi),
+  )
+  heading_error = wrap_to_pi(target_heading - asset.data.heading_w)
+  return torch.stack((command[:, 0], heading_error), dim=1)
 
 
 def _live_model_field(env: ManagerBasedRlEnv, field: str) -> torch.Tensor:

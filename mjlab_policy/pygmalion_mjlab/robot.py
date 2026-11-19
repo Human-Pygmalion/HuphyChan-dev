@@ -4,7 +4,7 @@ All values are the resolved values of training run 2026-10-11_23-35-20_rough_box
 (reference/env_reference.yaml, section scene.entities.robot). Nothing here reads environment
 variables.
 
-Model: assets/pygmalion_legonly_ab.xml (MJCF). 12 actuated joints:
+Model: M19 capsule7plus5 MJCF. 12 actuated joints:
   hip_pitch, hip_roll (RS04), hip_yaw (RS03), knee (RS04), crank_A, crank_B (RS03) per leg.
 The ankle pitch/roll hinges and the rod universal joints are passive; four `connect`
 equalities close the linkage.
@@ -25,7 +25,11 @@ from mjlab.utils.spec_config import CollisionCfg
 from .tn_actuator import TnPdActuatorCfg
 
 ASSETS = Path(__file__).resolve().parent / "assets"
-XML = ASSETS / "pygmalion_legonly_ab.xml"
+ROBOT_ASSETS = Path(__file__).resolve().parents[2] / "pygmalion_locomotion/assets/pygmalion_v2"
+XML = ROBOT_ASSETS / (
+  "LegOnly_prototype-tempmass-motormeasured-armfix_v30_proxyfix_"
+  "footv5_d455_reinf_alparts2_capsule7plus5_loop.xml"
+)
 
 # Joint-name groups used by observations / rewards.
 MOTOR_JOINTS = (".*_hip_.*_joint", ".*_knee_joint", ".*_crank_[AB]_joint")  # 12 motor encoders
@@ -108,7 +112,8 @@ ACTUATORS = (
 
 # Slight crouch: hip 0.175, knee 0.35 rad; ankle/crank/rod values solve the closed loop.
 INIT_STATE = EntityCfg.InitialStateCfg(
-  pos=(0.0, 0.0, 0.8975),
+  # M19's v5 outsole is 14 mm lower than the former three-box training foot.
+  pos=(0.0, 0.0, 0.9115),
   joint_pos={
     "L_hip_pitch_joint": 0.175,
     "R_hip_pitch_joint": -0.175,
@@ -137,9 +142,9 @@ INIT_STATE = EntityCfg.InitialStateCfg(
 # All collision geoms on; feet condim 3 / friction 0.6 / priority 1, the rest condim 1.
 COLLISION = CollisionCfg(
   geom_names_expr=(".*_collision",),
-  condim={r"^(L|R)_foot[1-7]_collision$": 3, ".*_collision": 1},
-  priority={r"^(L|R)_foot[1-7]_collision$": 1},
-  friction={r"^(L|R)_foot[1-7]_collision$": (0.6,)},
+  condim={r"^(L|R)_foot\d+_collision$": 3, ".*_collision": 1},
+  priority={r"^(L|R)_foot\d+_collision$": 1},
+  friction={r"^(L|R)_foot\d+_collision$": (0.6,)},
 )
 
 

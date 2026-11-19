@@ -10,6 +10,8 @@ from mjlab.entity import Entity
 from mjlab.managers.event_manager import RecomputeLevel, requires_model_fields
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.utils.lab_api.math import (
+  quat_from_euler_xyz,
+  quat_mul,
   sample_uniform,
 )
 
@@ -149,6 +151,95 @@ def add_payload_mass(
     len(env_ids), len(body_ids), device=env.device
   ).uniform_(*mass_range)
   env.sim.model.body_mass[env_ids[:, None], body_ids] += offsets
+
+
+def reset_bidirectional_course(
+  env: ManagerBasedRlEnv,
+  env_ids: torch.Tensor | None,
+  forward_obstacle_x: float,
+  reverse_obstacle_x: float,
+  obstacle_distance: tuple[float, float] = (0.30, 1.00),
+  foot_front_offset: float = 0.0853,
+  y_jitter: tuple[float, float] = (-0.15, 0.15),
+  z_jitter: tuple[float, float] = (0.01, 0.05),
+  safe_lateral_offset: float = 0.25,
+  max_yaw_offset: float = math.pi / 6.0,
+  forward_probability: float = 0.5,
+  velocity_range: dict[str, tuple[float, float]] | None = None,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> None:
+  """Spawn 50:50 just before either obstacle, with a geometry-safe yaw offset.
+
+  ``obstacle_distance`` is measured from the foremost nominal foot collision to
+  the first stair face or the low toe of the slope.  The yaw interval is coupled
+  to the sampled distance and lateral position so the projected path reaches the
+  obstacle inside ``safe_lateral_offset``, then clipped to ``max_yaw_offset``.
+  """
+  env_ids = resolve_env_ids(env, env_ids)
+  asset: Entity = env.scene[asset_cfg.name]
+  if asset.is_fixed_base:
+    raise ValueError("bidirectional course reset requires a floating-base robot")
+  if not 0.0 <= forward_probability <= 1.0:
+    raise ValueError("forward_probability must be in [0, 1]")
+
+  direction = torch.where(
+    torch.rand(len(env_ids), device=env.device) < forward_probability,
+    torch.ones(len(env_ids), device=env.device),
+    -torch.ones(len(env_ids), device=env.device),
+  )
+  course_direction = getattr(env, "pyg_course_direction", None)
+  if course_direction is None:
+    course_direction = torch.ones(env.num_envs, device=env.device)
+    env.pyg_course_direction = course_direction  # type: ignore[attr-defined]
+  course_direction[env_ids] = direction
+
+  default_root_state = asset.data.default_root_state
+  assert default_root_state is not None
+  root_states = default_root_state[env_ids].clone()
+  positions = root_states[:, 0:3] + env.scene.env_origins[env_ids]
+  gap = torch.empty(len(env_ids), device=env.device).uniform_(*obstacle_distance)
+  base_to_obstacle = gap + foot_front_offset
+  positions[:, 0] += torch.where(
+    direction > 0.0,
+    torch.full_like(direction, forward_obstacle_x) - base_to_obstacle,
+    torch.full_like(direction, reverse_obstacle_x) + base_to_obstacle,
+  )
+  lateral = torch.empty(len(env_ids), device=env.device).uniform_(*y_jitter)
+  positions[:, 1] += lateral
+  positions[:, 2] += torch.empty(len(env_ids), device=env.device).uniform_(*z_jitter)
+
+  # Express y in the direction-aligned frame: its +y points left of travel for
+  # both course directions. This produces asymmetric yaw limits when the spawn
+  # is already off-center, allowing more correction toward the course center.
+  lateral_aligned = lateral * direction
+  yaw_low = torch.atan2(
+    -safe_lateral_offset - lateral_aligned, base_to_obstacle
+  ).clamp(min=-max_yaw_offset, max=max_yaw_offset)
+  yaw_high = torch.atan2(
+    safe_lateral_offset - lateral_aligned, base_to_obstacle
+  ).clamp(min=-max_yaw_offset, max=max_yaw_offset)
+  yaw_delta = yaw_low + torch.rand(len(env_ids), device=env.device) * (
+    yaw_high - yaw_low
+  )
+  target_yaw = torch.where(
+    direction > 0.0,
+    torch.zeros_like(direction),
+    torch.full_like(direction, math.pi),
+  )
+  target_yaw += yaw_delta
+  orientations_delta = quat_from_euler_xyz(
+    torch.zeros_like(target_yaw), torch.zeros_like(target_yaw), target_yaw
+  )
+  orientations = quat_mul(root_states[:, 3:7], orientations_delta)
+  velocity_samples = _sample_se3_range(
+    velocity_range, (len(env_ids), 6), env.device
+  )
+  velocities = root_states[:, 7:13] + velocity_samples
+
+  asset.write_root_link_pose_to_sim(
+    torch.cat((positions, orientations), dim=-1), env_ids=env_ids
+  )
+  asset.write_root_link_velocity_to_sim(velocities, env_ids=env_ids)
 
 
 def add_hip_roll_reset_spread(

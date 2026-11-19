@@ -81,3 +81,48 @@ class MetricVelocityCommand(UniformVelocityCommand):
 class MetricVelocityCommandCfg(UniformVelocityCommandCfg):
   def build(self, env: ManagerBasedRlEnv) -> MetricVelocityCommand:
     return MetricVelocityCommand(self, env)
+
+
+class VxMixtureVelocityCommand(UniformVelocityCommand):
+  """Mix general planar commands with a dedicated high-speed straight band."""
+
+  cfg: "VxMixtureVelocityCommandCfg"
+
+  def _resample_command(self, env_ids: torch.Tensor) -> None:
+    super()._resample_command(env_ids)
+    if len(env_ids) == 0:
+      return
+
+    draw = torch.rand(len(env_ids), device=self.device)
+    high_speed = (draw < self.cfg.high_speed_fraction) & (
+      ~self.is_standing_env[env_ids]
+    )
+    high_ids = env_ids[high_speed]
+    if len(high_ids) == 0:
+      return
+
+    high_vx = torch.empty(len(high_ids), device=self.device).uniform_(
+      *self.cfg.high_speed_vx_range
+    )
+    self.vel_command_b[high_ids, 0] = high_vx
+    if self.cfg.high_speed_straight:
+      self.vel_command_b[high_ids, 1] = 0.0
+      self.vel_command_b[high_ids, 2] = 0.0
+    self.vel_command_w[high_ids] = self.vel_command_b[high_ids]
+
+
+@dataclass(kw_only=True)
+class VxMixtureVelocityCommandCfg(UniformVelocityCommandCfg):
+  high_speed_fraction: float = 0.4
+  high_speed_vx_range: tuple[float, float] = (1.5, 2.0)
+  high_speed_straight: bool = True
+
+  def build(self, env: ManagerBasedRlEnv) -> VxMixtureVelocityCommand:
+    return VxMixtureVelocityCommand(self, env)
+
+  def __post_init__(self):
+    super().__post_init__()
+    if not 0.0 <= self.high_speed_fraction <= 1.0:
+      raise ValueError("high_speed_fraction must be in [0, 1]")
+    if self.high_speed_vx_range[0] > self.high_speed_vx_range[1]:
+      raise ValueError("high_speed_vx_range minimum must not exceed maximum")

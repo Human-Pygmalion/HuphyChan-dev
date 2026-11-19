@@ -21,11 +21,13 @@ from mjlab.tasks.velocity.mdp import UniformVelocityCommandCfg
 from mjlab.terrains import TerrainEntityCfg, TerrainGeneratorCfg
 from mjlab.terrains.config import ROUGH_TERRAINS_CFG
 
-from . import robot, stairs_slopes, terrain10, unitree_rough
+from . import obstacle_course, robot, stairs_slopes, terrain10, unitree_rough
 from .env_cfg import pygmalion_rough_env_cfg
 from .mdp import events as pyg_events
+from .mdp import observations as pyg_obs
 from .mdp import rewards as pyg_rew
 from .mdp import terminations as pyg_term
+from .mdp.commands import VxMixtureVelocityCommandCfg
 
 
 def vx_wz_commands(env, command_name: str) -> torch.Tensor:
@@ -519,6 +521,182 @@ def pygmalion_generalized_union_dr_env_cfg(
   return cfg
 
 
+def pygmalion_flat_union_dr_from_scratch_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Flat-ground Union-DR task with full planar velocity commands."""
+  cfg = pygmalion_generalized_union_dr_env_cfg(play=play)
+
+  # Keep the foot-local height sensor used by the clearance reward, but remove
+  # terrain-map observations and curriculum state that only apply to generated
+  # rough terrain.
+  cfg.scene.terrain = TerrainEntityCfg(
+    terrain_type="plane",
+    terrain_generator=None,
+  )
+  cfg.scene.sensors = tuple(
+    sensor for sensor in (cfg.scene.sensors or ()) if sensor.name != "terrain_scan"
+  )
+  cfg.observations["critic"].terms.pop("height_scan", None)
+  cfg.curriculum = {}
+  cfg.terminations.pop("out_of_terrain_bounds", None)
+  cfg.terminations["low_base"] = TerminationTermCfg(
+    func=envs_mdp.root_height_below_minimum,
+    params={"minimum_height": 0.7, "asset_cfg": SceneEntityCfg("robot")},
+  )
+  cfg.events.pop("randomize_terrain", None)
+
+  twist = cfg.commands["twist"]
+  assert isinstance(twist, UniformVelocityCommandCfg)
+  twist.ranges.lin_vel_x = (-1.5, 1.5)
+  twist.ranges.lin_vel_y = (-1.0, 1.0)
+  twist.ranges.ang_vel_z = (-1.0, 1.0)
+  twist.ranges.heading = None
+  twist.heading_command = False
+  twist.rel_heading_envs = 0.0
+  twist.rel_forward_envs = 0.0
+  twist.rel_world_envs = 0.0
+  for group in ("actor", "critic"):
+    cfg.observations[group].terms["command"] = ObservationTermCfg(
+      func=mdp.generated_commands,
+      params={"command_name": "twist"},
+    )
+
+  cfg.rewards["foot_clearance"].params["target_height"] = 0.15
+
+  # Match the final narrow-course run's widened deployment envelope.
+  if not play:
+    cfg.events["foot_friction"].params["ranges"] = (0.3, 1.7)
+    cfg.events["payload"].params["mass_range"] = (-1.0, 15.0)
+  return cfg
+
+
+def pygmalion_flat_union_dr_knee_resume_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Flat Union-DR fine-tune with symmetric swing-knee shaping."""
+  cfg = pygmalion_flat_union_dr_from_scratch_env_cfg(play=play)
+
+  cfg.rewards["foot_clearance"].params["target_height"] = 0.10
+  cfg.rewards["self_collisions"].weight = -10.0
+
+  ordered_knees = SceneEntityCfg(
+    "robot",
+    # feet_ground_contact resolves primaries in MuJoCo body order: right, left.
+    joint_names=("R_knee_joint", "L_knee_joint"),
+    preserve_order=True,
+  )
+  cfg.rewards["swing_knee_flexion"] = RewardTermCfg(
+    func=pyg_rew.swing_knee_flexion_cost,
+    weight=-0.1,
+    params={
+      "sensor_name": "feet_ground_contact",
+      "target_flexion": 0.55,
+      "max_air_time": 0.5,
+      "command_name": "twist",
+      "command_threshold": 0.1,
+      "asset_cfg": ordered_knees,
+    },
+  )
+  cfg.rewards["landing_peak_knee_flexion"] = RewardTermCfg(
+    func=pyg_rew.landing_peak_knee_flexion_reward,
+    weight=0.3,
+    params={
+      "sensor_name": "feet_ground_contact",
+      "target_flexion": 0.7,
+      "sigma": 0.2,
+      "command_name": "twist",
+      "command_threshold": 0.1,
+      "asset_cfg": ordered_knees,
+    },
+  )
+  return cfg
+
+
+def pygmalion_flat_union_dr_knee_lr2x_resume_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Continue the knee-shaped flat policy with separate 2x left/right terms."""
+  cfg = pygmalion_flat_union_dr_knee_resume_env_cfg(play=play)
+  cfg.rewards.pop("swing_knee_flexion")
+  cfg.rewards.pop("landing_peak_knee_flexion")
+
+  ordered_knees = SceneEntityCfg(
+    "robot",
+    # feet_ground_contact primaries are in MuJoCo body order: right, left.
+    joint_names=("R_knee_joint", "L_knee_joint"),
+    preserve_order=True,
+  )
+  common_swing = {
+    "sensor_name": "feet_ground_contact",
+    "target_flexion": 0.55,
+    "max_air_time": 0.5,
+    "command_name": "twist",
+    "command_threshold": 0.1,
+    "asset_cfg": ordered_knees,
+  }
+  common_landing = {
+    "sensor_name": "feet_ground_contact",
+    "target_flexion": 0.7,
+    "sigma": 0.2,
+    "command_name": "twist",
+    "command_threshold": 0.1,
+    "asset_cfg": ordered_knees,
+  }
+  for side, side_index in (("right", 0), ("left", 1)):
+    cfg.rewards[f"swing_knee_flexion_{side}"] = RewardTermCfg(
+      func=pyg_rew.swing_knee_flexion_cost,
+      weight=-0.2,
+      params={
+        **common_swing,
+        "side_index": side_index,
+        "metric_suffix": f"_{side}",
+      },
+    )
+    cfg.rewards[f"landing_peak_knee_flexion_{side}"] = RewardTermCfg(
+      func=pyg_rew.landing_peak_knee_flexion_reward,
+      weight=0.6,
+      params={
+        **common_landing,
+        "side_index": side_index,
+        "metric_suffix": f"_{side}",
+      },
+    )
+  return cfg
+
+
+def pygmalion_flat_union_dr_knee_lr2x_vx_mix_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """LR2x task with 60% general and 40% high-speed straight vx commands."""
+  cfg = pygmalion_flat_union_dr_knee_lr2x_resume_env_cfg(play=play)
+  twist = cfg.commands["twist"]
+  assert isinstance(twist, UniformVelocityCommandCfg)
+  cfg.commands["twist"] = VxMixtureVelocityCommandCfg(
+    resampling_time_range=twist.resampling_time_range,
+    debug_vis=twist.debug_vis,
+    entity_name=twist.entity_name,
+    heading_command=False,
+    heading_control_stiffness=twist.heading_control_stiffness,
+    rel_standing_envs=twist.rel_standing_envs,
+    rel_heading_envs=0.0,
+    rel_world_envs=0.0,
+    rel_forward_envs=0.0,
+    init_velocity_prob=twist.init_velocity_prob,
+    ranges=UniformVelocityCommandCfg.Ranges(
+      lin_vel_x=(-1.5, 1.5),
+      lin_vel_y=(-1.0, 1.0),
+      ang_vel_z=(-1.0, 1.0),
+      heading=None,
+    ),
+    viz=twist.viz,
+    high_speed_fraction=0.4,
+    high_speed_vx_range=(1.5, 2.0),
+    high_speed_straight=True,
+  )
+  return cfg
+
+
 def pygmalion_generalized_stairs_slopes_env_cfg(
   play: bool = False,
 ) -> ManagerBasedRlEnvCfg:
@@ -591,4 +769,143 @@ def pygmalion_generalized_stairs_slopes_env_cfg(
         },
       )
     }
+  return cfg
+
+
+def pygmalion_narrow_bidirectional_course_env_cfg(
+  play: bool = False,
+) -> ManagerBasedRlEnvCfg:
+  """Union-DR fine-tune on the 1 m-wide stairs/landing/down-slope course."""
+  approach_length = 10.0
+  exit_length = 10.0
+  stair_run = 4 * 0.30
+  landing_length = 0.70
+  ramp_run = 4 * 0.15 / math.tan(math.radians(20.0))
+  terrain_origin_x = 0.5 * approach_length
+  forward_obstacle_x = approach_length - terrain_origin_x
+  reverse_obstacle_x = (
+    approach_length + stair_run + landing_length + ramp_run - terrain_origin_x
+  )
+  course_length = approach_length + stair_run + landing_length + ramp_run + exit_length
+  cfg = pygmalion_generalized_union_dr_env_cfg(play=play)
+  cfg.episode_length_s = 30.0
+  cfg.scene.terrain = TerrainEntityCfg(
+    terrain_type="generator",
+    terrain_generator=obstacle_course.four_step_downslope_terrain_cfg(
+      landing_length=landing_length,
+      tread_depth=0.30,
+      course_width=1.0,
+      approach_length=approach_length,
+      exit_length=exit_length,
+    ),
+    max_init_terrain_level=0,
+  )
+  cfg.curriculum = {}
+
+  twist = cfg.commands["twist"]
+  assert isinstance(twist, UniformVelocityCommandCfg)
+  twist.ranges.lin_vel_x = (0.1, 1.0)
+  twist.ranges.lin_vel_y = (0.0, 0.0)
+  twist.ranges.ang_vel_z = (0.0, 0.0)
+  twist.rel_heading_envs = 0.0
+  twist.rel_world_envs = 0.0
+  # The sampled vx is already positive; avoid the stock forward-only clamp to 0.3 m/s.
+  twist.rel_forward_envs = 0.0
+  twist.heading_command = False
+  twist.ranges.heading = None
+  for group in ("actor", "critic"):
+    cfg.observations[group].terms["command"] = ObservationTermCfg(
+      func=pyg_obs.course_velocity_command,
+      params={"command_name": "twist", "asset_cfg": SceneEntityCfg("robot")},
+    )
+
+  cfg.events["reset_base"] = EventTermCfg(
+    func=pyg_events.reset_bidirectional_course,
+    mode="reset",
+    params={
+      "forward_obstacle_x": forward_obstacle_x,
+      "reverse_obstacle_x": reverse_obstacle_x,
+      "obstacle_distance": (0.30, 1.00),
+      # Nominal foremost capsule7plus5 collision relative to base_link.
+      "foot_front_offset": 0.0853,
+      "y_jitter": (-0.15, 0.15),
+      "z_jitter": (0.01, 0.05),
+      "safe_lateral_offset": 0.25,
+      "max_yaw_offset": math.radians(30.0),
+      # Oversample the harder stairs-up direction while retaining slope-up
+      # rollouts to reduce catastrophic forgetting.
+      "forward_probability": 0.80,
+      "velocity_range": {
+        "x": (-0.2, 0.2),
+        "y": (-0.2, 0.2),
+        "yaw": (-0.2, 0.2),
+      },
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+
+  cfg.rewards.pop("track_linear_velocity", None)
+  cfg.rewards.pop("track_angular_velocity", None)
+  cfg.rewards.pop("foot_clearance", None)
+  cfg.rewards["course_forward_progress"] = RewardTermCfg(
+    func=pyg_rew.bidirectional_course_forward_progress,
+    weight=2.0,
+    params={
+      "command_name": "twist",
+      "heading_gain": 2.0,
+      "reverse_scale": 0.5,
+      "command_threshold": 0.1,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  cfg.rewards["course_lateral_velocity_l2"] = RewardTermCfg(
+    func=pyg_rew.course_lateral_velocity_l2,
+    weight=-0.5,
+    params={"asset_cfg": SceneEntityCfg("robot")},
+  )
+  cfg.rewards["course_overspeed_l2"] = RewardTermCfg(
+    func=pyg_rew.course_overspeed_l2,
+    weight=-1.0,
+    params={"max_speed": 1.0, "asset_cfg": SceneEntityCfg("robot")},
+  )
+
+  cfg.terminations["course_heading_error"] = TerminationTermCfg(
+    func=pyg_term.course_heading_error,
+    params={
+      "max_error": math.radians(45.0),
+      "bidirectional": True,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  cfg.terminations["course_stagnation"] = TerminationTermCfg(
+    func=pyg_term.course_stagnation,
+    params={
+      "command_name": "twist",
+      "window_s": 1.0,
+      "failure_hold_s": 0.5,
+      "min_cmd_speed": 0.2,
+      "min_progress_m": 0.10,
+      "bidirectional": True,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  cfg.terminations.pop("out_of_terrain_bounds", None)
+  cfg.terminations["course_completed"] = TerminationTermCfg(
+    func=pyg_term.bidirectional_course_completed,
+    time_out=True,
+    params={
+      # Finish 0.5 m before either end, after almost all 10 m of exit flat.
+      "forward_target_x": course_length - terrain_origin_x - 0.50,
+      "reverse_target_x": -terrain_origin_x + 0.50,
+      "asset_cfg": SceneEntityCfg("robot"),
+    },
+  )
+  cfg.terminations["course_side_fall"] = TerminationTermCfg(
+    func=pyg_term.course_lateral_out_of_bounds,
+    params={"max_offset": 0.45, "asset_cfg": SceneEntityCfg("robot")},
+  )
+
+  if not play:
+    cfg.events["foot_friction"].params["ranges"] = (0.3, 1.7)
+    cfg.events["payload"].params["mass_range"] = (-1.0, 15.0)
   return cfg

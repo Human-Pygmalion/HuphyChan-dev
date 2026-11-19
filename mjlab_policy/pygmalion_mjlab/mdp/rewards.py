@@ -48,6 +48,160 @@ def stand_still(
   return torch.sum(torch.square(error), dim=1) * stopped.float()
 
 
+def _signed_knee_flexion(
+  asset: Entity, asset_cfg: SceneEntityCfg
+) -> torch.Tensor:
+  """Return positive flexion in the configured knee-joint order."""
+  knee_pos = asset.data.joint_pos[:, asset_cfg.joint_ids]
+  if knee_pos.shape[1] != 2:
+    raise ValueError(
+      "Knee-flexion rewards require exactly two ordered knee joints, "
+      f"got shape {tuple(knee_pos.shape)}"
+    )
+  signs_by_name = {"L_knee_joint": -1.0, "R_knee_joint": 1.0}
+  joint_names = list(asset_cfg.joint_names or ())
+  if set(joint_names) != set(signs_by_name):
+    raise ValueError(
+      "Knee-flexion rewards require L_knee_joint and R_knee_joint, "
+      f"got {joint_names}"
+    )
+  signs = knee_pos.new_tensor([signs_by_name[name] for name in joint_names])
+  return knee_pos * signs
+
+
+def swing_knee_flexion_cost(
+  env: ManagerBasedRlEnv,
+  sensor_name: str,
+  target_flexion: float,
+  max_air_time: float,
+  command_name: str,
+  command_threshold: float = 0.1,
+  side_index: int | None = None,
+  metric_suffix: str = "",
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Shape each airborne knee toward a modest flexion target."""
+  asset: Entity = env.scene[asset_cfg.name]
+  contact_sensor: ContactSensor = env.scene[sensor_name]
+  current_air_time = contact_sensor.data.current_air_time
+  assert current_air_time is not None
+
+  flexion = _signed_knee_flexion(asset, asset_cfg)
+  if current_air_time.shape[1] != flexion.shape[1]:
+    raise ValueError(
+      "Knee/contact ordering mismatch: "
+      f"air_time={tuple(current_air_time.shape)}, flexion={tuple(flexion.shape)}"
+    )
+  active_swing = (current_air_time > 0.0) & (current_air_time < max_air_time)
+  error = flexion - target_flexion
+  per_side_cost = torch.square(error) * active_swing.float()
+  if side_index is None:
+    cost = torch.sum(per_side_cost, dim=1)
+    metric_flexion = flexion
+    metric_active = active_swing
+  else:
+    if side_index not in (0, 1):
+      raise ValueError(f"side_index must be 0 (right) or 1 (left), got {side_index}")
+    cost = per_side_cost[:, side_index]
+    metric_flexion = flexion[:, side_index]
+    metric_active = active_swing[:, side_index]
+
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+  command_magnitude = torch.norm(command[:, :2], dim=1) + command[:, 2].abs()
+  cost *= (command_magnitude > command_threshold).float()
+
+  num_swing_feet = metric_active.float().sum()
+  env.extras["log"][f"Metrics/swing_knee_flexion{metric_suffix}_mean"] = (
+    (metric_flexion * metric_active.float()).sum() / num_swing_feet.clamp_min(1.0)
+  )
+  return cost
+
+
+class landing_peak_knee_flexion_reward:
+  """Reward a target peak knee flexion once, at each foot's landing."""
+
+  def __init__(self, cfg, env: ManagerBasedRlEnv):
+    asset_cfg = cfg.params["asset_cfg"]
+    contact_sensor: ContactSensor = env.scene[cfg.params["sensor_name"]]
+    expected_joints = [
+      name.replace("_foot_link", "_knee_joint")
+      for name in contact_sensor.primary_names
+    ]
+    if list(asset_cfg.joint_names) != expected_joints:
+      raise ValueError(
+        "Peak-knee joint order must match the contact-sensor foot order: "
+        f"expected {expected_joints}, got {asset_cfg.joint_names}"
+      )
+    self.peak_flexion = torch.zeros(
+      (env.num_envs, 2), device=env.device, dtype=torch.float32
+    )
+    self.step_dt = env.step_dt
+
+  def reset(self, env_ids: torch.Tensor | slice | None = None) -> None:
+    if env_ids is None:
+      env_ids = slice(None)
+    self.peak_flexion[env_ids] = 0.0
+
+  def __call__(
+    self,
+    env: ManagerBasedRlEnv,
+    sensor_name: str,
+    target_flexion: float,
+    sigma: float,
+    command_name: str,
+    command_threshold: float = 0.1,
+    side_index: int | None = None,
+    metric_suffix: str = "",
+    asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+  ) -> torch.Tensor:
+    asset: Entity = env.scene[asset_cfg.name]
+    contact_sensor: ContactSensor = env.scene[sensor_name]
+    current_air_time = contact_sensor.data.current_air_time
+    assert current_air_time is not None
+
+    flexion = _signed_knee_flexion(asset, asset_cfg)
+    in_air = current_air_time > 0.0
+    self.peak_flexion = torch.where(
+      in_air,
+      torch.maximum(self.peak_flexion, flexion),
+      self.peak_flexion,
+    )
+
+    first_contact = contact_sensor.compute_first_contact(dt=self.step_dt)
+    closeness = torch.exp(
+      -torch.square((self.peak_flexion - target_flexion) / sigma)
+    )
+    per_side_reward = closeness * first_contact.float()
+    if side_index is None:
+      reward = torch.sum(per_side_reward, dim=1)
+      metric_peak = self.peak_flexion
+      metric_contact = first_contact
+    else:
+      if side_index not in (0, 1):
+        raise ValueError(f"side_index must be 0 (right) or 1 (left), got {side_index}")
+      reward = per_side_reward[:, side_index]
+      metric_peak = self.peak_flexion[:, side_index]
+      metric_contact = first_contact[:, side_index]
+
+    command = env.command_manager.get_command(command_name)
+    assert command is not None
+    command_magnitude = torch.norm(command[:, :2], dim=1) + command[:, 2].abs()
+    reward *= (command_magnitude > command_threshold).float()
+
+    num_landings = metric_contact.float().sum()
+    env.extras["log"][f"Metrics/landing_peak_knee_flexion{metric_suffix}_mean"] = (
+      (metric_peak * metric_contact.float()).sum()
+      / num_landings.clamp_min(1.0)
+    )
+    self.peak_flexion = torch.where(
+      first_contact,
+      torch.zeros_like(self.peak_flexion),
+      self.peak_flexion,
+    )
+    return reward
+
+
 def course_forward_progress(
   env: ManagerBasedRlEnv,
   command_name: str,
@@ -89,6 +243,63 @@ def course_forward_progress(
   heading_error = wrap_to_pi(asset.data.heading_w - target_heading)
   heading_smooth = torch.exp(-heading_gain * torch.square(heading_error))
   return signed_progress * heading_smooth
+
+
+def bidirectional_course_forward_progress(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  heading_gain: float = 2.0,
+  reverse_scale: float = 0.5,
+  command_threshold: float = 0.1,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Normalized progress toward the opposite end selected at episode reset."""
+  asset: Entity = env.scene[asset_cfg.name]
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+  direction = getattr(env, "pyg_course_direction", None)
+  if direction is None:
+    direction = torch.ones(env.num_envs, device=env.device)
+
+  projected_speed = asset.data.root_link_lin_vel_w[:, 0] * direction
+  commanded_speed = command[:, 0].abs()
+  progress = torch.clamp(
+    projected_speed / commanded_speed.clamp(min=command_threshold),
+    min=-1.0,
+    max=1.0,
+  )
+  progress = torch.where(
+    commanded_speed > command_threshold, progress, torch.zeros_like(progress)
+  )
+  signed_progress = torch.where(progress >= 0.0, progress, reverse_scale * progress)
+  target_heading = torch.where(
+    direction > 0.0, torch.zeros_like(direction), torch.full_like(direction, math.pi)
+  )
+  heading_error = wrap_to_pi(asset.data.heading_w - target_heading)
+  return signed_progress * torch.exp(-heading_gain * torch.square(heading_error))
+
+
+def course_lateral_velocity_l2(
+  env: ManagerBasedRlEnv,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Squared world-Y velocity, the lateral axis of the straight course."""
+  asset: Entity = env.scene[asset_cfg.name]
+  return torch.square(asset.data.root_link_lin_vel_w[:, 1])
+
+
+def course_overspeed_l2(
+  env: ManagerBasedRlEnv,
+  max_speed: float = 1.0,
+  asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
+) -> torch.Tensor:
+  """Squared excess speed along the episode's selected travel direction."""
+  asset: Entity = env.scene[asset_cfg.name]
+  direction = getattr(env, "pyg_course_direction", None)
+  if direction is None:
+    direction = torch.ones(env.num_envs, device=env.device)
+  forward_speed = asset.data.root_link_lin_vel_w[:, 0] * direction
+  return torch.square(torch.relu(forward_speed - max_speed))
 
 
 def actuator_clipping_fraction(

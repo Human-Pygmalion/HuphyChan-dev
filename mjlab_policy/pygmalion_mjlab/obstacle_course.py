@@ -108,13 +108,50 @@ class FourStepDownSlopeCfg(SubTerrainCfg):
     )
 
 
-def four_step_downslope_terrain_cfg(slope_first: bool = False) -> TerrainGeneratorCfg:
+def four_step_downslope_terrain_cfg(
+  slope_first: bool = False,
+  landing_length: float = 0.50,
+  tread_depth: float = 0.38,
+  course_width: float = 2.0,
+  approach_length: float = 2.0,
+  exit_length: float = 2.0,
+) -> TerrainGeneratorCfg:
   """Return the requested 2 m-wide 15 cm-step / 20 degree-downhill course."""
-  course = FourStepDownSlopeCfg(size=(8.0, 2.0), slope_first=slope_first)
+  if landing_length <= 0.0:
+    raise ValueError("landing_length must be positive")
+  if tread_depth <= 0.0:
+    raise ValueError("tread_depth must be positive")
+  if course_width <= 0.0:
+    raise ValueError("course_width must be positive")
+  if approach_length <= 0.0:
+    raise ValueError("approach_length must be positive")
+  if exit_length <= 0.0:
+    raise ValueError("exit_length must be positive")
+  step_height = 0.15
+  num_steps = 4
+  downhill_deg = 20.0
+  ramp_run = num_steps * step_height / math.tan(math.radians(downhill_deg))
+  course_length = (
+    approach_length
+    + num_steps * tread_depth
+    + landing_length
+    + ramp_run
+    + exit_length
+  )
+  course = FourStepDownSlopeCfg(
+    size=(course_length, course_width),
+    slope_first=slope_first,
+    landing_length=landing_length,
+    tread_depth=tread_depth,
+    approach_length=approach_length,
+    exit_length=exit_length,
+  )
+  landing_cm = round(100 * landing_length)
+  tread_cm = round(100 * tread_depth)
   name = (
-    "up20deg_landing50cm_downstairs15x4"
+    f"up20deg_landing{landing_cm}cm_downstairs15x4_tread{tread_cm}cm"
     if slope_first
-    else "stairs15x4_landing50cm_down20deg"
+    else f"stairs15x4_tread{tread_cm}cm_landing{landing_cm}cm_down20deg"
   )
   return TerrainGeneratorCfg(
     seed=42,
