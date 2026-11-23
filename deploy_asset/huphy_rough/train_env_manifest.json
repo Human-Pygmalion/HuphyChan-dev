@@ -1,0 +1,342 @@
+{
+ "task": "Terrain-Grounded Imagination, HUPHY perceptive velocity tracking on rough terrain",
+ "training_code": "terrain-grounded-imagination-huphy (git 6f3b120, branch patch9-limits)",
+ "checkpoint": 40000,
+ "training": "Terrain-Grounded Imagination: deterministic MLP world model (3 x 1024) trained on simulator transitions, policy trained by backpropagating 32-step imagined returns through it; 8192 envs, 40000 iterations, seed 0, 7.9 h on one H200",
+ "sim": {
+  "simulator": "mjlab (MuJoCo-Warp, commit 20f10e96)",
+  "physics_dt_s": 0.005,
+  "policy_dt_s": 0.02,
+  "episode_s": 20.0,
+  "robot_mass_kg": 26.91
+ },
+ "terrain": {
+  "types": [
+   "flat",
+   "pyramid stairs up / down (tread 0.33 m, 3-18 cm)",
+   "random boxes 2-15 cm",
+   "tilted tiles up to 15 deg",
+   "stepping stones 0.50 m -> 0.33 m, gaps 5 -> 22 cm"
+  ],
+  "curriculum": "success-guided sampling over 10 difficulty levels per type",
+  "stepping_stone_share": 0.3
+ },
+ "command": {
+  "order": [
+   "vx",
+   "vy",
+   "wz"
+  ],
+  "range_lo": [
+   -1.0,
+   -0.5,
+   -1.0
+  ],
+  "range_hi": [
+   1.5,
+   0.5,
+   1.0
+  ],
+  "standing_share": 0.1,
+  "training_profile": "new command every 10 s; heading-controlled envs turn towards a random heading (wz from the heading error); 10 % of the envs get zero command"
+ },
+ "reset": {
+  "pose": "default pose, pelvis position +-0.5 m, yaw random, base velocity +-0.2"
+ },
+ "observation_noise_uniform": {
+  "base_lin_vel_m_s": 0.15,
+  "gyro_rad_s": 0.2,
+  "gravity": 0.05,
+  "encoder_rad": 0.01,
+  "foothold_scan_m": 0.1
+ },
+ "map_drift_m": {
+  "xy": 0.05,
+  "z": 0.05,
+  "note": "per episode"
+ },
+ "observation_lag": {
+  "policy_steps": [
+   0,
+   2
+  ],
+  "s": [
+   0.0,
+   0.04
+  ],
+  "note": "IMU and encoders, one lag per episode; base_lin_vel, heights and command not delayed"
+ },
+ "command_delay": {
+  "s": [
+   0.0,
+   0.02
+  ],
+  "note": "one lag per episode for all 12 motor targets"
+ },
+ "encoder_bias_rad": [
+  -0.015,
+  0.015
+ ],
+ "imu_mount_rpy_deg": [
+  -2.0,
+  2.0
+ ],
+ "pd_gain_scale": {
+  "kp": [
+   0.8,
+   1.2
+  ],
+  "kd": [
+   0.8,
+   1.2
+  ]
+ },
+ "motor_friction_damping_armature_scale": [
+  0.8,
+  1.2
+ ],
+ "passive_joint_friction_Nm": [
+  0.0,
+  0.5
+ ],
+ "passive_joint_damping": [
+  0.0,
+  0.05
+ ],
+ "foot_friction": [
+  0.3,
+  1.2
+ ],
+ "payload_kg_at_pelvis_com": [
+  -1.0,
+  8.0
+ ],
+ "link_inertial_dr": {
+  "pelvis": {
+   "bodies": [
+    "base_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0699
+   ],
+   "t1_range": [
+    -0.02,
+    0.02
+   ],
+   "t2_range": [
+    -0.02,
+    0.02
+   ],
+   "t3_range": [
+    -0.02,
+    0.02
+   ],
+   "d_range": [
+    -0.0154,
+    0.0154
+   ]
+  },
+  "hip_pitch_link": {
+   "bodies": [
+    "L_hip_pitch_link",
+    "R_hip_pitch_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0364
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "hip_roll_link": {
+   "bodies": [
+    "L_hip_roll_link",
+    "R_hip_roll_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0378
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "thigh": {
+   "bodies": [
+    "L_thigh_link",
+    "R_thigh_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0455
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.0066
+   ],
+   "d_range": [
+    -0.0146,
+    0.0146
+   ]
+  },
+  "shin": {
+   "bodies": [
+    "L_shin_link",
+    "R_shin_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0508
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "ankle_pitch_link": {
+   "bodies": [
+    "L_ankle_pitch_link",
+    "R_ankle_pitch_link"
+   ],
+   "alpha_range": [
+    -0.059,
+    0.0554
+   ],
+   "t1_range": [
+    -0.005,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  },
+  "foot": {
+   "bodies": [
+    "L_foot_link",
+    "R_foot_link"
+   ],
+   "alpha_range": [
+    -0.0256,
+    0.0647
+   ],
+   "t1_range": [
+    -0.0053,
+    0.005
+   ],
+   "t2_range": [
+    -0.005,
+    0.005
+   ],
+   "t3_range": [
+    -0.005,
+    0.005
+   ],
+   "d_range": [
+    -0.02,
+    0.02
+   ]
+  }
+ },
+ "pushes": {
+  "interval_s": [
+   2.0,
+   5.0
+  ],
+  "velocity_jump": {
+   "x": 0.45,
+   "y": 0.45,
+   "z": 0.1,
+   "roll": 0.3,
+   "pitch": 0.3,
+   "yaw": 0.4
+  }
+ },
+ "terminations": {
+  "tilt_deg": 70,
+  "pelvis_above_terrain_m": 0.45,
+  "time_out_s": 20.0
+ },
+ "dr_schedule": "model parameters drawn once per env at start-up (8192 envs cover the ranges); lags redrawn every episode",
+ "rewards": {
+  "w_gait": 0.25,
+  "w_foothold": -3.0,
+  "w_upright": 0.25,
+  "w_pose": 2.5,
+  "w_still": -1.0,
+  "w_limits": -5.0,
+  "w_ankle_limits": -10.0,
+  "w_dev_hip": -1.0,
+  "w_torque": -2.0,
+  "w_thermal": -0.02,
+  "w_regen": -0.002,
+  "w_impact": -0.5,
+  "w_width": -5.0,
+  "w_reach": 0.0
+ },
+ "not_in_training": [
+  "motor strength (torque limit) randomization",
+  "dropped motor replies",
+  "control period jitter",
+  "static friction",
+  "IMU freezes",
+  "ankle linkage backlash",
+  "robot-side target guards"
+ ]
+}
